@@ -1,189 +1,133 @@
-import { convexQuery } from "@convex-dev/react-query";
-import { api } from "@my-better-t-app/backend/convex/_generated/api";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, Heart, Leaf, Swords, Users } from "lucide-react";
+import { CATALOG } from "@sylve/game";
+import { CreatureCard } from "@/components/game/creature-card";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Toma Stack — Modern Full-Stack Starter" },
+      { title: "Sylve — Le cercle des gardiens" },
       {
         name: "description",
         content:
-          "A production-ready starter built with TanStack Start, Convex, Better Auth, and Tailwind CSS.",
+          "Un jeu de cartes tactique à deux. Compose ton deck, invoque tes compagnons et défends ton héros dans un univers fantasy.",
       },
     ],
   }),
-  component: HomeComponent,
+  component: HomePage,
 });
-
-const TITLE_TEXT = `
- ████████╗ ██████╗ ███╗   ███╗ █████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝██╔═══██╗████╗ ████║██╔══██╗   ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║   ██║   ██║██╔████╔██║███████║   ███████╗   ██║   ███████║██║     █████╔╝
-    ██║   ██║   ██║██║╚██╔╝██║██╔══██║   ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║   ╚██████╔╝██║ ╚═╝ ██║██║  ██║   ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
-
-const FEATURES = [
-  {
-    title: "TanStack Start",
-    description:
-      "Full-stack SSR framework with file-based routing and type-safe data loading",
-    link: "https://tanstack.com/start",
-  },
-  {
-    title: "Convex",
-    description:
-      "Reactive backend with real-time sync, automatic caching, and serverless functions",
-    link: "https://convex.dev",
-  },
-  {
-    title: "Better Auth",
-    description:
-      "Flexible authentication with email/password, Google, and GitHub providers",
-    link: "https://better-auth.com",
-  },
-  {
-    title: "Tailwind + shadcn/ui",
-    description:
-      "Utility-first CSS with beautifully designed, accessible components",
-    link: "https://tailwindcss.com",
-  },
-];
-
-const STACK = ["React 19", "TypeScript", "Bun", "Turborepo"];
-
-function StatusBadge() {
-  const healthCheck = useQuery(convexQuery(api.healthCheck.get, {}));
-
-  const isOk = healthCheck.data === "OK";
-  const isLoading = healthCheck.isLoading;
-
+function HomePage() {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-sm">
-      <span className="relative flex size-2">
-        <span
-          className={`absolute inline-flex size-full animate-ping rounded-full opacity-75 ${isOk ? "bg-green-500" : isLoading ? "bg-orange-400" : "bg-red-500"}`}
-        />
-        <span
-          className={`relative inline-flex size-2 rounded-full ${isOk ? "bg-green-500" : isLoading ? "bg-orange-400" : "bg-red-500"}`}
-        />
-      </span>
-      <span className="text-muted-foreground">
-        {isLoading
-          ? "Connecting..."
-          : isOk
-            ? "Backend connected"
-            : "Connection error"}
-      </span>
-    </div>
-  );
-}
-
-function HomeComponent() {
-  return (
-    <div className="flex flex-col items-center">
-      {/* Hero */}
-      <section className="relative flex w-full flex-col items-center gap-8 px-4 pt-16 pb-20">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="bg-primary/5 absolute top-1/2 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" />
+    <main className="sylve-home">
+      <section className="home-hero">
+        <div className="home-hero-art" />
+        <div className="home-hero-copy">
+          <span className="eyebrow">
+            <Leaf size={14} />
+            UN DUEL AU CŒUR DE LA FORÊT
+          </span>
+          <h1>
+            Petites créatures.
+            <br />
+            Grandes stratégies.
+          </h1>
+          <p>
+            Entre dans le cercle. Rassemble dix compagnons, défends ton
+            territoire et fais basculer le destin d’un duel.
+          </p>
+          <div className="home-actions">
+            <Link to="/play" className="sylve-button">
+              Entrer dans le cercle <ArrowRight size={17} />
+            </Link>
+            <a href="#how-to-play" className="text-link">
+              Découvrir les règles <ArrowRight size={15} />
+            </a>
+          </div>
+          <div className="home-proof">
+            <span>
+              <Users size={15} />2 joueurs
+            </span>
+            <span>
+              <Swords size={15} />
+              Au tour par tour
+            </span>
+            <span>
+              <Heart size={15} />
+              Toutes les cartes offertes
+            </span>
+          </div>
         </div>
-
-        <div className="relative flex flex-col items-center gap-6">
-          <pre className="text-primary overflow-x-auto font-mono text-[0.5rem] leading-tight select-none sm:text-xs">
-            {TITLE_TEXT}
-          </pre>
-
-          <div className="flex flex-col items-center gap-3">
-            <h1 className="max-w-lg text-center text-2xl font-semibold tracking-tight sm:text-3xl">
-              Ship faster with the modern full-stack starter
-            </h1>
-            <p className="text-muted-foreground max-w-md text-center text-sm leading-relaxed">
-              Everything you need to build production-ready apps —
-              authentication, real-time data, SSR, and beautiful UI out of the
-              box.
+        <span className="art-caption">QUELQUE PART, DANS LA SYLVE.</span>
+      </section>
+      <section className="home-intro" id="how-to-play">
+        <div>
+          <span className="eyebrow">FACILE À APPRENDRE. RICHE À EXPLORER.</span>
+          <h2>
+            Chaque case raconte
+            <br />
+            une autre histoire.
+          </h2>
+        </div>
+        <div className="how-steps">
+          <div>
+            <span>01</span>
+            <h3>Compose ton alliance</h3>
+            <p>
+              Choisis 10 cartes uniques dans le bestiaire. Chaque créature a son
+              attaque, ses points de vie et sa place dans ta stratégie.
             </p>
           </div>
-
-          <StatusBadge />
-        </div>
-
-        <div className="relative flex gap-3">
-          <Authenticated>
-            <Link to="/dashboard">
-              <Button size="lg" className="hover:cursor-pointer gap-2">
-                Go to Dashboard
-                <ArrowRight className="size-4" />
-              </Button>
-            </Link>
-          </Authenticated>
-          <Unauthenticated>
-            <Link to="/sign-in">
-              <Button size="lg" className="hover:cursor-pointer gap-2">
-                Get Started
-                <ArrowRight className="size-4" />
-              </Button>
-            </Link>
-            <Link to="/sign-up">
-              <Button
-                variant="outline"
-                size="lg"
-                className="hover:cursor-pointer"
-              >
-                Create Account
-              </Button>
-            </Link>
-          </Unauthenticated>
-        </div>
-
-        {/* Stack pills */}
-        <div className="relative flex flex-wrap justify-center gap-2">
-          {STACK.map((tech) => (
-            <span
-              key={tech}
-              className="text-muted-foreground rounded-full border px-3 py-1 text-xs"
-            >
-              {tech}
-            </span>
-          ))}
+          <div>
+            <span>02</span>
+            <h3>Trouve ta place</h3>
+            <p>
+              Invoque un compagnon par tour sur l’une de tes 12 cases. Quatre
+              lignes de front, trois rangs de profondeur.
+            </p>
+          </div>
+          <div>
+            <span>03</span>
+            <h3>Fais parler le terrain</h3>
+            <p>
+              Termine ton tour : tes monstres attaquent le premier ennemi en
+              face, ou son héros si la voie est libre. À 0 PV, le duel est joué.
+            </p>
+          </div>
         </div>
       </section>
-
-      {/* Features */}
-      <section className="w-full max-w-3xl px-4 pb-20">
-        <div className="mb-6 flex flex-col items-center gap-1">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Built with the best
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            A curated stack for developer experience and performance.
+      <section className="home-bestiary">
+        <div>
+          <span className="eyebrow">ILS N’ATTENDENT QUE TOI</span>
+          <h2>Rencontre tes futurs compagnons.</h2>
+          <p className="muted">
+            Des personnalités bien trempées. Des alliances inattendues.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <a
-              key={feature.title}
-              href={feature.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col gap-2 rounded-lg border p-5 transition-all hover:border-primary/30 hover:bg-muted/40 hover:shadow-sm"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">{feature.title}</h3>
-                <ExternalLink className="text-muted-foreground size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-              </div>
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                {feature.description}
-              </p>
-            </a>
+        <div className="home-cards">
+          {[CATALOG[1]!, CATALOG[3]!, CATALOG[4]!, CATALOG[7]!].map((card) => (
+            <CreatureCard
+              key={card.id}
+              card={card}
+              onClick={() => {
+                window.location.href = "/decks";
+              }}
+            />
           ))}
         </div>
+        <Link to="/decks" className="text-link">
+          Explorer le bestiaire <ArrowRight size={15} />
+        </Link>
       </section>
-    </div>
+      <footer className="sylve-footer">
+        <span className="sylve-logo">
+          <Leaf size={18} />
+          Sylve.
+        </span>
+        <span>Un cercle. Deux gardiens. Une nouvelle histoire.</span>
+        <Link to="/play">
+          À toi de jouer <ArrowRight size={14} />
+        </Link>
+      </footer>
+    </main>
   );
 }

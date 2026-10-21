@@ -20,9 +20,14 @@ import {
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
 function createAuth(ctx: GenericCtx<DataModel>) {
+  // The IPv4 loopback is the same local development site, useful when a
+  // separate checkout is already listening on localhost's IPv6 address.
+  const localOrigin = SITE_URL?.startsWith("http://localhost:")
+    ? SITE_URL.replace("http://localhost:", "http://127.0.0.1:")
+    : undefined;
   return betterAuth({
     baseURL: BETTER_AUTH_URL,
-    trustedOrigins: [SITE_URL],
+    trustedOrigins: [SITE_URL, ...(localOrigin ? [localOrigin] : [])],
     database: authComponent.adapter(ctx),
     emailAndPassword: {
       enabled: true,

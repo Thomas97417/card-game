@@ -6,7 +6,10 @@
   "author": "",
   "scripts": {
     "dev": "convex dev",
-    "dev:setup": "convex dev --configure --until-success"
+    "dev:setup": "convex dev --configure --until-success",
+    "check-types": "tsc --project convex/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:live": "bun scripts/verify-live.mjs"
   },
   "dependencies": {
     "@convex-dev/better-auth": "catalog:",
@@ -21,12 +24,16 @@
     "react-dom": "^19.2.4",
     "react-email": "^5.2.9",
     "resend": "^6.9.2",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@sylve/game": "workspace:*"
   },
   "devDependencies": {
     "@my-better-t-app/config": "workspace:*",
     "@types/node": "^24.3.0",
-    "@types/react": "19,2,7",
-    "typescript": "catalog:"
+    "@types/react": "19.2.7",
+    "typescript": "catalog:",
+    "vitest": "^3.2.4",
+    "convex-test": "^0.0.41",
+    "@edge-runtime/vm": "^5.0.0"
   }
 }

@@ -1,6 +1,41 @@
-# card-game
+# Sylve — Le cercle des gardiens
 
-Application TypeScript avec React, TanStack Start et Convex.
+Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStack Start, Convex et TypeScript. Interface en français, univers fantasy 2D et synchronisation des parties en temps réel.
+
+## Jouer
+
+Se connecter, puis ouvrir `/play`. Un deck de départ de 10 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles.
+
+- **Partie privée** : créer une invitation et partager le lien ou le code de 8 caractères. L’adversaire sélectionne son deck et rejoint la partie. L’invitation expire après 10 minutes.
+- **Recherche automatique** : les deux joueurs choisissent « Trouver un adversaire ». La présence en file est renouvelée toutes les 15 secondes et expire après 45 secondes sans renouvellement.
+- **Duel** : glisser une carte vers une case libre de son camp, ou sélectionner la carte puis la case à la souris ou au clavier. Une invocation par tour, sans mana. Les attaques se déclenchent en terminant son tour, automatiquement au bout de 60 secondes.
+- Chaque camp possède 4 lignes et 3 colonnes. Chaque monstre attaque le premier ennemi dans sa ligne, sinon le héros adverse. Le premier héros à 0 PV perd.
+- La main est complétée à 5 au début du tour. Les monstres morts rejoignent la défausse, remélangée lorsque la pioche est vide. Actualiser la page restaure la partie ; les tours continuent pendant les déconnexions.
+
+Les règles et les valeurs d’équilibrage sont centralisées dans `packages/game/src/index.ts`. Les fonctions Convex sont autoritaires : les clients ne choisissent ni les dégâts ni le contenu des pioches et ne reçoivent pas la main adverse.
+
+## Vérifier le jeu
+
+```bash
+bun run test
+bun run check-types
+bun run build
+```
+
+Les tests couvrent le moteur, la conservation des cartes sur 20 duels simulés, les autorisations avec de vraies identités du composant Better Auth, les invitations concurrentes, la confidentialité, les échéances et le matchmaking.
+
+Un scénario sur le backend réel est disponible, **uniquement pour un déploiement `dev:`** :
+
+```bash
+cd packages/backend
+bun run test:live
+```
+
+Il crée deux comptes temporaires, vérifie une invitation, la synchronisation WebSocket, la reconnexion, l’abandon, le matchmaking et une partie jusqu’à la victoire. Il termine les activités des comptes et supprime leurs identifiants et sessions en sortie ; les parties de test terminées restent en base. L’option `bun scripts/verify-live.mjs --keep` conserve les comptes pour un contrôle navigateur, dans `.cache` ignoré par Git ; utiliser ensuite `bun scripts/verify-live.mjs --cleanup`.
+
+Pour utiliser ce worktree quand un autre serveur écoute déjà sur l’IPv6 de `localhost:3001`, lancer `bun run dev --host 127.0.0.1` depuis `apps/web`, puis ouvrir [http://127.0.0.1:3001](http://127.0.0.1:3001). Cette origine IPv4 est acceptée uniquement lorsque `SITE_URL` désigne le serveur HTTP local correspondant.
+
+Les [notes sur les illustrations](docs/art.md) indiquent l’origine du décor et le prompt utilisé.
 
 Le boilerplate inclut l’authentification Better Auth, la vérification d’email et la réinitialisation du mot de passe via Resend, ainsi que les connexions Google et GitHub. L’interface utilise Tailwind CSS et shadcn/ui ; le monorepo utilise Bun et Turborepo.
 
@@ -66,8 +101,8 @@ La vérification d’email est activée dans ce boilerplate. **Resend doit être
 
 Dans les paramètres du déploiement Convex de développement, ajouter :
 
-| Variable         | Valeur à renseigner                                                             |
-| ---------------- | ------------------------------------------------------------------------------- |
+| Variable         | Valeur à renseigner                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------ |
 | `RESEND_API_KEY` | La clé API du compte Resend utilisé par card-game                                    |
 | `EMAIL_FROM`     | L’expéditeur configuré dans Resend, par exemple `card-game <bonjour@ton-domaine.fr>` |
 
@@ -90,8 +125,8 @@ Pour les démarrages suivants, `bun run dev` suffit si la configuration est déj
 | Emplacement                     | Usage                                                                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------- |
 | `packages/backend/.env.local`   | Configuration locale de la CLI, notamment le déploiement ciblé par `CONVEX_DEPLOYMENT` |
-| `apps/web/.env`                 | Variables du frontend : URL Convex                                                      |
-| Variables du déploiement Convex | Configuration des fonctions backend : authentification, Resend et OAuth                  |
+| `apps/web/.env`                 | Variables du frontend : URL Convex                                                     |
+| Variables du déploiement Convex | Configuration des fonctions backend : authentification, Resend et OAuth                |
 
 Ne pas copier tout le fichier du backend dans celui du frontend. Ajouter uniquement les variables nécessaires à chaque emplacement. Les variables préfixées par `VITE_` sont accessibles au navigateur : elles ne doivent pas contenir de secrets. Les fichiers `.env` locaux sont ignorés par Git.
 
@@ -147,6 +182,7 @@ bunx --bun tsc --project packages/backend/convex/tsconfig.json --noEmit
 card-game/
 ├── apps/web/             # Frontend React + TanStack Start
 ├── packages/backend/    # Fonctions, authentification et schéma Convex
+├── packages/game/       # Catalogue, types et moteur pur du jeu
 ├── packages/config/     # Configuration TypeScript partagée
 └── packages/env/        # Validation des variables du frontend
 ```

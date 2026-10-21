@@ -1,5 +1,6 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -12,9 +13,8 @@ import { Label } from "./ui/label";
 import PasswordInput from "./ui/password-input";
 
 export default function SignInForm() {
-  const navigate = useNavigate({
-    from: "/",
-  });
+  const search = useSearch({ strict: false });
+  const returnTo = safeReturnTo(search.returnTo);
 
   const form = useForm({
     defaultValues: {
@@ -29,14 +29,12 @@ export default function SignInForm() {
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
-            toast.success("Sign in successful");
+            window.location.assign(returnTo);
+            toast.success("Connexion réussie");
           },
           onError: (error) => {
             if (error.error.status === 403) {
-              toast.error("Please verify your email before signing in.");
+              toast.error("Vérifie ton adresse email avant de te connecter.");
             } else {
               toast.error(error.error.message || error.error.statusText);
             }
@@ -46,7 +44,7 @@ export default function SignInForm() {
     },
     validators: {
       onSubmit: z.object({
-        email: z.email("Invalid email address"),
+        email: z.email("Adresse email invalide"),
         password: z.string().min(8, "Password must be at least 8 characters"),
       }),
     },
@@ -54,7 +52,9 @@ export default function SignInForm() {
 
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+      <h1 className="mb-6 text-center text-3xl font-bold">
+        Heureux de te retrouver.
+      </h1>
 
       <form
         onSubmit={(e) => {
@@ -93,12 +93,13 @@ export default function SignInForm() {
             {(field) => (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor={field.name}>Password</Label>
+                  <Label htmlFor={field.name}>Mot de passe</Label>
                   <Link
                     to="/forgot-password"
+                    search={{ returnTo }}
                     className="text-xs text-muted-foreground hover:underline cursor-pointer"
                   >
-                    Forgot password?
+                    Mot de passe oublié ?
                   </Link>
                 </div>
                 <PasswordInput
@@ -126,7 +127,7 @@ export default function SignInForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Submitting..." : "Sign In"}
+              {state.isSubmitting ? "Un instant…" : "Se connecter"}
             </Button>
           )}
         </form.Subscribe>
@@ -138,30 +139,32 @@ export default function SignInForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            Ou continuer avec
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <GitHubLoginButton />
-        <GoogleLoginButton />
+        <GitHubLoginButton returnTo={returnTo} />
+        <GoogleLoginButton returnTo={returnTo} />
       </div>
 
       <div className="mt-4 text-center text-sm text-muted-foreground">
-        <span>Need an account?{" "}</span>
+        <span>Pas encore de compte ? </span>
         <Link
           to="/sign-up"
+          search={{ returnTo }}
           className="hover:underline hover:text-foreground cursor-pointer font-bold"
         >
-          Sign Up
+          Créer un compte
         </Link>
         <span className="mx-2">·</span>
         <Link
           to="/verify-email"
+          search={{ returnTo }}
           className="hover:underline hover:text-foreground cursor-pointer"
         >
-          Verify your email
+          Vérifier mon email
         </Link>
       </div>
     </div>

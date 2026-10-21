@@ -1,24 +1,32 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import SignUpForm from "@/components/sign-up-form";
 
 export const Route = createFileRoute("/(auth)/sign-up")({
+  validateSearch: (search: Record<string, unknown>): { returnTo?: string } => ({
+    returnTo: safeReturnTo(search.returnTo),
+  }),
   head: () => ({
     meta: [
-      { title: "Sign Up — Toma Stack" },
+      { title: "Créer un compte — Sylve" },
       {
         name: "description",
         content: "Create a new Toma Stack account.",
       },
     ],
   }),
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, search }) => {
     if (context.isAuthenticated) {
-      throw redirect({ to: "/dashboard" });
+      throw redirect({ href: safeReturnTo(search.returnTo) });
     }
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <SignUpForm />;
+  return (
+    <div className="sylve-auth">
+      <SignUpForm />
+    </div>
+  );
 }
