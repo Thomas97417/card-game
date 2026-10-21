@@ -10,7 +10,6 @@
 // This file is safe to delete
 
 {
-  "$schema": "https://r2.better-t-stack.dev/schema.json",
   "version": "3.21.4",
   "createdAt": "2026-02-23T11:27:42.380Z",
   "reproducibleCommand": "bun create better-t-stack@latest my-better-t-app --frontend tanstack-start --backend convex --runtime none --database none --orm none --api none --auth better-auth --payments none --addons turborepo --examples none --db-setup none --web-deploy none --server-deploy none --git --package-manager bun --install",

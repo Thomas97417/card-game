@@ -2,7 +2,7 @@
 
 Application TypeScript avec React, TanStack Start et Convex.
 
-Le boilerplate inclut l’authentification Better Auth, la vérification d’email et la réinitialisation du mot de passe via Resend, les connexions Google et GitHub et le stockage de fichiers avec Cloudflare R2. L’interface utilise Tailwind CSS et shadcn/ui ; le monorepo utilise Bun et Turborepo.
+Le boilerplate inclut l’authentification Better Auth, la vérification d’email et la réinitialisation du mot de passe via Resend, ainsi que les connexions Google et GitHub. L’interface utilise Tailwind CSS et shadcn/ui ; le monorepo utilise Bun et Turborepo.
 
 ## Prérequis
 
@@ -91,7 +91,7 @@ Pour les démarrages suivants, `bun run dev` suffit si la configuration est déj
 | ------------------------------- | -------------------------------------------------------------------------------------- |
 | `packages/backend/.env.local`   | Configuration locale de la CLI, notamment le déploiement ciblé par `CONVEX_DEPLOYMENT` |
 | `apps/web/.env`                 | Variables du frontend : URL Convex                                                      |
-| Variables du déploiement Convex | Configuration des fonctions backend : authentification, Resend, OAuth et R2            |
+| Variables du déploiement Convex | Configuration des fonctions backend : authentification, Resend et OAuth                  |
 
 Ne pas copier tout le fichier du backend dans celui du frontend. Ajouter uniquement les variables nécessaires à chaque emplacement. Les variables préfixées par `VITE_` sont accessibles au navigateur : elles ne doivent pas contenir de secrets. Les fichiers `.env` locaux sont ignorés par Git.
 
@@ -109,17 +109,6 @@ Créer les applications OAuth auprès des fournisseurs concernés, puis ajouter 
 | GitHub      | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` |
 
 Configurer également les URL de retour OAuth chez chaque fournisseur en fonction de l’URL de l’application.
-
-### Fichiers et avatars avec Cloudflare R2
-
-Configurer le bucket et ses accès dans Cloudflare, puis ajouter les variables suivantes dans **Convex** :
-
-```text
-R2_BUCKET
-R2_ENDPOINT
-R2_ACCESS_KEY_ID
-R2_SECRET_ACCESS_KEY
-```
 
 ## Dépannage
 

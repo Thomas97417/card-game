@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { LogOut, Settings, Upload, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -46,10 +46,6 @@ export default function UserMenu() {
           <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
             <User className="mr-2 size-4" />
             Dashboard
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate({ to: "/upload" })}>
-            <Upload className="mr-2 size-4" />
-            Upload
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
             <Settings className="mr-2 size-4" />

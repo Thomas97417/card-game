@@ -3,7 +3,6 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 
 import ChangePasswordCard from "@/components/settings/change-password-card";
 import DeleteAccountCard from "@/components/settings/delete-account-card";
-import ProfileImageCard from "@/components/settings/profile-image-card";
 import SessionsCard from "@/components/settings/sessions-card";
 import EmailCard from "@/components/settings/update-email-card";
 import UpdateNameCard from "@/components/settings/update-name-card";
@@ -39,7 +38,6 @@ function RouteComponent() {
           Manage your account settings.
         </p>
       </div>
-      <ProfileImageCard image={user.image ?? undefined} />
       <UpdateNameCard name={user.name} />
       <EmailCard email={user.email} />
       <ChangePasswordCard />

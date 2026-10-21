@@ -24,9 +24,6 @@ export default function Header() {
               <Link to="/settings" className={linkStyles}>
                 Settings
               </Link>
-              <Link to="/upload" className={linkStyles}>
-                Upload
-              </Link>
             </Authenticated>
           </nav>
         </div>

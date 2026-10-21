@@ -12,12 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Settings,
   Shield,
-  Upload,
   Zap,
   CircleCheck,
   Database,
   Lock,
-  HardDrive,
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -113,33 +111,7 @@ function RouteComponent() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
-                <Upload className="size-4" />
-              </div>
-              <CardTitle>Storage</CardTitle>
-            </div>
-            <CardDescription>
-              Upload and manage files with Cloudflare R2.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link to="/upload">
-              <Button
-                variant="outline"
-                size="sm"
-                className="hover:cursor-pointer"
-              >
-                <Upload className="size-3.5" />
-                Upload files
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Card className="sm:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -163,7 +135,6 @@ function RouteComponent() {
               {[
                 { icon: Lock, label: "Authentication", value: "Better Auth" },
                 { icon: Database, label: "Database", value: "Convex" },
-                { icon: HardDrive, label: "Storage", value: "Cloudflare R2" },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center justify-between">
                   <span className="text-muted-foreground flex items-center gap-2">

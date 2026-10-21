@@ -32,10 +32,6 @@ Pages
 
 Priorité moyenne — Features SaaS courantes
 
-Settings
-
-[✅] Avatar / photo de profil — Convex File Storage ou Cloudflare R2
-
 Infrastructure
 
 [ ] Emails transactionnels — Resend + React Email (reset password, welcome,
@@ -65,9 +61,8 @@ Déjà implémenté
 
 - Auth complète (email/password, GitHub,
   Google, verify email, reset password, sessions)
-- Settings (profil, avatar, email, password,
+- Settings (profil, email, password,
   sessions, suppression compte)
-- Upload fichiers (Cloudflare R2)
 - Emails transactionnels (Resend + react-email)
 - Landing page, dark mode, composants shadcn/ui
 
