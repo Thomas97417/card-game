@@ -2,7 +2,7 @@
 
 Application TypeScript avec React, TanStack Start et Convex.
 
-Le boilerplate inclut l’authentification Better Auth, la vérification d’email et la réinitialisation du mot de passe via Resend, les connexions Google et GitHub, le stockage de fichiers avec Cloudflare R2 et les analytics PostHog. L’interface utilise Tailwind CSS et shadcn/ui ; le monorepo utilise Bun et Turborepo.
+Le boilerplate inclut l’authentification Better Auth, la vérification d’email et la réinitialisation du mot de passe via Resend, les connexions Google et GitHub et le stockage de fichiers avec Cloudflare R2. L’interface utilise Tailwind CSS et shadcn/ui ; le monorepo utilise Bun et Turborepo.
 
 ## Prérequis
 
@@ -90,7 +90,7 @@ Pour les démarrages suivants, `bun run dev` suffit si la configuration est déj
 | Emplacement                     | Usage                                                                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------- |
 | `packages/backend/.env.local`   | Configuration locale de la CLI, notamment le déploiement ciblé par `CONVEX_DEPLOYMENT` |
-| `apps/web/.env`                 | Variables du frontend : URL Convex et configuration publique PostHog                   |
+| `apps/web/.env`                 | Variables du frontend : URL Convex                                                      |
 | Variables du déploiement Convex | Configuration des fonctions backend : authentification, Resend, OAuth et R2            |
 
 Ne pas copier tout le fichier du backend dans celui du frontend. Ajouter uniquement les variables nécessaires à chaque emplacement. Les variables préfixées par `VITE_` sont accessibles au navigateur : elles ne doivent pas contenir de secrets. Les fichiers `.env` locaux sont ignorés par Git.
@@ -120,17 +120,6 @@ R2_ENDPOINT
 R2_ACCESS_KEY_ID
 R2_SECRET_ACCESS_KEY
 ```
-
-### Analytics avec PostHog
-
-Ajouter les valeurs du projet PostHog dans **`apps/web/.env`** :
-
-```dotenv
-VITE_PUBLIC_POSTHOG_KEY=cle_publique_du_projet
-VITE_PUBLIC_POSTHOG_HOST=https://hote-indique-par-posthog
-```
-
-Utiliser la clé publique du projet destinée au SDK web et l’hôte indiqué par PostHog.
 
 ## Dépannage
 

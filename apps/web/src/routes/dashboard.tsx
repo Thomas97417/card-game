@@ -17,7 +17,6 @@ import {
   CircleCheck,
   Database,
   Lock,
-  BarChart3,
   HardDrive,
 } from "lucide-react";
 
@@ -164,7 +163,6 @@ function RouteComponent() {
               {[
                 { icon: Lock, label: "Authentication", value: "Better Auth" },
                 { icon: Database, label: "Database", value: "Convex" },
-                { icon: BarChart3, label: "Analytics", value: "PostHog" },
                 { icon: HardDrive, label: "Storage", value: "Cloudflare R2" },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center justify-between">

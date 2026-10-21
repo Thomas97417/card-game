@@ -40,7 +40,6 @@ Infrastructure
 
 [ ] Emails transactionnels — Resend + React Email (reset password, welcome,
 etc.)
-[✅] Analytics — Posthog ou Plausible (1 ligne à ajouter)
 [ ] Rate limiting — côté Convex HTTP actions
 
 ---
@@ -69,7 +68,6 @@ Déjà implémenté
 - Settings (profil, avatar, email, password,
   sessions, suppression compte)
 - Upload fichiers (Cloudflare R2)
-- Analytics (PostHog)
 - Emails transactionnels (Resend + react-email)
 - Landing page, dark mode, composants shadcn/ui
 

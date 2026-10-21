@@ -21,16 +21,10 @@ import ErrorBoundary from "../components/error-boundary";
 import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
-import { PostHogProvider } from "posthog-js/react";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
 });
-
-const options = {
-  api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-  defaults: "2026-01-30",
-} as const;
 
 export interface RouterAppContext {
   queryClient: QueryClient;
@@ -87,27 +81,22 @@ function RootDocument() {
           <HeadContent />
         </head>
         <body>
-          <PostHogProvider
-            apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_KEY}
-            options={options}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            disableTransitionOnChange
+            storageKey="vite-ui-theme"
           >
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              disableTransitionOnChange
-              storageKey="vite-ui-theme"
-            >
-              <div className="grid h-svh grid-rows-[auto_1fr]">
-                <Header />
-                <div className="overflow-y-auto">
-                  <Outlet />
-                </div>
+            <div className="grid h-svh grid-rows-[auto_1fr]">
+              <Header />
+              <div className="overflow-y-auto">
+                <Outlet />
               </div>
-              <Toaster richColors />
-              <TanStackRouterDevtools position="bottom-left" />
-              <Scripts />
-            </ThemeProvider>
-          </PostHogProvider>
+            </div>
+            <Toaster richColors />
+            <TanStackRouterDevtools position="bottom-left" />
+            <Scripts />
+          </ThemeProvider>
         </body>
       </html>
     </ConvexBetterAuthProvider>
