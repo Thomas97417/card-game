@@ -270,11 +270,11 @@
   right: -8px;
 }
 .workshop-card .card-stats .stat-badge {
-  width: 34px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
 }
 .workshop-card .card-stats .stat-badge strong {
-  font-size: 21px;
+  font-size: 22px;
 }
 .workshop-card-caption {
   position: absolute;

@@ -11,17 +11,16 @@ import {
 import type { CardDefinition, CombatType } from "@sylve/game";
 import {
   ArrowRightLeft,
-  BowArrow,
   ChevronLeft,
   ChevronRight,
   Layers3,
   Leaf,
   ListFilter,
-  Sword,
   X,
 } from "lucide-react";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
+import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 
 export interface WorkshopDeck {
@@ -55,7 +54,6 @@ const instructions =
 
 function CardArtwork({ card }: { card: CardDefinition }) {
   const ranged = getCombatType(card) === "ranged";
-  const Icon = ranged ? BowArrow : Sword;
   return (
     <>
       <span className="workshop-card-art">
@@ -73,7 +71,7 @@ function CardArtwork({ card }: { card: CardDefinition }) {
       <span className="workshop-card-caption">
         <span className="workshop-card-name">{card.name}</span>
         <span className="workshop-card-type">
-          <Icon size={11} aria-hidden="true" />
+          <GameIcon kind={ranged ? "ranged" : "melee"} size={15} />
           {ranged ? "Distance" : "Corps à corps"}
         </span>
       </span>
@@ -444,11 +442,11 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
           </span>
           {(
             [
-              { type: null, label: "Toutes", icon: Layers3 },
-              { type: "melee", label: "Corps à corps", icon: Sword },
-              { type: "ranged", label: "À distance", icon: BowArrow },
+              { type: null, label: "Toutes" },
+              { type: "melee", label: "Corps à corps" },
+              { type: "ranged", label: "À distance" },
             ] as const
-          ).map(({ type, label, icon: Icon }) => (
+          ).map(({ type, label }) => (
             <button
               key={type ?? "all"}
               type="button"
@@ -461,7 +459,11 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
                 setMessage(instructions);
               }}
             >
-              <Icon size={19} strokeWidth={1.6} />
+              {type ? (
+                <GameIcon kind={type} size={25} />
+              ) : (
+                <Layers3 size={19} strokeWidth={1.6} aria-hidden="true" />
+              )}
               <span>{label}</span>
             </button>
           ))}

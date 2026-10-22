@@ -4,19 +4,16 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BookOpen,
-  BowArrow,
   ChevronLeft,
   ChevronRight,
   Compass,
   Crown,
   Gem,
-  Heart,
   Layers3,
   MapPin,
   MousePointer2,
   Settings2,
   Shield,
-  Sword,
   Swords,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -33,6 +30,7 @@ import {
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { GameIcon } from "@/components/game/game-icon";
 import {
   Dialog,
   DialogContent,
@@ -469,7 +467,6 @@ function ArchivesContent() {
 function SanctuaryContent() {
   const [selectedId, setSelectedId] = useState(CATALOG[0]!.id);
   const selected = CATALOG.find((card) => card.id === selectedId)!;
-  const AttackIcon = getCombatType(selected) === "ranged" ? BowArrow : Sword;
   return (
     <>
       <ModalEyebrow icon={Gem}>Le sanctuaire</ModalEyebrow>
@@ -521,12 +518,12 @@ function SanctuaryContent() {
             </p>
             <div className="mt-3 flex gap-5 text-sm font-semibold sm:mt-4 sm:justify-center">
               <span className="flex items-center gap-1.5">
-                <AttackIcon size={15} className="text-[#947546]" />
+                <GameIcon kind={getCombatType(selected)} size={22} />
                 <span className="sr-only">Attaque : </span>
                 {selected.attack}
               </span>
               <span className="flex items-center gap-1.5">
-                <Heart size={15} className="text-[#9b6a5f]" />
+                <GameIcon kind="health" size={22} />
                 <span className="sr-only">Points de vie : </span>
                 {selected.health}
               </span>

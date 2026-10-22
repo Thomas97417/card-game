@@ -90,3 +90,48 @@ Composition/framing: wide landscape exactly 3:1 aspect ratio. Frame centered and
 Transparency: the entire large rectangular center opening MUST be empty and truly alpha-transparent, with no paper, no wood panel, no colored fill, no glass, no green rectangle. The small area outside the frame must also be truly alpha-transparent. This is an isolated cutout frame perimeter, not a picture of a frame in a scene.
 Constraints: no background, no table, no environment, no images or objects inside the frame, no cards, no creatures, no text, no letters, no numbers, no logo, no watermark, no UI buttons. Do not paint a checkerboard pattern. Deliver just one continuous rectangular decorative frame with a transparent center and transparent exterior.
 ```
+
+
+## Icônes de vie et de combat
+
+Les images `apps/web/public/art/ui/health-heart.webp`, `apps/web/public/art/ui/melee-sword.webp` et `apps/web/public/art/ui/ranged-bow.webp` remplacent les symboles SVG des points de vie et des types de combat. Elles sont partagées entre les cartes, les unités et héros en duel, le sanctuaire et les filtres de l’atelier. Les nombres restent du texte HTML et les libellés accessibles sont conservés.
+
+Les trois illustrations ont été générées séparément avec l’outil intégré **ImageGen**, puis recadrées sur leur canal alpha, réduites et encodées avec `sharp` en WebP transparent de 256 × 256 px. Les PNG originaux sont conservés dans `/Users/thomas/.codex/generated_images/01a163fa-150d-7022-93bb-99fd860612fb/`. Le cœur est rouge avec un pourtour de laiton et de jade ; les armes reprennent le noyer, le laiton et l’argent de la flèche de retour.
+
+Prompts finaux, outil intégré ImageGen :
+
+### Cœur de vie
+
+```text
+Use case: stylized-concept.
+Asset type: transparent health icon for Sylve, an original woodland fantasy card game, used as a tiny 34-pixel stat badge.
+Primary request: one bold ruby-red HEART symbol, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade leaf details.
+Subject: a broad symmetrical plump heart with two clear rounded lobes and a pointed bottom, rich warm vermilion-red enamel, a restrained thin beveled antique brass rim, a small walnut shadow along the lower edge. Keep the broad center simple, calm and red so a white number can be overlaid by the website. Tiny leafy engraving confined to the outer rim only.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against both wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single heart centered and filling about 88 percent of the width and height; modest transparent margin. Strong legibility at 24 to 40 pixels.
+Constraints: actual alpha-transparent background around the silhouette. No backplate, no frame around the canvas, no scenery, no hands, no extra objects, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished heart.
+```
+
+### Épée de corps à corps
+
+```text
+Use case: stylized-concept.
+Asset type: transparent melee sword icon for Sylve, an original woodland fantasy card game, used at 18 to 40 pixels in cards and filter buttons.
+Primary request: one bold, simple SWORD, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade details.
+Subject: one short broad straight double-edged blade of bright softly shaded silver, pointing diagonally toward the upper right, with the short walnut grip at lower left; a sturdy aged gold crossguard, rounded golden pommel, one small jade inset at the hilt. The silhouette should be thick and iconic, with a broad readable blade and compact grip; very restrained engraving only.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single sword centered, arranged lower left to upper right, filling about 88 percent of the width and height; modest transparent margin. It must remain instantly readable at 18 pixels.
+Constraints: actual alpha-transparent background around every edge. No circle, no shield, no backplate, no surrounding frame, no scenery, no hands, no extra objects, no crossed second weapon, no blood, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished sword.
+```
+
+### Arc à distance
+
+```text
+Use case: stylized-concept.
+Asset type: transparent ranged bow icon for Sylve, an original woodland fantasy card game, used at 18 to 40 pixels in cards and filter buttons.
+Primary request: one bold BOW WITH A SINGLE NOCKED ARROW, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade details.
+Subject: a compact curved recurve bow of warm walnut wood with thick honey-brass reinforced tips and a small jade green grip. A clearly visible taut pale-gold bowstring and ONE simple broad silver-tipped arrow pointing diagonally toward the upper right. Strong recognizable bow silhouette, not a crossbow; keep the internal geometry very simple and the wood thick enough to read when tiny.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single bow and nocked arrow centered, filling about 88 percent of the width and height; modest transparent margin. It must remain instantly readable at 18 pixels.
+Constraints: actual alpha-transparent background, including inside the bow. No circle, no shield, no backplate, no surrounding frame, no scenery, no hands, no extra arrows or objects, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished bow with arrow.
+```

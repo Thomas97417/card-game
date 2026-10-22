@@ -1,4 +1,4 @@
-import { BookOpen, BowArrow, Layers, Leaf, Shield, Sword } from "lucide-react";
+import { BookOpen, Layers, Leaf, Shield } from "lucide-react";
 import {
   DEPTHS,
   HERO_HP,
@@ -12,6 +12,7 @@ import {
 } from "@sylve/game";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
+import { GameIcon } from "./game-icon";
 import {
   ARENA_CELLS,
   ARENA_CORNERS,
@@ -200,7 +201,7 @@ export function DuelArena({
                       />
                     </div>
                     <span className="unit-role" aria-hidden="true">
-                      {getCombatType(unit.card) === "melee" ? <Sword size={12} /> : <BowArrow size={12} />}
+                      <GameIcon kind={getCombatType(unit.card)} size={17} />
                       {blocked && "Bloquée"}
                     </span>
                     <span className="unit-name">{unit.card.name}</span>

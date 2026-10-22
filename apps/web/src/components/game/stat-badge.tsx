@@ -1,5 +1,5 @@
-import { BowArrow, Heart, Sword } from "lucide-react";
 import type { CombatType } from "@sylve/game";
+import { GameIcon } from "./game-icon";
 
 /** Shared statistics for card overlays and battlefield creatures. */
 export function StatBadge({
@@ -13,14 +13,13 @@ export function StatBadge({
   wounded?: boolean;
   combatType?: CombatType;
 }) {
-  const Icon = kind === "health" ? Heart : combatType === "ranged" ? BowArrow : Sword;
   return (
     <span
       className={`stat-badge ${kind} ${kind === "attack" ? combatType : ""} ${wounded ? "wounded" : ""}`}
       aria-label={`${value} ${kind === "health" ? "points de vie" : "de puissance"}`}
       title={kind === "health" ? "Vie" : "Puissance"}
     >
-      <Icon aria-hidden="true" />
+      <GameIcon kind={kind === "health" ? "health" : combatType} />
       <strong>{value}</strong>
     </span>
   );
