@@ -5,6 +5,9 @@ import {
   CATALOG,
   DECK_SIZE,
   HAND_SIZE,
+  getCombatType,
+  isDeploymentDepth,
+  legalPlacements,
   type CardDefinition,
   type GameView,
   type GameEvent,
@@ -17,14 +20,13 @@ import {
   Hourglass,
   Leaf,
   Trophy,
-  Undo2,
-  X,
   RotateCcw,
   Bot,
 } from "lucide-react";
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
+import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { useCombatPlayback } from "./use-combat-playback";
 
@@ -58,7 +60,7 @@ export function DuelScreen({
   const { display, event: combatEvent, playing } = useCombatPlayback(data);
   const [now, setNow] = useState(Date.now());
   const [selected, setSelected] = useState<string | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [inspection, setInspection] = useState<DuelInspection | null>(null);
   const [pending, setPending] = useState(false);
   const [drag, setDrag] = useState<{
     card: CardDefinition;
@@ -82,7 +84,6 @@ export function DuelScreen({
   }, [practice]);
   useEffect(() => {
     setSelected(null);
-    setSelectedUnit(null);
   }, [data?.turn, data?.hasSummoned]);
   const catchingUp = playing || display?.sequence !== data.sequence;
   useEffect(() => {
@@ -104,13 +105,26 @@ export function DuelScreen({
     data.status === "active";
   const canEnd = myTurn && !pending && !catchingUp && data.status === "active";
   const canWithdraw = canEnd && seconds > 0;
-  const inspectedUnit = mine.board.find((unit) => unit.cardId === selectedUnit);
-  async function withdrawSelected() {
-    if (!canWithdraw || !selectedUnit) return;
+  const hasPlacement = mine.hand.some(
+    (card) => legalPlacements(card, mine.board).length > 0,
+  );
+  const selectedCard = mine.hand.find((card) => card.id === selected);
+  const selectedUnit =
+    inspection?.type === "card" &&
+    inspection.source === "board" &&
+    inspection.playerIndex === data.me
+      ? inspection.card.id
+      : null;
+  function inspect(next: DuelInspection) {
+    setSelected(null);
+    setInspection(next);
+  }
+  async function withdrawCard(cardId: string) {
+    if (!canWithdraw || !mine.board.some((unit) => unit.cardId === cardId)) return;
     setPending(true);
     try {
-      await onWithdrawCard(selectedUnit, data.turn);
-      setSelectedUnit(null);
+      await onWithdrawCard(cardId, data.turn);
+      setInspection(null);
     } catch (error) {
       showGameError(error);
     } finally {
@@ -118,7 +132,8 @@ export function DuelScreen({
     }
   }
   async function place(cardId: string, row: number, depth: number) {
-    if (!canSummon) return;
+    const card = mine.hand.find((entry) => entry.id === cardId);
+    if (!canSummon || !card || !isDeploymentDepth(card, depth)) return;
     setPending(true);
     try {
       await onPlayCard(cardId, row, depth, data.turn);
@@ -130,6 +145,7 @@ export function DuelScreen({
     }
   }
   async function finish() {
+    if (!canEnd || seconds <= 0) return;
     setPending(true);
     try {
       await onEndTurn(data.turn);
@@ -139,13 +155,19 @@ export function DuelScreen({
       setPending(false);
     }
   }
-  const cellAt = (x: number, y: number) =>
-    document.elementFromPoint(x, y)?.closest<HTMLElement>("[data-own-cell]");
+  const cellAt = (x: number, y: number, card: CardDefinition) => {
+    const cell = document.elementFromPoint(x, y)
+      ?.closest<HTMLElement>("[data-own-cell]");
+    return cell && isDeploymentDepth(card, Number(cell.dataset.depth))
+      ? cell
+      : null;
+  };
   function pointerDown(
     event: ReactPointerEvent<HTMLButtonElement>,
     card: CardDefinition,
   ) {
-    if (!canSummon || event.button !== 0) return;
+    if (!canSummon || !legalPlacements(card, mine.board).length || event.button !== 0)
+      return;
     origin.current = {
       card,
       x: event.clientX,
@@ -162,14 +184,14 @@ export function DuelScreen({
     if (!source.active) return;
     setSelected(source.card.id);
     setDrag({ card: source.card, x: event.clientX, y: event.clientY });
-    const cell = cellAt(event.clientX, event.clientY);
+    const cell = cellAt(event.clientX, event.clientY, source.card);
     setHovered(cell ? `${cell.dataset.row}-${cell.dataset.depth}` : null);
   }
   function pointerUp(event: ReactPointerEvent) {
     const source = origin.current;
     if (source?.active) {
       suppressClick.current = true;
-      const cell = cellAt(event.clientX, event.clientY);
+      const cell = cellAt(event.clientX, event.clientY, source.card);
       if (cell)
         void place(
           source.card.id,
@@ -190,9 +212,7 @@ export function DuelScreen({
       : playing
         ? "Les créatures passent à l’action…"
         : myTurn
-          ? data.hasSummoned
-            ? "Ton monstre est prêt. Lance l’assaut !"
-            : "À toi de jouer. Invoque un compagnon."
+          ? "À toi de jouer. Une carte déclenche l’assaut."
           : practice
             ? "Le Gardien mécanique prépare sa stratégie…"
             : "Ton adversaire prépare sa stratégie…";
@@ -202,7 +222,6 @@ export function DuelScreen({
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           setSelected(null);
-          setSelectedUnit(null);
         }
       }}
       onPointerMove={pointerMove}
@@ -276,53 +295,28 @@ export function DuelScreen({
         selectedUnit={selectedUnit}
         hovered={hovered}
         canSummon={canSummon}
-        canWithdraw={canWithdraw}
         combatEvent={combatEvent}
         onPlace={(cardId, row, depth) => void place(cardId, row, depth)}
-        onSelectUnit={(cardId) => {
-          setSelected(null);
-          setSelectedUnit((current) => (current === cardId ? null : cardId));
+        onInspectUnit={(cardId, playerIndex) => {
+          const unit = display.players[playerIndex]?.board.find(
+            (entry) => entry.cardId === cardId,
+          );
+          if (unit)
+            inspect({ type: "card", card: unit.card, playerIndex, source: "board" });
         }}
+        onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
       />
-      {inspectedUnit && (
-        <div
-          className="unit-inspector"
-          role="region"
-          aria-label="Créature sélectionnée"
-        >
-          <CreaturePortrait card={inspectedUnit.card} />
-          <div>
-            <strong>{inspectedUnit.card.name}</strong>
-            <span>
-              La carte retirée rejoint la défausse et pourra être repiochée.
-            </span>
-          </div>
-          <button
-            className="sylve-button secondary small-button"
-            disabled={!canWithdraw}
-            onClick={() => void withdrawSelected()}
-          >
-            <Undo2 size={15} />
-            Retirer du terrain
-          </button>
-          <button
-            className="icon-button"
-            aria-label="Fermer la sélection"
-            onClick={() => setSelectedUnit(null)}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
       <section className="hand-area">
         <div className="hand-heading">
           <div>
             <span className="eyebrow">TES COMPAGNONS</span>
             <span className="small muted">
-              {canSummon
-                ? "Glisse une carte, ou sélectionne-la puis choisis une case."
-                : data.hasSummoned && myTurn
-                  ? "Une invocation par tour. Tes compagnons sont prêts à attaquer."
+              {canSummon && selectedCard
+                ? getCombatType(selectedCard) === "melee"
+                  ? "Corps à corps : colonne du milieu ou colonne vers l’ennemi."
+                  : "À distance : colonne du milieu ou colonne vers ton héros."
+                : canSummon
+                  ? "Glisse une carte, ou ouvre sa fiche. La poser déclenche l’assaut."
                   : `La main est complétée à ${HAND_SIZE} au début de ton tour.`}
             </span>
           </div>
@@ -337,15 +331,14 @@ export function DuelScreen({
                 key={card.id}
                 card={card}
                 compact
+                inspectable
                 selected={selected === card.id}
-                disabled={!canSummon}
                 onPointerDown={(event) => pointerDown(event, card)}
                 onClick={() => {
                   if (!suppressClick.current) {
-                    setSelectedUnit(null);
-                    setSelected((current) =>
-                      current === card.id ? null : card.id,
-                    );
+                    inspect({
+                      type: "card", card, playerIndex: data.me, source: "hand",
+                    });
                   }
                 }}
               />
@@ -368,16 +361,20 @@ export function DuelScreen({
                     : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`}
               </span>
             </div>
-            <button
-              className="sylve-button"
-              disabled={!canEnd}
-              onClick={() => void finish()}
-            >
-              {pending ? "Un instant…" : "Terminer le tour"}
-              <ArrowRight size={16} />
-            </button>
+            {myTurn && data.status === "active" && (!hasPlacement || data.hasSummoned) && (
+              <button
+                className="sylve-button"
+                disabled={!canEnd || seconds <= 0}
+                onClick={() => void finish()}
+              >
+                {pending ? "Un instant…" : "Attaquer sans invoquer"}
+                <ArrowRight size={16} />
+              </button>
+            )}
             <span className="small muted">
-              Les monstres attaquent en fin de tour.
+              {myTurn && !hasPlacement
+                ? "Aucun placement possible. Retire une unité ou lance l’assaut."
+                : "Les attaques sont automatiques dès qu’une carte est posée."}
             </span>
           </div>
         </div>
@@ -447,6 +444,21 @@ export function DuelScreen({
           <span>{drag.card.name}</span>
         </div>
       )}
+      <DuelDetailsDialog
+        inspection={inspection}
+        view={display}
+        canSummon={canSummon}
+        canWithdraw={canWithdraw}
+        onInspect={setInspection}
+        onClose={() => setInspection(null)}
+        onSelectCard={(cardId) => {
+          const card = mine.hand.find((entry) => entry.id === cardId);
+          if (!canSummon || !card || !legalPlacements(card, mine.board).length) return;
+          setSelected(cardId);
+          setInspection(null);
+        }}
+        onWithdrawCard={(cardId) => void withdrawCard(cardId)}
+      />
       <dialog
         className="sylve-dialog"
         ref={surrenderDialog}
@@ -477,9 +489,17 @@ export function DuelScreen({
       >
         <h2 id="rules-title">Les règles du cercle</h2>
         <p>
-          Invoque un monstre par tour sur une case libre. À la fin du tour, tes
-          monstres attaquent de l’avant vers l’arrière, ligne par ligne. Ils
-          ciblent le premier ennemi en face, sinon son héros.
+          Invoque un monstre sur une case libre : tes unités attaquent aussitôt,
+          de l’avant vers l’arrière, ligne par ligne, puis le tour passe à
+          l’adversaire. Elles ciblent le premier ennemi en face, sinon son héros.
+        </p>
+        <p>
+          Ton camp compte trois colonnes et quatre lignes. La colonne du milieu
+          est accessible aux deux types d’unités. Les unités au corps à corps
+          peuvent aussi se placer dans la colonne vers l’ennemi ; celles à
+          distance dans la colonne vers ton héros. Une unité au corps à corps
+          derrière une autre unité au corps à corps sur la même ligne ne peut pas
+          agir. Les unités à distance peuvent attaquer depuis l’arrière.
         </p>
         <p>
           Pas de déplacement ni de riposte. Les morts rejoignent la défausse,
@@ -493,7 +513,8 @@ export function DuelScreen({
         <p>
           Pour retirer une créature pendant ton tour, sélectionne-la sur le
           terrain puis choisis « Retirer du terrain ». Elle rejoint la défausse.
-          Une invocation déjà utilisée reste consommée.
+          Fais tes retraits avant de jouer ta carte. Si aucun placement n’est
+          possible, « Attaquer sans invoquer » permet de continuer le combat.
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
         <form method="dialog">

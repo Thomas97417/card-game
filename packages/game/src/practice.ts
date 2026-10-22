@@ -2,10 +2,10 @@ import {
   CATALOG,
   DEFAULT_DECK,
   DECK_SIZE,
-  DEPTHS,
-  ROWS,
   createGame,
   endTurn,
+  legalPlacements,
+  summon,
   shuffle,
   validateDeck,
   type GameState,
@@ -101,23 +101,19 @@ export function chooseComputerMove(
   )
     return null;
   const own = view.players[view.me]!;
-  const candidates: (ComputerMove | null)[] = [null];
+  const candidates: ComputerMove[] = [];
   for (const card of own.hand)
-    for (let row = 0; row < ROWS; row++)
-      for (let depth = 0; depth < DEPTHS; depth++)
-        if (!own.board.some((unit) => unit.row === row && unit.depth === depth))
-          candidates.push({ cardId: card.id, row, depth });
+    for (const cell of legalPlacements(card, own.board))
+      candidates.push({ cardId: card.id, ...cell });
+  if (!candidates.length) return null;
   let bestScore = -Infinity;
-  let best: (ComputerMove | null)[] = [];
+  let best: ComputerMove[] = [];
   for (const move of candidates) {
     const state = visibleState(view);
-    if (move) {
-      const player = state.players[view.me]!;
-      const card = player.cards.find((entry) => entry.id === move.cardId)!;
-      player.hand = player.hand.filter((id) => id !== move.cardId);
-      player.board.push({ ...move, hp: card.health });
-    }
-    const attack = endTurn(state, view.me, state.turn, 0, () => 0.5).state;
+    const attack = summon(
+      state, view.me, move.cardId, move.row, move.depth,
+      state.turn, 0, () => 0.5,
+    ).state;
     // Take immediate wins before considering a counterattack.
     const result =
       attack.status === "finished"

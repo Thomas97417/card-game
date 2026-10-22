@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowRight, Heart, Leaf, Swords, Users } from "lucide-react";
-import { CATALOG } from "@sylve/game";
+import { CATALOG, DEPTHS, ROWS } from "@sylve/game";
 import { CreatureCard } from "@/components/game/creature-card";
 
 export const Route = createFileRoute("/")({
@@ -84,16 +84,19 @@ function HomePage() {
             <span>02</span>
             <h3>Trouve ta place</h3>
             <p>
-              Invoque un compagnon par tour sur l’une de tes 12 cases. Quatre
-              lignes de front, trois rangs de profondeur.
+              {ROWS} lignes, {DEPTHS} colonnes : le corps à corps vers l’ennemi,
+              les unités à distance vers ton héros, et la colonne centrale pour
+              les deux. Une unité de mêlée derrière
+              une autre unité de mêlée sur sa ligne ne peut pas agir.
             </p>
           </div>
           <div>
             <span>03</span>
             <h3>Fais parler le terrain</h3>
             <p>
-              Termine ton tour : tes monstres attaquent le premier ennemi en
-              face, ou son héros si la voie est libre. À 0 PV, le duel est joué.
+              Pose ta carte : tes monstres attaquent le premier ennemi en face,
+              ou son héros si la voie est libre, puis le tour passe à l’adversaire.
+              À 0 PV, le duel est joué.
             </p>
           </div>
         </div>

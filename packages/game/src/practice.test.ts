@@ -3,6 +3,7 @@ import {
   DEFAULT_DECK,
   createGame,
   endTurn,
+  isDeploymentDepth,
   playerView,
   summon,
   validateDeck,
@@ -68,7 +69,7 @@ describe("terrain d’entraînement", () => {
     expect(state).toEqual(before);
     expect(state.players[1]!.hand).toContain(move.cardId);
     expect(() =>
-      summon(state, 1, move.cardId, move.row, move.depth, 1, 1),
+      summon(state, 1, move.cardId, move.row, move.depth, 1, 1, () => 0.25),
     ).not.toThrow();
   });
   it("takes a lethal attack in an open row instead of hitting a blocker", () => {
@@ -87,8 +88,9 @@ describe("terrain d’entraînement", () => {
       move.depth,
       1,
       1,
+      () => 0.25,
     ).state;
-    expect(endTurn(played, 1, 1, 2, () => 0.25).state.winner).toBe(1);
+    expect(played.winner).toBe(1);
   });
   it("blocks a lethal visible attack rather than abandoning its hero", () => {
     const state = initial();
@@ -108,6 +110,7 @@ describe("terrain d’entraînement", () => {
       move.depth,
       1,
       1,
+      () => 0.25,
     ).state;
     expect(choose(played)).toBeNull();
     expect(choose({ ...state, activePlayer: 0 })).toBeNull();
@@ -148,8 +151,9 @@ describe("terrain d’entraînement", () => {
             move.depth,
             state.turn,
             turn * 100,
+            random,
           ).state;
-        state = endTurn(
+        else state = endTurn(
           state,
           player,
           state.turn,
@@ -166,6 +170,9 @@ describe("terrain d’entraînement", () => {
             ].sort(),
           ).toEqual(decks[index]);
           expect(owner.hand.length).toBeLessThanOrEqual(4);
+          expect(owner.board.every((unit) => isDeploymentDepth(
+            owner.cards.find((card) => card.id === unit.cardId)!, unit.depth,
+          ))).toBe(true);
           expect(
             new Set(owner.board.map((unit) => `${unit.row}-${unit.depth}`))
               .size,

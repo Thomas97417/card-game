@@ -3,7 +3,10 @@ export const HAND_SIZE = 4;
 export const HERO_HP = 30;
 export const ROWS = 4;
 export const DEPTHS = 3;
+export const FRONT_DEPTHS = 2;
 export const TURN_MS = 60_000;
+
+export type CombatType = "melee" | "ranged";
 
 export interface CardDefinition {
   id: string;
@@ -13,6 +16,8 @@ export interface CardDefinition {
   health: number;
   color: string;
   kind: string;
+  /** Older saved matches infer their combat type from the catalogue. */
+  combatType?: CombatType;
 }
 
 export const CATALOG: readonly CardDefinition[] = [
@@ -24,6 +29,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 9,
     color: "#78958a",
     kind: "golem",
+    combatType: "melee",
   },
   {
     id: "fox",
@@ -33,6 +39,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 3,
     color: "#d6844d",
     kind: "fox",
+    combatType: "ranged",
   },
   {
     id: "owl",
@@ -42,6 +49,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 4,
     color: "#8e86ad",
     kind: "owl",
+    combatType: "ranged",
   },
   {
     id: "stag",
@@ -51,6 +59,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 6,
     color: "#c1a267",
     kind: "stag",
+    combatType: "melee",
   },
   {
     id: "mushroom",
@@ -60,6 +69,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 8,
     color: "#b4706b",
     kind: "mushroom",
+    combatType: "ranged",
   },
   {
     id: "dragon",
@@ -69,6 +79,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 1,
     color: "#dbab52",
     kind: "dragon",
+    combatType: "ranged",
   },
   {
     id: "turtle",
@@ -78,6 +89,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 12,
     color: "#83a575",
     kind: "turtle",
+    combatType: "melee",
   },
   {
     id: "wisp",
@@ -87,6 +99,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 5,
     color: "#70b7b1",
     kind: "wisp",
+    combatType: "ranged",
   },
   {
     id: "wolf",
@@ -96,6 +109,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 2,
     color: "#9baec1",
     kind: "wolf",
+    combatType: "melee",
   },
   {
     id: "knight",
@@ -105,6 +119,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 8,
     color: "#769a7c",
     kind: "knight",
+    combatType: "melee",
   },
   {
     id: "serpent",
@@ -114,6 +129,7 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 4,
     color: "#96af68",
     kind: "serpent",
+    combatType: "ranged",
   },
   {
     id: "bear",
@@ -123,9 +139,62 @@ export const CATALOG: readonly CardDefinition[] = [
     health: 7,
     color: "#b79780",
     kind: "bear",
+    combatType: "melee",
   },
 ];
 export const DEFAULT_DECK = CATALOG.slice(0, DECK_SIZE).map((card) => card.id);
+
+export function getCombatType(card: CardDefinition): CombatType {
+  return (
+    card.combatType ??
+    CATALOG.find((entry) => entry.id === card.id)?.combatType ??
+    "melee"
+  );
+}
+
+export function combatTypeLabel(card: CardDefinition): string {
+  return getCombatType(card) === "melee" ? "Corps à corps" : "À distance";
+}
+
+/** Depth zero faces the enemy for both players; the last depth faces the hero. */
+export function isDeploymentDepth(card: CardDefinition, depth: number): boolean {
+  return (
+    Number.isInteger(depth) &&
+    depth >= 0 &&
+    depth < DEPTHS &&
+    (getCombatType(card) === "melee"
+      ? depth < FRONT_DEPTHS
+      : depth >= DEPTHS - FRONT_DEPTHS)
+  );
+}
+
+export function legalPlacements(card: CardDefinition, board: readonly Unit[]) {
+  return Array.from({ length: ROWS * DEPTHS }, (_, index) => ({
+    row: Math.floor(index / DEPTHS),
+    depth: index % DEPTHS,
+  })).filter(
+    ({ row, depth }) =>
+      isDeploymentDepth(card, depth) &&
+      !board.some((unit) => unit.row === row && unit.depth === depth),
+  );
+}
+
+export function isMeleeBlocked(
+  unit: Unit,
+  board: readonly Unit[],
+  cards: readonly CardDefinition[],
+): boolean {
+  const card = cards.find((entry) => entry.id === unit.cardId)!;
+  return (
+    getCombatType(card) === "melee" &&
+    board.some(
+      (other) =>
+        other.row === unit.row &&
+        other.depth < unit.depth &&
+        getCombatType(cards.find((entry) => entry.id === other.cardId)!) === "melee",
+    )
+  );
+}
 
 export class GameError extends Error {}
 
@@ -237,7 +306,7 @@ export function createGame(
   const state: GameState = {
     players: players.map((player) => ({
       ...player,
-      cards: player.cards.map((c) => ({ ...c })),
+      cards: player.cards.map((c) => ({ ...c, combatType: getCombatType(c) })),
       heroHp: HERO_HP,
       hand: [],
       drawPile: shuffle(
@@ -282,6 +351,7 @@ export function summon(
   depth: number,
   turn: number,
   now: number,
+  random: () => number,
 ): Transition {
   checkTurn(input, playerIndex, turn);
   if (now >= input.turnEndsAt)
@@ -304,6 +374,12 @@ export function summon(
   if (player.board.some((unit) => unit.row === row && unit.depth === depth))
     throw new GameError("Cette case est occupée.");
   const card = player.cards.find((entry) => entry.id === cardId)!;
+  if (!isDeploymentDepth(card, depth))
+    throw new GameError(
+      getCombatType(card) === "melee"
+        ? "Une unité au corps à corps doit être placée dans les deux colonnes vers l’ennemi."
+        : "Une unité à distance doit être placée dans les deux colonnes vers ton héros.",
+    );
   player.hand.splice(player.hand.indexOf(cardId), 1);
   player.board.push({ cardId, row, depth, hp: card.health });
   state.hasSummoned = true;
@@ -315,10 +391,11 @@ export function summon(
     row,
     depth,
   });
-  return { state, events };
+  const resolved = endTurn(state, playerIndex, turn, now, random);
+  return { state: resolved.state, events: [...events, ...resolved.events] };
 }
 
-/** Withdrawing sends a creature to the discard pile and never refunds a summon. */
+/** Withdraw before playing a card; the creature returns to the discard pile. */
 export function withdraw(
   input: GameState,
   playerIndex: number,
@@ -363,6 +440,7 @@ export function endTurn(
     (a, b) => a.row - b.row || a.depth - b.depth,
   );
   for (const unit of attackers) {
+    if (isMeleeBlocked(unit, attacker.board, attacker.cards)) continue;
     const card = attacker.cards.find((entry) => entry.id === unit.cardId)!;
     const target = defender.board
       .filter((other) => other.row === unit.row)
@@ -445,6 +523,8 @@ export function playerView(state: GameState, userId: string) {
     players: state.players.map((player, index) => ({
       name: player.name,
       heroHp: player.heroHp,
+      // Deck composition is public; hand contents and draw order stay private.
+      deck: player.cards.map((card) => ({ ...card })),
       board: player.board.map((unit) => ({
         ...unit,
         card: player.cards.find((card) => card.id === unit.cardId)!,

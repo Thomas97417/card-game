@@ -107,6 +107,7 @@ function PracticeMatch({
               move.depth,
               state.turn,
               Date.now(),
+              Math.random,
             )
           : endTurn(state, 1, state.turn, Date.now(), Math.random),
       );
@@ -129,6 +130,7 @@ function PracticeMatch({
             depth,
             turn,
             Date.now(),
+            Math.random,
           ),
         )
       }

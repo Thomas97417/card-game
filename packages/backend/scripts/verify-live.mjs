@@ -14,6 +14,7 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import { ConvexClient, ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api.js";
+import { getCombatType, legalPlacements } from "@sylve/game";
 import "dotenv/config";
 
 const cwd = fileURLToPath(new URL("../", import.meta.url));
@@ -193,7 +194,7 @@ try {
     gameId,
     cardId: own.players[actor].hand[0].id,
     row: 0,
-    depth: 0,
+    depth: getCombatType(own.players[actor].hand[0]) === "melee" ? 0 : 2,
     expectedTurn: own.turn,
   });
   await received;
@@ -230,33 +231,24 @@ try {
     });
     const player = current.players[active];
     const enemy = current.players[1 - active];
-    if (!current.hasSummoned && player.hand.length) {
-      const card = [...player.hand].sort((a, b) => b.attack - a.attack)[0];
-      const rows = [0, 1, 2, 3].sort(
-        (a, b) =>
-          enemy.board.filter((u) => u.row === a).length -
-          enemy.board.filter((u) => u.row === b).length,
-      );
-      const cells = rows
-        .flatMap((row) => [0, 1, 2].map((depth) => ({ row, depth })))
-        .filter(
-          (cell) =>
-            !player.board.some(
-              (u) => u.row === cell.row && u.depth === cell.depth,
-            ),
-        );
-      if (cells[0])
-        await clients[active].mutation(api.games.playCard, {
-          gameId: paired.gameId,
-          cardId: card.id,
-          ...cells[0],
-          expectedTurn: current.turn,
-        });
-    }
-    await clients[active].mutation(api.games.endTurn, {
-      gameId: paired.gameId,
-      expectedTurn: current.turn,
-    });
+    const moves = [...player.hand]
+      .sort((a, b) => b.attack - a.attack)
+      .flatMap((card) => legalPlacements(card, player.board)
+        .sort((a, b) =>
+          enemy.board.filter((u) => u.row === a.row).length -
+          enemy.board.filter((u) => u.row === b.row).length)
+        .map((cell) => ({ cardId: card.id, ...cell })));
+    if (moves[0])
+      await clients[active].mutation(api.games.playCard, {
+        gameId: paired.gameId,
+        ...moves[0],
+        expectedTurn: current.turn,
+      });
+    else
+      await clients[active].mutation(api.games.endTurn, {
+        gameId: paired.gameId,
+        expectedTurn: current.turn,
+      });
   }
   check(
     view.status === "finished" && view.players.some((p) => p.heroHp === 0),

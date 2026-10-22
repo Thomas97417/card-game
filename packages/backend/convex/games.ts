@@ -164,6 +164,7 @@ export const playCard = mutation({
         args.depth,
         args.expectedTurn,
         Date.now(),
+        Math.random,
       ),
     );
     await saveTransition(ctx, args.gameId, transition);
@@ -194,12 +195,6 @@ export const endTurn = mutation({
       resolveTurn(state, player, expectedTurn, Date.now(), Math.random),
     );
     await saveTransition(ctx, gameId, transition);
-    if (transition.state.status === "active")
-      await ctx.scheduler.runAt(
-        transition.state.turnEndsAt,
-        internal.games.expireTurn,
-        { gameId, expectedTurn: transition.state.turn },
-      );
   },
 });
 export const surrender = mutation({
@@ -233,12 +228,6 @@ export const expireTurn = internalMutation({
       Math.random,
     );
     await saveTransition(ctx, gameId, transition);
-    if (transition.state.status === "active")
-      await ctx.scheduler.runAt(
-        transition.state.turnEndsAt,
-        internal.games.expireTurn,
-        { gameId, expectedTurn: transition.state.turn },
-      );
   },
 });
 export const expireInvitation = internalMutation({
