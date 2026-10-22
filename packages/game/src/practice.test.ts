@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_DECK,
+  CATALOG,
+  DEFAULT_DECK as STARTER_DECK,
   createGame,
   endTurn,
   isDeploymentDepth,
@@ -16,6 +17,8 @@ import {
   chooseComputerMove,
   createPracticeGame,
 } from "./practice";
+
+const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 
 function initial() {
   const state = createGame(
@@ -45,6 +48,13 @@ function choose(state: GameState) {
 }
 
 describe("terrain d’entraînement", () => {
+  it("offers a four-card local starter and a matching computer deck", () => {
+    const state = createPracticeGame(STARTER_DECK, 0, () => 0.25);
+    expect(state.players.map((player) => player.cards.length)).toEqual([4, 4]);
+    expect(state.players.map((player) => player.drawPile.length)).toEqual([
+      0, 0,
+    ]);
+  });
   it("starts the human first, with eight unique cards each, four in hand and no time pressure", () => {
     const deck = [...DEFAULT_DECK].reverse();
     const state = createPracticeGame(deck, 100, () => 0.25);
@@ -57,7 +67,7 @@ describe("terrain d’entraînement", () => {
       expect(owner.drawPile).toHaveLength(4);
     }
     expect(playerView(state, PRACTICE_PLAYER_ID).players[1]!.hand).toEqual([]);
-    expect(() => createPracticeGame(deck.slice(1), 0, () => 0.25)).toThrow(
+    expect(() => createPracticeGame(deck.slice(0, 3), 0, () => 0.25)).toThrow(
       "8 cartes",
     );
   });
@@ -125,7 +135,7 @@ describe("terrain d’entraînement", () => {
     second.players[0]!.drawPile.reverse();
     expect(choose(first)).toEqual(choose(second));
   });
-  it("finishes simulated training matches while conserving cards and legal positions", () => {
+  it("finishes simulated training matches with a full unique hand and legal positions", () => {
     for (let seed = 1; seed <= 8; seed++) {
       let value = seed;
       const random = () => {
@@ -153,26 +163,32 @@ describe("terrain d’entraînement", () => {
             turn * 100,
             random,
           ).state;
-        else state = endTurn(
-          state,
-          player,
-          state.turn,
-          turn * 100 + 1,
-          random,
-        ).state;
+        else
+          state = endTurn(
+            state,
+            player,
+            state.turn,
+            turn * 100 + 1,
+            random,
+          ).state;
         for (const [index, owner] of state.players.entries()) {
+          expect([...owner.hand, ...owner.drawPile].sort()).toEqual(
+            decks[index],
+          );
+          expect(owner.hand).toHaveLength(4);
+          expect(new Set(owner.hand).size).toBe(4);
+          expect(owner.discard).toEqual([]);
           expect(
-            [
-              ...owner.hand,
-              ...owner.drawPile,
-              ...owner.discard,
-              ...owner.board.map((unit) => unit.cardId),
-            ].sort(),
-          ).toEqual(decks[index]);
-          expect(owner.hand.length).toBeLessThanOrEqual(4);
-          expect(owner.board.every((unit) => isDeploymentDepth(
-            owner.cards.find((card) => card.id === unit.cardId)!, unit.depth,
-          ))).toBe(true);
+            owner.board.every((unit) => decks[index]!.includes(unit.cardId)),
+          ).toBe(true);
+          expect(
+            owner.board.every((unit) =>
+              isDeploymentDepth(
+                owner.cards.find((card) => card.id === unit.cardId)!,
+                unit.depth,
+              ),
+            ),
+          ).toBe(true);
           expect(
             new Set(owner.board.map((unit) => `${unit.row}-${unit.depth}`))
               .size,

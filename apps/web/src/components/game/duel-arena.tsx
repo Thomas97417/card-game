@@ -49,7 +49,7 @@ export function DuelArena({
   canSummon: boolean;
   combatEvent: GameEvent | null;
   onPlace: (cardId: string, row: number, depth: number) => void;
-  onInspectUnit: (cardId: string, playerIndex: number) => void;
+  onInspectUnit: (unit: Player["board"][number], playerIndex: number) => void;
   onInspectHero: (playerIndex: number) => void;
 }) {
   function hero(player: Player, own: boolean) {
@@ -73,11 +73,10 @@ export function DuelArena({
             <BookOpen size={13} />
             {player.handCount}
           </span>
-          <span title="Pioche">
+          <span title="Cartes du deck">
             <Layers size={13} />
-            {player.drawCount}
+            {player.deck.length}
           </span>
-          <span title="Défausse">↻ {player.discardCount}</span>
         </div>
       </button>
     );
@@ -138,28 +137,43 @@ export function DuelArena({
           );
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
-          const legal = own && !unit && canSummon && !!selectedCard &&
+          const legal =
+            own &&
+            !unit &&
+            canSummon &&
+            !!selectedCard &&
             isDeploymentDepth(selectedCard, depth);
-          const blocked = !!unit && isMeleeBlocked(
-            unit, player.board, player.board.map((entry) => entry.card),
-          );
-          const zone = depth === 0
-            ? "corps à corps, vers l’ennemi"
-            : depth === DEPTHS - 1
-              ? "à distance, vers le héros"
-              : "partagée, corps à corps et à distance";
+          const blocked =
+            !!unit &&
+            isMeleeBlocked(
+              unit,
+              player.board,
+              player.board.map((entry) => entry.card),
+            );
+          const zone =
+            depth === 0
+              ? "corps à corps, vers l’ennemi"
+              : depth === DEPTHS - 1
+                ? "à distance, vers le héros"
+                : "partagée, corps à corps et à distance";
           const acting =
             combatEvent?.player === playerIndex &&
-            combatEvent.cardId === unit?.cardId;
+            combatEvent.cardId === unit?.cardId &&
+            combatEvent.row === row &&
+            combatEvent.depth === depth;
           const hit =
             combatEvent?.type === "attack" &&
             combatEvent.targetPlayer === playerIndex &&
             combatEvent.targetCardId === unit?.cardId &&
+            (combatEvent.targetRow === undefined ||
+              combatEvent.targetRow === row) &&
+            (combatEvent.targetDepth === undefined ||
+              combatEvent.targetDepth === depth) &&
             !!unit;
           return (
             <div
               key={`${row}-${depth}`}
-              className={`projected-cell ${unit ? "occupied" : ""} ${unit && own && selectedUnit === unit.cardId ? "unit-selected" : ""}`}
+              className={`projected-cell ${unit ? "occupied" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
               style={{ ...cell.bounds, zIndex: row + 1 }}
             >
               <button
@@ -175,7 +189,7 @@ export function DuelArena({
                 tabIndex={unit ? -1 : 0}
                 onClick={() => {
                   if (legal && selected) onPlace(selected, row, depth);
-                  else if (unit) onInspectUnit(unit.cardId, playerIndex);
+                  else if (unit) onInspectUnit(unit, playerIndex);
                 }}
               />
               {unit && (
@@ -185,7 +199,7 @@ export function DuelArena({
                   style={cell.unit}
                   aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
-                  onClick={() => onInspectUnit(unit.cardId, playerIndex)}
+                  onClick={() => onInspectUnit(unit, playerIndex)}
                 >
                   <div
                     className={`board-unit ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
@@ -193,7 +207,11 @@ export function DuelArena({
                     <span className="unit-shadow" />
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
-                      <StatBadge kind="attack" value={unit.card.attack} combatType={getCombatType(unit.card)} />
+                      <StatBadge
+                        kind="attack"
+                        value={unit.card.attack}
+                        combatType={getCombatType(unit.card)}
+                      />
                       <StatBadge
                         kind="health"
                         value={unit.hp}
@@ -278,7 +296,9 @@ export function DuelArena({
         {heroFigure(enemy, 1 - me, false)}
         <div className="board-footnote">
           <span>DISTANCE · MIXTE · CORPS À CORPS</span>
-          <span>{ROWS} LIGNES · {ROWS * DEPTHS * 2} CASES</span>
+          <span>
+            {ROWS} LIGNES · {ROWS * DEPTHS * 2} CASES
+          </span>
           <span>CORPS À CORPS · MIXTE · DISTANCE</span>
         </div>
       </section>

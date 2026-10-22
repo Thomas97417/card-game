@@ -5,9 +5,39 @@ import {
   cardValidator,
   eventValidator,
   stateValidator,
+  rarityValidator,
+  lootValidator,
+  revealValidator,
 } from "./lib/validators";
 
 export default defineSchema({
+  victoryChests: defineTable({
+    ownerId: v.string(),
+    wins: v.number(),
+    cycle: v.number(),
+    contents: v.array(lootValidator),
+    lastClaim: v.optional(
+      v.object({ cycle: v.number(), reveals: v.array(revealValidator) }),
+    ),
+  }).index("by_owner", ["ownerId"]),
+  collection: defineTable({
+    ownerId: v.string(),
+    variantId: v.string(),
+    level: v.number(),
+    copies: v.number(),
+  }).index("by_owner_variant", ["ownerId", "variantId"]),
+  chests: defineTable({
+    ownerId: v.string(),
+    gameId: v.id("games"),
+    slot: v.number(),
+    rarity: rarityValidator,
+    status: v.union(v.literal("unopened"), v.literal("opened")),
+    awardedAt: v.number(),
+    unlockAt: v.number(),
+    openedAt: v.optional(v.number()),
+    contents: v.array(lootValidator),
+    reveals: v.optional(v.array(revealValidator)),
+  }).index("by_owner_status", ["ownerId", "status"]),
   decks: defineTable({
     ownerId: v.string(),
     name: v.string(),
@@ -20,6 +50,18 @@ export default defineSchema({
     queueId: v.optional(v.id("matchmakingQueue")),
   }).index("by_user", ["userId"]),
   games: defineTable({
+    mode: v.optional(
+      v.union(v.literal("solo"), v.literal("public"), v.literal("private")),
+    ),
+    reward: v.optional(
+      v.object({
+        ownerId: v.string(),
+        status: v.union(v.literal("awarded"), v.literal("lost")),
+        chestId: v.optional(v.id("chests")),
+        rarity: v.optional(rarityValidator),
+        victoryWins: v.optional(v.number()),
+      }),
+    ),
     status: v.union(
       v.literal("waiting"),
       v.literal("active"),

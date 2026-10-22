@@ -1,4 +1,6 @@
 export const DECK_SIZE = 8;
+export const MIN_DECK_SIZE = 4;
+export const MAX_CARD_LEVEL = 10;
 export const HAND_SIZE = 4;
 export const HERO_HP = 30;
 export const ROWS = 4;
@@ -7,6 +9,19 @@ export const FRONT_DEPTHS = 2;
 export const TURN_MS = 60_000;
 
 export type CombatType = "melee" | "ranged";
+export type CardRarity = "common" | "rare" | "epic" | "legendary";
+export const RARITIES: readonly CardRarity[] = [
+  "common",
+  "rare",
+  "epic",
+  "legendary",
+];
+export const RARITY_LABELS: Record<CardRarity, string> = {
+  common: "Commune",
+  rare: "Rare",
+  epic: "Épique",
+  legendary: "Légendaire",
+};
 
 export interface CardDefinition {
   id: string;
@@ -18,6 +33,13 @@ export interface CardDefinition {
   kind: string;
   /** Older saved matches infer their combat type from the catalogue. */
   combatType?: CombatType;
+  baseId?: string;
+  rarity?: CardRarity;
+  level?: number;
+}
+export interface OwnedCard {
+  card: CardDefinition;
+  copies: number;
 }
 
 export const CATALOG: readonly CardDefinition[] = [
@@ -142,12 +164,64 @@ export const CATALOG: readonly CardDefinition[] = [
     combatType: "melee",
   },
 ];
-export const DEFAULT_DECK = CATALOG.slice(0, DECK_SIZE).map((card) => card.id);
+export const DEFAULT_DECK = [
+  "guardian:common",
+  "turtle:common",
+  "mushroom:common",
+  "wisp:common",
+];
+
+export function variantCard(
+  baseId: string,
+  rarity: CardRarity,
+  level = 1,
+): CardDefinition {
+  const base = CATALOG.find((card) => card.id === baseId);
+  if (
+    !base ||
+    !RARITIES.includes(rarity) ||
+    !Number.isInteger(level) ||
+    level < 1 ||
+    level > MAX_CARD_LEVEL
+  )
+    throw new GameError("Cette variante de carte n’existe pas.");
+  const bonus = { common: 0, rare: 1, epic: 2, legendary: 4 }[rarity];
+  return {
+    ...base,
+    id: `${baseId}:${rarity}`,
+    baseId,
+    rarity,
+    level,
+    attack: base.attack + bonus + level - 1,
+    health: base.health + bonus * 2 + (level - 1) * 2,
+  };
+}
+
+/** Bare IDs remain readable in already-started games and local practice links. */
+export function resolveCard(id: string, level = 1): CardDefinition {
+  if (!id.includes(":")) {
+    const base = CATALOG.find((card) => card.id === id);
+    if (!base)
+      throw new GameError("Cette carte n’existe pas dans le catalogue.");
+    return { ...base };
+  }
+  const [baseId, rarity, extra] = id.split(":");
+  if (extra !== undefined)
+    throw new GameError("Cette variante de carte n’existe pas.");
+  return variantCard(baseId!, rarity as CardRarity, level);
+}
+
+export function upgradeCost(level: number) {
+  return level * 5;
+}
+export function baseCardId(card: CardDefinition) {
+  return card.baseId ?? card.id.split(":")[0]!;
+}
 
 export function getCombatType(card: CardDefinition): CombatType {
   return (
     card.combatType ??
-    CATALOG.find((entry) => entry.id === card.id)?.combatType ??
+    CATALOG.find((entry) => entry.id === baseCardId(card))?.combatType ??
     "melee"
   );
 }
@@ -157,7 +231,10 @@ export function combatTypeLabel(card: CardDefinition): string {
 }
 
 /** Depth zero faces the enemy for both players; the last depth faces the hero. */
-export function isDeploymentDepth(card: CardDefinition, depth: number): boolean {
+export function isDeploymentDepth(
+  card: CardDefinition,
+  depth: number,
+): boolean {
   return (
     Number.isInteger(depth) &&
     depth >= 0 &&
@@ -191,7 +268,8 @@ export function isMeleeBlocked(
       (other) =>
         other.row === unit.row &&
         other.depth < unit.depth &&
-        getCombatType(cards.find((entry) => entry.id === other.cardId)!) === "melee",
+        getCombatType(cards.find((entry) => entry.id === other.cardId)!) ===
+          "melee",
     )
   );
 }
@@ -199,18 +277,13 @@ export function isMeleeBlocked(
 export class GameError extends Error {}
 
 export function validateDeck(ids: readonly string[]): CardDefinition[] {
-  if (ids.length !== DECK_SIZE)
+  if (ids.length < MIN_DECK_SIZE || ids.length > DECK_SIZE)
     throw new GameError(
-      `Un deck doit contenir exactement ${DECK_SIZE} cartes.`,
+      `Un deck doit contenir de ${MIN_DECK_SIZE} à ${DECK_SIZE} cartes.`,
     );
-  if (new Set(ids).size !== DECK_SIZE)
+  if (new Set(ids).size !== ids.length)
     throw new GameError("Chaque carte doit être unique dans le deck.");
-  return ids.map((id) => {
-    const card = CATALOG.find((entry) => entry.id === id);
-    if (!card)
-      throw new GameError("Cette carte n’existe pas dans le catalogue.");
-    return { ...card };
-  });
+  return ids.map((id) => resolveCard(id));
 }
 
 export interface Unit {
@@ -219,13 +292,16 @@ export interface Unit {
   depth: number;
   hp: number;
 }
+export type UnitPosition = Pick<Unit, "row" | "depth">;
 export interface PlayerState {
   userId: string;
   name: string;
   heroHp: number;
   cards: CardDefinition[];
   hand: string[];
+  /** Variants outside the hand, all eligible even while deployed. */
   drawPile: string[];
+  /** Kept empty for compatibility with saved games from the finite-deck rules. */
   discard: string[];
   board: Unit[];
 }
@@ -248,6 +324,8 @@ export interface GameEvent {
   depth?: number;
   targetPlayer?: number;
   targetCardId?: string;
+  targetRow?: number;
+  targetDepth?: number;
   damage?: number;
   hp?: number;
 }
@@ -285,15 +363,20 @@ export function shuffle<T>(items: readonly T[], random: () => number): T[] {
 }
 
 function refill(player: PlayerState, random: () => number) {
+  const held = new Set(player.hand);
+  const available = shuffle(
+    [...new Set(player.cards.map((card) => card.id))].filter(
+      (id) => !held.has(id),
+    ),
+    random,
+  );
   while (player.hand.length < HAND_SIZE) {
-    if (!player.drawPile.length && player.discard.length) {
-      player.drawPile = shuffle(player.discard, random);
-      player.discard = [];
-    }
-    const next = player.drawPile.shift();
+    const next = available.shift();
     if (!next) break;
     player.hand.push(next);
   }
+  player.drawPile = available;
+  player.discard = [];
 }
 
 export function createGame(
@@ -309,10 +392,7 @@ export function createGame(
       cards: player.cards.map((c) => ({ ...c, combatType: getCombatType(c) })),
       heroHp: HERO_HP,
       hand: [],
-      drawPile: shuffle(
-        player.cards.map((c) => c.id),
-        random,
-      ),
+      drawPile: [],
       discard: [],
       board: [],
     })),
@@ -382,6 +462,7 @@ export function summon(
     );
   player.hand.splice(player.hand.indexOf(cardId), 1);
   player.board.push({ cardId, row, depth, hp: card.health });
+  refill(player, random);
   state.hasSummoned = true;
   const events: GameEvent[] = [];
   emit(state, events, {
@@ -395,23 +476,32 @@ export function summon(
   return { state: resolved.state, events: [...events, ...resolved.events] };
 }
 
-/** Withdraw before playing a card; the creature returns to the discard pile. */
+/** Remove only the selected creature; the hand and reusable deck are unchanged. */
 export function withdraw(
   input: GameState,
   playerIndex: number,
   cardId: string,
   turn: number,
   now: number,
+  position?: UnitPosition,
 ): Transition {
   checkTurn(input, playerIndex, turn);
   if (now >= input.turnEndsAt)
     throw new GameError("Le temps du tour est écoulé.");
   const state = cloneGame(input);
   const player = state.players[playerIndex]!;
-  const unit = player.board.find((entry) => entry.cardId === cardId);
+  const matches = player.board.filter(
+    (entry) =>
+      entry.cardId === cardId &&
+      (!position ||
+        (entry.row === position.row && entry.depth === position.depth)),
+  );
+  if (matches.length > 1)
+    throw new GameError("Choisis la créature à retirer sur le terrain.");
+  const unit = matches[0];
   if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
   player.board = player.board.filter((entry) => entry !== unit);
-  player.discard.push(cardId);
+  player.discard = [];
   const events: GameEvent[] = [];
   emit(state, events, {
     type: "withdraw",
@@ -455,12 +545,14 @@ export function endTurn(
         depth: unit.depth,
         targetPlayer: opponentIndex,
         targetCardId: target.cardId,
+        targetRow: target.row,
+        targetDepth: target.depth,
         damage: card.attack,
         hp: target.hp,
       });
       if (target.hp === 0) {
         defender.board = defender.board.filter((other) => other !== target);
-        defender.discard.push(target.cardId);
+        defender.discard = [];
         emit(state, events, {
           type: "death",
           player: opponentIndex,

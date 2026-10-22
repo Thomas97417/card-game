@@ -1,26 +1,21 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
+import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
+import { ArrowRight, Check, Copy, Plus } from "lucide-react";
 import {
-  ArrowRight,
-  Bot,
-  Check,
-  Copy,
-  Globe2,
-  Link2,
-  LoaderCircle,
-  Plus,
-  Swords,
-  X,
-} from "lucide-react";
-import { CATALOG } from "@sylve/game";
-import { CreaturePortrait } from "@/components/game/creature-portrait";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PlayLobby, type LobbyChest } from "@/components/play/play-lobby";
 import {
-  GameLoading,
-  PageTitle,
-  showGameError,
-} from "@/components/game/shared";
+  ChestRevealDialog,
+  type ChestReveal,
+} from "@/components/play/chest-reveal-dialog";
+import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 
 export const Route = createFileRoute("/play")({
@@ -32,7 +27,10 @@ export const Route = createFileRoute("/play")({
   }),
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
-  head: () => ({ meta: [{ title: "Jouer — Sylve" }] }),
+  head: () => ({
+    meta: [{ title: "L’arène des gardiens — Sylve" }],
+    links: [{ rel: "preload", as: "image", href: "/art/play-lobby.webp" }],
+  }),
   component: PlayPage,
 });
 
@@ -41,22 +39,44 @@ function PlayPage() {
   const { invite } = Route.useSearch();
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
+  const treasures = useQuery(api.chests.list);
   const ensureStarter = useMutation(api.decks.ensureStarter);
+  const createSolo = useMutation(api.games.createSolo);
   const createPrivate = useMutation(api.games.createPrivate);
   const joinPrivate = useMutation(api.games.joinPrivate);
   const cancelPrivate = useMutation(api.games.cancelPrivate);
   const enqueue = useMutation(api.matchmaking.enqueue);
   const cancelQueue = useMutation(api.matchmaking.cancel);
   const heartbeat = useMutation(api.matchmaking.heartbeat);
+  const openChest = useMutation(api.chests.open);
+  const openVictory = useMutation(api.chests.openVictory);
   const [code, setCode] = useState(invite ?? "");
   const [busy, setBusy] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [privateOpen, setPrivateOpen] = useState(!!invite);
+  const [reward, setReward] = useState<ChestReveal | null>(null);
+  const [now, setNow] = useState(0);
   useEffect(() => {
-    void ensureStarter().catch(showGameError);
+    let mounted = true;
+    void ensureStarter()
+      .then(() => {
+        if (mounted) setInitialized(true);
+      })
+      .catch(showGameError);
+    return () => {
+      mounted = false;
+    };
   }, [ensureStarter]);
   useEffect(() => {
-    if (invite) setCode(invite);
+    if (invite) {
+      setCode(invite);
+      setPrivateOpen(true);
+    }
   }, [invite]);
+  useEffect(() => {
+    if (activity?.status === "waiting") setPrivateOpen(true);
+  }, [activity?.status]);
   useEffect(() => {
     if (activity?.status === "active" && activity.gameId)
       void navigate({
@@ -73,8 +93,18 @@ function PlayPage() {
     const interval = window.setInterval(ping, 15_000);
     return () => window.clearInterval(interval);
   }, [activity?.queued, heartbeat]);
-  const selectedDeck = decks?.[0];
+  useEffect(() => {
+    if (!treasures) return;
+    const serverTime = treasures.serverNow;
+    const started = Date.now();
+    const tick = () => setNow(serverTime + Date.now() - started);
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [treasures?.serverNow]);
+  const deck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
+  const ready = initialized && !!deck && !!activity && !!treasures;
   async function action(fn: () => Promise<unknown>) {
     setBusy(true);
     try {
@@ -96,220 +126,134 @@ function PlayPage() {
       showGameError(new Error("Copie le code affiché pour inviter ton ami."));
     }
   }
-  if (!decks || !activity) return <GameLoading />;
+  const open = (chest: LobbyChest) => {
+    void action(async () => {
+      setReward(await openChest({ chestId: chest._id as Id<"chests"> }));
+    });
+  };
   return (
-    <main className="sylve-page lobby-page">
-      <PageTitle
-        eyebrow="Le cercle des gardiens"
-        title="Une nouvelle rencontre."
-        description="Choisis tes compagnons. Trouve ton adversaire. Écris ta légende."
-      />
-      <div className="lobby-layout">
-        <section className="deck-selection sylve-panel">
-          <div className="section-label">
-            <span>01 / TON DECK</span>
-            <Link to="/decks">
-              Mon deck <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="deck-stack">
-            <div />
-            <div />
-            <div className="deck-stack-front">
-              <CreaturePortrait card={CATALOG[3]!} />
-              <span className="deck-seal">
-                <Swords size={24} />
-              </span>
-            </div>
-          </div>
-          <span className="field-label">Tes compagnons de voyage</span>
-          <p className="font-serif text-lg">{selectedDeck?.name}</p>
-          <p className="muted small">
-            8 cartes uniques · Toutes les cartes sont disponibles
-          </p>
-          <div className="deck-miniatures">
-            {selectedDeck?.cardIds.slice(0, 6).map((id) => (
-              <CreaturePortrait
-                key={id}
-                card={CATALOG.find((card) => card.id === id)!}
-              />
-            ))}
-            <span>+{Math.max(0, (selectedDeck?.cardIds.length ?? 0) - 6)}</span>
-          </div>
-          <Link to="/decks" className="text-link">
-            Personnaliser mon deck <ArrowRight size={14} />
-          </Link>
-        </section>
-        <section className="match-options">
-          <div className="section-label">02 / TON ADVERSAIRE</div>
-          <div className="match-option sylve-panel practice-option">
-            <div className="option-icon">
-              <Bot />
-            </div>
-            <span className="eyebrow">LE TERRAIN D’ENTRAÎNEMENT</span>
-            <h2>Une partie pour apprendre.</h2>
-            <p className="muted">
-              Affronte le Gardien mécanique avec ton deck. Prends le temps
-              d’essayer tes placements, sans chronomètre.
-            </p>
-            <button
-              className="sylve-button"
-              disabled={locked || !selectedDeck}
-              onClick={() =>
-                void navigate({
-                  to: "/practice",
-                  search: { deck: selectedDeck?.cardIds.join(",") },
-                })
-              }
-            >
-              Jouer contre l’ordinateur <ArrowRight size={17} />
-            </button>
-          </div>
-          <div className="match-option sylve-panel">
-            <div className="option-icon">
-              <Globe2 />
-            </div>
-            <div>
-              <span className="eyebrow">À LA RENCONTRE DU MONDE</span>
-              <h2>Un duel, une rencontre.</h2>
-              <p className="muted">
-                Affronte un autre gardien disponible. Un même terrain, les mêmes
-                chances.
-              </p>
-            </div>
-            {activity.queued ? (
-              <div className="searching">
-                <LoaderCircle className="animate-spin" size={18} />
-                <span>À la recherche d’un adversaire…</span>
+    <PlayLobby
+      deckSize={deck?.cardIds.length ?? 0}
+      chests={treasures?.chests ?? []}
+      victoryChest={treasures?.victoryChest}
+      now={now}
+      ready={ready}
+      busy={busy}
+      locked={locked}
+      queued={activity?.queued ?? false}
+      onSolo={() => {
+        if (deck)
+          void action(async () => {
+            const gameId = await createSolo({ deckId: deck._id });
+            await navigate({ to: "/game/$gameId", params: { gameId } });
+          });
+      }}
+      onPublic={() => {
+        if (deck) void action(() => enqueue({ deckId: deck._id }));
+      }}
+      onPrivate={() => setPrivateOpen(true)}
+      onCancelQueue={() => {
+        void action(() => cancelQueue());
+      }}
+      onOpenChest={open}
+      onOpenVictoryChest={() => {
+        if (treasures)
+          void action(async () => {
+            setReward(
+              await openVictory({ cycle: treasures.victoryChest.cycle }),
+            );
+          });
+      }}
+    >
+      <Dialog open={privateOpen} onOpenChange={setPrivateOpen}>
+        <DialogContent className="friendly-dialog">
+          <span className="play-eyebrow">ENTRE GARDIENS</span>
+          <DialogTitle>Un défi entre amis.</DialogTitle>
+          <DialogDescription>
+            Partage une invitation ou saisis le code de ton ami. Ces duels sont
+            amicaux et ne rapportent pas de coffre.
+          </DialogDescription>
+          {activity?.status === "waiting" && activity.gameId ? (
+            <div className="invitation-box">
+              <span className="field-label">Ton code · Valable 10 minutes</span>
+              <div className="invitation-code">
+                {activity.inviteCode}
                 <button
                   className="icon-button"
-                  onClick={() => void action(() => cancelQueue())}
-                  aria-label="Annuler la recherche"
+                  onClick={() => void copyInvite()}
+                  aria-label="Copier le lien d’invitation"
                 >
-                  <X size={18} />
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
                 </button>
               </div>
-            ) : (
+              <p>En attente de ton adversaire…</p>
               <button
-                className="sylve-button"
-                disabled={locked || !selectedDeck}
+                className="sylve-button secondary"
+                disabled={busy}
                 onClick={() =>
-                  selectedDeck &&
-                  void action(() => enqueue({ deckId: selectedDeck._id }))
+                  void action(() => cancelPrivate({ gameId: activity.gameId! }))
                 }
               >
-                Trouver un adversaire <ArrowRight size={17} />
+                Annuler l’invitation
               </button>
-            )}
-          </div>
-          <div className="match-option sylve-panel private-option">
-            <div className="option-icon">
-              <Link2 />
             </div>
-            <div>
-              <span className="eyebrow">ENTRE AMIS</span>
-              <h2>Les rivalités font les belles histoires.</h2>
-              <p className="muted">
-                Invite un ami à te rejoindre, ou entre son code de duel.
-              </p>
-            </div>
-            {activity.status === "waiting" && activity.gameId ? (
-              <div className="invitation-box">
-                <span className="field-label">
-                  Ton code · Valable 10 minutes
-                </span>
-                <div className="invitation-code">
-                  {activity.inviteCode}
-                  <button
-                    className="icon-button"
-                    onClick={() => void copyInvite()}
-                    aria-label="Copier le lien d’invitation"
-                  >
-                    {copied ? <Check size={18} /> : <Copy size={18} />}
-                  </button>
-                </div>
-                <span className="small muted">
-                  En attente de ton adversaire…
-                </span>
-                <button
-                  className="text-link"
-                  onClick={() =>
-                    void action(() =>
-                      cancelPrivate({ gameId: activity.gameId! }),
-                    )
+          ) : (
+            <div className="friendly-actions">
+              <button
+                className="sylve-button"
+                disabled={locked || !deck}
+                onClick={() => {
+                  if (deck)
+                    void action(() => createPrivate({ deckId: deck._id }));
+                }}
+              >
+                <Plus size={17} />
+                Créer une invitation
+              </button>
+              <form
+                className="join-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (deck)
+                    void action(async () => {
+                      const gameId = await joinPrivate({
+                        code,
+                        deckId: deck._id,
+                      });
+                      await navigate({
+                        to: "/game/$gameId",
+                        params: { gameId },
+                      });
+                    });
+                }}
+              >
+                <label className="sr-only" htmlFor="invite-code">
+                  Code d’invitation
+                </label>
+                <input
+                  id="invite-code"
+                  placeholder="Code de ton ami"
+                  value={code}
+                  onChange={(event) =>
+                    setCode(event.target.value.toUpperCase())
                   }
-                >
-                  Annuler l’invitation
-                </button>
-              </div>
-            ) : (
-              <>
+                  maxLength={8}
+                  autoComplete="off"
+                />
                 <button
                   className="sylve-button secondary"
-                  disabled={locked || !selectedDeck}
-                  onClick={() =>
-                    selectedDeck &&
-                    void action(() =>
-                      createPrivate({ deckId: selectedDeck._id }),
-                    )
-                  }
+                  disabled={locked || code.trim().length !== 8 || !deck}
+                  type="submit"
                 >
-                  <Plus size={17} />
-                  Créer une invitation
+                  Rejoindre
+                  <ArrowRight size={16} />
                 </button>
-                <form
-                  className="join-form"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    if (selectedDeck)
-                      void action(async () => {
-                        const gameId = await joinPrivate({
-                          code,
-                          deckId: selectedDeck._id,
-                        });
-                        await navigate({
-                          to: "/game/$gameId",
-                          params: { gameId },
-                        });
-                      });
-                  }}
-                >
-                  <label className="sr-only" htmlFor="invite-code">
-                    Code d’invitation
-                  </label>
-                  <input
-                    id="invite-code"
-                    placeholder="Code de ton ami"
-                    value={code}
-                    onChange={(event) =>
-                      setCode(event.target.value.toUpperCase())
-                    }
-                    maxLength={8}
-                    autoComplete="off"
-                  />
-                  <button
-                    className="sylve-button secondary"
-                    disabled={
-                      locked || code.trim().length !== 8 || !selectedDeck
-                    }
-                    type="submit"
-                  >
-                    Rejoindre <ArrowRight size={16} />
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-        </section>
-      </div>
-      <div className="lobby-note">
-        <Swords size={16} />
-        <p>
-          Une carte par tour. Quatre lignes à défendre. Mille façons de
-          surprendre.
-        </p>
-        <span>60 SECONDES / TOUR</span>
-      </div>
-    </main>
+              </form>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      <ChestRevealDialog reward={reward} onClose={() => setReward(null)} />
+    </PlayLobby>
   );
 }

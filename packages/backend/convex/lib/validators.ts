@@ -1,5 +1,23 @@
 import { v } from "convex/values";
 
+export const rarityValidator = v.union(
+  v.literal("common"),
+  v.literal("rare"),
+  v.literal("epic"),
+  v.literal("legendary"),
+);
+export const lootValidator = v.object({
+  variantId: v.string(),
+  count: v.number(),
+});
+export const revealValidator = v.object({
+  variantId: v.string(),
+  count: v.number(),
+  isNew: v.boolean(),
+  level: v.number(),
+  copies: v.number(),
+});
+
 export const cardValidator = v.object({
   id: v.string(),
   name: v.string(),
@@ -9,6 +27,9 @@ export const cardValidator = v.object({
   color: v.string(),
   kind: v.string(),
   combatType: v.optional(v.union(v.literal("melee"), v.literal("ranged"))),
+  baseId: v.optional(v.string()),
+  rarity: v.optional(rarityValidator),
+  level: v.optional(v.number()),
 });
 const unitValidator = v.object({
   cardId: v.string(),
@@ -53,6 +74,8 @@ export const eventValidator = v.object({
   depth: v.optional(v.number()),
   targetPlayer: v.optional(v.number()),
   targetCardId: v.optional(v.string()),
+  targetRow: v.optional(v.number()),
+  targetDepth: v.optional(v.number()),
   damage: v.optional(v.number()),
   hp: v.optional(v.number()),
 });

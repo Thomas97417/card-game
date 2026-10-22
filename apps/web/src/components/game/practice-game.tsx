@@ -134,8 +134,17 @@ function PracticeMatch({
           ),
         )
       }
-      onWithdrawCard={async (cardId, turn) =>
-        commit(withdraw(current.current.state, 0, cardId, turn, Date.now()))
+      onWithdrawCard={async (cardId, turn, position) =>
+        commit(
+          withdraw(
+            current.current.state,
+            0,
+            cardId,
+            turn,
+            Date.now(),
+            position,
+          ),
+        )
       }
       onEndTurn={async (turn) =>
         commit(endTurn(current.current.state, 0, turn, Date.now(), Math.random))

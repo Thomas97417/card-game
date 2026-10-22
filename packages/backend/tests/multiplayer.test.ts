@@ -1,7 +1,12 @@
 import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CATALOG, DEFAULT_DECK, getCombatType } from "@sylve/game";
+import {
+  CATALOG,
+  DEFAULT_DECK,
+  getCombatType,
+  validateDeck,
+} from "@sylve/game";
 import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -66,11 +71,11 @@ describe("decks et authentification", () => {
     expect(await alice.mutation(api.decks.ensureStarter, {})).toBe(first);
     expect(await alice.query(api.decks.list, {})).toHaveLength(1);
   });
-  it("uses the latest legacy deck, preserving other decks and the active card order", async () => {
+  it("uses the latest deck, preserving other decks and the active card order after initialization", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const first = await alice.mutation(api.decks.ensureStarter, {});
-    const oldIds = CATALOG.slice(0, 10).map((card) => card.id);
+    const oldIds = [...DEFAULT_DECK];
     const second = await t.run(async (ctx) => {
       const original = (await ctx.db.get(first))!;
       await ctx.db.patch(first, {
@@ -156,22 +161,19 @@ describe("decks et authentification", () => {
   });
 });
 describe("invitations et synchronisation", () => {
-  it("adapts a legacy deck and an already waiting invitation before starting", async () => {
+  it("keeps invitation snapshots readable when their combat type is absent", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const bob = await player(t, "bob");
     const aDeck = await alice.mutation(api.decks.ensureStarter, {});
     const bDeck = await bob.mutation(api.decks.ensureStarter, {});
-    const oldCards = CATALOG.slice(0, 10).map(
+    const oldCards = validateDeck(DEFAULT_DECK).map(
       ({ combatType, ...card }) => card,
-    );
-    await t.run((ctx) =>
-      ctx.db.patch(aDeck, { cardIds: oldCards.map((card) => card.id) }),
     );
     const room = await alice.mutation(api.games.createPrivate, {
       deckId: aDeck,
     });
-    expect((await t.run((ctx) => ctx.db.get(aDeck)))!.cardIds).toHaveLength(8);
+    expect((await t.run((ctx) => ctx.db.get(aDeck)))!.cardIds).toHaveLength(4);
     // Model an invitation whose snapshot was saved before the rules changed.
     await t.run((ctx) => ctx.db.patch(room.gameId, { hostCards: oldCards }));
     await bob.mutation(api.games.joinPrivate, {
@@ -180,9 +182,9 @@ describe("invitations et synchronisation", () => {
     });
     const game = await t.run((ctx) => ctx.db.get(room.gameId));
     for (const owner of game!.state!.players) {
-      expect(owner.cards).toHaveLength(8);
+      expect(owner.cards).toHaveLength(4);
       expect(owner.hand).toHaveLength(4);
-      expect(owner.drawPile).toHaveLength(4);
+      expect(owner.drawPile).toHaveLength(0);
       expect(
         owner.cards.every((card) => card.combatType === getCombatType(card)),
       ).toBe(true);
@@ -219,7 +221,7 @@ describe("invitations et synchronisation", () => {
     const { t, alice, aDeck, gameId } = await match();
     await t.run((ctx) => ctx.db.delete(aDeck));
     const game = await t.run((ctx) => ctx.db.get(gameId));
-    expect(game!.state!.players[0]!.cards).toHaveLength(8);
+    expect(game!.state!.players[0]!.cards).toHaveLength(4);
     const view = await alice.query(api.games.get, { gameId });
     expect(view.players[0]!.deck).toEqual(game!.state!.players[0]!.cards);
   });
@@ -310,6 +312,64 @@ describe("invitations et synchronisation", () => {
   });
 });
 describe("tours autoritaires", () => {
+  it("redraws a deployed variant and withdraws only the selected duplicate", async () => {
+    const { alice, bob, gameId } = await match();
+    const initial = await alice.query(api.games.get, { gameId });
+    const active = initial.activePlayer === 0 ? alice : bob;
+    const inactive = initial.activePlayer === 0 ? bob : alice;
+    const own = await active.query(api.games.get, { gameId });
+    const card = own.players[own.me]!.hand[0]!;
+    const depth = getCombatType(card) === "melee" ? 0 : 2;
+    await active.mutation(api.games.playCard, {
+      gameId,
+      cardId: card.id,
+      row: 0,
+      depth,
+      expectedTurn: 1,
+    });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 2 });
+    await active.mutation(api.games.playCard, {
+      gameId,
+      cardId: card.id,
+      row: 2,
+      depth,
+      expectedTurn: 3,
+    });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 4 });
+    const deployed = await active.query(api.games.get, { gameId });
+    expect(
+      deployed.players[own.me]!.board.filter((unit) => unit.cardId === card.id),
+    ).toHaveLength(2);
+    expect(deployed.players[own.me]!.hand).toHaveLength(4);
+    expect(
+      new Set(deployed.players[own.me]!.hand.map((entry) => entry.id)).size,
+    ).toBe(4);
+    await expect(
+      active.mutation(api.games.withdrawCard, {
+        gameId,
+        cardId: card.id,
+        expectedTurn: 5,
+      }),
+    ).rejects.toThrow("Choisis");
+    await expect(
+      active.mutation(api.games.withdrawCard, {
+        gameId,
+        cardId: card.id,
+        expectedTurn: 5,
+        position: { row: 1, depth },
+      }),
+    ).rejects.toThrow("camp");
+    await active.mutation(api.games.withdrawCard, {
+      gameId,
+      cardId: card.id,
+      expectedTurn: 5,
+      position: { row: 2, depth },
+    });
+    const after = await active.query(api.games.get, { gameId });
+    expect(after.players[own.me]!.board).toHaveLength(1);
+    expect(after.players[own.me]!.board[0]!.row).toBe(0);
+    expect(after.players[own.me]!.hand).toEqual(deployed.players[own.me]!.hand);
+  });
   it("synchronizes withdrawals before playing and protects ownership", async () => {
     const { t, alice, bob, gameId } = await match();
     const initial = await alice.query(api.games.get, { gameId });
@@ -363,7 +423,7 @@ describe("tours autoritaires", () => {
     });
     const other = await inactive.query(api.games.get, { gameId });
     expect(other.players[own.me]!.board).toEqual([]);
-    expect(other.players[own.me]!.discardCount).toBe(1);
+    expect(other.players[own.me]!.discardCount).toBe(0);
     expect(other.players[own.me]!.handCount).toBe(3);
     expect(other.events.at(-1)!.type).toBe("withdraw");
     expect(other.hasSummoned).toBe(false);
@@ -421,6 +481,14 @@ describe("tours autoritaires", () => {
     });
     const other = await inactive.query(api.games.get, { gameId });
     expect(other.players[own.me]!.board[0]!.cardId).toBe(cardId);
+    const redrawn = await active.query(api.games.get, { gameId });
+    expect(redrawn.players[own.me]!.hand).toHaveLength(4);
+    expect(
+      new Set(redrawn.players[own.me]!.hand.map((entry) => entry.id)).size,
+    ).toBe(4);
+    expect(
+      redrawn.players[own.me]!.hand.some((entry) => entry.id === cardId),
+    ).toBe(true);
     expect(other.players[other.me]!.heroHp).toBe(30 - card.attack);
     expect(other.activePlayer).toBe(other.me);
     expect(other.turn).toBe(2);

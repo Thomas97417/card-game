@@ -7,7 +7,13 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CATALOG, DEFAULT_DECK, DECK_SIZE } from "@sylve/game";
+import {
+  CATALOG,
+  DEFAULT_DECK,
+  DECK_SIZE,
+  variantCard,
+  type OwnedCard,
+} from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DeckWorkshop, type WorkshopDeck } from "./deck-workshop";
 
@@ -20,19 +26,32 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-
 const deckId = "saved-deck" as Id<"decks">;
+const fullCollection: OwnedCard[] = CATALOG.map((base) => ({
+  card: variantCard(base.id, "common"),
+  copies: 0,
+}));
 const savedDeck: WorkshopDeck = {
   _id: deckId,
   name: "Les gardiens de la Sylve",
-  // Deliberately different from the starter to verify we open the saved deck.
-  cardIds: [...DEFAULT_DECK.slice(0, -1), "wolf"],
+  cardIds: [
+    ...CATALOG.slice(0, 7).map((card) => `${card.id}:common`),
+    "wolf:common",
+  ],
 };
-
-function setup() {
+const starter = { ...savedDeck, cardIds: [...DEFAULT_DECK] };
+function setup(deck = savedDeck, collection = fullCollection) {
   const onSave = vi.fn().mockResolvedValue(deckId);
-  const result = render(<DeckWorkshop deck={savedDeck} onSave={onSave} />);
-  return { ...result, onSave };
+  const onUpgrade = vi.fn().mockResolvedValue(undefined);
+  const result = render(
+    <DeckWorkshop
+      deck={deck}
+      collection={collection}
+      onSave={onSave}
+      onUpgrade={onUpgrade}
+    />,
+  );
+  return { ...result, onSave, onUpgrade };
 }
 const deckRow = () =>
   within(screen.getByRole("region", { name: "Cartes du deck" }));
@@ -40,9 +59,9 @@ const collection = () =>
   within(screen.getByRole("region", { name: "Cartes de la collection" }));
 const card = (region: ReturnType<typeof within>, name: string) =>
   region.getByRole("button", { name: new RegExp(`^${name},`) });
-
+const deckCards = () =>
+  deckRow().getAllByRole("button", { name: /points de vie/ });
 beforeEach(() => {
-  // jsdom has no pointer capture or hit testing; emulate the browser primitives.
   vi.stubGlobal("PointerEvent", MouseEvent);
   HTMLElement.prototype.setPointerCapture = vi.fn();
   HTMLElement.prototype.releasePointerCapture = vi.fn();
@@ -52,7 +71,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
-
 function dragCard(
   source: HTMLElement,
   target: HTMLElement | null,
@@ -83,28 +101,24 @@ function dragCard(
   });
 }
 
-describe("l’atelier des decks", () => {
-  it("opens the player's saved deck and keeps its cards out of the collection", () => {
+describe("l’atelier et la collection", () => {
+  it("opens the saved deck, shows only owned reserve cards, and exposes rarity filters", () => {
     setup();
-    expect(screen.queryByRole("textbox")).toBeNull();
-    expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
+    expect(deckCards()).toHaveLength(8);
     expect(card(deckRow(), "Loup de lune")).toBeTruthy();
     expect(
       collection().queryByRole("button", { name: /^Loup de lune,/ }),
     ).toBeNull();
-    expect(collection().getAllByRole("button")).toHaveLength(
-      CATALOG.length - DECK_SIZE,
-    );
+    expect(collection().getAllByRole("button")).toHaveLength(4);
     expect(
-      screen.queryByRole("button", {
-        name: /Enregistrer|Enregistré|Créer|Supprimer/,
-      }),
+      screen.queryByRole("button", { name: /Enregistrer|Créer|Supprimer/ }),
     ).toBeNull();
-    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(
+      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
+    ).toBeTruthy();
   });
-
   it.each(["mouse", "touch"])(
-    "replaces a card by dragging with %s, preserving eight unique cards",
+    "replaces a card by dragging with %s and saves eight unique variants",
     async (pointerType) => {
       const { onSave } = setup();
       dragCard(
@@ -112,26 +126,20 @@ describe("l’atelier des decks", () => {
         card(deckRow(), "Gardien de pierre"),
         pointerType,
       );
-      expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
+      expect(deckCards()).toHaveLength(DECK_SIZE);
       expect(
         card(deckRow(), "Chevalier ronce").getAttribute("aria-label"),
       ).toContain("carte 1 du deck");
       expect(card(collection(), "Gardien de pierre")).toBeTruthy();
-      expect(
-        collection().queryByRole("button", { name: /^Chevalier ronce,/ }),
-      ).toBeNull();
-      expect(screen.getByRole("status").textContent).toContain(
-        "Chevalier ronce remplace Gardien de pierre",
-      );
       await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
-      const saved = onSave.mock.calls[0]![0];
-      expect(saved.deckId).toBe(deckId);
-      expect(saved.cardIds).toEqual(["knight", ...savedDeck.cardIds.slice(1)]);
-      expect(new Set(saved.cardIds).size).toBe(DECK_SIZE);
+      expect(onSave.mock.calls[0]![0].cardIds).toEqual([
+        "knight:common",
+        ...savedDeck.cardIds.slice(1),
+      ]);
+      expect(new Set(onSave.mock.calls[0]![0].cardIds).size).toBe(8);
     },
   );
-
-  it("swaps cards within the deck without duplicating or losing a card", () => {
+  it("swaps cards within the deck without duplicating or losing one", () => {
     setup();
     dragCard(
       card(deckRow(), "Gardien de pierre"),
@@ -143,67 +151,125 @@ describe("l’atelier des decks", () => {
     expect(
       card(deckRow(), "Gardien de pierre").getAttribute("aria-label"),
     ).toContain("carte 2 du deck");
-    expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
-    expect(collection().getAllByRole("button")).toHaveLength(4);
+    expect(deckCards()).toHaveLength(8);
   });
-
-  it("ignores an invalid drop and cancels an active drag with Escape", () => {
-    const { container } = setup();
+  it("ignores invalid drops and cancels dragging with Escape", () => {
+    setup();
     const source = card(collection(), "Chevalier ronce");
     dragCard(source, screen.getByRole("heading", { level: 1 }));
     expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
-    expect(
-      screen.queryByRole("button", {
-        name: /Enregistrer|Enregistré|Créer|Supprimer/,
-      }),
-    ).toBeNull();
-    expect(screen.queryByRole("combobox")).toBeNull();
-    Object.defineProperty(document, "elementFromPoint", {
-      configurable: true,
-      value: vi.fn().mockReturnValue(card(deckRow(), "Gardien de pierre")),
+    fireEvent.pointerDown(source, {
+      button: 0,
+      pointerId: 1,
+      clientX: 10,
+      clientY: 500,
     });
-    fireEvent.pointerDown(source, { button: 0, clientX: 10, clientY: 500 });
-    fireEvent.pointerMove(source, { clientX: 100, clientY: 200 });
-    expect(container.querySelector(".workshop-drag-preview")).toBeTruthy();
+    fireEvent.pointerMove(source, { pointerId: 1, clientX: 100, clientY: 200 });
     fireEvent.keyDown(source, { key: "Escape" });
-    fireEvent.pointerUp(source, { clientX: 100, clientY: 200 });
-    expect(container.querySelector(".workshop-drag-preview")).toBeNull();
+    fireEvent.pointerUp(source, { pointerId: 1, clientX: 100, clientY: 200 });
     expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
-
-  it("filters only the collection and restores all cards on a second press", () => {
+  it("combines combat-type and rarity filters without filtering the deck", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "À distance" }));
     expect(collection().getAllByRole("button")).toHaveLength(2);
-    for (const button of collection().getAllByRole("button"))
-      expect(button.getAttribute("aria-label")).toContain("À distance");
-    expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
-    fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
-    expect(collection().getAllByRole("button")).toHaveLength(2);
-    for (const button of collection().getAllByRole("button"))
-      expect(button.getAttribute("aria-label")).toContain("Corps à corps");
-    fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
-    expect(collection().getAllByRole("button")).toHaveLength(4);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
+      { target: { value: "epic" } },
+    );
     expect(
-      screen
-        .getByRole("button", { name: "Toutes" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
+      collection().queryAllByRole("button", { name: /points de vie/ }),
+    ).toHaveLength(0);
+    expect(deckCards()).toHaveLength(8);
+    fireEvent.change(
+      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
+      { target: { value: "all" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "À distance" }));
+    expect(collection().getAllByRole("button")).toHaveLength(4);
   });
-
-  it("allows keyboard activation to select a replacement and cancel a selection", () => {
+  it("opens the card dialog on click and permits keyboard replacement with cancellation", async () => {
     setup();
     fireEvent.click(card(collection(), "Chevalier ronce"), { detail: 0 });
-    expect(screen.getByRole("status").textContent).toContain(
-      "choisis une carte du deck à remplacer",
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remplacer une carte" }),
     );
-    fireEvent.keyDown(card(collection(), "Chevalier ronce"), { key: "Escape" });
-    expect(
-      card(collection(), "Chevalier ronce").getAttribute("aria-pressed"),
-    ).toBe("false");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.keyDown(card(deckRow(), "Gardien de pierre"), { key: "Escape" });
+    expect(screen.getByRole("status").textContent).not.toContain(
+      "Choisis une carte",
+    );
     fireEvent.click(card(collection(), "Chevalier ronce"), { detail: 0 });
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Remplacer une carte" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(card(deckRow(), "Gardien de pierre"), { detail: 0 });
     expect(card(deckRow(), "Chevalier ronce")).toBeTruthy();
     expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+  });
+  it("grows a starter deck through an empty slot and never removes below four", async () => {
+    const { onSave } = setup(starter);
+    expect(deckCards()).toHaveLength(4);
+    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    expect(
+      (
+        (await screen.findByRole("button", {
+          name: "Retirer du deck",
+        })) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    dragCard(
+      card(collection(), "Renard des braises"),
+      deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
+    );
+    expect(deckCards()).toHaveLength(5);
+    fireEvent.click(card(deckRow(), "Renard des braises"));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Retirer du deck" }),
+    );
+    expect(deckCards()).toHaveLength(4);
+    await waitFor(() =>
+      expect(onSave.mock.calls.at(-1)?.[0].cardIds).toEqual(DEFAULT_DECK),
+    );
+  });
+  it("keeps rarity variants independent, reuses art and upgrades the exact variant", async () => {
+    const rare = { card: variantCard("guardian", "rare"), copies: 5 };
+    const { onUpgrade } = setup(starter, [...fullCollection, rare]);
+    const rareButton = collection().getByRole("button", {
+      name: /Gardien de pierre,.*Rare, niveau 1/,
+    });
+    expect(rareButton.getAttribute("data-rarity")).toBe("rare");
+    expect(rareButton.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/characters/guardian.webp",
+    );
+    fireEvent.click(rareButton);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Améliorer au niveau 2" }),
+    );
+    await waitFor(() =>
+      expect(onUpgrade).toHaveBeenCalledWith("guardian:rare"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Ajouter au deck" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(
+      deckRow().getAllByRole("button", { name: /^Gardien de pierre,/ }),
+    ).toHaveLength(2);
+  });
+  it("keeps improvement disabled when there are not enough copies", async () => {
+    setup(starter);
+    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    expect(
+      (
+        (await screen.findByRole("button", {
+          name: "Améliorer au niveau 2",
+        })) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(screen.getByText("0 / 5 exemplaires")).toBeTruthy();
   });
 });

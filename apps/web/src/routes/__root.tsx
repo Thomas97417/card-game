@@ -22,6 +22,8 @@ import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import gameCss from "../game.css?url";
 import workshopCss from "../deck-workshop.css?url";
+import progressionCss from "../progression.css?url";
+import lobbyCss from "../play-lobby.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
@@ -54,6 +56,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
       { rel: "stylesheet", href: gameCss },
       { rel: "stylesheet", href: workshopCss },
+      { rel: "stylesheet", href: progressionCss },
+      { rel: "stylesheet", href: lobbyCss },
     ],
   }),
 
@@ -77,7 +81,10 @@ function RootDocument() {
   const isImmersive = useRouterState({
     select: (state) =>
       state.matches.some(
-        (match) => match.routeId === "/hub" || match.routeId === "/decks",
+        (match) =>
+          match.routeId === "/hub" ||
+          match.routeId === "/decks" ||
+          match.routeId === "/play",
       ),
   });
   return (

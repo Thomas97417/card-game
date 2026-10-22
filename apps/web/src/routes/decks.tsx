@@ -20,6 +20,8 @@ function DecksPage() {
   const decks = useQuery(api.decks.list);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const save = useMutation(api.decks.save);
+  const collection = useQuery(api.collection.list);
+  const upgrade = useMutation(api.collection.upgrade);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,11 @@ function DecksPage() {
   }, [ensureStarter]);
 
   return (
-    <DeckWorkshop deck={initialized ? decks?.[0] : undefined} onSave={save} />
+    <DeckWorkshop
+      deck={initialized ? decks?.[0] : undefined}
+      collection={collection}
+      onSave={save}
+      onUpgrade={(variantId) => upgrade({ variantId })}
+    />
   );
 }

@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect } from "react";
+import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -26,11 +28,17 @@ function HubPage() {
   const user = useCurrentUser();
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
+  const collection = useQuery(api.collection.list);
+  const ensureStarter = useMutation(api.decks.ensureStarter);
+  useEffect(() => {
+    void ensureStarter().catch(showGameError);
+  }, [ensureStarter]);
 
   return (
     <VillageHub
       playerName={user?.name}
       deckCount={decks?.length}
+      collectionCount={collection?.length}
       activity={activity}
     />
   );

@@ -3,12 +3,22 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
-  CATALOG,
   DECK_SIZE,
+  MIN_DECK_SIZE,
+  MAX_CARD_LEVEL,
+  RARITIES,
+  RARITY_LABELS,
+  upgradeCost,
   combatTypeLabel,
   getCombatType,
 } from "@sylve/game";
-import type { CardDefinition, CombatType } from "@sylve/game";
+import type {
+  CardDefinition,
+  CombatType,
+  CardRarity,
+  OwnedCard,
+} from "@sylve/game";
+import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import {
   ArrowRightLeft,
   ChevronLeft,
@@ -37,6 +47,8 @@ interface Draft {
 
 interface DeckWorkshopProps {
   deck: WorkshopDeck | undefined;
+  collection: OwnedCard[] | undefined;
+  onUpgrade: (variantId: string) => Promise<unknown>;
   onSave: (args: {
     deckId: Id<"decks">;
     name: string;
@@ -52,7 +64,13 @@ const deckDraft = (deck: WorkshopDeck): Draft => ({
 const instructions =
   "Glisse une carte de la collection sur une carte de ton deck pour la remplacer.";
 
-function CardArtwork({ card }: { card: CardDefinition }) {
+function CardArtwork({
+  card,
+  copies = 0,
+}: {
+  card: CardDefinition;
+  copies?: number;
+}) {
   const ranged = getCombatType(card) === "ranged";
   return (
     <>
@@ -60,6 +78,7 @@ function CardArtwork({ card }: { card: CardDefinition }) {
         <span className="workshop-card-halo" />
         <CreaturePortrait card={card} />
       </span>
+      <span className="card-level">Niv. {card.level ?? 1}</span>
       <span className="card-stats">
         <StatBadge
           kind="attack"
@@ -74,15 +93,27 @@ function CardArtwork({ card }: { card: CardDefinition }) {
           <GameIcon kind={ranged ? "ranged" : "melee"} size={15} />
           {ranged ? "Distance" : "Corps à corps"}
         </span>
+        <span className="workshop-copies">
+          {(card.level ?? 1) >= MAX_CARD_LEVEL
+            ? `${copies} · MAX`
+            : `${copies} / ${upgradeCost(card.level ?? 1)}`}
+        </span>
       </span>
     </>
   );
 }
 
-export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
+export function DeckWorkshop({
+  deck,
+  collection,
+  onSave,
+  onUpgrade,
+}: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
+  const [inspected, setInspected] = useState<string | null>(null);
+  const [rarityFilter, setRarityFilter] = useState<CardRarity | null>(null);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
@@ -121,13 +152,18 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
     enableBeforeUnload: hasPendingChanges,
   });
 
-  const ready = !!deck && draft !== null;
+  const ready = !!deck && draft !== null && !!collection;
   const cards = draft?.cards ?? [];
-  const available = CATALOG.filter((card) => !cards.includes(card.id));
+  const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
+  const available = (collection ?? [])
+    .map((entry) => entry.card)
+    .filter((card) => !cards.includes(card.id));
   const visible = available.filter(
-    (card) => !filter || getCombatType(card) === filter,
+    (card) =>
+      (!filter || getCombatType(card) === filter) &&
+      (!rarityFilter || card.rarity === rarityFilter),
   );
-  const selectedCard = CATALOG.find((card) => card.id === picked);
+  const selectedCard = picked ? entries.get(picked)?.card : undefined;
 
   function cancelDrag() {
     const source = origin.current;
@@ -148,20 +184,27 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
   }
 
   function replaceCard(cardId: string, slot: number) {
-    if (!draft || slot < 0 || slot >= draft.cards.length) return;
-    const replaced = CATALOG.find((card) => card.id === draft.cards[slot]);
-    const incoming = CATALOG.find((card) => card.id === cardId);
+    if (!draft || slot < 0 || slot >= DECK_SIZE) return;
+    const replaced = entries.get(draft.cards[slot] ?? "")?.card;
+    const incoming = entries.get(cardId)?.card;
     if (!incoming || incoming.id === replaced?.id) return;
     const next = [...draft.cards];
     const existing = next.indexOf(cardId);
-    if (existing !== -1) next[existing] = next[slot]!;
-    next[slot] = cardId;
+    if (slot >= next.length) {
+      if (existing !== -1) next.splice(existing, 1);
+      next.push(cardId);
+    } else {
+      if (existing !== -1) next[existing] = next[slot]!;
+      next[slot] = cardId;
+    }
     updateDraft({ ...draft, cards: next });
     setPicked(null);
     setMessage(
-      existing === -1
-        ? `${incoming.name} remplace ${replaced?.name}. Ton deck se met à jour automatiquement.`
-        : `${incoming.name} et ${replaced?.name} ont échangé leur place.`,
+      !replaced
+        ? `${incoming.name} rejoint ton deck.`
+        : existing === -1
+          ? `${incoming.name} remplace ${replaced?.name}. Ton deck se met à jour automatiquement.`
+          : `${incoming.name} et ${replaced?.name} ont échangé leur place.`,
     );
   }
 
@@ -232,13 +275,7 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
       } else replaceCard(picked, slot);
       return;
     }
-    const next = picked === card.id ? null : card.id;
-    setPicked(next);
-    setMessage(
-      next
-        ? `${card.name} : choisis une carte du deck à ${slot === undefined ? "remplacer" : "échanger"}. Échap pour annuler.`
-        : instructions,
-    );
+    setInspected(card.id);
   }
 
   function scrollRow(row: HTMLDivElement | null, direction: number) {
@@ -262,16 +299,17 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
         <button
           type="button"
           className={`workshop-card ${picked === card.id ? "is-picked" : ""} ${drag?.card.id === card.id ? "is-dragging" : ""} ${target ? "is-target" : ""}`}
+          data-rarity={card.rarity ?? "common"}
           style={{ "--creature-color": card.color } as CSSProperties}
           disabled={!ready}
-          aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
-          aria-pressed={picked === card.id}
+          aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
+          aria-haspopup={picked ? undefined : "dialog"}
           aria-describedby="workshop-instructions"
           onPointerDown={(event) => pointerDown(event, card)}
           onClick={() => chooseCard(card, slot)}
           onDragStart={(event) => event.preventDefault()}
         >
-          <CardArtwork card={card} />
+          <CardArtwork card={card} copies={entries.get(card.id)?.copies} />
           {target && (
             <span className="workshop-drop-label">
               <ArrowRightLeft size={14} />
@@ -350,9 +388,29 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
             aria-label="Cartes du deck"
           >
             {ready
-              ? cards.map((id, slot) => {
-                  const card = CATALOG.find((entry) => entry.id === id);
-                  return card ? renderCard(card, slot) : null;
+              ? Array.from({ length: DECK_SIZE }, (_, slot) => {
+                  const card = entries.get(cards[slot] ?? "")?.card;
+                  return card ? (
+                    renderCard(card, slot)
+                  ) : (
+                    <div
+                      key={`empty-${slot}`}
+                      className="workshop-card-slot"
+                      data-deck-slot={slot}
+                    >
+                      <button
+                        type="button"
+                        className={`workshop-card-placeholder workshop-empty-slot ${hovered === slot ? "is-target" : ""}`}
+                        aria-label={`Emplacement ${slot + 1} libre`}
+                        onClick={() => {
+                          if (picked) replaceCard(picked, slot);
+                        }}
+                      >
+                        <Layers3 size={27} />
+                        <span>Emplacement libre</span>
+                      </button>
+                    </div>
+                  );
                 })
               : Array.from({ length: DECK_SIZE }, (_, index) => (
                   <div className="workshop-card-placeholder" key={index}>
@@ -385,11 +443,30 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
             <div>
               <h2 id="collection-title">
                 Ta collection{" "}
-                <span>
-                  {ready ? `${visible.length} / ${available.length}` : "—"}
-                </span>
+                <span>{ready ? `${collection!.length} / 48` : "—"}</span>
               </h2>
             </div>
+            <label className="workshop-rarity-filter">
+              <span className="sr-only">Filtrer par rareté</span>
+              <select
+                aria-label="Filtrer par rareté"
+                value={rarityFilter ?? "all"}
+                onChange={(event) =>
+                  setRarityFilter(
+                    event.target.value === "all"
+                      ? null
+                      : (event.target.value as CardRarity),
+                  )
+                }
+              >
+                <option value="all">Toutes les raretés</option>
+                {RARITIES.map((rarity) => (
+                  <option value={rarity} key={rarity}>
+                    {RARITY_LABELS[rarity]}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="workshop-scroll-controls">
               <button
                 aria-label="Voir les cartes précédentes de la collection"
@@ -417,13 +494,24 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
               <div className="workshop-empty">
                 <Leaf size={26} />
                 <p>
-                  Aucune carte{" "}
-                  {filter === "melee" ? "au corps à corps" : "à distance"} dans
-                  la réserve.
+                  {available.length === 0
+                    ? "Remporte des combats et ouvre des coffres pour agrandir ta collection."
+                    : "Aucune carte ne correspond à tes filtres."}
                 </p>
-                <button onClick={() => setFilter(null)}>
-                  Voir toute la collection
-                </button>
+                {available.length ? (
+                  <button
+                    onClick={() => {
+                      setFilter(null);
+                      setRarityFilter(null);
+                    }}
+                  >
+                    Voir toute la collection
+                  </button>
+                ) : (
+                  <Link to="/play" className="text-link">
+                    Rejoindre l’arène
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -506,11 +594,44 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
             } as CSSProperties
           }
         >
-          <div className="workshop-card">
-            <CardArtwork card={drag.card} />
+          <div
+            className="workshop-card"
+            data-rarity={drag.card.rarity ?? "common"}
+          >
+            <CardArtwork
+              card={drag.card}
+              copies={entries.get(drag.card.id)?.copies}
+            />
           </div>
         </div>
       )}
+      <CardUpgradeDialog
+        entry={inspected ? entries.get(inspected) : undefined}
+        inDeck={!!inspected && cards.includes(inspected)}
+        canRemove={cards.length > MIN_DECK_SIZE}
+        hasSpace={cards.length < DECK_SIZE}
+        onClose={() => setInspected(null)}
+        onUpgrade={onUpgrade}
+        onAdd={() => {
+          if (inspected) replaceCard(inspected, cards.length);
+          setInspected(null);
+        }}
+        onRemove={() => {
+          if (!draft || !inspected || cards.length <= MIN_DECK_SIZE) return;
+          updateDraft({
+            ...draft,
+            cards: cards.filter((id) => id !== inspected),
+          });
+          setInspected(null);
+        }}
+        onMove={() => {
+          setPicked(inspected);
+          setInspected(null);
+          setMessage(
+            "Choisis une carte du deck à remplacer ou à échanger. Échap pour annuler.",
+          );
+        }}
+      />
     </main>
   );
 }

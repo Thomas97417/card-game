@@ -1,4 +1,4 @@
-import type { CardDefinition } from "@sylve/game";
+import { baseCardId, type CardDefinition } from "@sylve/game";
 
 /** Original generated full-body art, shared by the cards and battlefield. */
 export function CreaturePortrait({
@@ -11,7 +11,7 @@ export function CreaturePortrait({
   return (
     <img
       className={`creature-portrait ${className}`}
-      src={`/art/characters/${card.id}.webp`}
+      src={`/art/characters/${baseCardId(card)}.webp`}
       alt={card.name}
       width={256}
       height={256}
