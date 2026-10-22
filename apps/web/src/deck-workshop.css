@@ -1,11 +1,19 @@
 .deck-workshop {
   --workshop-gold: #d7b777;
   --workshop-cream: #f4ebd4;
+  --workshop-header-height: clamp(100px, 15svh, 152px);
+  /* The table begins at 30.3% of the 1672 × 941 illustration. Account for
+     the centered cover crop so the cards stay on the wood at every ratio. */
+  --workshop-table-top: calc(50svh - max(100svh, 56.28vw) * 0.197);
+  --workshop-content-top: max(
+    var(--workshop-header-height),
+    calc(var(--workshop-table-top) + 16px)
+  );
   --workshop-card-width: clamp(
     100px,
     min(
       calc((min(100vw, 1512px) - clamp(40px, 8.4vw, 144px) - 220px) / 8),
-      calc((100svh - 440px) * 0.3)
+      calc((100svh - var(--workshop-content-top) - 350px) * 0.35)
     ),
     162px
   );
@@ -67,7 +75,7 @@
   flex-shrink: 0;
   align-items: center;
   gap: 32px;
-  min-height: clamp(100px, 15svh, 152px);
+  min-height: var(--workshop-header-height);
   padding-block: 18px 24px;
 }
 .workshop-back {
@@ -87,54 +95,16 @@
   background: #344a32d9;
 }
 .workshop-title {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-}
-.workshop-emblem {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 54px;
-  color: #e6c78b;
-  background: linear-gradient(145deg, #6a653d77, #193a2b88);
-  border: 1px solid #d7b77777;
-  border-radius: 18px 18px 7px 7px;
-  box-shadow:
-    inset 0 0 0 4px #d7b7770d,
-    0 4px 16px #0003;
-}
-.workshop-title p {
-  color: #dfc692;
-  font-size: 9px;
-  letter-spacing: 3px;
-  font-weight: 500;
-  margin-bottom: 5px;
-}
-.workshop-title h1 {
   font:
     400 clamp(23px, 2.4vw, 34px)/1.15 Georgia,
     serif;
   letter-spacing: -0.8px;
   text-shadow: 0 2px 12px #10261b88;
 }
-.workshop-header-note {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  color: #e8dcbe;
-  font:
-    italic 14px Georgia,
-    serif;
-  white-space: nowrap;
-}
-.workshop-header-note svg {
-  color: #d7b777;
-}
 .workshop-content {
   min-height: 0;
   flex: 1;
+  margin-top: calc(var(--workshop-content-top) - var(--workshop-header-height));
   overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: #b7955266 transparent;
@@ -499,7 +469,7 @@
   justify-content: space-between;
   gap: 10px;
   margin: 0 26px;
-  padding: 11px 0 13px;
+  padding: 8px 0 10px;
   border-top: 1px solid #d7b77726;
   color: #bbc5aa;
   font-size: 9px;
@@ -532,7 +502,7 @@
   height: 27px;
 }
 .workshop-collection {
-  margin-top: clamp(18px, 3svh, 32px);
+  margin-top: clamp(18px, 2svh, 26px);
 }
 .workshop-collection-heading {
   display: flex;
@@ -713,9 +683,6 @@
   .workshop-header {
     gap: 22px;
   }
-  .workshop-header-note {
-    display: none;
-  }
   .workshop-scroll-controls {
     display: flex;
   }
@@ -737,6 +704,7 @@
 }
 @media (max-width: 760px) {
   .deck-workshop {
+    --workshop-header-height: 100px;
     --workshop-card-width: clamp(108px, 20vw, 142px);
   }
   .workshop-header,
@@ -745,7 +713,6 @@
     padding-inline: 18px;
   }
   .workshop-header {
-    min-height: 100px;
     gap: 18px;
     padding-block: 18px;
   }
@@ -756,21 +723,7 @@
     display: none;
   }
   .workshop-title {
-    gap: 12px;
-  }
-  .workshop-title p {
-    font-size: 7px;
-    letter-spacing: 2.5px;
-  }
-  .workshop-title h1 {
     font-size: 24px;
-  }
-  .workshop-emblem {
-    width: 38px;
-    height: 43px;
-  }
-  .workshop-emblem svg {
-    width: 21px;
   }
   .workshop-deck-toolbar {
     flex-wrap: wrap;
@@ -855,8 +808,10 @@
   }
 }
 @media (max-height: 800px) and (min-width: 761px) {
+  .deck-workshop {
+    --workshop-header-height: 80px;
+  }
   .workshop-header {
-    min-height: 80px;
     padding-block: 14px;
   }
   .workshop-deck-toolbar {

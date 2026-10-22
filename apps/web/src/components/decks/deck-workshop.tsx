@@ -386,19 +386,7 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
           <ArrowLeft size={18} />
           <span>Le refuge</span>
         </Link>
-        <div className="workshop-title">
-          <span className="workshop-emblem">
-            <Layers3 size={24} strokeWidth={1.3} />
-          </span>
-          <div>
-            <p>LE CERCLE DE LA SYLVE</p>
-            <h1>L’atelier des gardiens</h1>
-          </div>
-        </div>
-        <span className="workshop-header-note">
-          <Leaf size={15} />
-          De belles alliances.
-        </span>
+        <h1 className="workshop-title">L’atelier des gardiens</h1>
       </header>
 
       <div className="workshop-content">

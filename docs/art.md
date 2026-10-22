@@ -37,7 +37,7 @@ Le décor plein écran de `/decks` est enregistré dans `apps/web/public/art/dec
 
 Le deck enregistré s’ouvre en haut et les créatures qui n’y figurent pas composent la collection en dessous. Glisser une carte de la collection sur une carte du deck remplace cette dernière ; glisser deux cartes du deck échange leur position. La composition conserve huit cartes uniques. Une sélection suivie d’un clic ou d’une activation au clavier offre la même interaction. Les filtres à icônes en bas (« Toutes », « Corps à corps », « À distance ») s’appliquent à la collection. Les modifications sont persistées avec « Enregistrer ».
 
-Un [aperçu de l’atelier](decks-validation.webp) est conservé après vérification dans Chromium à 1440 × 900 px. Les contrôles couvrent aussi les formats 1280 × 720, 1920 × 1080, 1100 × 700 et 390 × 844, le glisser-déposer à la souris et au toucher, le remplacement au clavier et les filtres. Les vérifications de navigateur utilisent des decks locaux de démonstration.
+Un [aperçu de l’atelier](decks-validation.webp) est conservé après vérification dans Chromium à 1648 × 1314 px. Le contenu commence juste sous le bord de la table, en tenant compte du recadrage du décor en `cover`. L’en-tête conserve le titre principal et le retour au refuge. Les contrôles couvrent aussi les formats 1440 × 900, 1280 × 720, 1920 × 1080 et 390 × 844, le glisser-déposer à la souris et au toucher, le remplacement au clavier et les filtres. Les vérifications de navigateur utilisent des decks locaux de démonstration.
 
 Prompt final :
 
