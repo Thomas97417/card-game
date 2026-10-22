@@ -39,7 +39,6 @@ function PlayPage() {
   const { invite } = Route.useSearch();
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
-  const collection = useQuery(api.collection.list);
   const treasures = useQuery(api.chests.list);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const createSolo = useMutation(api.games.createSolo);
@@ -105,8 +104,7 @@ function PlayPage() {
   }, [treasures?.serverNow]);
   const deck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
-  const ready =
-    initialized && !!deck && !!activity && !!collection && !!treasures;
+  const ready = initialized && !!deck && !!activity && !!treasures;
   async function action(fn: () => Promise<unknown>) {
     setBusy(true);
     try {
@@ -136,7 +134,6 @@ function PlayPage() {
   return (
     <PlayLobby
       deckSize={deck?.cardIds.length ?? 0}
-      collectionSize={collection?.length ?? 0}
       chests={treasures?.chests ?? []}
       victoryChest={treasures?.victoryChest}
       now={now}

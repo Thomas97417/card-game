@@ -4,7 +4,6 @@ import {
   Bot,
   Swords,
   UsersRound,
-  Layers3,
   Hourglass,
   Sparkles,
   X,
@@ -37,7 +36,6 @@ export function remainingTime(milliseconds: number) {
 
 export function PlayLobby({
   deckSize,
-  collectionSize,
   chests,
   victoryChest = { wins: 0, requiredWins: VICTORY_CHEST_WINS, cycle: 0 },
   now,
@@ -54,7 +52,6 @@ export function PlayLobby({
   children,
 }: {
   deckSize: number;
-  collectionSize: number;
   chests: LobbyChest[];
   victoryChest?: VictoryChestProgress;
   now: number;
@@ -93,13 +90,6 @@ export function PlayLobby({
           />
         </Link>
         <h1>L’arène des gardiens</h1>
-        <span className="play-collection-count">
-          <Layers3 size={18} />
-          <span>
-            {ready ? collectionSize : "—"}
-            <small> / 48 compagnons</small>
-          </span>
-        </span>
       </header>
       <div className="play-main">
         <Link
@@ -126,11 +116,6 @@ export function PlayLobby({
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
-          <span className="play-eyebrow">LE CERCLE T’ATTEND</span>
-          <h2>Écris ta légende.</h2>
-          <p className="play-intro">
-            Un combat. Un trésor. De nouveaux alliés.
-          </p>
           <button
             type="button"
             className="play-battle-button play-solo"
@@ -180,24 +165,13 @@ export function PlayLobby({
             <UsersRound size={17} />
             Défi amical<span>Inviter ou rejoindre un ami</span>
           </button>
-          <p
-            className={`play-reward-note ${full ? "is-full" : ""}`}
-            role="status"
-          >
-            {full ? (
-              <>
-                <Hourglass size={15} />
-                Emplacements pleins : le prochain coffre de combat sera perdu.
-                Les victoires comptent pour le coffre commun.
-              </>
-            ) : (
-              <>
-                <Sparkles size={15} />
-                Le solo rapporte des coffres. Trois victoires ouvrent le coffre
-                commun.
-              </>
-            )}
-          </p>
+          {full && (
+            <p className="play-reward-note is-full" role="status">
+              <Hourglass size={15} />
+              Emplacements pleins : le prochain coffre de combat sera perdu. Les
+              victoires comptent pour le coffre commun.
+            </p>
+          )}
         </section>
       </div>
       <section className="play-treasures" aria-label="Tes coffres">

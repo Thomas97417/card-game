@@ -34,7 +34,6 @@ function setup(overrides: Partial<Parameters<typeof PlayLobby>[0]> = {}) {
   render(
     <PlayLobby
       deckSize={4}
-      collectionSize={4}
       chests={[]}
       now={now}
       ready
