@@ -1,0 +1,30 @@
+{
+  "tool": "Built-in ImageGen",
+  "terrain": {
+    "path": "apps/web/public/art/duel-arena-overhead.webp",
+    "prompt": "Use case: stylized-concept. Asset type: very wide landscape 16:9 background illustration for an original 2D tactical fantasy game called Sylve, desktop game asset, 1792 by 1024 composition. Primary request: a forest stone battle court seen from a substantially HIGH OVERHEAD camera, looking down at roughly 65 degrees above the ground, almost a top-down tactical board view. NO horizon, NO sky, NO distant buildings. Composition: one large EMPTY very flat rectangular warm pale stone playing surface in the central 70% width of the illustration, gently foreshortened into a symmetric trapezoid, far edge at 27% image height from x=24% to x=76%, near edge at 85% image height from x=17% to x=83%. This entire area is smooth quiet stone with subtle mottled texture and only occasional tiny irregular cracks, ABSOLUTELY NO square paving grid, NO internal tile lines, NO regular stone seams. A thin continuous golden stone curb frames only its outer perimeter. At left and right there are generous clear stone standing spaces for heroes, not illustrated here. Lush emerald forest shrubs, ferns, roots and mossy ancient low stone walls surround the OUTER EDGES only, with small delicate white flowers, a few sculpted stones at the TOP far edge. Warm sunlight from upper left, gentle soft shadows. Style: polished hand-painted charming 2D fantasy strategy game environment, readable low contrast ground texture, greens and warm parchment gold, matches storybook fantasy creatures. Constraints: whole illustration is ground viewed from above, keep center empty and uncluttered. No characters, no creatures, no cards, no grid, no text, no UI, no symbols, no logos, no watermark.",
+    "imageDimensions": [1659, 948],
+    "groundCorners": {
+      "topLeft": [361, 137],
+      "topRight": [1296, 137],
+      "bottomRight": [1452, 791],
+      "bottomLeft": [209, 791]
+    },
+    "grid": "6 columns × 4 rows. The stone seams, interactive polygons and sprite anchors use the same projective transform in apps/web/src/components/game/arena-layout.ts."
+  },
+  "heroes": [
+    {
+      "id": "hero-sylve",
+      "path": "apps/web/public/art/heroes/hero-sylve.webp",
+      "prompt": "Use case: stylized-concept. Asset type: a single transparent full-body HERO sprite for original fantasy tactical game Sylve, suitable standing to the LEFT of a battle court. Primary request: an original courageous forest guardian hero, a young adult elf with silver-white tousled hair, elegant emerald and ivory leaf-shaped armor, a flowing deep teal cloak, small polished silver sword held lowered at his side and a round leaf-emblem bronze buckler. Friendly determined expression, expressive green eyes, subtly pointed ears. Composition: one complete full-body character in a compact battle-ready standing pose, three-quarter view facing RIGHT into the battlefield, camera gently above the character to suit an overhead game board but face remains readable, boots fully visible, generous transparent margin around entire silhouette. Style: polished hand-painted 2D fantasy game art with slightly chibi proportions, clean dark outlines, rich delicate material textures, charming sophisticated storybook shading, coherent with forest creature sprites. Constraints: genuinely transparent background, no scenery, no floor, no ground plane, no cast shadow plane, no frame, no cards, no text, no UI, no numbers, no logo, no watermark. One character only.",
+      "finalCutoutPrompt": "Use case: background-extraction. Asset type: transparent full-body hero sprite for a 2D fantasy game. Input image 1 is the EDIT TARGET. Remove the ENTIRE background and all surrounding dark gray, black, teal, amber, haze, glow and aura around the elf. Keep ONLY the elf, hair, face, sword, shield, cloak, clothing, armor and boots as an accurately cut-out full-body character on a genuinely transparent background. Preserve the character's appearance, pose, proportions, color, facial details and all outfit details exactly. Retain clean natural edges around cloak and hair. Background pixels outside the actual character silhouette must have alpha 0, without any ambient glow, vignette or translucent backdrop. Do not add a floor, shadow plane, text, logo, frame or objects.",
+      "transparent": true
+    },
+    {
+      "id": "hero-amber",
+      "path": "apps/web/public/art/heroes/hero-amber.webp",
+      "prompt": "Use case: stylized-concept. Asset type: a single transparent full-body HERO sprite for original fantasy tactical game Sylve, suitable standing to the RIGHT of a battle court. Primary request: an original noble mechanical forest guardian, a compact humanoid knight automaton made of carved aged bronze armor and warm ivory ceramic plates, softly glowing amber eyes in an expressive visor, small emerald vines and leaf motifs etched in armor, a flowing muted crimson cape. Holds a broad elegant bronze-and-silver sword lowered at its side and a small round bronze shield, confident watchful standing stance. Composition: one complete full-body character, three-quarter view facing LEFT into the battlefield, camera gently above the character to suit an overhead game board but face remains readable, boots fully visible, generous transparent margin. Style: polished hand-painted 2D fantasy game art with slightly chibi proportions, clean dark outlines, rich delicate material textures, charming sophisticated storybook shading, coherent with forest creature sprites. Constraints: genuinely transparent background, no scenery, no floor, no ground plane, no cast shadow plane, no frame, no cards, no text, no UI, no numbers, no logo, no watermark. One character only.",
+      "transparent": true
+    }
+  ]
+}

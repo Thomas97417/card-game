@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as DecksRouteImport } from './routes/decks'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -25,6 +26,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayRoute = PlayRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
   '/settings': typeof SettingsRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
   '/settings': typeof SettingsRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/play': typeof PlayRoute
+  '/practice': typeof PracticeRoute
   '/settings': typeof SettingsRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decks'
     | '/play'
+    | '/practice'
     | '/settings'
     | '/forgot-password'
     | '/reset-password'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decks'
     | '/play'
+    | '/practice'
     | '/settings'
     | '/forgot-password'
     | '/reset-password'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/decks'
     | '/play'
+    | '/practice'
     | '/settings'
     | '/(auth)/forgot-password'
     | '/(auth)/reset-password'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   DecksRoute: typeof DecksRoute
   PlayRoute: typeof PlayRoute
+  PracticeRoute: typeof PracticeRoute
   SettingsRoute: typeof SettingsRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authResetPasswordRoute: typeof authResetPasswordRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/play': {
@@ -280,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   DecksRoute: DecksRoute,
   PlayRoute: PlayRoute,
+  PracticeRoute: PracticeRoute,
   SettingsRoute: SettingsRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authResetPasswordRoute: authResetPasswordRoute,

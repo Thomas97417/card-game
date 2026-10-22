@@ -3,7 +3,7 @@ import type { GameEvent, GameView } from "@sylve/game";
 
 type View = GameView & { events: GameEvent[] };
 
-/** Animate only server-confirmed events; refreshing starts at the current snapshot. */
+/** Animate committed engine events; mounting starts at the current snapshot. */
 export function useCombatPlayback(latest: View | undefined) {
   const [display, setDisplay] = useState<View>();
   const [event, setEvent] = useState<GameEvent | null>(null);
