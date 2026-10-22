@@ -214,6 +214,11 @@ export function resolveCard(id: string, level = 1): CardDefinition {
 export function upgradeCost(level: number) {
   return level * 5;
 }
+
+/** Gold and duplicate costs both use the card's current level. */
+export function upgradeGoldCost(level: number) {
+  return level * 50;
+}
 export function baseCardId(card: CardDefinition) {
   return card.baseId ?? card.id.split(":")[0]!;
 }

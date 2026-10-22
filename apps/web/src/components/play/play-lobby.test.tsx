@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PlayLobby, remainingTime, type LobbyChest } from "./play-lobby";
 import { ChestRevealDialog } from "./chest-reveal-dialog";
+import { GoldContext } from "@/components/gold-balance";
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>
@@ -138,37 +139,37 @@ describe("le salon de combat", () => {
     expect(remainingTime(60_001)).toBe("1:01");
     expect(remainingTime(3_600_000)).toBe("1:00:00");
   });
-  it("reveals quantities, new variants and upgrade availability with their actual shared portraits", () => {
+  it("reveals exactly two rewards: gold and a stack of one card with its actual portrait", () => {
     render(
-      <ChestRevealDialog
-        reward={{
-          rarity: "rare",
-          reveals: [
-            {
-              variantId: "fox:rare",
-              count: 3,
-              isNew: true,
-              level: 1,
-              copies: 2,
-            },
-            {
-              variantId: "guardian:common",
-              count: 7,
-              isNew: false,
-              level: 1,
-              copies: 7,
-            },
-          ],
-        }}
-        onClose={vi.fn()}
-      />,
+      <GoldContext.Provider value={150}>
+        <ChestRevealDialog
+          reward={{
+            rarity: "rare",
+            gold: 150,
+            reveals: [
+              {
+                variantId: "fox:rare",
+                count: 24,
+                isNew: true,
+                level: 1,
+                copies: 23,
+              },
+            ],
+          }}
+          onClose={vi.fn()}
+        />
+      </GoldContext.Provider>,
     );
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(
-      screen.getByText("10 exemplaires rejoignent ta collection."),
+      screen.getByText(
+        "150 pièces d’or et 24 exemplaires rejoignent ta collection.",
+      ),
     ).toBeTruthy();
     expect(screen.getByText("Débloquée !")).toBeTruthy();
-    expect(screen.getByText("Amélioration disponible")).toBeTruthy();
+    expect(screen.getByText("+150")).toBeTruthy();
+    expect(screen.getByText("×24")).toBeTruthy();
+    expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
     expect(screen.getByAltText("Renard des braises").getAttribute("src")).toBe(
       "/art/characters/fox.webp",
     );

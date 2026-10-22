@@ -32,6 +32,7 @@ import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
+import { GoldBalance } from "@/components/gold-balance";
 
 export interface WorkshopDeck {
   _id: Id<"decks">;
@@ -372,6 +373,7 @@ export function DeckWorkshop({
           />
         </Link>
         <h1 className="workshop-title">L’atelier des gardiens</h1>
+        <GoldBalance />
       </header>
 
       <div className="workshop-content">
@@ -560,6 +562,7 @@ export function DeckWorkshop({
           id="workshop-instructions"
           className={`workshop-instructions ${selectedCard ? "has-selection" : ""}`}
           role={status === "error" ? "alert" : "status"}
+          aria-label="Conseils pour ton deck"
           aria-live="polite"
         >
           <ArrowRightLeft size={17} />

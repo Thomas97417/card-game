@@ -1,3 +1,73 @@
+.gold-icon {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #38200b55);
+}
+.gold-amount,
+.gold-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.gold-balance {
+  min-height: 44px;
+  flex-shrink: 0;
+  padding: 3px 14px 3px 6px;
+  border: 1px solid #d7b77799;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #24392bf2, #14281ff2);
+  color: #ffe2a2;
+  box-shadow:
+    0 3px 12px #08130f40,
+    inset 0 1px #fff0c51a;
+  font:
+    700 15px/1.2 "Avenir Next",
+    sans-serif;
+}
+.workshop-header > .gold-balance,
+.play-header > .gold-balance {
+  margin-left: auto;
+}
+.workshop-header h1,
+.play-header h1 {
+  min-width: 0;
+}
+.upgrade-gold {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #b99a5055;
+  border-radius: 8px;
+  background: #d8ba771c;
+  color: #725016;
+  font-size: 12px;
+}
+.upgrade-gold .gold-amount {
+  font-size: 17px;
+  font-weight: 700;
+}
+.upgrade-gold small {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 10px;
+}
+.upgrade-gold[data-insufficient="true"] small,
+.upgrade-shortage {
+  color: #a24d30;
+}
+.upgrade-shortage {
+  display: block;
+  margin-top: 4px;
+}
 [data-rarity="common"] {
   --rarity-color: #a4b4a0;
   --rarity-rgb: 164, 180, 160;
@@ -208,7 +278,7 @@
   font-size: 10px;
 }
 .chest-reveal-dialog {
-  max-width: 880px;
+  max-width: 600px;
 }
 .chest-reveal-heading {
   display: flex;
@@ -230,7 +300,7 @@
 }
 .chest-reveal-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px 16px;
   margin: 30px 0;
 }
@@ -258,6 +328,27 @@
 .chest-reveal-item > small {
   font-size: 9px;
   color: #697664;
+}
+.chest-gold-reward {
+  justify-content: center;
+  align-self: stretch;
+  border: 1px solid #c2a25a66;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at center, #f2cd6e38, #e7cd8b0d);
+  padding: 20px 8px;
+}
+.chest-gold-reward > .gold-icon {
+  width: min(140px, 90%);
+  height: 140px;
+}
+.chest-gold-reward > strong {
+  color: #8c6019;
+  font-size: 30px;
+}
+.chest-gold-reward > span {
+  color: #725016;
+  font-size: 12px;
+  font-weight: 700;
 }
 .chest-loot-quantity {
   position: absolute;
@@ -321,6 +412,25 @@
   }
 }
 @media (max-width: 760px) {
+  .workshop-header {
+    gap: 10px;
+  }
+  .workshop-header h1,
+  .play-header h1 {
+    font-size: clamp(17px, 4.5vw, 24px);
+  }
+  .gold-balance {
+    gap: 5px;
+    padding-right: 10px;
+    font-size: 13px;
+  }
+  .gold-amount {
+    gap: 5px;
+  }
+  .gold-balance .gold-icon {
+    width: 30px;
+    height: 30px;
+  }
   .workshop-collection-heading {
     gap: 8px;
     flex-wrap: wrap;
@@ -350,6 +460,18 @@
   }
   .upgrade-portrait {
     height: 170px;
+  }
+}
+@media (max-width: 600px) {
+  .header-inner:has(.gold-balance) {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 65px;
+    gap: 8px 16px;
+    padding-block: 10px;
+  }
+  .header-inner:has(.gold-balance) .sylve-nav {
+    height: 40px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

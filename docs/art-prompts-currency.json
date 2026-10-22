@@ -1,0 +1,12 @@
+{
+  "tool": "Built-in ImageGen",
+  "transparentBackground": true,
+  "assets": [
+    {
+      "path": "apps/web/public/art/ui/gold-coins.webp",
+      "width": 384,
+      "height": 384,
+      "prompt": "Use case: stylized-concept.\nAsset type: one production game currency icon for Sylve, a premium hand-painted 2D woodland fantasy card game.\nPrimary request: a compact small stack of three golden coins, with one large coin leaning upright in front so its face is clearly readable. Each coin has a simple embossed oak leaf, a thick beveled rim and a few restrained edge notches.\nStyle/medium: polished painterly 2D storybook fantasy, tactile slightly worn gold metal, warm honey highlights from upper left, deep amber shadows and a fine dark contour. The icon should sit naturally over dark walnut and emerald forest game interfaces.\nComposition/framing: square canvas with a single isolated compact group of coins centered, filling 85 percent of the canvas, strong clear silhouette readable at 32 pixels. Almost front-on with subtle three-quarter depth. Keep details broad and legible.\nConstraints: genuine alpha-transparent background, no ground plane, no backdrop, no frame, no UI panel, no letters, no text, no numbers, no logo, no watermark, no extra objects. Deliver only the gold coin icon."
+    }
+  ]
+}

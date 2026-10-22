@@ -4,6 +4,7 @@ import {
   CHEST_SLOTS,
   VICTORY_CHEST_WINS,
   chestLoot,
+  chestGold,
   rollChest,
   type LootStack,
   type LootReveal,
@@ -11,6 +12,26 @@ import {
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+
+export async function playerWallet(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+) {
+  return ctx.db
+    .query("wallets")
+    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+    .unique();
+}
+
+export async function grantGold(
+  ctx: MutationCtx,
+  ownerId: string,
+  gold: number,
+) {
+  const wallet = await playerWallet(ctx, ownerId);
+  if (wallet) await ctx.db.patch(wallet._id, { gold: wallet.gold + gold });
+  else await ctx.db.insert("wallets", { ownerId, gold });
+}
 
 export async function ownedCard(
   ctx: QueryCtx | MutationCtx,
@@ -88,9 +109,17 @@ async function advanceVictoryChest(ctx: MutationCtx, ownerId: string) {
   const wins = (chest?.wins ?? 0) + 1;
   const contents =
     wins === VICTORY_CHEST_WINS ? chestLoot("common", Math.random) : [];
-  if (chest) await ctx.db.patch(chest._id, { wins, contents });
+  const gold =
+    wins === VICTORY_CHEST_WINS ? chestGold("common", Math.random) : 0;
+  if (chest) await ctx.db.patch(chest._id, { wins, contents, gold });
   else
-    await ctx.db.insert("victoryChests", { ownerId, wins, cycle: 0, contents });
+    await ctx.db.insert("victoryChests", {
+      ownerId,
+      wins,
+      cycle: 0,
+      contents,
+      gold,
+    });
   return wins;
 }
 
@@ -135,6 +164,7 @@ export async function awardVictoryChest(
     awardedAt: now,
     unlockAt: now + CHEST_RULES[rarity].durationMs,
     contents: chestLoot(rarity, Math.random),
+    gold: chestGold(rarity, Math.random),
   });
   await ctx.db.patch(game._id, {
     reward: { ownerId, status: "awarded", chestId, rarity, victoryWins },

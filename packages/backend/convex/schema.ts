@@ -11,13 +11,22 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  wallets: defineTable({
+    ownerId: v.string(),
+    gold: v.number(),
+  }).index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),
     wins: v.number(),
     cycle: v.number(),
     contents: v.array(lootValidator),
+    gold: v.optional(v.number()),
     lastClaim: v.optional(
-      v.object({ cycle: v.number(), reveals: v.array(revealValidator) }),
+      v.object({
+        cycle: v.number(),
+        reveals: v.array(revealValidator),
+        gold: v.optional(v.number()),
+      }),
     ),
   }).index("by_owner", ["ownerId"]),
   collection: defineTable({
@@ -36,6 +45,7 @@ export default defineSchema({
     unlockAt: v.number(),
     openedAt: v.optional(v.number()),
     contents: v.array(lootValidator),
+    gold: v.optional(v.number()),
     reveals: v.optional(v.array(revealValidator)),
   }).index("by_owner_status", ["ownerId", "status"]),
   decks: defineTable({

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GoldBalance } from "@/components/gold-balance";
 import { Link } from "@tanstack/react-router";
 import {
   Bot,
@@ -90,6 +91,7 @@ export function PlayLobby({
           />
         </Link>
         <h1>L’arène des gardiens</h1>
+        <GoldBalance />
       </header>
       <div className="play-main">
         <Link

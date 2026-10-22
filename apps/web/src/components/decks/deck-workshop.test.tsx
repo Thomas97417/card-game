@@ -16,6 +16,7 @@ import {
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DeckWorkshop, type WorkshopDeck } from "./deck-workshop";
+import { GoldContext } from "@/components/gold-balance";
 
 vi.mock("@tanstack/react-router", () => ({
   useBlocker: vi.fn(),
@@ -40,16 +41,22 @@ const savedDeck: WorkshopDeck = {
   ],
 };
 const starter = { ...savedDeck, cardIds: [...DEFAULT_DECK] };
-function setup(deck = savedDeck, collection = fullCollection) {
+function setup(
+  deck = savedDeck,
+  collection = fullCollection,
+  gold: number | undefined = 500,
+) {
   const onSave = vi.fn().mockResolvedValue(deckId);
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
   const result = render(
-    <DeckWorkshop
-      deck={deck}
-      collection={collection}
-      onSave={onSave}
-      onUpgrade={onUpgrade}
-    />,
+    <GoldContext.Provider value={gold}>
+      <DeckWorkshop
+        deck={deck}
+        collection={collection}
+        onSave={onSave}
+        onUpgrade={onUpgrade}
+      />
+    </GoldContext.Provider>,
   );
   return { ...result, onSave, onUpgrade };
 }
@@ -198,9 +205,10 @@ describe("l’atelier et la collection", () => {
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.keyDown(card(deckRow(), "Gardien de pierre"), { key: "Escape" });
-    expect(screen.getByRole("status").textContent).not.toContain(
-      "Choisis une carte",
-    );
+    expect(
+      screen.getByRole("status", { name: "Conseils pour ton deck" })
+        .textContent,
+    ).not.toContain("Choisis une carte");
     fireEvent.click(card(collection(), "Chevalier ronce"), { detail: 0 });
     fireEvent.click(
       await screen.findByRole("button", { name: "Remplacer une carte" }),
@@ -271,5 +279,38 @@ describe("l’atelier et la collection", () => {
       ).disabled,
     ).toBe(true);
     expect(screen.getByText("0 / 5 exemplaires")).toBeTruthy();
+  });
+  it("disables an upgrade when copies are ready but gold is missing", async () => {
+    const owned = fullCollection.map((entry) => ({ ...entry, copies: 10 }));
+    const { onUpgrade } = setup(starter, owned, 49);
+    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    const action = await screen.findByRole("button", {
+      name: "Améliorer au niveau 2",
+    });
+    expect((action as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText("Il te manque 1 pièce d’or.")).toBeTruthy();
+    fireEvent.click(action);
+    expect(onUpgrade).not.toHaveBeenCalled();
+  });
+  it("shows the level-dependent gold cost", async () => {
+    const owned = fullCollection.map((entry) => ({
+      ...entry,
+      card: variantCard(entry.card.baseId!, "common", 3),
+      copies: 20,
+    }));
+    setup(starter, owned, 150);
+    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    expect(
+      (
+        (await screen.findByRole("button", {
+          name: "Améliorer au niveau 4",
+        })) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    expect(
+      screen.getByText(
+        "L’amélioration consomme 15 exemplaires et 150 pièces d’or.",
+      ),
+    ).toBeTruthy();
   });
 });
