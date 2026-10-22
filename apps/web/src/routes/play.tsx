@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
-import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   ArrowRight,
   Bot,
@@ -49,7 +48,6 @@ function PlayPage() {
   const enqueue = useMutation(api.matchmaking.enqueue);
   const cancelQueue = useMutation(api.matchmaking.cancel);
   const heartbeat = useMutation(api.matchmaking.heartbeat);
-  const [deckId, setDeckId] = useState<Id<"decks"> | "">("");
   const [code, setCode] = useState(invite ?? "");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -75,7 +73,7 @@ function PlayPage() {
     const interval = window.setInterval(ping, 15_000);
     return () => window.clearInterval(interval);
   }, [activity?.queued, heartbeat]);
-  const selectedDeck = decks?.find((deck) => deck._id === deckId) ?? decks?.[0];
+  const selectedDeck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
   async function action(fn: () => Promise<unknown>) {
     setBusy(true);
@@ -111,7 +109,7 @@ function PlayPage() {
           <div className="section-label">
             <span>01 / TON DECK</span>
             <Link to="/decks">
-              Mes decks <ArrowRight size={14} />
+              Mon deck <ArrowRight size={14} />
             </Link>
           </div>
           <div className="deck-stack">
@@ -124,21 +122,8 @@ function PlayPage() {
               </span>
             </div>
           </div>
-          <label className="field-label" htmlFor="chosen-deck">
-            Tes compagnons de voyage
-          </label>
-          <select
-            id="chosen-deck"
-            value={selectedDeck?._id ?? ""}
-            disabled={locked}
-            onChange={(event) => setDeckId(event.target.value as Id<"decks">)}
-          >
-            {decks.map((deck) => (
-              <option key={deck._id} value={deck._id}>
-                {deck.name}
-              </option>
-            ))}
-          </select>
+          <span className="field-label">Tes compagnons de voyage</span>
+          <p className="font-serif text-lg">{selectedDeck?.name}</p>
           <p className="muted small">
             8 cartes uniques · Toutes les cartes sont disponibles
           </p>

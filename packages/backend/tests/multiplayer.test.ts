@@ -66,27 +66,61 @@ describe("decks et authentification", () => {
     expect(await alice.mutation(api.decks.ensureStarter, {})).toBe(first);
     expect(await alice.query(api.decks.list, {})).toHaveLength(1);
   });
-  it("adapts all legacy decks to eight cards while preserving their order", async () => {
+  it("uses the latest legacy deck, preserving other decks and the active card order", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const first = await alice.mutation(api.decks.ensureStarter, {});
-    const second = await alice.mutation(api.decks.save, {
-      name: "Second",
-      cardIds: [...DEFAULT_DECK],
-    });
     const oldIds = CATALOG.slice(0, 10).map((card) => card.id);
-    await t.run(async (ctx) => {
-      await ctx.db.patch(first, { cardIds: oldIds });
-      await ctx.db.patch(second, { cardIds: [...oldIds].reverse() });
+    const second = await t.run(async (ctx) => {
+      const original = (await ctx.db.get(first))!;
+      await ctx.db.patch(first, {
+        cardIds: oldIds,
+        updatedAt: Date.now() - 1000,
+      });
+      return await ctx.db.insert("decks", {
+        ownerId: original.ownerId,
+        name: "Second",
+        cardIds: [...oldIds].reverse(),
+        updatedAt: Date.now(),
+      });
     });
-    await alice.mutation(api.decks.ensureStarter, {});
+    expect(await alice.mutation(api.decks.ensureStarter, {})).toBe(second);
     const decks = await alice.query(api.decks.list, {});
-    expect(decks.find((deck) => deck._id === first)!.cardIds).toEqual(
-      oldIds.slice(0, 8),
+    expect(decks).toHaveLength(1);
+    expect(decks[0]!._id).toBe(second);
+    expect(decks[0]!.cardIds).toEqual([...oldIds].reverse().slice(0, 8));
+    expect((await t.run((ctx) => ctx.db.get(first)))!.cardIds).toEqual(oldIds);
+    await expect(
+      alice.mutation(api.decks.save, {
+        deckId: first,
+        name: "Ancien",
+        cardIds: [...DEFAULT_DECK],
+      }),
+    ).rejects.toThrow("appartient");
+    await expect(
+      alice.mutation(api.games.createPrivate, { deckId: first }),
+    ).rejects.toThrow("appartient");
+  });
+  it("rejects creating another deck or deleting the unique deck", async () => {
+    const t = setup();
+    const alice = await player(t, "alice");
+    const id = await alice.mutation(api.decks.ensureStarter, {});
+    await expect(
+      alice.mutation(api.decks.save, {
+        name: "Un autre deck",
+        cardIds: [...DEFAULT_DECK],
+      }),
+    ).rejects.toThrow("un seul deck");
+    await expect(
+      alice.mutation(api.decks.remove, { deckId: id }),
+    ).rejects.toThrow("unique");
+    const ids = await Promise.all(
+      Array.from({ length: 4 }, () =>
+        alice.mutation(api.decks.ensureStarter, {}),
+      ),
     );
-    expect(decks.find((deck) => deck._id === second)!.cardIds).toEqual(
-      [...oldIds].reverse().slice(0, 8),
-    );
+    expect(new Set(ids)).toEqual(new Set([id]));
+    expect(await alice.query(api.decks.list, {})).toHaveLength(1);
   });
   it("rejects duplicates, wrong sizes, unknown cards and another player's deck", async () => {
     const t = setup();
@@ -100,7 +134,11 @@ describe("decks et authentification", () => {
       [...DEFAULT_DECK.slice(1), "missing"],
     ])
       await expect(
-        alice.mutation(api.decks.save, { name: "Test", cardIds: ids }),
+        alice.mutation(api.decks.save, {
+          deckId: id,
+          name: "Test",
+          cardIds: ids,
+        }),
       ).rejects.toThrow();
     await expect(
       bob.mutation(api.decks.save, {
@@ -124,7 +162,9 @@ describe("invitations et synchronisation", () => {
     const bob = await player(t, "bob");
     const aDeck = await alice.mutation(api.decks.ensureStarter, {});
     const bDeck = await bob.mutation(api.decks.ensureStarter, {});
-    const oldCards = CATALOG.slice(0, 10).map(({ combatType, ...card }) => card);
+    const oldCards = CATALOG.slice(0, 10).map(
+      ({ combatType, ...card }) => card,
+    );
     await t.run((ctx) =>
       ctx.db.patch(aDeck, { cardIds: oldCards.map((card) => card.id) }),
     );
@@ -143,7 +183,9 @@ describe("invitations et synchronisation", () => {
       expect(owner.cards).toHaveLength(8);
       expect(owner.hand).toHaveLength(4);
       expect(owner.drawPile).toHaveLength(4);
-      expect(owner.cards.every((card) => card.combatType === getCombatType(card))).toBe(true);
+      expect(
+        owner.cards.every((card) => card.combatType === getCombatType(card)),
+      ).toBe(true);
     }
   });
   it("lets two real component identities join and hides private data", async () => {
@@ -175,7 +217,7 @@ describe("invitations et synchronisation", () => {
   });
   it("locks snapshots even if the original deck is edited or removed", async () => {
     const { t, alice, aDeck, gameId } = await match();
-    await alice.mutation(api.decks.remove, { deckId: aDeck });
+    await t.run((ctx) => ctx.db.delete(aDeck));
     const game = await t.run((ctx) => ctx.db.get(gameId));
     expect(game!.state!.players[0]!.cards).toHaveLength(8);
     const view = await alice.query(api.games.get, { gameId });
@@ -281,7 +323,12 @@ describe("tours autoritaires", () => {
       const owner = state.players[own.me]!;
       const card = owner.cards.find((card) => card.id === cardId)!;
       owner.hand = owner.hand.filter((id) => id !== cardId);
-      owner.board.push({ cardId, row: 0, depth: getCombatType(card) === "melee" ? 0 : 2, hp: card.health });
+      owner.board.push({
+        cardId,
+        row: 0,
+        depth: getCombatType(card) === "melee" ? 0 : 2,
+        hp: card.health,
+      });
       await ctx.db.patch(gameId, { state });
     });
     const eve = await player(t, "eve");
@@ -356,9 +403,15 @@ describe("tours autoritaires", () => {
         expectedTurn: 1,
       }),
     ).rejects.toThrow("tour");
-    await expect(active.mutation(api.games.playCard, {
-      gameId, cardId, row: 0, depth: depth === 0 ? 2 : 0, expectedTurn: 1,
-    })).rejects.toThrow("colonnes");
+    await expect(
+      active.mutation(api.games.playCard, {
+        gameId,
+        cardId,
+        row: 0,
+        depth: depth === 0 ? 2 : 0,
+        expectedTurn: 1,
+      }),
+    ).rejects.toThrow("colonnes");
     await active.mutation(api.games.playCard, {
       gameId,
       cardId,
@@ -371,7 +424,11 @@ describe("tours autoritaires", () => {
     expect(other.players[other.me]!.heroHp).toBe(30 - card.attack);
     expect(other.activePlayer).toBe(other.me);
     expect(other.turn).toBe(2);
-    expect(other.events.map((event) => event.type)).toEqual(["summon", "attack", "turn"]);
+    expect(other.events.map((event) => event.type)).toEqual([
+      "summon",
+      "attack",
+      "turn",
+    ]);
     await expect(
       active.mutation(api.games.playCard, {
         gameId,
@@ -394,7 +451,9 @@ describe("tours autoritaires", () => {
     const card = own.players[own.me]!.hand[0]!;
     await vi.advanceTimersByTimeAsync(59_000);
     await active.mutation(api.games.playCard, {
-      gameId, cardId: card.id, row: 0,
+      gameId,
+      cardId: card.id,
+      row: 0,
       depth: getCombatType(card) === "melee" ? 0 : 2,
       expectedTurn: 1,
     });

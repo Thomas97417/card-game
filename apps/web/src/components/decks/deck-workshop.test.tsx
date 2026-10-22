@@ -12,6 +12,7 @@ import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DeckWorkshop, type WorkshopDeck } from "./deck-workshop";
 
 vi.mock("@tanstack/react-router", () => ({
+  useBlocker: vi.fn(),
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>
       {children}
@@ -28,13 +29,10 @@ const savedDeck: WorkshopDeck = {
   cardIds: [...DEFAULT_DECK.slice(0, -1), "wolf"],
 };
 
-function setup(decks: WorkshopDeck[] = [savedDeck]) {
+function setup() {
   const onSave = vi.fn().mockResolvedValue(deckId);
-  const onDelete = vi.fn().mockResolvedValue(undefined);
-  const result = render(
-    <DeckWorkshop decks={decks} onSave={onSave} onDelete={onDelete} />,
-  );
-  return { ...result, onSave, onDelete };
+  const result = render(<DeckWorkshop deck={savedDeck} onSave={onSave} />);
+  return { ...result, onSave };
 }
 const deckRow = () =>
   within(screen.getByRole("region", { name: "Cartes du deck" }));
@@ -100,9 +98,11 @@ describe("l’atelier des decks", () => {
       CATALOG.length - DECK_SIZE,
     );
     expect(
-      (screen.getByRole("button", { name: "Enregistré" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+      screen.queryByRole("button", {
+        name: /Enregistrer|Enregistré|Créer|Supprimer/,
+      }),
+    ).toBeNull();
+    expect(screen.queryByRole("combobox")).toBeNull();
   });
 
   it.each(["mouse", "touch"])(
@@ -125,13 +125,12 @@ describe("l’atelier des decks", () => {
       expect(screen.getByRole("status").textContent).toContain(
         "Chevalier ronce remplace Gardien de pierre",
       );
-      fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
       await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
       const saved = onSave.mock.calls[0]![0];
       expect(saved.deckId).toBe(deckId);
       expect(saved.cardIds).toEqual(["knight", ...savedDeck.cardIds.slice(1)]);
       expect(new Set(saved.cardIds).size).toBe(DECK_SIZE);
-      await screen.findByRole("button", { name: "Enregistré" });
+      await screen.findByText("Modifications enregistrées automatiquement");
     },
   );
 
@@ -157,9 +156,11 @@ describe("l’atelier des decks", () => {
     dragCard(source, screen.getByRole("heading", { level: 1 }));
     expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Enregistré" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+      screen.queryByRole("button", {
+        name: /Enregistrer|Enregistré|Créer|Supprimer/,
+      }),
+    ).toBeNull();
+    expect(screen.queryByRole("combobox")).toBeNull();
     Object.defineProperty(document, "elementFromPoint", {
       configurable: true,
       value: vi.fn().mockReturnValue(card(deckRow(), "Gardien de pierre")),
@@ -209,49 +210,41 @@ describe("l’atelier des decks", () => {
     expect(card(collection(), "Gardien de pierre")).toBeTruthy();
   });
 
-  it("retains unsaved changes when saving fails", async () => {
+  it("saves a rename immediately and never creates a new deck", async () => {
     const { onSave } = setup();
-    onSave.mockRejectedValueOnce(new Error("Connexion interrompue"));
     fireEvent.change(screen.getByLabelText("Nom du deck"), {
       target: { value: "Les ronces" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
-    await waitFor(() =>
-      expect(
-        (
-          screen.getByRole("button", {
-            name: "Enregistrer",
-          }) as HTMLButtonElement
-        ).disabled,
-      ).toBe(false),
-    );
-    expect(
-      (screen.getByLabelText("Nom du deck") as HTMLInputElement).value,
-    ).toBe("Les ronces");
-  });
-
-  it("creates a complete new deck and requires confirmation before deletion", async () => {
-    const { onSave, onDelete } = setup();
-    fireEvent.click(screen.getByRole("button", { name: "Supprimer ce deck" }));
-    expect(onDelete).not.toHaveBeenCalled();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Confirmer la suppression" }),
-    );
-    await waitFor(() => expect(onDelete).toHaveBeenCalledWith(deckId));
-    fireEvent.click(
-      screen.getByRole("button", { name: "Créer un nouveau deck" }),
-    );
-    expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
-    fireEvent.change(screen.getByLabelText("Nom du deck"), {
-      target: { value: "Une nouvelle alliance" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
     await waitFor(() =>
       expect(onSave).toHaveBeenCalledWith({
-        deckId: undefined,
-        name: "Une nouvelle alliance",
-        cardIds: DEFAULT_DECK,
+        deckId,
+        name: "Les ronces",
+        cardIds: savedDeck.cardIds,
       }),
     );
+    await screen.findByText("Modifications enregistrées automatiquement");
+  });
+
+  it("saves card changes even while the name is temporarily empty", async () => {
+    const { onSave } = setup();
+    fireEvent.change(screen.getByLabelText("Nom du deck"), {
+      target: { value: "" },
+    });
+    dragCard(
+      card(collection(), "Chevalier ronce"),
+      card(deckRow(), "Gardien de pierre"),
+    );
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith({
+        deckId,
+        name: savedDeck.name,
+        cardIds: ["knight", ...savedDeck.cardIds.slice(1)],
+      }),
+    );
+    fireEvent.blur(screen.getByLabelText("Nom du deck"));
+    expect(
+      (screen.getByLabelText("Nom du deck") as HTMLInputElement).value,
+    ).toBe(savedDeck.name);
+    await screen.findByText("Modifications enregistrées automatiquement");
   });
 });

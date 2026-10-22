@@ -20,7 +20,6 @@ function DecksPage() {
   const decks = useQuery(api.decks.list);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const save = useMutation(api.decks.save);
-  const remove = useMutation(api.decks.remove);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -36,10 +35,6 @@ function DecksPage() {
   }, [ensureStarter]);
 
   return (
-    <DeckWorkshop
-      decks={initialized ? decks : undefined}
-      onSave={save}
-      onDelete={(deckId) => remove({ deckId })}
-    />
+    <DeckWorkshop deck={initialized ? decks?.[0] : undefined} onSave={save} />
   );
 }

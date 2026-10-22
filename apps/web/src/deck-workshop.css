@@ -12,7 +12,7 @@
   --workshop-card-width: clamp(
     100px,
     min(
-      calc((min(100vw, 1512px) - clamp(40px, 8.4vw, 144px) - 220px) / 8),
+      calc((min(100vw, 1512px) - clamp(40px, 8.4vw, 144px) - 244px) / 8),
       calc((100svh - var(--workshop-content-top) - 350px) * 0.35)
     ),
     162px
@@ -124,28 +124,17 @@
 }
 .workshop-current {
   position: relative;
-  border: 1px solid #d5b775b3;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #18372fea, #25392de0 50%, #172c25e8);
-  box-shadow:
-    0 12px 32px #100d0c55,
-    inset 0 0 0 4px #c4a86812;
-}
-.workshop-current::before,
-.workshop-current::after {
-  content: "✦";
-  position: absolute;
-  top: -9px;
-  color: #e1c48b;
-  font-size: 15px;
-  line-height: 1;
-  text-shadow: 0 1px 4px #332c1b;
+  padding: 14px 10px;
+  background: transparent;
+  text-shadow: 0 1px 4px #20150dcc;
 }
 .workshop-current::before {
-  left: 15px;
-}
-.workshop-current::after {
-  right: 15px;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 28px solid transparent;
+  border-image: url("/art/ui/deck-frame.webp") 120 stretch;
+  pointer-events: none;
 }
 .workshop-deck-toolbar {
   display: flex;
@@ -196,42 +185,6 @@
 .workshop-deck-identity input:hover {
   border-bottom-color: #d7b77766;
 }
-.workshop-deck-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.workshop-deck-select {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  max-width: 205px;
-  height: 38px;
-  padding-left: 10px;
-  color: #e3d9be;
-  background: #12281e66;
-  border: 1px solid #d7b77740;
-  border-radius: 5px;
-}
-.workshop-deck-select svg {
-  flex-shrink: 0;
-  color: #cbb17b;
-}
-.workshop-deck-select select {
-  min-width: 0;
-  width: 100%;
-  max-width: 175px;
-  height: 100%;
-  padding-right: 8px;
-  background: transparent;
-  color: inherit;
-  font-size: 10px;
-  text-overflow: ellipsis;
-}
-.workshop-deck-select option {
-  background: #25392d;
-}
-.workshop-icon-button,
 .workshop-scroll-controls button {
   display: inline-flex;
   align-items: center;
@@ -240,51 +193,14 @@
   gap: 6px;
   min-width: 36px;
   height: 38px;
-  border: 1px solid #d7b77740;
-  background: #11281e66;
-  color: #ddc591;
+  border: 1px solid #d7b77760;
+  background: #30271cc0;
+  color: #edd4a3;
   border-radius: 5px;
-  transition:
-    background 160ms,
-    border-color 160ms;
 }
-.workshop-icon-button:hover:not(:disabled),
 .workshop-scroll-controls button:hover {
-  background: #d7b77722;
-  border-color: #d7b77788;
-}
-.workshop-icon-button.is-danger {
-  color: #f5b5a0;
-  border-color: #db8b6c;
-  padding-inline: 10px;
-  font-size: 10px;
-}
-.workshop-save {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 128px;
-  min-height: 39px;
-  padding: 10px 14px;
-  border: 1px solid #e3c480;
-  background: linear-gradient(#e6cd91, #c6a563);
-  color: #24382b;
-  box-shadow:
-    inset 0 1px 0 #fff4cf88,
-    0 3px 8px #0f1c1a55;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 650;
-}
-.workshop-save:hover:not(:disabled) {
-  background: linear-gradient(#f6dda2, #d6b573);
-}
-.workshop-save:disabled {
-  background: #263e2f;
-  border-color: #89956866;
-  box-shadow: none;
-  color: #d0d7b3;
+  background: #685137cc;
+  border-color: #d7b777;
 }
 .workshop-card-row {
   display: flex;
@@ -504,6 +420,10 @@
   background: #ebc778;
   box-shadow: 0 0 7px #edbd7866;
 }
+.workshop-ready-dot.is-error {
+  background: #ed9b7b;
+  box-shadow: 0 0 7px #ed9b7b66;
+}
 .workshop-scroll-controls {
   display: none;
   align-items: center;
@@ -704,9 +624,6 @@
   .workshop-unique-note {
     display: none;
   }
-  .workshop-deck-select {
-    max-width: 145px;
-  }
   .workshop-footer {
     gap: 22px;
   }
@@ -746,20 +663,6 @@
   .workshop-deck-identity input {
     font-size: 23px;
     max-width: none;
-  }
-  .workshop-deck-actions {
-    width: 100%;
-  }
-  .workshop-deck-select {
-    flex: 1;
-    max-width: none;
-  }
-  .workshop-deck-select select {
-    max-width: none;
-  }
-  .workshop-save {
-    min-width: 111px;
-    margin-left: auto;
   }
   .workshop-card-row {
     padding-inline: 18px;

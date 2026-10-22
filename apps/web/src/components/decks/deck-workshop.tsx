@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   CATALOG,
-  DEFAULT_DECK,
   DECK_SIZE,
   combatTypeLabel,
   getCombatType,
@@ -13,23 +12,17 @@ import type { CardDefinition, CombatType } from "@sylve/game";
 import {
   ArrowRightLeft,
   BowArrow,
-  Check,
   ChevronLeft,
   ChevronRight,
   Layers3,
   Leaf,
   ListFilter,
-  LoaderCircle,
-  Plus,
-  Save,
   Sword,
-  Trash2,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
-import { showGameError } from "@/components/game/shared";
+import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 
 export interface WorkshopDeck {
   _id: Id<"decks">;
@@ -38,25 +31,20 @@ export interface WorkshopDeck {
 }
 
 interface Draft {
-  id?: Id<"decks">;
+  id: Id<"decks">;
   name: string;
   cards: string[];
 }
 
 interface DeckWorkshopProps {
-  decks: readonly WorkshopDeck[] | undefined;
+  deck: WorkshopDeck | undefined;
   onSave: (args: {
-    deckId?: Id<"decks">;
+    deckId: Id<"decks">;
     name: string;
     cardIds: string[];
   }) => Promise<Id<"decks">>;
-  onDelete: (id: Id<"decks">) => Promise<unknown>;
 }
 
-const initialDraft = (): Draft => ({
-  name: "Mon nouveau deck",
-  cards: [...DEFAULT_DECK],
-});
 const deckDraft = (deck: WorkshopDeck): Draft => ({
   id: deck._id,
   name: deck.name,
@@ -93,12 +81,9 @@ function CardArtwork({ card }: { card: CardDefinition }) {
   );
 }
 
-export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
+export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [baseline, setBaseline] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -120,19 +105,27 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
     target: HTMLButtonElement;
   } | null>(null);
 
-  useEffect(() => {
-    if (decks === undefined || draft) return;
-    const next = decks[0] ? deckDraft(decks[0]) : initialDraft();
-    setDraft(next);
-    setBaseline(next);
-  }, [decks, draft]);
+  const lastValidName = useRef("");
+  const { status, initialize, enqueue, flush, hasPendingChanges } =
+    useDeckAutosave(onSave);
 
-  const ready = decks !== undefined && draft !== null;
-  const dirty =
-    !!draft &&
-    (!draft.id ||
-      draft.name !== baseline?.name ||
-      draft.cards.join(",") !== baseline?.cards.join(","));
+  useEffect(() => {
+    if (!deck || draft) return;
+    setDraft(deckDraft(deck));
+    lastValidName.current = deck.name;
+    initialize({
+      deckId: deck._id,
+      name: deck.name,
+      cardIds: [...deck.cardIds],
+    });
+  }, [deck, draft, initialize]);
+
+  useBlocker({
+    shouldBlockFn: async () => !(await flush()),
+    enableBeforeUnload: hasPendingChanges,
+  });
+
+  const ready = !!deck && draft !== null;
   const cards = draft?.cards ?? [];
   const available = CATALOG.filter((card) => !cards.includes(card.id));
   const visible = available.filter(
@@ -149,17 +142,18 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
     setHovered(null);
   }
 
-  function loadDraft(next: Draft) {
-    cancelDrag();
+  function updateDraft(next: Draft) {
     setDraft(next);
-    setBaseline(next);
-    setPicked(null);
-    setConfirmDelete(false);
-    setMessage(instructions);
+    if (next.name.trim()) lastValidName.current = next.name.trim();
+    enqueue({
+      deckId: next.id,
+      name: lastValidName.current,
+      cardIds: [...next.cards],
+    });
   }
 
   function replaceCard(cardId: string, slot: number) {
-    if (!draft || busy || slot < 0 || slot >= draft.cards.length) return;
+    if (!draft || slot < 0 || slot >= draft.cards.length) return;
     const replaced = CATALOG.find((card) => card.id === draft.cards[slot]);
     const incoming = CATALOG.find((card) => card.id === cardId);
     if (!incoming || incoming.id === replaced?.id) return;
@@ -167,12 +161,11 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
     const existing = next.indexOf(cardId);
     if (existing !== -1) next[existing] = next[slot]!;
     next[slot] = cardId;
-    setDraft({ ...draft, cards: next });
+    updateDraft({ ...draft, cards: next });
     setPicked(null);
-    setConfirmDelete(false);
     setMessage(
       existing === -1
-        ? `${incoming.name} remplace ${replaced?.name}. Pense à enregistrer ton deck.`
+        ? `${incoming.name} remplace ${replaced?.name}. Ton deck se met à jour automatiquement.`
         : `${incoming.name} et ${replaced?.name} ont échangé leur place.`,
     );
   }
@@ -190,8 +183,7 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
     event: ReactPointerEvent<HTMLButtonElement>,
     card: CardDefinition,
   ) {
-    if (!ready || busy || event.button !== 0 || event.isPrimary === false)
-      return;
+    if (!ready || event.button !== 0 || event.isPrimary === false) return;
     suppressClick.current = false;
     origin.current = {
       card,
@@ -254,49 +246,6 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
     );
   }
 
-  async function saveDeck() {
-    if (!draft || busy || !draft.name.trim() || cards.length !== DECK_SIZE)
-      return;
-    setBusy(true);
-    setConfirmDelete(false);
-    try {
-      const id = await onSave({
-        deckId: draft.id,
-        name: draft.name.trim(),
-        cardIds: draft.cards,
-      });
-      const saved = { ...draft, id, name: draft.name.trim() };
-      setDraft(saved);
-      setBaseline(saved);
-      setPicked(null);
-      setMessage("Ton deck est enregistré. Prêt à rejoindre l’arène !");
-      toast.success("Ton deck est prêt pour le duel.");
-    } catch (error) {
-      showGameError(error);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function deleteDeck() {
-    if (!draft?.id || busy) return;
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      return;
-    }
-    setBusy(true);
-    try {
-      await onDelete(draft.id);
-      const remaining = decks?.find((deck) => deck._id !== draft.id);
-      loadDraft(remaining ? deckDraft(remaining) : initialDraft());
-      toast.success("Deck supprimé.");
-    } catch (error) {
-      showGameError(error);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   function scrollRow(row: HTMLDivElement | null, direction: number) {
     row?.scrollBy({
       left: direction * row.clientWidth * 0.7,
@@ -319,7 +268,7 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
           type="button"
           className={`workshop-card ${picked === card.id ? "is-picked" : ""} ${drag?.card.id === card.id ? "is-dragging" : ""} ${target ? "is-target" : ""}`}
           style={{ "--creature-color": card.color } as CSSProperties}
-          disabled={!ready || busy}
+          disabled={!ready}
           aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
           aria-pressed={picked === card.id}
           aria-describedby="workshop-instructions"
@@ -366,7 +315,6 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
           suppressClick.current = !!origin.current?.active;
           cancelDrag();
           setPicked(null);
-          setConfirmDelete(false);
           setMessage(instructions);
         }
       }}
@@ -419,90 +367,19 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
                 id="workshop-deck-name"
                 value={draft?.name ?? "Chargement du grimoire…"}
                 maxLength={60}
-                disabled={!ready || busy}
+                onBlur={() => {
+                  if (draft)
+                    updateDraft({
+                      ...draft,
+                      name: draft.name.trim() || lastValidName.current,
+                    });
+                }}
+                disabled={!ready}
                 onChange={(event) => {
-                  if (draft) setDraft({ ...draft, name: event.target.value });
-                  setConfirmDelete(false);
+                  if (draft)
+                    updateDraft({ ...draft, name: event.target.value });
                 }}
               />
-            </div>
-            <div className="workshop-deck-actions">
-              <label className="workshop-deck-select">
-                <Layers3 size={15} aria-hidden="true" />
-                <span className="sr-only">Choisir un deck</span>
-                <select
-                  value={draft?.id ?? "new"}
-                  disabled={!ready || busy}
-                  onChange={(event) => {
-                    const deck = decks?.find(
-                      (entry) => entry._id === event.target.value,
-                    );
-                    loadDraft(deck ? deckDraft(deck) : initialDraft());
-                  }}
-                >
-                  {!draft?.id && <option value="new">Nouveau deck</option>}
-                  {decks?.map((deck) => (
-                    <option key={deck._id} value={deck._id}>
-                      {deck.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button
-                className="workshop-icon-button"
-                aria-label="Créer un nouveau deck"
-                title="Créer un nouveau deck"
-                disabled={!ready || busy}
-                onClick={() => loadDraft(initialDraft())}
-              >
-                <Plus size={18} />
-              </button>
-              {draft?.id && (
-                <button
-                  className={`workshop-icon-button ${confirmDelete ? "is-danger" : ""}`}
-                  aria-label={
-                    confirmDelete
-                      ? "Confirmer la suppression"
-                      : "Supprimer ce deck"
-                  }
-                  title={
-                    confirmDelete
-                      ? "Cliquer à nouveau pour supprimer"
-                      : "Supprimer ce deck"
-                  }
-                  disabled={busy}
-                  onClick={() => void deleteDeck()}
-                >
-                  <Trash2 size={16} />
-                  {confirmDelete && <span>Confirmer</span>}
-                </button>
-              )}
-              <button
-                className="workshop-save"
-                disabled={
-                  !ready ||
-                  busy ||
-                  !dirty ||
-                  !draft?.name.trim() ||
-                  cards.length !== DECK_SIZE
-                }
-                onClick={() => void saveDeck()}
-              >
-                {busy ? (
-                  <LoaderCircle size={16} className="animate-spin" />
-                ) : dirty ? (
-                  <Save size={16} />
-                ) : (
-                  <Check size={16} />
-                )}
-                <span>
-                  {busy
-                    ? "Enregistrement…"
-                    : dirty
-                      ? "Enregistrer"
-                      : "Enregistré"}
-                </span>
-              </button>
             </div>
           </div>
 
@@ -525,15 +402,20 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
                 ))}
           </div>
           <div className="workshop-deck-footnote">
-            <span>
+            <span
+              aria-live="polite"
+              role={status === "error" ? "alert" : undefined}
+            >
               <span
-                className={`workshop-ready-dot ${dirty ? "is-dirty" : ""}`}
+                className={`workshop-ready-dot ${status === "saving" ? "is-dirty" : status === "error" ? "is-error" : ""}`}
               />
               {!ready
                 ? "Ouverture du grimoire…"
-                : dirty
-                  ? "Modifications à enregistrer"
-                  : "Ton deck est prêt pour le duel"}
+                : status === "saving"
+                  ? "Enregistrement automatique…"
+                  : status === "error"
+                    ? "Connexion interrompue · nouvelle tentative automatique…"
+                    : "Modifications enregistrées automatiquement"}
             </span>
             <div className="workshop-scroll-controls">
               <button
@@ -635,7 +517,7 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
               type="button"
               className={filter === type ? "is-active" : ""}
               aria-pressed={filter === type}
-              disabled={!ready || busy}
+              disabled={!ready}
               onClick={() => {
                 setFilter(filter === type ? null : type);
                 setPicked(null);

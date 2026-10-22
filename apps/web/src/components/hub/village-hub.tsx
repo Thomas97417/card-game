@@ -82,7 +82,7 @@ const PLACES: readonly Place[] = [
   {
     id: "workshop",
     name: "L’atelier",
-    purpose: "Composer mes decks",
+    purpose: "Préparer mon deck",
     icon: Layers3,
     area: { left: "8%", top: "46%", width: "29%", height: "31%" },
   },
