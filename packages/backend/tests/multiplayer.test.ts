@@ -1,7 +1,7 @@
 import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CATALOG, DEFAULT_DECK } from "@sylve/game";
+import { CATALOG, DEFAULT_DECK, getCombatType } from "@sylve/game";
 import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -124,7 +124,7 @@ describe("invitations et synchronisation", () => {
     const bob = await player(t, "bob");
     const aDeck = await alice.mutation(api.decks.ensureStarter, {});
     const bDeck = await bob.mutation(api.decks.ensureStarter, {});
-    const oldCards = CATALOG.slice(0, 10).map((card) => ({ ...card }));
+    const oldCards = CATALOG.slice(0, 10).map(({ combatType, ...card }) => card);
     await t.run((ctx) =>
       ctx.db.patch(aDeck, { cardIds: oldCards.map((card) => card.id) }),
     );
@@ -143,6 +143,7 @@ describe("invitations et synchronisation", () => {
       expect(owner.cards).toHaveLength(8);
       expect(owner.hand).toHaveLength(4);
       expect(owner.drawPile).toHaveLength(4);
+      expect(owner.cards.every((card) => card.combatType === getCombatType(card))).toBe(true);
     }
   });
   it("lets two real component identities join and hides private data", async () => {
@@ -263,19 +264,21 @@ describe("invitations et synchronisation", () => {
   });
 });
 describe("tours autoritaires", () => {
-  it("synchronizes withdrawals, protects ownership and keeps the summon spent", async () => {
+  it("synchronizes withdrawals before playing and protects ownership", async () => {
     const { t, alice, bob, gameId } = await match();
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
     const own = await active.query(api.games.get, { gameId });
     const cardId = own.players[own.me]!.hand[0]!.id;
-    await active.mutation(api.games.playCard, {
-      gameId,
-      cardId,
-      row: 0,
-      depth: 0,
-      expectedTurn: 1,
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      const owner = state.players[own.me]!;
+      const card = owner.cards.find((card) => card.id === cardId)!;
+      owner.hand = owner.hand.filter((id) => id !== cardId);
+      owner.board.push({ cardId, row: 0, depth: getCombatType(card) === "melee" ? 0 : 2, hp: card.health });
+      await ctx.db.patch(gameId, { state });
     });
     const eve = await player(t, "eve");
     await expect(
@@ -312,7 +315,8 @@ describe("tours autoritaires", () => {
     expect(other.players[own.me]!.discardCount).toBe(1);
     expect(other.players[own.me]!.handCount).toBe(3);
     expect(other.events.at(-1)!.type).toBe("withdraw");
-    expect(other.hasSummoned).toBe(true);
+    expect(other.hasSummoned).toBe(false);
+    expect(other.turn).toBe(1);
     await expect(
       active.mutation(api.games.withdrawCard, {
         gameId,
@@ -320,23 +324,25 @@ describe("tours autoritaires", () => {
         expectedTurn: 1,
       }),
     ).rejects.toThrow("camp");
-    await expect(
-      active.mutation(api.games.playCard, {
-        gameId,
-        cardId: own.players[own.me]!.hand[1]!.id,
-        row: 0,
-        depth: 0,
-        expectedTurn: 1,
-      }),
-    ).rejects.toThrow("déjà");
+    const card = own.players[own.me]!.hand[1]!;
+    await active.mutation(api.games.playCard, {
+      gameId,
+      cardId: card.id,
+      row: 0,
+      depth: getCombatType(card) === "melee" ? 0 : 2,
+      expectedTurn: 1,
+    });
+    expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
-  it("synchronizes summons, rejects a second summon, wrong turns and occupied cells", async () => {
+  it("synchronizes placement, combat and the next turn, rejecting invalid zones and stale plays", async () => {
     const { alice, bob, gameId } = await match();
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
     const own = await active.query(api.games.get, { gameId });
-    const cardId = own.players[own.me]!.hand[0]!.id;
+    const card = own.players[own.me]!.hand[0]!;
+    const cardId = card.id;
+    const depth = getCombatType(card) === "melee" ? 0 : 2;
     await expect(
       inactive.mutation(api.games.playCard, {
         gameId,
@@ -346,15 +352,22 @@ describe("tours autoritaires", () => {
         expectedTurn: 1,
       }),
     ).rejects.toThrow("tour");
+    await expect(active.mutation(api.games.playCard, {
+      gameId, cardId, row: 0, depth: depth === 0 ? 2 : 0, expectedTurn: 1,
+    })).rejects.toThrow("colonnes");
     await active.mutation(api.games.playCard, {
       gameId,
       cardId,
       row: 0,
-      depth: 0,
+      depth,
       expectedTurn: 1,
     });
     const other = await inactive.query(api.games.get, { gameId });
     expect(other.players[own.me]!.board[0]!.cardId).toBe(cardId);
+    expect(other.players[other.me]!.heroHp).toBe(30 - card.attack);
+    expect(other.activePlayer).toBe(other.me);
+    expect(other.turn).toBe(2);
+    expect(other.events.map((event) => event.type)).toEqual(["summon", "attack", "turn"]);
     await expect(
       active.mutation(api.games.playCard, {
         gameId,
@@ -363,23 +376,31 @@ describe("tours autoritaires", () => {
         depth: 0,
         expectedTurn: 1,
       }),
-    ).rejects.toThrow("déjà");
-    await active.mutation(api.games.endTurn, { gameId, expectedTurn: 1 });
+    ).rejects.toThrow("changé");
     await expect(
       active.mutation(api.games.endTurn, { gameId, expectedTurn: 1 }),
     ).rejects.toThrow("changé");
     expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
-  it("a stale scheduled expiration cannot advance a manually finished turn twice", async () => {
+  it("ignores the old deadline after a card is played and schedules the next player's deadline", async () => {
     const { t, alice, bob, gameId } = await match();
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
+    const own = await active.query(api.games.get, { gameId });
+    const card = own.players[own.me]!.hand[0]!;
     await vi.advanceTimersByTimeAsync(59_000);
-    await active.mutation(api.games.endTurn, { gameId, expectedTurn: 1 });
+    await active.mutation(api.games.playCard, {
+      gameId, cardId: card.id, row: 0,
+      depth: getCombatType(card) === "melee" ? 0 : 2,
+      expectedTurn: 1,
+    });
     await vi.advanceTimersByTimeAsync(1_000);
     await t.finishInProgressScheduledFunctions();
     await t.mutation(internal.games.expireTurn, { gameId, expectedTurn: 1 });
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(2);
+    await vi.advanceTimersByTimeAsync(59_000);
+    await t.finishInProgressScheduledFunctions();
+    expect((await alice.query(api.games.get, { gameId })).turn).toBe(3);
   });
   it("advances disconnected players at the server deadline", async () => {
     const { t, alice, gameId } = await match();

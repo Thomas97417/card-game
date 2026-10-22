@@ -1,8 +1,12 @@
-import { BookOpen, Layers, Leaf, Shield } from "lucide-react";
+import { BookOpen, BowArrow, Layers, Leaf, Shield, Sword } from "lucide-react";
 import {
   DEPTHS,
   HERO_HP,
   ROWS,
+  combatTypeLabel,
+  getCombatType,
+  isDeploymentDepth,
+  isMeleeBlocked,
   type GameEvent,
   type GameView,
 } from "@sylve/game";
@@ -106,6 +110,7 @@ export function DuelArena({
     );
   }
   function half(player: Player, playerIndex: number, own: boolean) {
+    const selectedCard = mine.hand.find((card) => card.id === selected);
     return (
       <div
         className={`board-half ${own ? "own" : "enemy"}`}
@@ -120,8 +125,17 @@ export function DuelArena({
           );
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
-          const legal = own && !unit && canSummon && !!selected;
+          const legal = own && !unit && canSummon && !!selectedCard &&
+            isDeploymentDepth(selectedCard, depth);
           const removable = own && !!unit && canWithdraw;
+          const blocked = !!unit && isMeleeBlocked(
+            unit, player.board, player.board.map((entry) => entry.card),
+          );
+          const zone = depth === 0
+            ? "corps à corps, vers l’ennemi"
+            : depth === DEPTHS - 1
+              ? "à distance, vers le héros"
+              : "partagée, corps à corps et à distance";
           const acting =
             combatEvent?.player === playerIndex &&
             combatEvent.cardId === unit?.cardId;
@@ -138,27 +152,25 @@ export function DuelArena({
             >
               <button
                 type="button"
-                className={`board-cell ${legal ? "legal" : ""} ${hovered === `${row}-${depth}` && own ? "hovered" : ""}`}
+                className={`board-cell ${legal && hovered === `${row}-${depth}` ? "drop-target" : ""}`}
                 style={{ clipPath: cell.clipPath }}
                 data-own-cell={own && !unit ? "true" : undefined}
                 data-row={row}
                 data-depth={depth}
-                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, ${depth === 0 ? "avant" : depth === 1 ? "milieu" : "arrière"}${unit ? `, ${unit.card.name}, puissance ${unit.card.attack}, ${unit.hp} PV` : ", vide"}`}
+                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}` : ", vide"}`}
                 aria-disabled={!legal && !removable}
                 tabIndex={unit ? -1 : 0}
                 onClick={() => {
                   if (legal && selected) onPlace(selected, row, depth);
                   else if (removable && unit) onSelectUnit(unit.cardId);
                 }}
-              >
-                {legal && <span className="place-hint">+ Invoquer</span>}
-              </button>
+              />
               {unit && (
                 <button
                   type="button"
                   className="board-unit-control"
                   style={cell.unit}
-                  aria-label={`${unit.card.name}, puissance ${unit.card.attack}, ${unit.hp} PV${removable ? ", sélectionner pour retirer" : ""}`}
+                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}${removable ? ", sélectionner pour retirer" : ""}`}
                   aria-disabled={!removable}
                   aria-pressed={own ? selectedUnit === unit.cardId : undefined}
                   onClick={() => {
@@ -166,18 +178,22 @@ export function DuelArena({
                   }}
                 >
                   <div
-                    className={`board-unit ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
+                    className={`board-unit ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
                   >
                     <span className="unit-shadow" />
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
-                      <StatBadge kind="attack" value={unit.card.attack} />
+                      <StatBadge kind="attack" value={unit.card.attack} combatType={getCombatType(unit.card)} />
                       <StatBadge
                         kind="health"
                         value={unit.hp}
                         wounded={unit.hp < unit.card.health}
                       />
                     </div>
+                    <span className="unit-role" aria-hidden="true">
+                      {getCombatType(unit.card) === "melee" ? <Sword size={12} /> : <BowArrow size={12} />}
+                      {blocked && "Bloquée"}
+                    </span>
                     <span className="unit-name">{unit.card.name}</span>
                     {hit && (
                       <span key={combatEvent.seq} className="damage-float">
@@ -202,9 +218,10 @@ export function DuelArena({
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="arena-tile-light" x1="0" y1="0" x2="0.7" y2="1">
-              <stop offset="0" stopColor="#fff5cd" stopOpacity="0.23" />
-              <stop offset="1" stopColor="#a88750" stopOpacity="0.08" />
+            <linearGradient id="arena-seam" x1="0" y1="0" x2="0.3" y2="1">
+              <stop offset="0" stopColor="#806f48" stopOpacity="0.18" />
+              <stop offset="0.5" stopColor="#c8b37d" stopOpacity="0.4" />
+              <stop offset="1" stopColor="#685b3d" stopOpacity="0.26" />
             </linearGradient>
           </defs>
           <image
@@ -240,10 +257,6 @@ export function DuelArena({
           </div>
           {hero(enemy, false)}
         </div>
-        <div className="board-labels">
-          <span>TON TERRITOIRE</span>
-          <span>TERRITOIRE ADVERSE</span>
-        </div>
         <div className="battlefield">
           {half(mine, me, true)}
           <div className="board-divider" aria-hidden="true">
@@ -254,9 +267,9 @@ export function DuelArena({
         {heroFigure(mine, me, true)}
         {heroFigure(enemy, 1 - me, false)}
         <div className="board-footnote">
-          <span>ARRIÈRE · MILIEU · AVANT</span>
-          <span>4 LIGNES · 24 CASES</span>
-          <span>AVANT · MILIEU · ARRIÈRE</span>
+          <span>DISTANCE · MIXTE · CORPS À CORPS</span>
+          <span>{ROWS} LIGNES · {ROWS * DEPTHS * 2} CASES</span>
+          <span>CORPS À CORPS · MIXTE · DISTANCE</span>
         </div>
       </section>
     </div>

@@ -8,6 +8,7 @@ export const cardValidator = v.object({
   health: v.number(),
   color: v.string(),
   kind: v.string(),
+  combatType: v.optional(v.union(v.literal("melee"), v.literal("ranged"))),
 });
 const unitValidator = v.object({
   cardId: v.string(),

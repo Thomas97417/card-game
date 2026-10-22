@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   BookOpen,
+  BowArrow,
   ChevronLeft,
   ChevronRight,
   Compass,
@@ -15,6 +16,7 @@ import {
   MousePointer2,
   Settings2,
   Shield,
+  Sword,
   Swords,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -26,6 +28,8 @@ import {
   ROWS,
   DEPTHS,
   TURN_MS,
+  combatTypeLabel,
+  getCombatType,
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
@@ -403,12 +407,12 @@ function ArchivesContent() {
     {
       icon: MapPin,
       title: "Choisis ton terrain",
-      copy: `Invoque une créature par tour sur une case libre : ${ROWS} lignes, ${DEPTHS} rangs, et aucun coût de mana.`,
+      copy: `Ton camp compte ${ROWS} lignes et ${DEPTHS} colonnes. Le corps à corps se place au milieu ou vers l’ennemi, les unités à distance au milieu ou vers ton héros. La colonne centrale est partagée. Aucun coût de mana.`,
     },
     {
       icon: Swords,
       title: "Fais basculer le duel",
-      copy: `Termine ton tour pour attaquer. Chaque créature vise le premier ennemi de sa ligne, ou son héros si la voie est libre. Réduis ses ${HERO_HP} PV à zéro pour gagner.`,
+      copy: `Jouer une carte déclenche les attaques et le tour adverse. Chaque créature vise le premier ennemi de sa ligne, ou son héros si la voie est libre. Une unité au corps à corps derrière une autre unité au corps à corps sur la même ligne ne peut pas agir. Réduis les ${HERO_HP} PV du héros à zéro pour gagner.`,
     },
   ];
   return (
@@ -438,13 +442,14 @@ function ArchivesContent() {
       </ol>
       <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
         Tu peux aussi retirer une créature de ton camp pendant ton tour : elle
-        rejoint la défausse et pourra être repiochée. Le retrait ne rend pas une
-        invocation déjà utilisée.
+        rejoint la défausse et pourra être repiochée. Fais tes retraits avant de
+        poser ta carte. Si aucune carte ne peut être posée, tu peux attaquer sans
+        invoquer.
       </p>
       <p className="mt-6 flex items-center gap-2 border-t border-[#dee2d3] pt-4 text-xs text-[#697664]">
         <Shield size={16} className="shrink-0 text-[#8d7950]" />{" "}
-        {TURN_MS / 1000} secondes par tour. Les attaques se résolvent
-        automatiquement à la fin du temps imparti.
+        {TURN_MS / 1000} secondes pour jouer ta carte. Si le temps est écoulé,
+        les attaques se résolvent et le tour passe à l’adversaire.
       </p>
       <Link to="/practice" className="sylve-button mt-6">
         Mettre en pratique <ArrowRight size={15} />
@@ -456,6 +461,7 @@ function ArchivesContent() {
 function SanctuaryContent() {
   const [selectedId, setSelectedId] = useState(CATALOG[0]!.id);
   const selected = CATALOG.find((card) => card.id === selectedId)!;
+  const AttackIcon = getCombatType(selected) === "ranged" ? BowArrow : Sword;
   return (
     <>
       <ModalEyebrow icon={Gem}>Le sanctuaire</ModalEyebrow>
@@ -502,9 +508,12 @@ function SanctuaryContent() {
             <p className="mt-2 text-[11px] italic text-[#697664]">
               {selected.title}
             </p>
+            <p className="mt-2 text-xs font-semibold text-[#4d614b]">
+              {combatTypeLabel(selected)}
+            </p>
             <div className="mt-3 flex gap-5 text-sm font-semibold sm:mt-4 sm:justify-center">
               <span className="flex items-center gap-1.5">
-                <Swords size={15} className="text-[#947546]" />
+                <AttackIcon size={15} className="text-[#947546]" />
                 <span className="sr-only">Attaque : </span>
                 {selected.attack}
               </span>
