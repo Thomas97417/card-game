@@ -99,14 +99,28 @@ describe("début de partie et confidentialité", () => {
     ).toThrow();
     expect(() => playerView(initial(), "eve")).toThrow();
   });
-  it("hides opponent hands, unseen definitions, user IDs and draw order", () => {
+  it("hides opponent hands, user IDs and draw order while sharing deck composition", () => {
     const view = playerView(initial(), "alice");
     expect(view.players[0]!.hand).toHaveLength(4);
     expect(view.players[1]!.hand).toEqual([]);
     expect(view.players[1]!.handCount).toBe(4);
+    expect(view.players[0]!.deck).toEqual(validateDeck(DEFAULT_DECK));
+    expect(view.players[1]!.deck).toEqual(validateDeck(DEFAULT_DECK));
     expect(view.players[1]).not.toHaveProperty("cards");
     expect(view.players[1]).not.toHaveProperty("drawPile");
     expect(view.players[1]).not.toHaveProperty("userId");
+  });
+  it("shares each game's deck snapshot independently of hand and draw order", () => {
+    const state = initial();
+    state.players[1]!.cards[0]!.attack = 17;
+    const before = playerView(state, "alice").players[1]!.deck;
+    state.players[1]!.hand.reverse();
+    state.players[1]!.drawPile.reverse();
+    const after = playerView(state, "alice").players[1]!.deck;
+    expect(after).toEqual(before);
+    expect(after[0]!.attack).toBe(17);
+    after[0]!.attack = 1;
+    expect(state.players[1]!.cards[0]!.attack).toBe(17);
   });
 });
 describe("invocation", () => {

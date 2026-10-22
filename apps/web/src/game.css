@@ -1071,6 +1071,19 @@ button:disabled {
     0 3px 0 #1a3535,
     inset 0 0 0 3px #ffffff15,
     0 6px 15px #122f3255;
+  text-align: left;
+  width: 100%;
+  transition: filter 0.15s;
+}
+.hero-panel:hover {
+  filter: brightness(1.12);
+}
+.hero-panel:focus-visible,
+.hero-figure:focus-visible,
+.board-unit-control:focus-visible {
+  outline: 3px solid #f3d98f;
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 .hero-panel.enemy {
   flex-direction: row-reverse;
@@ -1196,10 +1209,7 @@ button:disabled {
   color: inherit;
   z-index: 1;
 }
-.board-unit-control[aria-disabled="true"] {
-  cursor: default;
-}
-.removable .board-unit-control:hover {
+.board-unit-control:hover {
   filter: drop-shadow(0 0 7px #fff2a8);
 }
 .unit-selected .board-unit-control {
@@ -1313,6 +1323,14 @@ button:disabled {
   position: relative;
   width: 100%;
   height: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+}
+.hero-figure:hover {
+  filter: drop-shadow(0 0 7px #fff2a8);
 }
 .hero-figure > img {
   position: relative;
@@ -1366,33 +1384,6 @@ button:disabled {
   letter-spacing: 0.8px;
   pointer-events: none;
 }
-.unit-inspector {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
-  background: #e7ecd9;
-  border: 1px solid #b9c5a4;
-}
-.unit-inspector > .creature-portrait {
-  width: 42px;
-  height: 42px;
-}
-.unit-inspector > div {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 3px;
-}
-.unit-inspector strong {
-  font:
-    14px Georgia,
-    serif;
-}
-.unit-inspector > div > span {
-  font-size: 10px;
-  color: var(--quiet);
-}
 .hand-area {
   padding: 15px 24px 4px;
   border: 1px solid #d6d7ba;
@@ -1440,9 +1431,6 @@ button:disabled {
 }
 .compact .card-stats .stat-badge strong {
   font-size: 26px;
-}
-.player-hand .creature-card:disabled {
-  opacity: 0.8;
 }
 .turn-actions {
   display: flex;
@@ -1541,6 +1529,102 @@ button:disabled {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 23px;
+}
+.duel-details-dialog {
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+}
+.duel-details-dialog .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  padding-right: 36px;
+}
+.details-back {
+  margin-bottom: 22px;
+}
+.card-details-role {
+  margin-top: 12px;
+}
+.card-details-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+.card-details-portrait {
+  padding: 12px;
+  border: 1px solid #c8ceb6;
+  border-radius: 18px;
+  background-image: radial-gradient(ellipse at center, #fff9e0a0, transparent);
+}
+.card-details-portrait > .creature-portrait {
+  width: 100%;
+  height: auto;
+}
+.details-stats {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+.details-stats dt {
+  color: var(--quiet);
+  font-size: 11px;
+}
+.details-stats dd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0 0;
+  font-weight: 600;
+}
+.card-details-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+.details-note {
+  color: var(--quiet);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.card-details-copy > .details-note + .details-note {
+  margin-top: 12px;
+}
+.details-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.details-actions > .sylve-button {
+  align-self: flex-start;
+}
+.hero-details-summary {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin: 22px 0 28px;
+}
+.hero-details-summary > img {
+  width: 100px;
+  height: 140px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.hero-details-stats {
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.hero-details-stats dd {
+  font-size: 17px;
+}
+.details-deck {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.details-deck-note {
+  margin-top: 16px;
 }
 .result-overlay {
   position: fixed;
@@ -1835,13 +1919,6 @@ button:disabled {
   .hand-area {
     padding: 14px 12px 4px;
   }
-  .unit-inspector {
-    flex-wrap: wrap;
-    padding: 10px;
-  }
-  .unit-inspector > div {
-    min-width: 180px;
-  }
   .hand-heading > div {
     flex-direction: column;
     align-items: flex-start;
@@ -1870,6 +1947,23 @@ button:disabled {
   }
   .result-overlay {
     top: 65px;
+  }
+  .card-details-layout {
+    gap: 16px;
+  }
+  .hero-details-summary {
+    gap: 14px;
+  }
+  .hero-details-summary > img {
+    width: 70px;
+    height: 110px;
+  }
+  .hero-details-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .details-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (prefers-reduced-motion: reduce) {

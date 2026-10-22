@@ -155,6 +155,8 @@ describe("invitations et synchronisation", () => {
     expect(a.players[0]!.hand).toHaveLength(4);
     expect(a.players[1]!.hand).toEqual([]);
     expect(b.players[1]!.hand).toHaveLength(4);
+    expect(a.players[1]!.deck.map((card) => card.id)).toEqual(DEFAULT_DECK);
+    expect(b.players[0]!.deck.map((card) => card.id)).toEqual(DEFAULT_DECK);
     expect(a.players[1]).not.toHaveProperty("drawPile");
     expect(a.players[1]).not.toHaveProperty("cards");
     const eve = await player(t, "eve");
@@ -176,6 +178,8 @@ describe("invitations et synchronisation", () => {
     await alice.mutation(api.decks.remove, { deckId: aDeck });
     const game = await t.run((ctx) => ctx.db.get(gameId));
     expect(game!.state!.players[0]!.cards).toHaveLength(8);
+    const view = await alice.query(api.games.get, { gameId });
+    expect(view.players[0]!.deck).toEqual(game!.state!.players[0]!.cards);
   });
   it("rejects self-play, reused invitations, extra active games and unauthorized cancellations", async () => {
     const t = setup();

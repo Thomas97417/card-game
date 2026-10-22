@@ -33,10 +33,10 @@ export function DuelArena({
   selectedUnit,
   hovered,
   canSummon,
-  canWithdraw,
   combatEvent,
   onPlace,
-  onSelectUnit,
+  onInspectUnit,
+  onInspectHero,
 }: {
   mine: Player;
   enemy: Player;
@@ -46,14 +46,20 @@ export function DuelArena({
   selectedUnit: string | null;
   hovered: string | null;
   canSummon: boolean;
-  canWithdraw: boolean;
   combatEvent: GameEvent | null;
   onPlace: (cardId: string, row: number, depth: number) => void;
-  onSelectUnit: (cardId: string) => void;
+  onInspectUnit: (cardId: string, playerIndex: number) => void;
+  onInspectHero: (playerIndex: number) => void;
 }) {
   function hero(player: Player, own: boolean) {
     return (
-      <div className={`hero-panel ${own ? "own" : "enemy"}`}>
+      <button
+        type="button"
+        className={`hero-panel ${own ? "own" : "enemy"}`}
+        aria-label={`Voir les caractéristiques et le deck de ${player.name}`}
+        aria-haspopup="dialog"
+        onClick={() => onInspectHero(own ? me : 1 - me)}
+      >
         <div className="hero-crest">
           {own ? <Leaf size={27} /> : <Shield size={27} />}
         </div>
@@ -72,7 +78,7 @@ export function DuelArena({
           </span>
           <span title="Défausse">↻ {player.discardCount}</span>
         </div>
-      </div>
+      </button>
     );
   }
   function heroFigure(player: Player, index: number, own: boolean) {
@@ -86,7 +92,13 @@ export function DuelArena({
         role="group"
         aria-label={`${own ? "Ton héros" : "Héros adverse"}, ${player.name}`}
       >
-        <div className={`hero-figure ${hit ? "hero-hit" : ""}`}>
+        <button
+          type="button"
+          className={`hero-figure ${hit ? "hero-hit" : ""}`}
+          aria-label={`Voir ${own ? "ton héros" : "le héros adverse"}, ${player.name}, ${player.heroHp} PV`}
+          aria-haspopup="dialog"
+          onClick={() => onInspectHero(index)}
+        >
           <span className="hero-ground-shadow" />
           <img
             src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
@@ -105,7 +117,7 @@ export function DuelArena({
               −{combatEvent.damage}
             </span>
           )}
-        </div>
+        </button>
       </div>
     );
   }
@@ -127,7 +139,6 @@ export function DuelArena({
           const cell = groundCell(row, column);
           const legal = own && !unit && canSummon && !!selectedCard &&
             isDeploymentDepth(selectedCard, depth);
-          const removable = own && !!unit && canWithdraw;
           const blocked = !!unit && isMeleeBlocked(
             unit, player.board, player.board.map((entry) => entry.card),
           );
@@ -147,7 +158,7 @@ export function DuelArena({
           return (
             <div
               key={`${row}-${depth}`}
-              className={`projected-cell ${unit ? "occupied" : ""} ${removable ? "removable" : ""} ${unit && own && selectedUnit === unit.cardId ? "unit-selected" : ""}`}
+              className={`projected-cell ${unit ? "occupied" : ""} ${unit && own && selectedUnit === unit.cardId ? "unit-selected" : ""}`}
               style={{ ...cell.bounds, zIndex: row + 1 }}
             >
               <button
@@ -158,11 +169,12 @@ export function DuelArena({
                 data-row={row}
                 data-depth={depth}
                 aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}` : ", vide"}`}
-                aria-disabled={!legal && !removable}
+                aria-disabled={!legal && !unit}
+                aria-haspopup={unit ? "dialog" : undefined}
                 tabIndex={unit ? -1 : 0}
                 onClick={() => {
                   if (legal && selected) onPlace(selected, row, depth);
-                  else if (removable && unit) onSelectUnit(unit.cardId);
+                  else if (unit) onInspectUnit(unit.cardId, playerIndex);
                 }}
               />
               {unit && (
@@ -170,12 +182,9 @@ export function DuelArena({
                   type="button"
                   className="board-unit-control"
                   style={cell.unit}
-                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}${removable ? ", sélectionner pour retirer" : ""}`}
-                  aria-disabled={!removable}
-                  aria-pressed={own ? selectedUnit === unit.cardId : undefined}
-                  onClick={() => {
-                    if (removable) onSelectUnit(unit.cardId);
-                  }}
+                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}, voir les informations`}
+                  aria-haspopup="dialog"
+                  onClick={() => onInspectUnit(unit.cardId, playerIndex)}
                 >
                   <div
                     className={`board-unit ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
