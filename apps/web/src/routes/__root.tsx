@@ -25,6 +25,7 @@ import workshopCss from "../deck-workshop.css?url";
 import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GoldProvider } from "@/components/gold-balance";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -106,25 +107,27 @@ function RootDocument() {
             disableTransitionOnChange
             storageKey="vite-ui-theme"
           >
-            <div
-              className={
-                isImmersive
-                  ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                  : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-              }
-            >
-              {!isImmersive && <Header />}
+            <GoldProvider>
               <div
                 className={
                   isImmersive
-                    ? "min-h-0 overflow-hidden"
-                    : "min-h-0 overflow-y-auto"
+                    ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                    : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                 }
               >
-                <Outlet />
+                {!isImmersive && <Header />}
+                <div
+                  className={
+                    isImmersive
+                      ? "min-h-0 overflow-hidden"
+                      : "min-h-0 overflow-y-auto"
+                  }
+                >
+                  <Outlet />
+                </div>
               </div>
-            </div>
-            <Toaster richColors />
+              <Toaster richColors />
+            </GoldProvider>
             <Scripts />
           </ThemeProvider>
         </body>

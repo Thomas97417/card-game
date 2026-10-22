@@ -12,6 +12,7 @@ import {
   RARITY_LABELS,
   resolveCard,
   upgradeCost,
+  upgradeGoldCost,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -23,6 +24,7 @@ import {
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
 import { showGameError } from "@/components/game/shared";
+import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 
 export function CardUpgradeDialog({
   entry,
@@ -46,13 +48,17 @@ export function CardUpgradeDialog({
   onMove: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
   const max = level >= MAX_CARD_LEVEL;
   const cost = upgradeCost(level);
+  const goldCost = upgradeGoldCost(level);
+  const enoughGold = gold != null && gold >= goldCost;
   const next = card && !max ? resolveCard(card.id, level + 1) : null;
   async function upgrade() {
-    if (!card || busy) return;
+    if (!card || busy || max || !entry || entry.copies < cost || !enoughGold)
+      return;
     setBusy(true);
     try {
       await onUpgrade(card.id);
@@ -127,9 +133,20 @@ export function CardUpgradeDialog({
               value={entry.copies}
               aria-label="Exemplaires pour le prochain niveau"
             />
+            {!max && (
+              <div className="upgrade-gold" data-insufficient={!enoughGold}>
+                <span>Coût en or</span>
+                <GoldAmount amount={goldCost} />
+                <small>
+                  {gold == null
+                    ? "Chargement du solde…"
+                    : `${gold.toLocaleString("fr-FR")} en réserve`}
+                </small>
+              </div>
+            )}
             <button
               className="sylve-button upgrade-action"
-              disabled={busy || max || entry.copies < cost}
+              disabled={busy || max || entry.copies < cost || !enoughGold}
               onClick={() => void upgrade()}
             >
               <ArrowUp size={18} />
@@ -141,7 +158,14 @@ export function CardUpgradeDialog({
             </button>
             {!max && (
               <p className="upgrade-help">
-                L’amélioration consomme {cost} exemplaires de cette variante.
+                L’amélioration consomme {cost} exemplaires et {goldCost} pièces
+                d’or.
+                {entry.copies >= cost && gold != null && !enoughGold && (
+                  <span className="upgrade-shortage">
+                    Il te manque {(goldCost - gold).toLocaleString("fr-FR")}{" "}
+                    {goldCost - gold === 1 ? "pièce" : "pièces"} d’or.
+                  </span>
+                )}
               </p>
             )}
             <div className="upgrade-deck-actions">

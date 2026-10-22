@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import UserMenu from "@/components/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { GoldBalance } from "@/components/gold-balance";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type ModalId = Exclude<PlaceId, "workshop" | "arena">;
@@ -161,6 +162,7 @@ export function VillageHub({
             <span className="sm:hidden">Le refuge</span>
           </div>
           <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+            <GoldBalance />
             <ModeToggle overlay />
             <UserMenu overlay />
           </div>
@@ -396,8 +398,8 @@ function HomeContent({
       </div>
       <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
         Quatre compagnons communs t’accompagnent au départ. Gagne des combats,
-        ouvre tes coffres et utilise les exemplaires en réserve pour renforcer
-        tes cartes à l’atelier.
+        ouvre tes coffres et utilise l’or et les exemplaires en réserve pour
+        renforcer tes cartes à l’atelier.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <Link to="/decks" className="sylve-button">
@@ -485,8 +487,8 @@ function SanctuaryContent() {
       <DialogDescription>
         Les {CATALOG.length} créatures de la Sylve existent chacune en quatre
         raretés. Découvre leurs caractéristiques communes au niveau 1. Les
-        coffres débloquent de nouvelles variantes ; leurs exemplaires permettent
-        de les améliorer à l’atelier.
+        coffres débloquent de nouvelles variantes ; l’or et leurs exemplaires
+        permettent de les améliorer à l’atelier.
       </DialogDescription>
       <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">

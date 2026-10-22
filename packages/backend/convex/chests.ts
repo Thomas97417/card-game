@@ -1,8 +1,12 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
-import { grantLoot, victoryChest } from "./lib/progression";
-import { VICTORY_CHEST_WINS } from "@sylve/game/progression";
+import { grantGold, grantLoot, victoryChest } from "./lib/progression";
+import {
+  VICTORY_CHEST_WINS,
+  chestGold,
+  chestLoot,
+} from "@sylve/game/progression";
 
 export const list = query({
   args: {},
@@ -46,16 +50,29 @@ export const open = mutation({
     if (!chest || chest.ownerId !== userId)
       throw new ConvexError("Ce coffre ne t’appartient pas.");
     if (chest.status === "opened")
-      return { rarity: chest.rarity, reveals: chest.reveals ?? [] };
+      return {
+        rarity: chest.rarity,
+        reveals: chest.reveals ?? [],
+        gold: chest.gold ?? 0,
+      };
     if (Date.now() < chest.unlockAt)
       throw new ConvexError("Ce coffre n’est pas encore prêt.");
-    const reveals = await grantLoot(ctx, userId, chest.contents);
+    // Unopened legacy chests adopt the new rewards on their first opening.
+    const contents =
+      chest.gold === undefined
+        ? chestLoot(chest.rarity, Math.random)
+        : chest.contents;
+    const gold = chest.gold ?? chestGold(chest.rarity, Math.random);
+    const reveals = await grantLoot(ctx, userId, contents);
+    await grantGold(ctx, userId, gold);
     await ctx.db.patch(chestId, {
       status: "opened",
       openedAt: Date.now(),
       reveals,
+      contents,
+      gold,
     });
-    return { rarity: chest.rarity, reveals };
+    return { rarity: chest.rarity, reveals, gold };
   },
 });
 
@@ -65,18 +82,29 @@ export const openVictory = mutation({
     const { userId } = await requirePlayer(ctx);
     const chest = await victoryChest(ctx, userId);
     if (chest?.lastClaim?.cycle === cycle)
-      return { rarity: "common" as const, reveals: chest.lastClaim.reveals };
+      return {
+        rarity: "common" as const,
+        reveals: chest.lastClaim.reveals,
+        gold: chest.lastClaim.gold ?? 0,
+      };
     if (!chest || chest.cycle !== cycle || chest.wins < VICTORY_CHEST_WINS)
       throw new ConvexError(
         "Remporte trois victoires pour ouvrir ce coffre commun.",
       );
-    const reveals = await grantLoot(ctx, userId, chest.contents);
+    const contents =
+      chest.gold === undefined
+        ? chestLoot("common", Math.random)
+        : chest.contents;
+    const gold = chest.gold ?? chestGold("common", Math.random);
+    const reveals = await grantLoot(ctx, userId, contents);
+    await grantGold(ctx, userId, gold);
     await ctx.db.patch(chest._id, {
       wins: 0,
       cycle: cycle + 1,
       contents: [],
-      lastClaim: { cycle, reveals },
+      gold: 0,
+      lastClaim: { cycle, reveals, gold },
     });
-    return { rarity: "common" as const, reveals };
+    return { rarity: "common" as const, reveals, gold };
   },
 });

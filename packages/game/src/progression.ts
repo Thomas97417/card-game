@@ -31,36 +31,41 @@ export const CHEST_RULES: Record<
     durationMs: number;
     min: number;
     max: number;
-    weights: readonly number[];
+    minGold: number;
+    maxGold: number;
   }
 > = {
   common: {
     chance: 65,
     durationMs: 15 * 60_000,
-    min: 4,
-    max: 8,
-    weights: [85, 13, 1.8, 0.2],
+    min: 8,
+    max: 16,
+    minGold: 40,
+    maxGold: 80,
   },
   rare: {
     chance: 25,
     durationMs: 60 * 60_000,
-    min: 12,
-    max: 20,
-    weights: [60, 30, 9, 1],
+    min: 24,
+    max: 40,
+    minGold: 120,
+    maxGold: 200,
   },
   epic: {
     chance: 8,
     durationMs: 3 * 60 * 60_000,
-    min: 30,
-    max: 50,
-    weights: [35, 35, 25, 5],
+    min: 60,
+    max: 100,
+    minGold: 300,
+    maxGold: 500,
   },
   legendary: {
     chance: 2,
     durationMs: 8 * 60 * 60_000,
-    min: 75,
-    max: 110,
-    weights: [10, 30, 40, 20],
+    min: 150,
+    max: 220,
+    minGold: 750,
+    maxGold: 1100,
   },
 };
 
@@ -87,12 +92,13 @@ export function chestLoot(
 ): LootStack[] {
   const rule = CHEST_RULES[rarity];
   const total = rule.min + Math.floor(random() * (rule.max - rule.min + 1));
-  const stacks = new Map<string, number>();
-  for (let i = 0; i < total; i++) {
-    const cardRarity = i === 0 ? rarity : weightedRarity(rule.weights, random);
-    const base = CATALOG[Math.floor(random() * CATALOG.length)]!;
-    const id = `${base.id}:${cardRarity}`;
-    stacks.set(id, (stacks.get(id) ?? 0) + 1);
-  }
-  return [...stacks].map(([variantId, count]) => ({ variantId, count }));
+  const base = CATALOG[Math.floor(random() * CATALOG.length)]!;
+  return [{ variantId: `${base.id}:${rarity}`, count: total }];
+}
+
+export function chestGold(rarity: CardRarity, random: () => number): number {
+  const rule = CHEST_RULES[rarity];
+  return (
+    rule.minGold + Math.floor(random() * (rule.maxGold - rule.minGold + 1))
+  );
 }

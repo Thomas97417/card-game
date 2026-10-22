@@ -151,3 +151,11 @@ Le salon a été contrôlé dans le navigateur à 1440 × 900 px et 390 × 844 p
 `apps/web/public/art/ui/slot-chains.webp` est une chaîne croisée en X avec un cadenas fermé, générée séparément avec l’outil intégré **ImageGen**. Le fond est réellement transparent et le canal alpha a été vérifié avec `webpinfo`. L’image est encodée en WebP de 512 × 512 px, qualité 90. Le prompt exact est enregistré dans [art-prompts-slot-chains.json](art-prompts-slot-chains.json). Les quatre emplacements verrouillés du salon utilisent cette même illustration ; le premier emplacement affiche toujours le coffre commun de trois victoires.
 
 Cette disposition à sept emplacements a été contrôlée à 1440 × 900 px et 390 × 844 px, y compris le défilement horizontal jusqu’aux quatre emplacements enchaînés sur mobile. Aperçus : [ordinateur](play-chained-slots-validation.jpg), [mobile](play-chained-slots-mobile-validation.jpg).
+
+## Pièces d’or
+
+`apps/web/public/art/ui/gold-coins.webp` est une pile compacte de trois pièces dorées frappées d’une feuille de chêne, générée avec l’outil intégré **ImageGen** sur fond transparent. L’illustration reprend les matières peintes, les reflets de miel et les ombres ambrées de Sylve. Elle est utilisée dans le solde en haut des pages hors combat, la fiche d’amélioration et les récompenses de coffre.
+
+Le canal alpha du WebP a été vérifié avec `webpinfo`. Le fichier final mesure 384 × 384 px, environ 46 Ko, encodé avec `cwebp` en qualité 90. Le prompt exact est conservé dans [art-prompts-currency.json](art-prompts-currency.json). Le PNG original reste dans le dossier de génération local ; le fichier consommé par le jeu est dans le dépôt. Aucun fallback CLI de génération n’a été utilisé.
+
+La présentation a été contrôlée dans un aperçu local avec des données de démonstration, à 1440 × 900 px et 390 × 844 px. Le solde, les deux récompenses, le coût du prochain niveau et le blocage en cas d’or insuffisant ont été vérifiés. Aperçus : [salon](gold-lobby-validation.webp), [récompenses](gold-rewards-validation.webp), [amélioration sur mobile](gold-upgrade-mobile-validation.webp).

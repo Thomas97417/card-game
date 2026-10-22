@@ -2,16 +2,18 @@
 
 Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` ; les statistiques, les raretés et le coût des niveaux sont dans `packages/game/src/index.ts`.
 
-| Coffre | Probabilité par victoire | Délai | Exemplaires | Commun / rare / épique / légendaire |
+| Coffre | Probabilité par victoire | Délai | Exemplaires d’une seule carte | Pièces d’or |
 |---|---:|---:|---:|---|
-| Commun | 65 % | 15 min | 4–8 | 85 / 13 / 1,8 / 0,2 % |
-| Rare | 25 % | 1 h | 12–20 | 60 / 30 / 9 / 1 % |
-| Épique | 8 % | 3 h | 30–50 | 35 / 35 / 25 / 5 % |
-| Légendaire | 2 % | 8 h | 75–110 | 10 / 30 / 40 / 20 % |
+| Commun | 65 % | 15 min | 8–16 | 40–80 |
+| Rare | 25 % | 1 h | 24–40 | 120–200 |
+| Épique | 8 % | 3 h | 60–100 | 300–500 |
+| Légendaire | 2 % | 8 h | 150–220 | 750–1 100 |
 
-Le nombre d’exemplaires est un entier uniforme dans l’intervalle, incluant un exemplaire garanti de la rareté du coffre. Les autres tirages suivent les poids du tableau. Chaque exemplaire choisit uniformément une des douze créatures ; les répétitions sont regroupées en lots.
+Chaque coffre donne exactement deux récompenses : des pièces d’or et un lot d’exemplaires d’une seule variante. La carte a toujours la rareté du coffre : un coffre commun contient une carte commune, un rare une rare, un épique une épique et un légendaire une légendaire. La créature est choisie uniformément parmi les douze du catalogue. Le nombre d’exemplaires et l’or sont des entiers uniformes dans leurs intervalles respectifs ; les quantités de cartes sont doublées par rapport à la version précédente.
 
-Les identifiants de variante sont stables (`guardian:common`, `guardian:rare`…) et indépendants du niveau. Le premier exemplaire débloque la variante au niveau 1, les autres alimentent la réserve. Les quatre cartes initiales ont une réserve vide. Le passage du niveau `n` au niveau suivant coûte `5 × n` exemplaires de cette variante, jusqu’au niveau 10. Les réserves restent conservées après ce plafond. Il n’existe aucune conversion entre raretés.
+Les identifiants de variante sont stables (`guardian:common`, `guardian:rare`…) et indépendants du niveau. Le premier exemplaire débloque la variante au niveau 1, les autres alimentent la réserve. Les quatre cartes initiales ont une réserve vide. Le passage du niveau `n` au niveau suivant coûte **`5 × n` exemplaires de cette variante et `50 × n` pièces d’or**, jusqu’au niveau 10. Exemple : niveau 1 → 2 = 5 exemplaires et 50 pièces ; niveau 2 → 3 = 10 exemplaires et 100 pièces. Les deux ressources sont vérifiées et débitées dans la même transaction ; un refus ne consomme rien. Les réserves restent conservées après ce plafond. Il n’existe aucune conversion entre raretés.
+
+Chaque joueur commence avec un solde d’or nul, y compris les comptes existants. L’or est commun à toute la collection et s’obtient à l’ouverture des coffres. Son solde est affiché en haut des pages connectées, sauf pendant les combats (`/game/$gameId` et `/practice`), et se met à jour après une ouverture ou une amélioration. La fiche de carte montre le coût, le solde disponible et l’or manquant ; l’action nécessite les deux ressources.
 
 Les bonus de rareté sont respectivement `+0/+0`, `+1/+2`, `+2/+4`, `+4/+8` en attaque/PV. Chaque niveau après le premier ajoute `+1/+2`. Les illustrations restent associées à la créature ; les bordures indiquent la rareté et un badge indique le niveau.
 
@@ -21,9 +23,11 @@ Les victoires solo connectées contre le Gardien mécanique et les victoires pub
 
 Chaque victoire éligible fait aussi avancer le coffre commun récurrent d’un cran, jusqu’à trois. Il se débloque immédiatement à 3/3, indépendamment des délais et des places de combat. L’ouverture donne le butin d’un coffre commun du tableau puis remet le compteur à 0/3. Les victoires supplémentaires avant ouverture ne sont pas reportées. Les défaites, abandons solo et parties amicales ne font pas avancer ce compteur.
 
-Le contenu du coffre de victoires est généré une seule fois à la troisième victoire et reste caché avant ouverture. Le serveur identifie chaque cycle, crédite les exemplaires et passe au cycle suivant dans une même transaction. Une ouverture répétée du même cycle restitue le dernier résultat sans recréditer les exemplaires ni modifier le nouveau compteur.
+Le contenu du coffre de victoires est généré une seule fois à la troisième victoire et reste caché avant ouverture. Le serveur identifie chaque cycle, crédite les exemplaires et l’or et passe au cycle suivant dans une même transaction. Une ouverture répétée du même cycle restitue le dernier résultat sans recréditer les récompenses ni modifier le nouveau compteur.
 
-L’attribution et son résultat sont écrits dans la transaction de fin de partie. Les requêtes d’inventaire cachent le butin. L’ouverture vérifie le propriétaire et l’échéance serveur, crédite la collection et conserve un résultat rejouable sans recréditer les exemplaires. Les améliorations et les sauvegardes de deck vérifient les possessions côté serveur. Les caractéristiques des invitations, recherches et parties sont des instantanés.
+L’attribution et son résultat sont écrits dans la transaction de fin de partie. Les requêtes d’inventaire cachent les cartes et l’or. L’ouverture vérifie le propriétaire et l’échéance serveur, crédite la collection et le portefeuille, puis conserve un résultat rejouable sans recréditer les récompenses. Les améliorations et les sauvegardes de deck vérifient les possessions côté serveur. Les caractéristiques des invitations, recherches et parties sont des instantanés.
+
+Les anciens coffres encore fermés, y compris le coffre de trois victoires déjà prêt, reçoivent le nouveau butin à leur première ouverture. Celui-ci est conservé pour les tentatives suivantes. Les coffres déjà ouverts gardent leur résultat historique et n’accordent pas d’or rétroactif.
 
 ## Vérifications
 

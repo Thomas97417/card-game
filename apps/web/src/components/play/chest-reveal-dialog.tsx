@@ -5,10 +5,12 @@ import {
   RARITY_LABELS,
   resolveCard,
   upgradeCost,
+  upgradeGoldCost,
   type CardRarity,
 } from "@sylve/game";
 import { CHEST_LABELS, type LootReveal } from "@sylve/game/progression";
 import { CreatureCard } from "@/components/game/creature-card";
+import { GoldIcon, useGoldBalance } from "@/components/gold-balance";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +21,7 @@ import {
 export interface ChestReveal {
   rarity: CardRarity;
   reveals: LootReveal[];
+  gold: number;
 }
 export function ChestRevealDialog({
   reward,
@@ -27,6 +30,7 @@ export function ChestRevealDialog({
   reward: ChestReveal | null;
   onClose: () => void;
 }) {
+  const gold = useGoldBalance();
   return (
     <Dialog
       open={!!reward}
@@ -50,22 +54,33 @@ export function ChestRevealDialog({
                 </span>
                 <DialogTitle>Le trésor est à toi.</DialogTitle>
                 <DialogDescription>
+                  {reward.gold.toLocaleString("fr-FR")} pièces d’or et{" "}
                   {reward.reveals.reduce((sum, item) => sum + item.count, 0)}{" "}
                   exemplaires rejoignent ta collection.
                 </DialogDescription>
               </div>
             </div>
             <div className="chest-reveal-grid">
+              <div className="chest-reveal-item chest-gold-reward">
+                <GoldIcon />
+                <strong>+{reward.gold.toLocaleString("fr-FR")}</strong>
+                <span>Pièces d’or</span>
+                <small>Pour améliorer tes cartes</small>
+              </div>
               {reward.reveals.map((item, index) => {
                 const card = resolveCard(item.variantId, item.level);
                 const canUpgrade =
                   item.level < MAX_CARD_LEVEL &&
-                  item.copies >= upgradeCost(item.level);
+                  item.copies >= upgradeCost(item.level) &&
+                  gold != null &&
+                  gold >= upgradeGoldCost(item.level);
                 return (
                   <div
                     key={item.variantId}
                     className="chest-reveal-item"
-                    style={{ animationDelay: `${Math.min(index * 65, 650)}ms` }}
+                    style={{
+                      animationDelay: `${Math.min((index + 1) * 100, 650)}ms`,
+                    }}
                   >
                     <span className="chest-loot-quantity">×{item.count}</span>
                     <CreatureCard card={card} disabled />

@@ -4,6 +4,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import UserMenu from "./user-menu";
 import { ModeToggle } from "./mode-toggle";
 import { Leaf, Map, Swords } from "lucide-react";
+import { GoldBalance } from "./gold-balance";
 
 const linkStyles = "sylve-nav-link";
 
@@ -40,6 +41,7 @@ export default function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          <GoldBalance />
           <ModeToggle />
           <Authenticated>
             <UserMenu />

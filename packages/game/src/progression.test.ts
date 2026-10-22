@@ -12,8 +12,10 @@ import {
   summon,
   validateDeck,
   variantCard,
+  upgradeCost,
+  upgradeGoldCost,
 } from "./index";
-import { CHEST_RULES, chestLoot, rollChest } from "./progression";
+import { CHEST_RULES, chestGold, chestLoot, rollChest } from "./progression";
 
 function seeded(seed = 17) {
   return () => {
@@ -23,6 +25,12 @@ function seeded(seed = 17) {
 }
 
 describe("variantes et progression", () => {
+  it("requires duplicates and gold for each successive level", () => {
+    for (let level = 1; level < MAX_CARD_LEVEL; level++) {
+      expect(upgradeCost(level)).toBe(5 * level);
+      expect(upgradeGoldCost(level)).toBe(50 * level);
+    }
+  });
   it("defines 48 independent identities, with increasing rarity and level stats and shared art", () => {
     const ids = new Set<string>();
     for (const base of CATALOG) {
@@ -132,20 +140,20 @@ describe("tirages des coffres", () => {
     ]);
   });
   it.each(RARITIES)(
-    "keeps %s totals in range, guarantees its rarity and groups valid positive stacks",
+    "gives gold and a larger single stack strictly matching a %s chest's rarity",
     (rarity) => {
       const random = seeded();
       for (let i = 0; i < 50; i++) {
         const loot = chestLoot(rarity, random);
+        expect(loot).toHaveLength(1);
         const total = loot.reduce((sum, stack) => sum + stack.count, 0);
         expect(total).toBeGreaterThanOrEqual(CHEST_RULES[rarity].min);
         expect(total).toBeLessThanOrEqual(CHEST_RULES[rarity].max);
-        expect(new Set(loot.map((stack) => stack.variantId)).size).toBe(
-          loot.length,
-        );
-        expect(
-          loot.some((stack) => resolveCard(stack.variantId).rarity === rarity),
-        ).toBe(true);
+        expect(resolveCard(loot[0]!.variantId).rarity).toBe(rarity);
+        const gold = chestGold(rarity, random);
+        expect(Number.isInteger(gold)).toBe(true);
+        expect(gold).toBeGreaterThanOrEqual(CHEST_RULES[rarity].minGold);
+        expect(gold).toBeLessThanOrEqual(CHEST_RULES[rarity].maxGold);
         for (const stack of loot) {
           expect(Number.isInteger(stack.count)).toBe(true);
           expect(stack.count).toBeGreaterThan(0);
@@ -161,6 +169,17 @@ describe("tirages des coffres", () => {
           0,
         ),
       ).toBe(CHEST_RULES[rarity].max);
+      expect(chestGold(rarity, () => 0)).toBe(CHEST_RULES[rarity].minGold);
+      expect(chestGold(rarity, () => 0.999999)).toBe(
+        CHEST_RULES[rarity].maxGold,
+      );
     },
   );
+  it.each(RARITIES)("can select every monster from a %s chest", (rarity) => {
+    const variants = CATALOG.map((_, index) => {
+      const values = [0, (index + 0.5) / CATALOG.length];
+      return chestLoot(rarity, () => values.shift()!)[0]!.variantId;
+    });
+    expect(variants).toEqual(CATALOG.map((card) => `${card.id}:${rarity}`));
+  });
 });
