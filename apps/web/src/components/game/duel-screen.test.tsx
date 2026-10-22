@@ -79,6 +79,18 @@ async function openHandCard(data: DuelData) {
 }
 
 describe("inspection pendant un duel", () => {
+  it("announces the result when the winning summon leaves hasSummoned set", async () => {
+    const data = matchData();
+    data.status = "finished";
+    data.winner = data.me;
+    data.hasSummoned = true;
+    setup(data);
+    expect(await screen.findByText("Duel terminé")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "La victoire est tienne." }),
+    ).toBeTruthy();
+  });
+
   it.each(["guardian", "fox"])(
     "inspects %s and preserves its legal deployment zones",
     async (cardId) => {

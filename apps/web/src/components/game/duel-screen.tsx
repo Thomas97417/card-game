@@ -239,15 +239,16 @@ export function DuelScreen({
     setDrag(null);
     setHovered(null);
   }
-  const statusText = catchingUp
-    ? "L’assaut"
-    : data.status === "finished"
-      ? "Duel terminé"
-      : myTurn
-        ? "À toi de jouer"
-        : practice
-          ? "Le Gardien réfléchit…"
-          : "Tour adverse";
+  const statusText =
+    catchingUp || (data.status === "active" && data.hasSummoned)
+      ? "L’assaut"
+      : data.status === "finished"
+        ? "Duel terminé"
+        : myTurn
+          ? "À toi de jouer"
+          : practice
+            ? "Le Gardien réfléchit…"
+            : "Tour adverse";
   return (
     <main
       className="game-room"
@@ -270,7 +271,7 @@ export function DuelScreen({
       <div className="game-toolbar">
         <div className="duel-status">
           <span
-            className={`turn-dot ${myTurn && !catchingUp ? "active" : ""}`}
+            className={`turn-dot ${myTurn && !catchingUp && !data.hasSummoned ? "active" : ""}`}
           />
           <span role="status">{statusText}</span>
           <span className="turn-number">Tour {display.turn}</span>

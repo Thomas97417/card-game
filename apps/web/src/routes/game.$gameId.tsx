@@ -8,6 +8,7 @@ import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
 import { useEffect, useState } from "react";
 import { COMBAT_TIMING } from "@/components/game/combat-timing";
+import { optimisticallyPlayCard } from "@/lib/optimistic-game";
 
 export const Route = createFileRoute("/game/$gameId")({
   beforeLoad: ({ context, location }) =>
@@ -35,7 +36,9 @@ function GamePage() {
   const { gameId: rawId } = Route.useParams();
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
-  const playCard = useMutation(api.games.playCard);
+  const playCard = useMutation(api.games.playCard).withOptimisticUpdate(
+    optimisticallyPlayCard,
+  );
   const withdrawCard = useMutation(api.games.withdrawCard);
   const endTurn = useMutation(api.games.endTurn);
   const surrender = useMutation(api.games.surrender);

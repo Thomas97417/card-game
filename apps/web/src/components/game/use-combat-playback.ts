@@ -41,7 +41,12 @@ export function useCombatPlayback(latest: View | undefined) {
                 ? COMBAT_TIMING.withdraw
                 : 0;
       const commitAt =
-        delay + (entry.type === "attack" ? COMBAT_TIMING.impact : duration);
+        delay +
+        (entry.type === "summon"
+          ? 0
+          : entry.type === "attack"
+            ? COMBAT_TIMING.impact
+            : duration);
       if (entry.type === "attack")
         effectsEnd = Math.max(effectsEnd, commitAt + COMBAT_TIMING.damage);
       timers.push(
