@@ -6,15 +6,21 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/dashboard` ouvre le refuge des gardiens, un village illustré en plein écran. La navigation passe par les bâtiments, sans en-tête ni barre de raccourcis. Cliquer sur l’arène mène à `/play` (ou reprend le duel en cours), et sur l’atelier à `/decks`. La maison affiche le compte et les decks disponibles ; les archives présentent les règles ; le sanctuaire permet de parcourir les 12 créatures. Ces trois bâtiments ouvrent des modales accessibles au clavier. Les icônes de compte et de thème sont superposées au décor. Quand la carte dépasse la largeur de l’écran, elle s’ouvre centrée et défile horizontalement ; des flèches en surimpression permettent aussi de l’explorer.
 
-Un deck de départ de 10 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles. Les liens d’invitation conservent leur destination après connexion.
+Un deck de départ de 8 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles. Les liens d’invitation conservent leur destination après connexion. Les archives permettent aussi d’ouvrir directement l’entraînement contre l’ordinateur.
 
 - **Partie privée** : créer une invitation et partager le lien ou le code de 8 caractères. L’adversaire sélectionne son deck et rejoint la partie. L’invitation expire après 10 minutes.
 - **Recherche automatique** : les deux joueurs choisissent « Trouver un adversaire ». La présence en file est renouvelée toutes les 15 secondes et expire après 45 secondes sans renouvellement.
+- **Entraînement contre l’ordinateur** : ouvrir `/practice` depuis l’accueil, sans connexion, ou choisir « Jouer contre l’ordinateur » dans le salon pour utiliser le deck sélectionné. Le Gardien mécanique joue automatiquement, sans connaître la main ni la pioche du joueur. Les règles sont identiques (8 cartes, main de 4, une invocation par tour et retrait vers la défausse), avec le joueur humain en premier et sans chronomètre. Le bouton de redémarrage lance une nouvelle partie à tout moment. La session reste locale au navigateur et une actualisation la recommence.
 - **Duel** : glisser une carte vers une case libre de son camp, ou sélectionner la carte puis la case à la souris ou au clavier. Une invocation par tour, sans mana. Les attaques se déclenchent en terminant son tour, automatiquement au bout de 60 secondes.
+- **Retrait** : pendant son tour, sélectionner une créature de son camp puis choisir « Retirer du terrain ». La carte rejoint la défausse et pourra être repiochée. Le retrait ne rend pas une invocation déjà utilisée.
 - Chaque camp possède 4 lignes et 3 colonnes. Chaque monstre attaque le premier ennemi dans sa ligne, sinon le héros adverse. Le premier héros à 0 PV perd.
-- La main est complétée à 5 au début du tour. Les monstres morts rejoignent la défausse, remélangée lorsque la pioche est vide. Actualiser la page restaure la partie ; les tours continuent pendant les déconnexions.
+- La main est complétée à 4 au début du tour. Les monstres morts rejoignent la défausse, remélangée lorsque la pioche est vide. Actualiser la page restaure la partie ; les tours continuent pendant les déconnexions.
 
 Les règles et les valeurs d’équilibrage sont centralisées dans `packages/game/src/index.ts`. Les fonctions Convex sont autoritaires : les clients ne choisissent ni les dégâts ni le contenu des pioches et ne reçoivent pas la main adverse.
+
+Le mode solo utilise ce même moteur dans le navigateur et ne crée aucune partie multijoueur. `packages/game/src/practice.ts` compare les placements légaux en simulant l’attaque du tour et la contre-attaque des seules créatures visibles. L’interface et les animations sont partagées entre les deux modes dans `apps/web/src/components/game/duel-screen.tsx` ; l’ordinateur attend la fin des animations avant de jouer.
+
+Les anciens decks de 10 cartes sont ramenés aux 8 premières cartes, dans leur ordre enregistré, à l’ouverture du salon ou du grimoire, ou à leur prochaine utilisation. Les invitations et recherches déjà en attente utilisent aussi 8 cartes au démarrage du duel. Les parties déjà commencées conservent leurs cartes ; les nouvelles parties démarrent avec une main de 4.
 
 ## Vérifier le jeu
 
@@ -24,7 +30,7 @@ bun run check-types
 bun run build
 ```
 
-Les tests couvrent le moteur, la conservation des cartes sur 20 duels simulés, les autorisations avec de vraies identités du composant Better Auth, les invitations concurrentes, la confidentialité, les échéances et le matchmaking.
+Les tests couvrent le moteur, la conservation des cartes sur 20 duels simulés et 8 entraînements complets, les choix offensifs et défensifs de l’ordinateur, les autorisations avec de vraies identités du composant Better Auth, les invitations concurrentes, la confidentialité, les échéances et le matchmaking.
 
 Un scénario sur le backend réel est disponible, **uniquement pour un déploiement `dev:`** :
 

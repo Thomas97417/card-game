@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import {
   createGame,
+  DECK_SIZE,
   GameError,
   validateDeck,
   type Transition,
@@ -65,7 +66,14 @@ export async function deckSnapshot(
   const deck = await ctx.db.get(deckId);
   if (!deck || deck.ownerId !== userId)
     throw new ConvexError("Ce deck ne t’appartient pas.");
-  return rules(() => validateDeck(deck.cardIds));
+  const ids =
+    deck.cardIds.length === 10
+      ? deck.cardIds.slice(0, DECK_SIZE)
+      : deck.cardIds;
+  const cards = rules(() => validateDeck(ids));
+  if (ids !== deck.cardIds)
+    await ctx.db.patch(deckId, { cardIds: ids, updatedAt: Date.now() });
+  return cards;
 }
 export async function startMatch(
   ctx: MutationCtx,
@@ -78,7 +86,14 @@ export async function startMatch(
     throw new ConvexError("Cette invitation n’est plus disponible.");
   const state = createGame(
     [
-      { userId: game.hostId, name: game.hostName, cards: game.hostCards },
+      {
+        userId: game.hostId,
+        name: game.hostName,
+        cards:
+          game.hostCards.length === 10
+            ? game.hostCards.slice(0, DECK_SIZE)
+            : game.hostCards,
+      },
       { ...guest, cards: guestCards },
     ],
     Date.now(),

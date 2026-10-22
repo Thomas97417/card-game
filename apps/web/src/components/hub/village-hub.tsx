@@ -436,12 +436,17 @@ function ArchivesContent() {
           </li>
         ))}
       </ol>
+      <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
+        Tu peux aussi retirer une créature de ton camp pendant ton tour : elle
+        rejoint la défausse et pourra être repiochée. Le retrait ne rend pas une
+        invocation déjà utilisée.
+      </p>
       <p className="mt-6 flex items-center gap-2 border-t border-[#dee2d3] pt-4 text-xs text-[#697664]">
         <Shield size={16} className="shrink-0 text-[#8d7950]" />{" "}
         {TURN_MS / 1000} secondes par tour. Les attaques se résolvent
         automatiquement à la fin du temps imparti.
       </p>
-      <Link to="/play" className="sylve-button mt-6">
+      <Link to="/practice" className="sylve-button mt-6">
         Mettre en pratique <ArrowRight size={15} />
       </Link>
     </>

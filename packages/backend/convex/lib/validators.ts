@@ -40,6 +40,7 @@ export const eventValidator = v.object({
   seq: v.number(),
   type: v.union(
     v.literal("summon"),
+    v.literal("withdraw"),
     v.literal("attack"),
     v.literal("death"),
     v.literal("turn"),

@@ -1,0 +1,264 @@
+import { BookOpen, Layers, Leaf, Shield } from "lucide-react";
+import {
+  DEPTHS,
+  HERO_HP,
+  ROWS,
+  type GameEvent,
+  type GameView,
+} from "@sylve/game";
+import { CreaturePortrait } from "./creature-portrait";
+import { StatBadge } from "./stat-badge";
+import {
+  ARENA_CELLS,
+  ARENA_CORNERS,
+  ARENA_WIDTH,
+  ARENA_HEIGHT,
+  groundCell,
+  groundPoints,
+  projectGround,
+} from "./arena-layout";
+
+type Player = GameView["players"][number];
+
+export function DuelArena({
+  mine,
+  enemy,
+  me,
+  turn,
+  selected,
+  selectedUnit,
+  hovered,
+  canSummon,
+  canWithdraw,
+  combatEvent,
+  onPlace,
+  onSelectUnit,
+}: {
+  mine: Player;
+  enemy: Player;
+  me: number;
+  turn: number;
+  selected: string | null;
+  selectedUnit: string | null;
+  hovered: string | null;
+  canSummon: boolean;
+  canWithdraw: boolean;
+  combatEvent: GameEvent | null;
+  onPlace: (cardId: string, row: number, depth: number) => void;
+  onSelectUnit: (cardId: string) => void;
+}) {
+  function hero(player: Player, own: boolean) {
+    return (
+      <div className={`hero-panel ${own ? "own" : "enemy"}`}>
+        <div className="hero-crest">
+          {own ? <Leaf size={27} /> : <Shield size={27} />}
+        </div>
+        <div className="hero-info">
+          <span className="eyebrow">{own ? "TON HÉROS" : "ADVERSAIRE"}</span>
+          <strong>{player.name}</strong>
+        </div>
+        <div className="hero-piles">
+          <span title="Cartes en main">
+            <BookOpen size={13} />
+            {player.handCount}
+          </span>
+          <span title="Pioche">
+            <Layers size={13} />
+            {player.drawCount}
+          </span>
+          <span title="Défausse">↻ {player.discardCount}</span>
+        </div>
+      </div>
+    );
+  }
+  function heroFigure(player: Player, index: number, own: boolean) {
+    const hit =
+      combatEvent?.type === "attack" &&
+      combatEvent.targetPlayer === index &&
+      !combatEvent.targetCardId;
+    return (
+      <div
+        className={`hero-slot ${own ? "own" : "enemy"}`}
+        role="group"
+        aria-label={`${own ? "Ton héros" : "Héros adverse"}, ${player.name}`}
+      >
+        <div className={`hero-figure ${hit ? "hero-hit" : ""}`}>
+          <span className="hero-ground-shadow" />
+          <img
+            src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
+            alt={own ? "Gardien de la Sylve" : "Gardien mécanique d’ambre"}
+            width={320}
+            height={400}
+            draggable={false}
+          />
+          <StatBadge
+            kind="health"
+            value={player.heroHp}
+            wounded={player.heroHp < HERO_HP}
+          />
+          {hit && (
+            <span key={combatEvent.seq} className="damage-float">
+              −{combatEvent.damage}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+  function half(player: Player, playerIndex: number, own: boolean) {
+    return (
+      <div
+        className={`board-half ${own ? "own" : "enemy"}`}
+        role="group"
+        aria-label={own ? "Ton camp" : "Camp adverse"}
+      >
+        {Array.from({ length: ROWS * DEPTHS }, (_, index) => {
+          const row = Math.floor(index / DEPTHS);
+          const depth = own ? DEPTHS - 1 - (index % DEPTHS) : index % DEPTHS;
+          const unit = player.board.find(
+            (entry) => entry.row === row && entry.depth === depth,
+          );
+          const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
+          const cell = groundCell(row, column);
+          const legal = own && !unit && canSummon && !!selected;
+          const removable = own && !!unit && canWithdraw;
+          const acting =
+            combatEvent?.player === playerIndex &&
+            combatEvent.cardId === unit?.cardId;
+          const hit =
+            combatEvent?.type === "attack" &&
+            combatEvent.targetPlayer === playerIndex &&
+            combatEvent.targetCardId === unit?.cardId &&
+            !!unit;
+          return (
+            <div
+              key={`${row}-${depth}`}
+              className={`projected-cell ${unit ? "occupied" : ""} ${removable ? "removable" : ""} ${unit && own && selectedUnit === unit.cardId ? "unit-selected" : ""}`}
+              style={{ ...cell.bounds, zIndex: row + 1 }}
+            >
+              <button
+                type="button"
+                className={`board-cell ${legal ? "legal" : ""} ${hovered === `${row}-${depth}` && own ? "hovered" : ""}`}
+                style={{ clipPath: cell.clipPath }}
+                data-own-cell={own && !unit ? "true" : undefined}
+                data-row={row}
+                data-depth={depth}
+                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, ${depth === 0 ? "avant" : depth === 1 ? "milieu" : "arrière"}${unit ? `, ${unit.card.name}, puissance ${unit.card.attack}, ${unit.hp} PV` : ", vide"}`}
+                aria-disabled={!legal && !removable}
+                tabIndex={unit ? -1 : 0}
+                onClick={() => {
+                  if (legal && selected) onPlace(selected, row, depth);
+                  else if (removable && unit) onSelectUnit(unit.cardId);
+                }}
+              >
+                {legal && <span className="place-hint">+ Invoquer</span>}
+              </button>
+              {unit && (
+                <button
+                  type="button"
+                  className="board-unit-control"
+                  style={cell.unit}
+                  aria-label={`${unit.card.name}, puissance ${unit.card.attack}, ${unit.hp} PV${removable ? ", sélectionner pour retirer" : ""}`}
+                  aria-disabled={!removable}
+                  aria-pressed={own ? selectedUnit === unit.cardId : undefined}
+                  onClick={() => {
+                    if (removable) onSelectUnit(unit.cardId);
+                  }}
+                >
+                  <div
+                    className={`board-unit ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
+                  >
+                    <span className="unit-shadow" />
+                    <CreaturePortrait card={unit.card} />
+                    <div className="unit-stats">
+                      <StatBadge kind="attack" value={unit.card.attack} />
+                      <StatBadge
+                        kind="health"
+                        value={unit.hp}
+                        wounded={unit.hp < unit.card.health}
+                      />
+                    </div>
+                    <span className="unit-name">{unit.card.name}</span>
+                    {hit && (
+                      <span key={combatEvent.seq} className="damage-float">
+                        −{combatEvent.damage}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  return (
+    <div className="arena-scroll">
+      <section className="arena" aria-label="Terrain de duel de la Sylve">
+        <svg
+          className="arena-ground"
+          viewBox={`0 0 ${ARENA_WIDTH} ${ARENA_HEIGHT}`}
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="arena-tile-light" x1="0" y1="0" x2="0.7" y2="1">
+              <stop offset="0" stopColor="#fff5cd" stopOpacity="0.23" />
+              <stop offset="1" stopColor="#a88750" stopOpacity="0.08" />
+            </linearGradient>
+          </defs>
+          <image
+            href="/art/duel-arena-overhead.webp"
+            width={ARENA_WIDTH}
+            height={ARENA_HEIGHT}
+          />
+          {ARENA_CELLS.map((cell) => (
+            <polygon
+              key={`${cell.row}-${cell.column}`}
+              className="ground-tile"
+              points={cell.polygon}
+            />
+          ))}
+          <polygon
+            className="ground-outline"
+            points={groundPoints(ARENA_CORNERS)}
+          />
+          <polyline
+            className="ground-frontier"
+            points={groundPoints([
+              projectGround(0.5, 0),
+              projectGround(0.5, 1),
+            ])}
+          />
+        </svg>
+        <div className="arena-heroes">
+          {hero(mine, true)}
+          <div className="arena-round">
+            <span>DUEL DE LA SYLVE</span>
+            <strong>TOUR {turn}</strong>
+            <span>LE CERCLE DES GARDIENS</span>
+          </div>
+          {hero(enemy, false)}
+        </div>
+        <div className="board-labels">
+          <span>TON TERRITOIRE</span>
+          <span>TERRITOIRE ADVERSE</span>
+        </div>
+        <div className="battlefield">
+          {half(mine, me, true)}
+          <div className="board-divider" aria-hidden="true">
+            <span>❖</span>
+          </div>
+          {half(enemy, 1 - me, false)}
+        </div>
+        {heroFigure(mine, me, true)}
+        {heroFigure(enemy, 1 - me, false)}
+        <div className="board-footnote">
+          <span>ARRIÈRE · MILIEU · AVANT</span>
+          <span>4 LIGNES · 24 CASES</span>
+          <span>AVANT · MILIEU · ARRIÈRE</span>
+        </div>
+      </section>
+    </div>
+  );
+}
