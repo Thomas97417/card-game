@@ -8,6 +8,7 @@ import {
   Scripts,
   createRootRouteWithContext,
   useRouteContext,
+  useRouterState,
 } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 
@@ -71,6 +72,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
+  const isVillage = useRouterState({
+    select: (state) =>
+      state.matches.some((match) => match.routeId === "/dashboard"),
+  });
   return (
     <ConvexBetterAuthProvider
       client={context.convexQueryClient.convexClient}
@@ -88,9 +93,21 @@ function RootDocument() {
             disableTransitionOnChange
             storageKey="vite-ui-theme"
           >
-            <div className="grid h-svh grid-rows-[auto_1fr]">
-              <Header />
-              <div className="overflow-y-auto">
+            <div
+              className={
+                isVillage
+                  ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                  : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+              }
+            >
+              {!isVillage && <Header />}
+              <div
+                className={
+                  isVillage
+                    ? "min-h-0 overflow-hidden"
+                    : "min-h-0 overflow-y-auto"
+                }
+              >
                 <Outlet />
               </div>
             </div>

@@ -1,9 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowRight, Heart, Leaf, Swords, Users } from "lucide-react";
 import { CATALOG } from "@sylve/game";
 import { CreatureCard } from "@/components/game/creature-card";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: ({ context }) => {
+    if (context.isAuthenticated) throw redirect({ to: "/dashboard" });
+  },
   head: () => ({
     meta: [
       { title: "Sylve — Le cercle des gardiens" },
