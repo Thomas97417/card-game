@@ -2,9 +2,9 @@ import { redirect } from "@tanstack/react-router";
 
 export function safeReturnTo(value: unknown): string {
   return typeof value === "string" &&
-    /^\/(?:dashboard|play|decks|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
+    /^\/(?:hub|dashboard|play|decks|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
     ? value
-    : "/dashboard";
+    : "/hub";
 }
 export function requireGameAuth(isAuthenticated: boolean, href: string) {
   if (!isAuthenticated)

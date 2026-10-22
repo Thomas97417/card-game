@@ -66,7 +66,7 @@ export default function UserMenu({
         <DropdownMenuGroup>
           {!overlay && (
             <>
-              <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+              <DropdownMenuItem onClick={() => navigate({ to: "/hub" })}>
                 <Map className="mr-2 size-4" />
                 Mon refuge
               </DropdownMenuItem>

@@ -43,6 +43,7 @@ import {
 import { cn } from "@/lib/utils";
 import UserMenu from "@/components/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type ModalId = Exclude<PlaceId, "workshop" | "arena">;
@@ -120,6 +121,7 @@ export function VillageHub({
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
+  const { isDragging, dragHandlers } = useHorizontalDrag(isPannable);
   const activeGame = activity?.status === "active" && activity.gameId;
   const hasActivity =
     !!activeGame || activity?.status === "waiting" || activity?.queued;
@@ -168,7 +170,13 @@ export function VillageHub({
           role="region"
           aria-label="Carte du refuge, fais défiler pour explorer les bâtiments"
           tabIndex={0}
-          className="absolute inset-0 flex items-center overflow-x-auto overflow-y-hidden overscroll-contain [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#e9ca82] [&::-webkit-scrollbar]:hidden"
+          {...dragHandlers}
+          className={cn(
+            "absolute inset-0 flex items-center overflow-x-auto overflow-y-hidden overscroll-contain select-none [scrollbar-width:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#e9ca82] [&::-webkit-scrollbar]:hidden",
+            isPannable && "cursor-grab",
+            isDragging &&
+              "cursor-grabbing [&_a]:cursor-grabbing [&_button]:cursor-grabbing",
+          )}
         >
           <div className="relative mx-auto aspect-[1672/941] w-[max(100%,860px,calc(100svh*1.777))] shrink-0 bg-[#35553b]">
             <img
