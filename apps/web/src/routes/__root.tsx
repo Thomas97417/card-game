@@ -21,6 +21,7 @@ import ErrorBoundary from "../components/error-boundary";
 import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import gameCss from "../game.css?url";
+import workshopCss from "../deck-workshop.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
@@ -52,6 +53,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         href: appCss,
       },
       { rel: "stylesheet", href: gameCss },
+      { rel: "stylesheet", href: workshopCss },
     ],
   }),
 
@@ -72,9 +74,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
-  const isVillage = useRouterState({
+  const isImmersive = useRouterState({
     select: (state) =>
-      state.matches.some((match) => match.routeId === "/hub"),
+      state.matches.some(
+        (match) => match.routeId === "/hub" || match.routeId === "/decks",
+      ),
   });
   return (
     <ConvexBetterAuthProvider
@@ -95,15 +99,15 @@ function RootDocument() {
           >
             <div
               className={
-                isVillage
+                isImmersive
                   ? "grid h-svh grid-rows-[minmax(0,1fr)]"
                   : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
               }
             >
-              {!isVillage && <Header />}
+              {!isImmersive && <Header />}
               <div
                 className={
-                  isVillage
+                  isImmersive
                     ? "min-h-0 overflow-hidden"
                     : "min-h-0 overflow-y-auto"
                 }

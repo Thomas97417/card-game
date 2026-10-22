@@ -30,7 +30,7 @@ export default function Header() {
               Jouer
             </Link>
             <Link to="/decks" className={linkStyles}>
-              Mes decks
+              Mon deck
             </Link>
             <Authenticated>
               <Link to="/settings" className={linkStyles}>

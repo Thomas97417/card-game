@@ -30,3 +30,108 @@ Prompt final du village, outil intégré ImageGen :
 > Composition/framing: wide landscape 16:9. All five buildings completely visible and well separated, no overlaps. Center-back at x=51% y=37% a large welcoming guardian's keep with cream stone walls, mossy teal conical roofs, warm glowing windows, a small green banner and broad front steps (the central landmark). Upper-left at x=24% y=37% a bookish wizard's archive tower with a tall navy roof and a large open-book sign. Lower-left at x=22% y=68% a cozy card-maker's workshop with a terracotta roof, wood veranda, card banners and a golden lantern. Upper-right at x=77% y=33% a mystical round stone sanctuary with a giant luminous jade crystal growing above a circular stone base, fireflies. Lower-right at x=76% y=68% a circular open-air dueling arena, low mossy stone walls, two crossed green banners and softly glowing golden stone floor. Leave small clear grass/path pockets immediately below each building for HTML labels. Building centers should closely follow specified coordinates; buildings take about 15-21% scene width each. Middle foreground has open curved path.
 > Lighting/mood: late-afternoon sunlight from top left, warm rays through tree canopy, peaceful magical atmosphere, subtle teal ambient shadows and warm honey highlights, enough contrast for legibility. Polished storybook illustration, not plastic 3D, not pixel art, not photorealism.
 > Constraints: no people, no characters, no text, no letters, no logos, no watermark, no cards overlay, no frames, no interface, no labels. Original architecture and world. Deliver just the landscape illustration.
+
+## Atelier des decks
+
+Le décor plein écran de `/decks` est enregistré dans `apps/web/public/art/deck-workshop.webp` (1672 × 941 px, environ 317 Ko). Il a été créé avec l’outil intégré **ImageGen**, puis encodé en WebP avec `cwebp` (qualité 88). Le PNG original reste dans le dossier de génération local. Le décor couvre toute la fenêtre ; les deux rangées de cartes, leurs statistiques et les commandes sont des éléments interactifs superposés. Les personnages réutilisent les illustrations du catalogue.
+
+Le deck enregistré s’ouvre en haut et les créatures qui n’y figurent pas composent la collection en dessous. Glisser une carte de la collection sur une carte du deck remplace cette dernière ; glisser deux cartes du deck échange leur position. La composition conserve huit cartes uniques. Une sélection suivie d’un clic ou d’une activation au clavier offre la même interaction. Les filtres à icônes en bas (« Toutes », « Corps à corps », « À distance ») s’appliquent à la collection. Les changements de cartes sont enregistrés automatiquement, avec reprise après erreur réseau. Chaque joueur dispose d’un seul deck ; les contrôles de création, de suppression et de sélection ont été retirés.
+
+Un [aperçu de l’atelier](decks-validation.webp) est conservé après vérification dans le navigateur à 1599 × 1314 px. Le rendu a aussi été contrôlé à 390 × 844 px, avec défilement horizontal des cartes. Le contenu commence juste sous le bord de la table, en tenant compte du recadrage du décor en `cover`. L’en-tête conserve le titre principal et le retour au refuge.
+
+Prompt final :
+
+```text
+Use case: stylized-concept.
+Asset type: production full-screen background illustration for the deck-building workshop of Sylve, an original woodland fantasy card game.
+Primary request: a beautiful hand-painted card-maker's workshop, an atmospheric open wooden lodge in an enchanted forest. The camera looks slightly downward across a very broad empty warm dark walnut worktable, almost front-on, to support an interactive two-row card collection interface.
+Scene/backdrop: ancient carved timber rafters at the top and outer corners, open arched windows overlooking misty emerald woods, warm golden lanterns to either side, small mossy leaves at the extreme edges, a few rolled parchments and a closed green grimoire confined to the far left and right edges. Rich natural wood grain, old brass fittings, subtle vine carvings, premium storybook fantasy game illustration.
+Composition/framing: wide landscape 16:9, edge-to-edge illustration. The entire middle 85 percent of the image must be a calm spacious uncluttered wooden work surface, with no objects in the middle. The upper 15 percent shows the workshop architecture and forest windows; table occupies from 20 percent to the bottom. Make two very subtle broad horizontal surfaces at about 35 percent and 70 percent, but no visible card slots or individual rectangles. Darker shadowed bottom edge. Props confined to extreme edges only, so HTML card rows are fully legible.
+Lighting/mood: cozy late-afternoon honey light from upper left, deep forest-teal shadows at the corners, warm amber highlights along wood edges, a few discreet floating dust motes.
+Style: sophisticated detailed painterly 2D storybook fantasy, same world as an emerald forest village with teal-roofed stone towers and warm lanterns. Polished natural materials, soft brushwork, original scenery.
+Constraints: scenery only; no cards, no characters, no creatures, no text, no letters, no numbers, no logos, no watermark, no interface, no buttons, no icons, no frame around the whole image. Do not draw a screenshot or a game UI.
+```
+
+## Flèche de retour
+
+`apps/web/public/art/ui/back-arrow.webp` : flèche de retour originale en bois sculpté, laiton doré et incrustations de feuilles vertes, créée avec l’outil intégré **ImageGen**. Son canal alpha a été vérifié, puis l’image a été recadrée sur son contenu transparent, réduite et encodée en WebP avec `sharp` (288 × 157 px, environ 17 Ko). Le PNG original reste dans le dossier de génération local.
+
+La flèche remplace l’ancien lien illustré d’une icône et du texte « Le refuge » dans l’en-tête de `/decks`. Le lien conserve sa destination `/hub` et le libellé accessible « Retour au refuge », avec une zone cliquable adaptée au tactile et un focus visible au clavier.
+
+Prompt final, outil intégré ImageGen :
+
+```text
+Use case: stylized-concept.
+Asset type: a single transparent game interface navigation asset, the back arrow for Sylve, a hand-painted woodland fantasy card game.
+Primary request: create one beautiful, compact, LEFT-pointing return arrow, made from warm carved walnut wood with an aged golden brass edge. It must feel crafted inside an enchanted forest workshop with ancient timber, amber lantern light and forest-green accents.
+Subject: one unmistakable broad left-pointing arrow silhouette, large triangular arrowhead on the left, short thick straight horizontal shaft ending in a softly rounded tail on the right. Fine dark wood grain, a modest beveled brass rim with honey highlights, a tiny restrained carved vine detail near the tail with muted jade green inlay. Strong clean readable outline. The arrow is the complete clickable icon: no additional button, no plaque behind it, no circle or square surrounding it.
+Style/medium: premium hand-painted 2D storybook fantasy game asset, tactile painted wood and slightly worn brass, soft painterly shading, natural materials matching a cozy forest card-maker's lodge. Almost front-on orthographic view, no dramatic perspective. Subtle depth from the bevel only.
+Composition/framing: square canvas, isolated single arrow centered, arrow occupies about 90 percent of the canvas width and 60 percent of its height, balanced compact 3:2 silhouette with a thick shape that stays legible when displayed at 72 by 48 pixels.
+Lighting/mood: soft warm lantern highlights from upper left, dark emerald ambient shade, gentle dark contour around the silhouette for legibility over a busy forest background.
+Constraints: true alpha-transparent background; transparency visible around every outer edge. No background scenery, no checkerboard pattern painted into the image, no backing plate, no text, no letters, no symbols other than the left arrow, no logo, no watermark, no border around the canvas, no duplicate arrows. Deliver just the single finished arrow asset.
+```
+
+## Pourtour du deck
+
+`apps/web/public/art/ui/deck-frame.webp` : pourtour original en noyer, laiton vieilli et petites feuilles de jade, assorti à la flèche de retour. Il a été créé avec l’outil intégré **ImageGen**. Le centre est réellement transparent (canal alpha vérifié), tout comme l’extérieur. L’asset est recadré et encodé avec `sharp` en WebP de 1536 × 458 px, environ 104 Ko. Le PNG original reste dans le dossier local de génération.
+
+Le cadre est posé via `border-image` avec une découpe de 120 px et des bordures de 28 px ; les coins sont préservés et les rails s’étirent avec le contenu. Le panneau vert est retiré et le bois de la table reste visible au centre. Le cadre contient uniquement les cartes agrandies, sans titre, nom de deck ni texte sous les cartes. Sur petit écran, les commandes de défilement restent à l’extérieur du cadre. La collection conserve son titre « Ta collection », sans surtitre ni slogan. Le pourtour ne capte pas les événements du pointeur, ce qui conserve le glisser-déposer.
+
+Le deck unique est enregistré dès qu’une carte est remplacée ou déplacée. Les écritures sont sérialisées et les changements intermédiaires regroupés pendant une requête en cours. Une erreur déclenche une nouvelle tentative automatique ; la navigation attend que les dernières modifications soient enregistrées. La sauvegarde laisse les cartes modifiables. Les anciens decks supplémentaires sont conservés en base, mais seul le plus récemment modifié est exposé et peut être utilisé ; aucune nouvelle création ni suppression n’est autorisée par les mutations publiques.
+
+Prompt final, outil intégré ImageGen :
+
+```text
+Use case: stylized-concept.
+Asset type: production transparent decorative rectangular frame border for the current deck in Sylve, a hand-painted woodland fantasy card game.
+Primary request: create one wide empty rectangular picture-frame surround, in the same material style as a fantasy return arrow made of carved walnut, aged golden brass and small green leaf inlays.
+Subject: only the perimeter border of a wide horizontal rectangular frame. Warm dark walnut wood rails, realistic fine painted wood grain, modest worn gold brass edging on both inner and outer rim, softly beveled corners. Restrained small carved curling vines and muted jade-green leaves at the four corners, integrated into the wood and brass. Charming premium storybook fantasy illustration with soft honey lantern highlights and deep forest-tinted shadows. Strong continuous rectangular outline, elegant restrained craft rather than an ornate baroque frame.
+Composition/framing: wide landscape exactly 3:1 aspect ratio. Frame centered and almost fills the canvas, with only a tiny transparent margin outside. Straight perfectly horizontal top and bottom rails and perfectly vertical side rails. Front-facing flat orthographic view, no perspective, no tilt. Rails about 50 pixels thick on a 1536 by 512 canvas; corner ornament contained inside the outer rectangular silhouette. Each corner fits within a 96 by 96 pixel square, and the middle portions of all four rails must remain straight and uniform so this artwork can be rendered as a resizable CSS nine-slice border.
+Transparency: the entire large rectangular center opening MUST be empty and truly alpha-transparent, with no paper, no wood panel, no colored fill, no glass, no green rectangle. The small area outside the frame must also be truly alpha-transparent. This is an isolated cutout frame perimeter, not a picture of a frame in a scene.
+Constraints: no background, no table, no environment, no images or objects inside the frame, no cards, no creatures, no text, no letters, no numbers, no logo, no watermark, no UI buttons. Do not paint a checkerboard pattern. Deliver just one continuous rectangular decorative frame with a transparent center and transparent exterior.
+```
+
+
+## Icônes de vie et de combat
+
+Les images `apps/web/public/art/ui/health-heart.webp`, `apps/web/public/art/ui/melee-sword.webp` et `apps/web/public/art/ui/ranged-bow.webp` remplacent les symboles SVG des points de vie et des types de combat. Elles sont partagées entre les cartes, les unités et héros en duel, le sanctuaire et les filtres de l’atelier. Les nombres restent du texte HTML et les libellés accessibles sont conservés.
+
+Les trois illustrations ont été générées séparément avec l’outil intégré **ImageGen**, puis recadrées sur leur canal alpha, réduites et encodées avec `sharp` en WebP transparent de 256 × 256 px. Les PNG originaux sont conservés dans `/Users/thomas/.codex/generated_images/01a163fa-150d-7022-93bb-99fd860612fb/`. Le cœur est rouge avec un pourtour de laiton et de jade ; les armes reprennent le noyer, le laiton et l’argent de la flèche de retour.
+
+Prompts finaux, outil intégré ImageGen :
+
+### Cœur de vie
+
+```text
+Use case: stylized-concept.
+Asset type: transparent health icon for Sylve, an original woodland fantasy card game, used as a tiny 34-pixel stat badge.
+Primary request: one bold ruby-red HEART symbol, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade leaf details.
+Subject: a broad symmetrical plump heart with two clear rounded lobes and a pointed bottom, rich warm vermilion-red enamel, a restrained thin beveled antique brass rim, a small walnut shadow along the lower edge. Keep the broad center simple, calm and red so a white number can be overlaid by the website. Tiny leafy engraving confined to the outer rim only.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against both wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single heart centered and filling about 88 percent of the width and height; modest transparent margin. Strong legibility at 24 to 40 pixels.
+Constraints: actual alpha-transparent background around the silhouette. No backplate, no frame around the canvas, no scenery, no hands, no extra objects, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished heart.
+```
+
+### Épée de corps à corps
+
+```text
+Use case: stylized-concept.
+Asset type: transparent melee sword icon for Sylve, an original woodland fantasy card game, used at 18 to 40 pixels in cards and filter buttons.
+Primary request: one bold, simple SWORD, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade details.
+Subject: one short broad straight double-edged blade of bright softly shaded silver, pointing diagonally toward the upper right, with the short walnut grip at lower left; a sturdy aged gold crossguard, rounded golden pommel, one small jade inset at the hilt. The silhouette should be thick and iconic, with a broad readable blade and compact grip; very restrained engraving only.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single sword centered, arranged lower left to upper right, filling about 88 percent of the width and height; modest transparent margin. It must remain instantly readable at 18 pixels.
+Constraints: actual alpha-transparent background around every edge. No circle, no shield, no backplate, no surrounding frame, no scenery, no hands, no extra objects, no crossed second weapon, no blood, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished sword.
+```
+
+### Arc à distance
+
+```text
+Use case: stylized-concept.
+Asset type: transparent ranged bow icon for Sylve, an original woodland fantasy card game, used at 18 to 40 pixels in cards and filter buttons.
+Primary request: one bold BOW WITH A SINGLE NOCKED ARROW, hand-painted and beautifully crafted, matching a carved walnut and aged golden brass interface with subtle jade details.
+Subject: a compact curved recurve bow of warm walnut wood with thick honey-brass reinforced tips and a small jade green grip. A clearly visible taut pale-gold bowstring and ONE simple broad silver-tipped arrow pointing diagonally toward the upper right. Strong recognizable bow silhouette, not a crossbow; keep the internal geometry very simple and the wood thick enough to read when tiny.
+Style/medium: premium detailed hand-painted 2D storybook fantasy game UI asset, tactile materials, strong silhouette, soft painterly shading, front-on view, warm light from upper left, dark contour for contrast against wooden scenery and pale cards. Elegant, readable and compact, matching a return arrow carved in walnut with a honey-brass edge and jade vine inlay.
+Composition/framing: square canvas; isolated single bow and nocked arrow centered, filling about 88 percent of the width and height; modest transparent margin. It must remain instantly readable at 18 pixels.
+Constraints: actual alpha-transparent background, including inside the bow. No circle, no shield, no backplate, no surrounding frame, no scenery, no hands, no extra arrows or objects, no text, no letters, no digits, no logo, no watermark, no painted checkerboard. Deliver only this one finished bow with arrow.
+```

@@ -1,0 +1,602 @@
+.deck-workshop {
+  --workshop-gold: #d7b777;
+  --workshop-cream: #f4ebd4;
+  --workshop-header-height: clamp(100px, 15svh, 152px);
+  /* The table begins at 30.3% of the 1672 × 941 illustration. Account for
+     the centered cover crop so the cards stay on the wood at every ratio. */
+  --workshop-table-top: calc(50svh - max(100svh, 56.28vw) * 0.197);
+  --workshop-content-top: max(
+    var(--workshop-header-height),
+    calc(var(--workshop-table-top) + 16px)
+  );
+  --workshop-card-width: clamp(
+    112px,
+    min(
+      calc((min(100vw, 1640px) - clamp(40px, 6vw, 112px) - 196px) / 8),
+      calc((100svh - var(--workshop-content-top) - 260px) * 0.35)
+    ),
+    180px
+  );
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #283c2e;
+  color: var(--workshop-cream);
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+.workshop-background,
+.workshop-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -2;
+}
+.workshop-background {
+  object-fit: cover;
+  object-position: center;
+}
+.workshop-shade {
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    #0d201caa,
+    #15251d0a 23%,
+    #211b1620 65%,
+    #130f0bd9
+  );
+}
+.deck-workshop button,
+.deck-workshop a,
+.deck-workshop input,
+.deck-workshop select,
+.deck-workshop [tabindex="0"] {
+  outline-offset: 4px;
+  outline-color: #f1d494;
+}
+.deck-workshop button:disabled {
+  cursor: default;
+}
+.workshop-header,
+.workshop-content,
+.workshop-footer {
+  width: 100%;
+  max-width: 1640px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 3vw, 56px);
+}
+.workshop-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 32px;
+  min-height: var(--workshop-header-height);
+  padding-block: 18px 24px;
+}
+.workshop-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  filter: drop-shadow(0 3px 4px #0006);
+  transition:
+    transform 160ms,
+    filter 160ms;
+}
+.workshop-back img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.workshop-back:hover {
+  transform: translateX(-4px);
+  filter: drop-shadow(0 3px 6px #dfbb7955);
+}
+.workshop-back:active {
+  transform: translateX(-2px) scale(0.96);
+}
+.workshop-title {
+  font:
+    400 clamp(23px, 2.4vw, 34px)/1.15 Georgia,
+    serif;
+  letter-spacing: -0.8px;
+  text-shadow: 0 2px 12px #10261b88;
+}
+.workshop-content {
+  min-height: 0;
+  flex: 1;
+  margin-top: calc(var(--workshop-content-top) - var(--workshop-header-height));
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #b7955266 transparent;
+  padding-bottom: 16px;
+}
+.workshop-current {
+  position: relative;
+  padding: 18px 10px;
+  background: transparent;
+  text-shadow: 0 1px 4px #20150dcc;
+}
+.workshop-current::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 28px solid transparent;
+  border-image: url("/art/ui/deck-frame.webp") 120 stretch;
+  pointer-events: none;
+}
+.workshop-scroll-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 6px;
+  min-width: 36px;
+  height: 38px;
+  border: 1px solid #d7b77760;
+  background: #30271cc0;
+  color: #edd4a3;
+  border-radius: 5px;
+}
+.workshop-scroll-controls button:hover {
+  background: #685137cc;
+  border-color: #d7b777;
+}
+.workshop-card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(12px, 1vw, 16px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #d4b97955 transparent;
+  padding: 20px 26px 17px;
+  min-height: calc(var(--workshop-card-width) * 1.43 + 37px);
+}
+.workshop-card-slot,
+.workshop-card-placeholder {
+  width: var(--workshop-card-width);
+  flex: 0 0 var(--workshop-card-width);
+  min-width: 0;
+}
+.workshop-current .workshop-card-row {
+  justify-content: safe center;
+}
+.workshop-card {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 0.7;
+  padding: 0;
+  border: 2px solid #c5a666;
+  border-radius: 8px;
+  text-align: center;
+  color: #fff3cd;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--creature-color), #f4dfb1 35%),
+    color-mix(in srgb, var(--creature-color), #1e3328 65%)
+  );
+  box-shadow:
+    0 5px 0 #111c17aa,
+    0 9px 13px #10191077,
+    inset 0 0 0 3px #eed4a166;
+  touch-action: none;
+  user-select: none;
+  transition:
+    transform 160ms,
+    box-shadow 160ms,
+    opacity 160ms;
+}
+.workshop-card:not(:disabled) {
+  cursor: grab;
+}
+.workshop-card:hover:not(:disabled) {
+  transform: translateY(-6px);
+  border-color: #f9df9a;
+  box-shadow:
+    0 5px 0 #111c17aa,
+    0 15px 18px #10191088,
+    0 0 14px #e4cc7944;
+}
+.workshop-card.is-picked,
+.workshop-card.is-target {
+  transform: translateY(-6px);
+  outline: 2px solid #f5d68a;
+  outline-offset: 4px;
+}
+.workshop-card.is-target {
+  outline-color: #b5ecbb;
+  box-shadow: 0 0 25px #9be3a660;
+}
+.workshop-card.is-dragging {
+  opacity: 0.3;
+  transform: scale(0.97);
+}
+.deck-workshop.is-dragging,
+.deck-workshop.is-dragging * {
+  cursor: grabbing;
+}
+.workshop-card-art {
+  position: absolute;
+  inset: 3px 3px 0;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.workshop-card-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    125deg,
+    #fff4d00a 0 1px,
+    transparent 1px 8px
+  );
+}
+.workshop-card-halo {
+  position: absolute;
+  width: 105%;
+  height: 80%;
+  top: 7%;
+  left: -2%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #fff3b550, transparent 65%);
+}
+.workshop-card-art .creature-portrait {
+  position: relative;
+  width: 128%;
+  max-width: none;
+  height: 104%;
+  margin-left: -14%;
+  object-fit: contain;
+  object-position: 50% 25%;
+  filter: drop-shadow(0 7px 4px #18251b77);
+}
+.workshop-card .card-stats {
+  top: -9px;
+  left: -8px;
+  right: -8px;
+}
+.workshop-card .card-stats .stat-badge {
+  width: 40px;
+  height: 40px;
+}
+.workshop-card .card-stats .stat-badge strong {
+  font-size: 22px;
+}
+.workshop-card-caption {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 39%;
+  padding: 25px 6px 11px;
+  background: linear-gradient(transparent, #132a25e6 40%, #132a25fa);
+  border-radius: 0 0 5px 5px;
+}
+.workshop-card-name {
+  font:
+    600 clamp(11px, 1vw, 14px)/1.15 Georgia,
+    serif;
+  text-wrap: balance;
+  text-shadow: 0 1px 3px #000;
+}
+.workshop-card-type {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #e0c68e;
+  font-size: 8px;
+  letter-spacing: 0.15px;
+}
+.workshop-drop-label {
+  position: absolute;
+  z-index: 4;
+  inset: auto -5px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #b7dba3;
+  border: 1px solid #e4f7c7;
+  box-shadow: 0 3px 8px #0006;
+  color: #203e2d;
+  padding: 9px 2px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.workshop-card-placeholder {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 0.7;
+  border: 1px solid #d7b77744;
+  border-radius: 8px;
+  background: #d7b77709;
+  color: #d7b77744;
+}
+.workshop-scroll-controls {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.workshop-scroll-controls button {
+  min-width: 30px;
+  height: 27px;
+}
+.workshop-deck-navigation {
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.workshop-collection {
+  margin-top: clamp(18px, 2svh, 26px);
+}
+.workshop-collection-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-inline: 8px;
+}
+.workshop-collection-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font:
+    400 25px/1 Georgia,
+    serif;
+  color: #ffedc6;
+  text-shadow: 0 2px 6px #211609;
+}
+.workshop-collection-heading h2 span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 43px;
+  padding: 5px 7px;
+  border: 1px solid #dabf7c70;
+  border-radius: 3px;
+  background: #3c2e20bb;
+  color: #ead7b1;
+  font:
+    10px/1 "Avenir Next",
+    sans-serif;
+}
+.workshop-collection .workshop-card-row {
+  padding: 22px 8px 16px;
+}
+.workshop-collection .workshop-card {
+  border-color: #bba06e;
+}
+.workshop-empty {
+  width: 100%;
+  min-height: calc(var(--workshop-card-width) * 1.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #f0dfbc;
+  font-size: 12px;
+  text-align: center;
+}
+.workshop-empty svg {
+  color: #d7b777;
+}
+.workshop-empty button {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: #f0d698;
+  font-size: 10px;
+}
+.workshop-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 28px;
+  min-height: 86px;
+  padding-block: 14px max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid #bb9c5a55;
+  background: linear-gradient(180deg, #251e17dd, #1c1914ee);
+  box-shadow: 0 -6px 28px #1b170f44;
+  max-width: none;
+}
+.workshop-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.workshop-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #c5b38f;
+  font-size: 8px;
+  letter-spacing: 2px;
+  margin-right: 9px;
+}
+.workshop-filters button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 10px 15px;
+  border: 1px solid #a48a5655;
+  border-radius: 5px;
+  color: #dbccb0;
+  background: linear-gradient(#4c412dcc, #30291ecc);
+  font-size: 10px;
+  box-shadow:
+    inset 0 1px 0 #eacb8c0d,
+    0 3px 7px #0003;
+}
+.workshop-filters button:hover:not(:disabled) {
+  border-color: #dfbf78;
+  color: #f6e9cc;
+}
+.workshop-filters button.is-active {
+  background: linear-gradient(#5d603b, #3a482e);
+  color: #f8e8bd;
+  border-color: #d6ba7c;
+  box-shadow:
+    inset 0 0 0 2px #e0c28415,
+    0 0 13px #caac6333;
+}
+.workshop-filters button.is-active svg {
+  color: #f0d392;
+}
+.workshop-instructions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+  max-width: 440px;
+  color: #d6c6a7;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.workshop-instructions > svg {
+  color: #bfa56f;
+  flex-shrink: 0;
+}
+.workshop-instructions.has-selection {
+  color: #f7d88d;
+}
+.workshop-instructions button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #bc9e6377;
+  border-radius: 4px;
+}
+.workshop-drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  width: var(--workshop-card-width);
+  transform: translate(-50%, -50%) rotate(-5deg) scale(1.05);
+  filter: drop-shadow(0 18px 18px #0009);
+}
+
+@media (min-width: 1700px) {
+  .workshop-footer {
+    padding-inline: max(56px, calc((100% - 1528px) / 2));
+  }
+}
+@media (max-width: 1100px) {
+  .workshop-header {
+    gap: 22px;
+  }
+  .workshop-scroll-controls {
+    display: flex;
+  }
+  .workshop-footer {
+    gap: 22px;
+  }
+  .workshop-filter-label span {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .deck-workshop {
+    --workshop-header-height: 100px;
+    --workshop-card-width: clamp(124px, 24vw, 158px);
+  }
+  .workshop-header,
+  .workshop-content,
+  .workshop-footer {
+    padding-inline: 18px;
+  }
+  .workshop-header {
+    gap: 18px;
+    padding-block: 18px;
+  }
+  .workshop-back {
+    width: 60px;
+    height: 50px;
+  }
+  .workshop-title {
+    font-size: 24px;
+  }
+  .workshop-card-row {
+    padding-inline: 18px;
+    gap: 17px;
+  }
+  .workshop-collection {
+    margin-top: 24px;
+  }
+  .workshop-collection-heading > .workshop-scroll-controls {
+    margin-left: auto;
+  }
+  .workshop-collection-heading h2 {
+    font-size: 23px;
+  }
+  .workshop-card-name {
+    font-size: 12px;
+  }
+  .workshop-footer {
+    flex-wrap: wrap;
+    gap: 11px;
+    min-height: 109px;
+    padding-top: 12px;
+  }
+  .workshop-filters {
+    gap: 7px;
+    width: 100%;
+  }
+  .workshop-filter-label {
+    margin-right: 4px;
+  }
+  .workshop-filters button {
+    flex: 1;
+    gap: 7px;
+    min-height: 40px;
+    padding-inline: 9px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  .workshop-filters button svg {
+    width: 17px;
+  }
+  .workshop-instructions {
+    max-width: none;
+    justify-content: flex-start;
+    margin-left: 0;
+    font-size: 9px;
+    line-height: 1.4;
+    min-height: 26px;
+  }
+}
+@media (max-height: 800px) and (min-width: 761px) {
+  .deck-workshop {
+    --workshop-header-height: 80px;
+  }
+  .workshop-header {
+    padding-block: 14px;
+  }
+  .workshop-footer {
+    min-height: 70px;
+    padding-block: 10px;
+  }
+  .workshop-collection {
+    margin-top: 18px;
+  }
+}

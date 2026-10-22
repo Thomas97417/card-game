@@ -16,6 +16,18 @@ export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   if (!user) throw new ConvexError("Connecte-toi pour jouer.");
   return { userId: String(user._id), name: user.name };
 }
+/** Keep legacy decks intact; the most recently edited one is the single active deck. */
+export async function currentDeck(ctx: QueryCtx | MutationCtx, userId: string) {
+  const decks = await ctx.db
+    .query("decks")
+    .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+    .collect();
+  return (
+    decks.sort(
+      (a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime,
+    )[0] ?? null
+  );
+}
 export function rules<T>(fn: () => T): T {
   try {
     return fn();
@@ -63,8 +75,8 @@ export async function deckSnapshot(
   deckId: Id<"decks">,
   userId: string,
 ) {
-  const deck = await ctx.db.get(deckId);
-  if (!deck || deck.ownerId !== userId)
+  const deck = await currentDeck(ctx, userId);
+  if (!deck || deck._id !== deckId)
     throw new ConvexError("Ce deck ne t’appartient pas.");
   const ids =
     deck.cardIds.length === 10
@@ -120,7 +132,10 @@ export async function saveTransition(
   await ctx.db.patch(gameId, { state, status: state.status });
   for (const event of events)
     await ctx.db.insert("gameEvents", { gameId, seq: event.seq, event });
-  if (state.status === "active" && events.some((event) => event.type === "turn"))
+  if (
+    state.status === "active" &&
+    events.some((event) => event.type === "turn")
+  )
     await ctx.scheduler.runAt(state.turnEndsAt, internal.games.expireTurn, {
       gameId,
       expectedTurn: state.turn,
