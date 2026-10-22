@@ -5,6 +5,8 @@ import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DuelScreen } from "@/components/game/duel-screen";
 import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import { showGameError } from "@/components/game/shared";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/game/$gameId")({
   beforeLoad: ({ context, location }) =>
@@ -31,11 +33,38 @@ function GamePage() {
   const withdrawCard = useMutation(api.games.withdrawCard);
   const endTurn = useMutation(api.games.endTurn);
   const surrender = useMutation(api.games.surrender);
+  const soloTurn = useMutation(api.games.soloTurn);
+  const [settledSequence, setSettledSequence] = useState(-1);
+  useEffect(() => {
+    if (
+      data?.mode !== "solo" ||
+      data.status !== "active" ||
+      data.activePlayer !== 1 ||
+      data.sequence !== settledSequence
+    )
+      return;
+    const expectedTurn = data.turn;
+    const timer = window.setTimeout(() => {
+      void soloTurn({ gameId, expectedTurn }).catch(showGameError);
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [
+    data?.mode,
+    data?.status,
+    data?.activePlayer,
+    data?.sequence,
+    data?.turn,
+    settledSequence,
+    soloTurn,
+    gameId,
+  ]);
   if (!data) return <GameLoading />;
   return (
     <DuelScreen
       key={gameId}
       data={data}
+      practice={data.mode === "solo"}
+      onPlaybackSettled={setSettledSequence}
       onPlayCard={(cardId, row, depth, expectedTurn) =>
         playCard({ gameId, cardId, row, depth, expectedTurn })
       }

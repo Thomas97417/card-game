@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
-  CATALOG,
   DECK_SIZE,
+  MIN_DECK_SIZE,
   HAND_SIZE,
   getCombatType,
   isDeploymentDepth,
@@ -11,6 +11,7 @@ import {
   type CardDefinition,
   type GameView,
   type GameEvent,
+  type CardRarity,
 } from "@sylve/game";
 import {
   ArrowLeft,
@@ -28,9 +29,14 @@ import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
+import { CHEST_LABELS } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
 
-export type DuelData = GameView & { events: GameEvent[] };
+export type DuelData = GameView & {
+  events: GameEvent[];
+  mode?: "solo" | "public" | "private";
+  reward?: { status: "awarded" | "lost"; rarity?: CardRarity } | null;
+};
 interface DuelScreenProps {
   data: DuelData;
   onPlayCard: (
@@ -109,6 +115,10 @@ export function DuelScreen({
     (card) => legalPlacements(card, mine.board).length > 0,
   );
   const selectedCard = mine.hand.find((card) => card.id === selected);
+  const cardName = (id: string | undefined) =>
+    display.players
+      .flatMap((player) => player.deck)
+      .find((card) => card.id === id)?.name ?? "une créature";
   const selectedUnit =
     inspection?.type === "card" &&
     inspection.source === "board" &&
@@ -120,7 +130,8 @@ export function DuelScreen({
     setInspection(next);
   }
   async function withdrawCard(cardId: string) {
-    if (!canWithdraw || !mine.board.some((unit) => unit.cardId === cardId)) return;
+    if (!canWithdraw || !mine.board.some((unit) => unit.cardId === cardId))
+      return;
     setPending(true);
     try {
       await onWithdrawCard(cardId, data.turn);
@@ -156,7 +167,8 @@ export function DuelScreen({
     }
   }
   const cellAt = (x: number, y: number, card: CardDefinition) => {
-    const cell = document.elementFromPoint(x, y)
+    const cell = document
+      .elementFromPoint(x, y)
       ?.closest<HTMLElement>("[data-own-cell]");
     return cell && isDeploymentDepth(card, Number(cell.dataset.depth))
       ? cell
@@ -166,7 +178,11 @@ export function DuelScreen({
     event: ReactPointerEvent<HTMLButtonElement>,
     card: CardDefinition,
   ) {
-    if (!canSummon || !legalPlacements(card, mine.board).length || event.button !== 0)
+    if (
+      !canSummon ||
+      !legalPlacements(card, mine.board).length ||
+      event.button !== 0
+    )
       return;
     origin.current = {
       card,
@@ -238,7 +254,11 @@ export function DuelScreen({
           Salon
         </Link>
         <span className="eyebrow">
-          {practice ? "TERRAIN D’ENTRAÎNEMENT" : "LE CERCLE DE LA SYLVE"}
+          {data.mode === "solo"
+            ? "COMBAT SOLO"
+            : practice
+              ? "TERRAIN D’ENTRAÎNEMENT"
+              : "LE CERCLE DE LA SYLVE"}
         </span>
         <div>
           {onRestart && (
@@ -302,7 +322,12 @@ export function DuelScreen({
             (entry) => entry.cardId === cardId,
           );
           if (unit)
-            inspect({ type: "card", card: unit.card, playerIndex, source: "board" });
+            inspect({
+              type: "card",
+              card: unit.card,
+              playerIndex,
+              source: "board",
+            });
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
       />
@@ -337,7 +362,10 @@ export function DuelScreen({
                 onClick={() => {
                   if (!suppressClick.current) {
                     inspect({
-                      type: "card", card, playerIndex: data.me, source: "hand",
+                      type: "card",
+                      card,
+                      playerIndex: data.me,
+                      source: "hand",
                     });
                   }
                 }}
@@ -361,16 +389,18 @@ export function DuelScreen({
                     : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`}
               </span>
             </div>
-            {myTurn && data.status === "active" && (!hasPlacement || data.hasSummoned) && (
-              <button
-                className="sylve-button"
-                disabled={!canEnd || seconds <= 0}
-                onClick={() => void finish()}
-              >
-                {pending ? "Un instant…" : "Attaquer sans invoquer"}
-                <ArrowRight size={16} />
-              </button>
-            )}
+            {myTurn &&
+              data.status === "active" &&
+              (!hasPlacement || data.hasSummoned) && (
+                <button
+                  className="sylve-button"
+                  disabled={!canEnd || seconds <= 0}
+                  onClick={() => void finish()}
+                >
+                  {pending ? "Un instant…" : "Attaquer sans invoquer"}
+                  <ArrowRight size={16} />
+                </button>
+              )}
             <span className="small muted">
               {myTurn && !hasPlacement
                 ? "Aucun placement possible. Retire une unité ou lance l’assaut."
@@ -388,11 +418,9 @@ export function DuelScreen({
             .reverse()
             .map((entry) => (
               <li key={entry.seq}>
-                {CATALOG.find((card) => card.id === entry.cardId)?.name ??
-                  "Un monstre"}{" "}
-                inflige {entry.damage} dégâts{" "}
+                {cardName(entry.cardId)} inflige {entry.damage} dégâts{" "}
                 {entry.targetCardId
-                  ? `à ${CATALOG.find((card) => card.id === entry.targetCardId)?.name ?? "un ennemi"}`
+                  ? `à ${cardName(entry.targetCardId)}`
                   : "au héros adverse"}
                 .
               </li>
@@ -420,6 +448,33 @@ export function DuelScreen({
                 ? "Tes compagnons ont fait honneur à la forêt."
                 : "Chaque duel est une leçon. La forêt n’a pas dit son dernier mot."}
             </p>
+            {data.winner === data.me && data.reward && (
+              <div className="duel-reward" role="status">
+                {data.reward.status === "awarded" && data.reward.rarity ? (
+                  <>
+                    <img
+                      src={`/art/chests/${data.reward.rarity}.webp`}
+                      alt=""
+                      width={100}
+                      height={100}
+                    />
+                    <span>
+                      <strong>
+                        Coffre {CHEST_LABELS[data.reward.rarity].toLowerCase()}{" "}
+                        gagné !
+                      </strong>
+                      Il se déverrouille dans ton salon.
+                    </span>
+                  </>
+                ) : (
+                  <span>
+                    <strong>Emplacements pleins</strong>Le coffre de cette
+                    victoire est perdu. Ouvre tes coffres pour libérer une
+                    place.
+                  </span>
+                )}
+              </div>
+            )}
             {onRestart && (
               <button
                 className="sylve-button practice-replay"
@@ -453,7 +508,8 @@ export function DuelScreen({
         onClose={() => setInspection(null)}
         onSelectCard={(cardId) => {
           const card = mine.hand.find((entry) => entry.id === cardId);
-          if (!canSummon || !card || !legalPlacements(card, mine.board).length) return;
+          if (!canSummon || !card || !legalPlacements(card, mine.board).length)
+            return;
           setSelected(cardId);
           setInspection(null);
         }}
@@ -491,21 +547,22 @@ export function DuelScreen({
         <p>
           Invoque un monstre sur une case libre : tes unités attaquent aussitôt,
           de l’avant vers l’arrière, ligne par ligne, puis le tour passe à
-          l’adversaire. Elles ciblent le premier ennemi en face, sinon son héros.
+          l’adversaire. Elles ciblent le premier ennemi en face, sinon son
+          héros.
         </p>
         <p>
           Ton camp compte trois colonnes et quatre lignes. La colonne du milieu
           est accessible aux deux types d’unités. Les unités au corps à corps
           peuvent aussi se placer dans la colonne vers l’ennemi ; celles à
           distance dans la colonne vers ton héros. Une unité au corps à corps
-          derrière une autre unité au corps à corps sur la même ligne ne peut pas
-          agir. Les unités à distance peuvent attaquer depuis l’arrière.
+          derrière une autre unité au corps à corps sur la même ligne ne peut
+          pas agir. Les unités à distance peuvent attaquer depuis l’arrière.
         </p>
         <p>
           Pas de déplacement ni de riposte. Les morts rejoignent la défausse,
-          remélangée quand la pioche est vide. Ton deck contient {DECK_SIZE}{" "}
-          cartes uniques et ta main est complétée à {HAND_SIZE} au début de ton
-          tour.{" "}
+          remélangée quand la pioche est vide. Ton deck contient de{" "}
+          {MIN_DECK_SIZE} à {DECK_SIZE} cartes uniques et ta main est complétée
+          à {HAND_SIZE} au début de ton tour.{" "}
           {practice
             ? "Prends tout le temps qu’il te faut pour réfléchir."
             : "Tu as 60 secondes pour agir."}

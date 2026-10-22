@@ -15,6 +15,7 @@ import { hashPassword } from "better-auth/crypto";
 import { ConvexClient, ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api.js";
 import { getCombatType, legalPlacements } from "@sylve/game";
+import { chooseComputerMove, PRACTICE_DEADLINE } from "@sylve/game/practice";
 import "dotenv/config";
 
 const cwd = fileURLToPath(new URL("../", import.meta.url));
@@ -152,6 +153,11 @@ try {
   const deckIds = await Promise.all(
     clients.map((client) => client.mutation(api.decks.ensureStarter, {})),
   );
+  check(
+    (await clients[0].query(api.collection.list, {})).length === 4 &&
+      (await clients[0].query(api.decks.list, {}))[0].cardIds.length === 4,
+    "The account starts with four owned common variants",
+  );
   const invitation = await clients[0].mutation(api.games.createPrivate, {
     deckId: deckIds[0],
   });
@@ -212,6 +218,10 @@ try {
     (await clients[1].query(api.games.get, { gameId })).winner === 1,
     "Surrender ends the game for both players",
   );
+  check(
+    (await clients[1].query(api.chests.list, {})).chests.length === 0,
+    "Friendly victories do not grant chests",
+  );
   await clients[0].mutation(api.matchmaking.enqueue, { deckId: deckIds[0] });
   const paired = await clients[1].mutation(api.matchmaking.enqueue, {
     deckId: deckIds[1],
@@ -233,11 +243,15 @@ try {
     const enemy = current.players[1 - active];
     const moves = [...player.hand]
       .sort((a, b) => b.attack - a.attack)
-      .flatMap((card) => legalPlacements(card, player.board)
-        .sort((a, b) =>
-          enemy.board.filter((u) => u.row === a.row).length -
-          enemy.board.filter((u) => u.row === b.row).length)
-        .map((cell) => ({ cardId: card.id, ...cell })));
+      .flatMap((card) =>
+        legalPlacements(card, player.board)
+          .sort(
+            (a, b) =>
+              enemy.board.filter((u) => u.row === a.row).length -
+              enemy.board.filter((u) => u.row === b.row).length,
+          )
+          .map((cell) => ({ cardId: card.id, ...cell })),
+      );
     if (moves[0])
       await clients[active].mutation(api.games.playCard, {
         gameId: paired.gameId,
@@ -253,6 +267,61 @@ try {
   check(
     view.status === "finished" && view.players.some((p) => p.heroHp === 0),
     `A complete duel reaches a hero defeat (${turns} turns)`,
+  );
+  const winner = clients[view.winner];
+  const inventory = await winner.query(api.chests.list, {});
+  check(
+    inventory.chests.length === 1 &&
+      !Object.hasOwn(inventory.chests[0], "contents") &&
+      inventory.chests[0].unlockAt > inventory.serverNow,
+    "The public winner receives one sealed chest with a server deadline and hidden loot",
+  );
+  let earlyOpeningBlocked = false;
+  try {
+    await winner.mutation(api.chests.open, {
+      chestId: inventory.chests[0]._id,
+    });
+  } catch {
+    earlyOpeningBlocked = true;
+  }
+  check(earlyOpeningBlocked, "Opening before the server deadline is rejected");
+  const soloId = await clients[0].mutation(api.games.createSolo, {
+    deckId: deckIds[0],
+  });
+  let solo = await clients[0].query(api.games.get, { gameId: soloId });
+  check(
+    solo.mode === "solo" &&
+      solo.activePlayer === 0 &&
+      solo.turnEndsAt === PRACTICE_DEADLINE,
+    "Persistent solo starts the human first without a deadline",
+  );
+  let soloTurns = 0;
+  for (; soloTurns < 200 && solo.status !== "finished"; soloTurns++) {
+    if (solo.activePlayer === 1)
+      await clients[0].mutation(api.games.soloTurn, {
+        gameId: soloId,
+        expectedTurn: solo.turn,
+      });
+    else {
+      const move = chooseComputerMove(solo, Math.random);
+      if (move)
+        await clients[0].mutation(api.games.playCard, {
+          gameId: soloId,
+          ...move,
+          expectedTurn: solo.turn,
+        });
+      else
+        await clients[0].mutation(api.games.endTurn, {
+          gameId: soloId,
+          expectedTurn: solo.turn,
+        });
+    }
+    solo = await clients[0].query(api.games.get, { gameId: soloId });
+  }
+  check(
+    solo.status === "finished" &&
+      (solo.winner !== 0 || solo.reward?.status === "awarded"),
+    `A complete server solo ends and grants its eligible reward (${soloTurns} turns)`,
   );
   if (process.argv.includes("--keep")) {
     const room = await clients[0].mutation(api.games.createPrivate, {

@@ -10,6 +10,8 @@ import { authComponent } from "../auth";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { PRACTICE_DEADLINE } from "@sylve/game/practice";
+import { awardVictoryChest, ownedDeck } from "./progression";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -78,14 +80,8 @@ export async function deckSnapshot(
   const deck = await currentDeck(ctx, userId);
   if (!deck || deck._id !== deckId)
     throw new ConvexError("Ce deck ne t’appartient pas.");
-  const ids =
-    deck.cardIds.length === 10
-      ? deck.cardIds.slice(0, DECK_SIZE)
-      : deck.cardIds;
-  const cards = rules(() => validateDeck(ids));
-  if (ids !== deck.cardIds)
-    await ctx.db.patch(deckId, { cardIds: ids, updatedAt: Date.now() });
-  return cards;
+  rules(() => validateDeck(deck.cardIds));
+  return ownedDeck(ctx, userId, deck.cardIds);
 }
 export async function startMatch(
   ctx: MutationCtx,
@@ -129,18 +125,30 @@ export async function saveTransition(
   transition: Transition,
 ) {
   const { state, events } = transition;
+  const game = await ctx.db.get(gameId);
+  if (!game || game.status === "finished") return;
+  if (game.mode === "solo") state.turnEndsAt = PRACTICE_DEADLINE;
   await ctx.db.patch(gameId, { state, status: state.status });
   for (const event of events)
     await ctx.db.insert("gameEvents", { gameId, seq: event.seq, event });
   if (
     state.status === "active" &&
     events.some((event) => event.type === "turn")
-  )
-    await ctx.scheduler.runAt(state.turnEndsAt, internal.games.expireTurn, {
-      gameId,
-      expectedTurn: state.turn,
-    });
+  ) {
+    if (game.mode === "solo") {
+      if (state.activePlayer === 1)
+        await ctx.scheduler.runAfter(10_000, internal.games.soloTurnFallback, {
+          gameId,
+          expectedTurn: state.turn,
+        });
+    } else
+      await ctx.scheduler.runAt(state.turnEndsAt, internal.games.expireTurn, {
+        gameId,
+        expectedTurn: state.turn,
+      });
+  }
   if (state.status === "finished") {
+    await awardVictoryChest(ctx, game, state);
     for (const player of state.players) {
       const activity = await getActivity(ctx, player.userId);
       if (activity?.gameId === gameId)

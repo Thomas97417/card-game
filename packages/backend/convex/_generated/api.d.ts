@@ -9,12 +9,15 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as chests from "../chests.js";
+import type * as collection from "../collection.js";
 import type * as decks from "../decks.js";
 import type * as env from "../env.js";
 import type * as games from "../games.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_game_service from "../lib/game_service.js";
+import type * as lib_progression from "../lib/progression.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as matchmaking from "../matchmaking.js";
 import type * as privateData from "../privateData.js";
@@ -28,12 +31,15 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  chests: typeof chests;
+  collection: typeof collection;
   decks: typeof decks;
   env: typeof env;
   games: typeof games;
   healthCheck: typeof healthCheck;
   http: typeof http;
   "lib/game_service": typeof lib_game_service;
+  "lib/progression": typeof lib_progression;
   "lib/validators": typeof lib_validators;
   matchmaking: typeof matchmaking;
   privateData: typeof privateData;

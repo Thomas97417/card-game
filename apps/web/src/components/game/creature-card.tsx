@@ -1,5 +1,10 @@
 import type { PointerEventHandler } from "react";
-import { combatTypeLabel, getCombatType, type CardDefinition } from "@sylve/game";
+import {
+  combatTypeLabel,
+  getCombatType,
+  RARITY_LABELS,
+  type CardDefinition,
+} from "@sylve/game";
 import { Check } from "lucide-react";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
@@ -25,12 +30,13 @@ export function CreatureCard({
     <button
       type="button"
       className={`creature-card ${compact ? "compact" : ""} ${selected ? "selected" : ""}`}
+      data-rarity={card.rarity ?? "common"}
       disabled={disabled}
       onClick={onClick}
       onPointerDown={onPointerDown}
       aria-pressed={inspectable ? undefined : selected}
       aria-haspopup={inspectable ? "dialog" : undefined}
-      aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie${selected ? ", sélectionnée" : ""}${inspectable ? ", voir les informations" : ""}`}
+      aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}${selected ? ", sélectionnée" : ""}${inspectable ? ", voir les informations" : ""}`}
       title={`${card.name} · ${combatTypeLabel(card)}`}
     >
       <div
@@ -40,9 +46,14 @@ export function CreatureCard({
         <CreaturePortrait card={card} />
       </div>
       <div className="card-stats">
-        <StatBadge kind="attack" value={card.attack} combatType={getCombatType(card)} />
+        <StatBadge
+          kind="attack"
+          value={card.attack}
+          combatType={getCombatType(card)}
+        />
         <StatBadge kind="health" value={card.health} />
       </div>
+      <span className="card-level">Niv. {card.level ?? 1}</span>
       {selected && (
         <span className="card-check">
           <Check size={13} />

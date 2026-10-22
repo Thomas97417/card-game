@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, Undo2 } from "lucide-react";
 import {
   HERO_HP,
+  RARITY_LABELS,
   combatTypeLabel,
   getCombatType,
   isMeleeBlocked,
@@ -55,11 +56,17 @@ export function DuelDetailsDialog({
       ? player?.board.find((entry) => entry.cardId === card?.id)
       : undefined;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
-  const hasPlacement = !!card && !!player && legalPlacements(card, player.board).length > 0;
+  const hasPlacement =
+    !!card && !!player && legalPlacements(card, player.board).length > 0;
   const canChooseCell = canSummon && inHand && hasPlacement;
-  const blocked = !!unit && !!player && isMeleeBlocked(
-    unit, player.board, player.board.map((entry) => entry.card),
-  );
+  const blocked =
+    !!unit &&
+    !!player &&
+    isMeleeBlocked(
+      unit,
+      player.board,
+      player.board.map((entry) => entry.card),
+    );
 
   return (
     <Dialog
@@ -79,7 +86,8 @@ export function DuelDetailsDialog({
                     className="text-link details-back"
                     onClick={() =>
                       onInspect({
-                        type: "hero", playerIndex: inspection.playerIndex,
+                        type: "hero",
+                        playerIndex: inspection.playerIndex,
                       })
                     }
                   >
@@ -100,8 +108,16 @@ export function DuelDetailsDialog({
                 </span>
                 <DialogTitle>{card.name}</DialogTitle>
                 <DialogDescription>{card.title}</DialogDescription>
+                <span
+                  className="rarity-label"
+                  data-rarity={card.rarity ?? "common"}
+                >
+                  {RARITY_LABELS[card.rarity ?? "common"]} · Niveau{" "}
+                  {card.level ?? 1}
+                </span>
                 <p className="details-note card-details-role">
-                  {combatTypeLabel(card)} · {getCombatType(card) === "melee"
+                  {combatTypeLabel(card)} ·{" "}
+                  {getCombatType(card) === "melee"
                     ? "Déploiement au milieu ou vers l’ennemi."
                     : "Déploiement au milieu ou vers ton héros."}
                 </p>
@@ -117,7 +133,11 @@ export function DuelDetailsDialog({
                       <div>
                         <dt>Attaque</dt>
                         <dd>
-                          <StatBadge kind="attack" value={card.attack} combatType={getCombatType(card)} />
+                          <StatBadge
+                            kind="attack"
+                            value={card.attack}
+                            combatType={getCombatType(card)}
+                          />
                         </dd>
                       </div>
                       <div>
@@ -134,7 +154,8 @@ export function DuelDetailsDialog({
                     </dl>
                     {unit && (
                       <p className="details-note">
-                        Ligne {unit.row + 1} · {["Avant", "Milieu", "Arrière"][unit.depth]}
+                        Ligne {unit.row + 1} ·{" "}
+                        {["Avant", "Milieu", "Arrière"][unit.depth]}
                       </p>
                     )}
                     <p className="details-note">
@@ -149,7 +170,9 @@ export function DuelDetailsDialog({
                       </p>
                     )}
                     {source === "board" && !unit && (
-                      <p className="details-note">Cette créature a quitté le terrain.</p>
+                      <p className="details-note">
+                        Cette créature a quitté le terrain.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -175,9 +198,9 @@ export function DuelDetailsDialog({
                 {own && unit && (
                   <div className="details-actions">
                     <p className="details-note">
-                      La carte retirée rejoint la défausse et pourra être repiochée.
-                      Retire tes créatures avant d’invoquer : poser une carte
-                      déclenche l’assaut et termine ton tour.
+                      La carte retirée rejoint la défausse et pourra être
+                      repiochée. Retire tes créatures avant d’invoquer : poser
+                      une carte déclenche l’assaut et termine ton tour.
                     </p>
                     <button
                       type="button"
@@ -192,7 +215,9 @@ export function DuelDetailsDialog({
               </>
             ) : (
               <>
-                <span className="eyebrow">{own ? "TON HÉROS" : "HÉROS ADVERSE"}</span>
+                <span className="eyebrow">
+                  {own ? "TON HÉROS" : "HÉROS ADVERSE"}
+                </span>
                 <DialogTitle>{player.name}</DialogTitle>
                 <DialogDescription>
                   Les caractéristiques du héros et les compagnons de son deck.
@@ -208,7 +233,9 @@ export function DuelDetailsDialog({
                   <dl className="details-stats hero-details-stats">
                     <div>
                       <dt>Points de vie</dt>
-                      <dd>{player.heroHp} / {HERO_HP}</dd>
+                      <dd>
+                        {player.heroHp} / {HERO_HP}
+                      </dd>
                     </div>
                     <div>
                       <dt>Sur le terrain</dt>
@@ -239,18 +266,21 @@ export function DuelDetailsDialog({
                       card={entry}
                       compact
                       inspectable
-                      onClick={() => onInspect({
-                        type: "card",
-                        card: entry,
-                        playerIndex: inspection.playerIndex,
-                        source: "deck",
-                      })}
+                      onClick={() =>
+                        onInspect({
+                          type: "card",
+                          card: entry,
+                          playerIndex: inspection.playerIndex,
+                          source: "deck",
+                        })
+                      }
                     />
                   ))}
                 </div>
                 <p className="details-note details-deck-note">
                   Clique sur une carte pour consulter ses caractéristiques.
-                  {!own && " La main adverse et l’ordre de pioche restent cachés."}
+                  {!own &&
+                    " La main adverse et l’ordre de pioche restent cachés."}
                 </p>
               </>
             )}

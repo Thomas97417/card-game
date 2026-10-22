@@ -1,7 +1,6 @@
 import {
   CATALOG,
   DEFAULT_DECK,
-  DECK_SIZE,
   createGame,
   endTurn,
   legalPlacements,
@@ -22,7 +21,7 @@ export function createPracticeGame(
   now: number,
   random: () => number,
 ): GameState {
-  const computerDeck = shuffle(CATALOG, random).slice(0, DECK_SIZE);
+  const computerDeck = shuffle(CATALOG, random).slice(0, deckIds.length);
   const state = createGame(
     [
       { userId: PRACTICE_PLAYER_ID, name: "Toi", cards: validateDeck(deckIds) },
@@ -111,8 +110,14 @@ export function chooseComputerMove(
   for (const move of candidates) {
     const state = visibleState(view);
     const attack = summon(
-      state, view.me, move.cardId, move.row, move.depth,
-      state.turn, 0, () => 0.5,
+      state,
+      view.me,
+      move.cardId,
+      move.row,
+      move.depth,
+      state.turn,
+      0,
+      () => 0.5,
     ).state;
     // Take immediate wins before considering a counterattack.
     const result =

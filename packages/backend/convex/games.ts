@@ -4,7 +4,18 @@ import {
   summon,
   withdraw,
   surrender as concede,
+  CATALOG,
+  createGame,
+  shuffle,
+  variantCard,
 } from "@sylve/game";
+import {
+  chooseComputerMove,
+  PRACTICE_COMPUTER_ID,
+  PRACTICE_DEADLINE,
+} from "@sylve/game/practice";
+import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, mutation, query } from "./_generated/server";
@@ -76,6 +87,7 @@ export const createPrivate = mutation({
     );
     const expiresAt = Date.now() + 10 * 60_000;
     const gameId = await ctx.db.insert("games", {
+      mode: "private",
       hostId: user.userId,
       hostName: user.name,
       hostCards: cards,
@@ -141,7 +153,12 @@ export const get = query({
       .withIndex("by_game_seq", (q) => q.eq("gameId", gameId))
       .order("desc")
       .take(80);
-    return { ...view, events: events.reverse().map((entry) => entry.event) };
+    return {
+      ...view,
+      mode: game.mode ?? "private",
+      reward: game.reward?.ownerId === user.userId ? game.reward : null,
+      events: events.reverse().map((entry) => entry.event),
+    };
   },
 });
 export const playCard = mutation({
@@ -215,6 +232,7 @@ export const expireTurn = internalMutation({
     const game = await ctx.db.get(gameId);
     if (
       !game?.state ||
+      game.mode === "solo" ||
       game.status !== "active" ||
       game.state.turn !== expectedTurn ||
       Date.now() < game.state.turnEndsAt
@@ -228,6 +246,101 @@ export const expireTurn = internalMutation({
       Math.random,
     );
     await saveTransition(ctx, gameId, transition);
+  },
+});
+
+export const createSolo = mutation({
+  args: { deckId: v.id("decks") },
+  handler: async (ctx, { deckId }) => {
+    const user = await requirePlayer(ctx);
+    await requireIdle(ctx, user.userId);
+    const cards = await deckSnapshot(ctx, deckId, user.userId);
+    const used = new Set<string>();
+    const computerCards = cards.map((card) => {
+      const rarity = card.rarity ?? "common";
+      const base = shuffle(CATALOG, Math.random).find(
+        (base) => !used.has(`${base.id}:${rarity}`),
+      )!;
+      const variant = variantCard(base.id, rarity, card.level ?? 1);
+      used.add(variant.id);
+      return variant;
+    });
+    const state = createGame(
+      [
+        { ...user, cards },
+        {
+          userId: PRACTICE_COMPUTER_ID,
+          name: "Gardien mécanique",
+          cards: computerCards,
+        },
+      ],
+      Date.now(),
+      Math.random,
+    );
+    state.activePlayer = 0;
+    state.turnEndsAt = PRACTICE_DEADLINE;
+    const gameId = await ctx.db.insert("games", {
+      mode: "solo",
+      status: "active",
+      hostId: user.userId,
+      hostName: user.name,
+      hostCards: cards,
+      guestId: PRACTICE_COMPUTER_ID,
+      state,
+    });
+    await setActivity(ctx, user.userId, { gameId });
+    return gameId;
+  },
+});
+
+async function runSoloTurn(
+  ctx: MutationCtx,
+  gameId: Id<"games">,
+  expectedTurn: number,
+) {
+  const game = await ctx.db.get(gameId);
+  const state = game?.state;
+  if (
+    game?.mode !== "solo" ||
+    game.status !== "active" ||
+    !state ||
+    state.turn !== expectedTurn ||
+    state.activePlayer !== 1
+  )
+    return;
+  const move = chooseComputerMove(
+    playerView(state, PRACTICE_COMPUTER_ID),
+    Math.random,
+  );
+  const transition = move
+    ? summon(
+        state,
+        1,
+        move.cardId,
+        move.row,
+        move.depth,
+        expectedTurn,
+        Date.now(),
+        Math.random,
+      )
+    : resolveTurn(state, 1, expectedTurn, Date.now(), Math.random);
+  await saveTransition(ctx, gameId, transition);
+}
+
+export const soloTurn = mutation({
+  args: { gameId: v.id("games"), expectedTurn: v.number() },
+  handler: async (ctx, { gameId, expectedTurn }) => {
+    const user = await requirePlayer(ctx);
+    const game = await ctx.db.get(gameId);
+    if (!game || game.mode !== "solo" || game.hostId !== user.userId)
+      throw new ConvexError("Ce combat solo ne t’appartient pas.");
+    await runSoloTurn(ctx, gameId, expectedTurn);
+  },
+});
+export const soloTurnFallback = internalMutation({
+  args: { gameId: v.id("games"), expectedTurn: v.number() },
+  handler: async (ctx, { gameId, expectedTurn }) => {
+    await runSoloTurn(ctx, gameId, expectedTurn);
   },
 });
 export const expireInvitation = internalMutation({

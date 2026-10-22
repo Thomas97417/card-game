@@ -1,7 +1,12 @@
 import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CATALOG, DEFAULT_DECK, getCombatType } from "@sylve/game";
+import {
+  CATALOG,
+  DEFAULT_DECK,
+  getCombatType,
+  validateDeck,
+} from "@sylve/game";
 import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -66,11 +71,11 @@ describe("decks et authentification", () => {
     expect(await alice.mutation(api.decks.ensureStarter, {})).toBe(first);
     expect(await alice.query(api.decks.list, {})).toHaveLength(1);
   });
-  it("uses the latest legacy deck, preserving other decks and the active card order", async () => {
+  it("uses the latest deck, preserving other decks and the active card order after initialization", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const first = await alice.mutation(api.decks.ensureStarter, {});
-    const oldIds = CATALOG.slice(0, 10).map((card) => card.id);
+    const oldIds = [...DEFAULT_DECK];
     const second = await t.run(async (ctx) => {
       const original = (await ctx.db.get(first))!;
       await ctx.db.patch(first, {
@@ -156,22 +161,19 @@ describe("decks et authentification", () => {
   });
 });
 describe("invitations et synchronisation", () => {
-  it("adapts a legacy deck and an already waiting invitation before starting", async () => {
+  it("keeps invitation snapshots readable when their combat type is absent", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const bob = await player(t, "bob");
     const aDeck = await alice.mutation(api.decks.ensureStarter, {});
     const bDeck = await bob.mutation(api.decks.ensureStarter, {});
-    const oldCards = CATALOG.slice(0, 10).map(
+    const oldCards = validateDeck(DEFAULT_DECK).map(
       ({ combatType, ...card }) => card,
-    );
-    await t.run((ctx) =>
-      ctx.db.patch(aDeck, { cardIds: oldCards.map((card) => card.id) }),
     );
     const room = await alice.mutation(api.games.createPrivate, {
       deckId: aDeck,
     });
-    expect((await t.run((ctx) => ctx.db.get(aDeck)))!.cardIds).toHaveLength(8);
+    expect((await t.run((ctx) => ctx.db.get(aDeck)))!.cardIds).toHaveLength(4);
     // Model an invitation whose snapshot was saved before the rules changed.
     await t.run((ctx) => ctx.db.patch(room.gameId, { hostCards: oldCards }));
     await bob.mutation(api.games.joinPrivate, {
@@ -180,9 +182,9 @@ describe("invitations et synchronisation", () => {
     });
     const game = await t.run((ctx) => ctx.db.get(room.gameId));
     for (const owner of game!.state!.players) {
-      expect(owner.cards).toHaveLength(8);
+      expect(owner.cards).toHaveLength(4);
       expect(owner.hand).toHaveLength(4);
-      expect(owner.drawPile).toHaveLength(4);
+      expect(owner.drawPile).toHaveLength(0);
       expect(
         owner.cards.every((card) => card.combatType === getCombatType(card)),
       ).toBe(true);
@@ -219,7 +221,7 @@ describe("invitations et synchronisation", () => {
     const { t, alice, aDeck, gameId } = await match();
     await t.run((ctx) => ctx.db.delete(aDeck));
     const game = await t.run((ctx) => ctx.db.get(gameId));
-    expect(game!.state!.players[0]!.cards).toHaveLength(8);
+    expect(game!.state!.players[0]!.cards).toHaveLength(4);
     const view = await alice.query(api.games.get, { gameId });
     expect(view.players[0]!.deck).toEqual(game!.state!.players[0]!.cards);
   });

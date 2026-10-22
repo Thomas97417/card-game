@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CATALOG,
-  DEFAULT_DECK,
+  DEFAULT_DECK as STARTER_DECK,
   DEPTHS,
   ROWS,
   createGame,
@@ -21,6 +21,7 @@ import {
 } from "./index";
 
 const random = () => 0.25;
+const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 function initial() {
   return createGame(
     [
@@ -50,12 +51,13 @@ function unit(
   });
 }
 describe("construction de deck", () => {
-  it("requires exactly eight known unique cards", () => {
+  it("accepts four to eight known unique variants", () => {
+    expect(validateDeck(STARTER_DECK)).toHaveLength(4);
     expect(validateDeck(DEFAULT_DECK)).toHaveLength(8);
     expect(() =>
       validateDeck(CATALOG.slice(0, 9).map((card) => card.id)),
     ).toThrow("8 cartes");
-    expect(() => validateDeck(DEFAULT_DECK.slice(1))).toThrow("8 cartes");
+    expect(() => validateDeck(DEFAULT_DECK.slice(0, 3))).toThrow("8 cartes");
     expect(() =>
       validateDeck([...DEFAULT_DECK.slice(1), DEFAULT_DECK[1]!]),
     ).toThrow("unique");
@@ -69,8 +71,12 @@ describe("construction de deck", () => {
     expect(CATALOG[0]!.attack).not.toBe(100);
   });
   it("defines both combat types and infers them for legacy snapshots", () => {
-    expect(CATALOG.filter((card) => card.combatType === "melee")).toHaveLength(6);
-    expect(CATALOG.filter((card) => card.combatType === "ranged")).toHaveLength(6);
+    expect(CATALOG.filter((card) => card.combatType === "melee")).toHaveLength(
+      6,
+    );
+    expect(CATALOG.filter((card) => card.combatType === "ranged")).toHaveLength(
+      6,
+    );
     for (const { combatType, ...legacy } of CATALOG)
       expect(getCombatType(legacy)).toBe(combatType);
   });
@@ -134,10 +140,15 @@ describe("invocation", () => {
     const state = initial();
     state.players[0]!.hand = ["owl"];
     unit(state, 0, "guardian", 1, 1);
-    expect(() => summon(state, 0, "owl", 1, 1, 1, 1, random)).toThrow("occupée");
-    expect(legalPlacements(ranged, state.players[0]!.board)).not.toContainEqual({ row: 1, depth: 1 });
-    expect(summon(state, 0, "owl", 2, 1, 1, 1, random).state.players[0]!.board)
-      .toContainEqual({ cardId: "owl", row: 2, depth: 1, hp: ranged.health });
+    expect(() => summon(state, 0, "owl", 1, 1, 1, 1, random)).toThrow(
+      "occupée",
+    );
+    expect(legalPlacements(ranged, state.players[0]!.board)).not.toContainEqual(
+      { row: 1, depth: 1 },
+    );
+    expect(
+      summon(state, 0, "owl", 2, 1, 1, 1, random).state.players[0]!.board,
+    ).toContainEqual({ cardId: "owl", row: 2, depth: 1, hp: ranged.health });
   });
   it("summons, attacks and switches players atomically without mutating input", () => {
     const state = initial();
@@ -152,7 +163,11 @@ describe("invocation", () => {
       depth,
     });
     expect(result.state.players[0]!.hand).toHaveLength(3);
-    expect(result.events.map((event) => event.type)).toEqual(["summon", "attack", "turn"]);
+    expect(result.events.map((event) => event.type)).toEqual([
+      "summon",
+      "attack",
+      "turn",
+    ]);
     expect(result.events.map((event) => event.seq)).toEqual([1, 2, 3]);
     expect(result.state.activePlayer).toBe(1);
     expect(result.state.turn).toBe(2);
@@ -160,10 +175,28 @@ describe("invocation", () => {
     expect(result.state.players[1]!.heroHp).toBe(HERO_HP - card.attack);
     expect(state.players[1]!.heroHp).toBe(HERO_HP);
     expect(() =>
-      summon(result.state, 0, result.state.players[0]!.hand[0]!, 0, 0, 1, 11, random),
+      summon(
+        result.state,
+        0,
+        result.state.players[0]!.hand[0]!,
+        0,
+        0,
+        1,
+        11,
+        random,
+      ),
     ).toThrow("changé");
     expect(() =>
-      summon(result.state, 0, result.state.players[0]!.hand[0]!, 0, 0, 2, 11, random),
+      summon(
+        result.state,
+        0,
+        result.state.players[0]!.hand[0]!,
+        0,
+        0,
+        2,
+        11,
+        random,
+      ),
     ).toThrow("tour");
   });
   it("rejects wrong turns, stale requests, missing cards, occupied cells and bad coordinates", () => {
@@ -171,7 +204,9 @@ describe("invocation", () => {
     const id = state.players[0]!.hand[0]!;
     expect(() => summon(state, 1, id, 0, 0, 1, 1, random)).toThrow("tour");
     expect(() => summon(state, 0, id, 0, 0, 0, 1, random)).toThrow("changé");
-    expect(() => summon(state, 0, "not-in-hand", 0, 0, 1, 1, random)).toThrow("main");
+    expect(() => summon(state, 0, "not-in-hand", 0, 0, 1, 1, random)).toThrow(
+      "main",
+    );
     for (const [row, depth] of [
       [4, 0],
       [0, DEPTHS],
@@ -179,7 +214,9 @@ describe("invocation", () => {
       [0.5, 0],
       [0, -1],
     ])
-      expect(() => summon(state, 0, id, row!, depth!, 1, 1, random)).toThrow("case");
+      expect(() => summon(state, 0, id, row!, depth!, 1, 1, random)).toThrow(
+        "case",
+      );
     unit(state, 0, state.players[0]!.hand[1]!, 0, 0);
     expect(() => summon(state, 0, id, 0, 0, 1, 1, random)).toThrow("occupée");
   });
@@ -189,33 +226,54 @@ describe("invocation", () => {
       summon(state, 0, state.players[0]!.hand[0]!, 0, 0, 1, TURN_MS, random),
     ).toThrow("écoulé");
   });
-  it.each([0, 1])("enforces every card's deployment zone for player %i", (playerIndex) => {
-    for (const card of CATALOG) {
-      for (let depth = 0; depth < DEPTHS; depth++) {
-        const state = initial();
-        state.activePlayer = playerIndex;
-        state.players[playerIndex]!.cards = CATALOG.map((entry) => ({ ...entry }));
-        state.players[playerIndex]!.hand = [card.id];
-        const play = () => summon(state, playerIndex, card.id, 0, depth, 1, 1, random);
-        if (card.combatType === "melee" ? depth < 2 : depth >= 1)
-          expect(play().state.players[playerIndex]!.board[0]!.depth).toBe(depth);
-        else {
-          expect(play).toThrow("colonnes");
-          expect(state.players[playerIndex]!.hand).toEqual([card.id]);
-          expect(state.players[playerIndex]!.board).toEqual([]);
+  it.each([0, 1])(
+    "enforces every card's deployment zone for player %i",
+    (playerIndex) => {
+      for (const card of CATALOG) {
+        for (let depth = 0; depth < DEPTHS; depth++) {
+          const state = initial();
+          state.activePlayer = playerIndex;
+          state.players[playerIndex]!.cards = CATALOG.map((entry) => ({
+            ...entry,
+          }));
+          state.players[playerIndex]!.hand = [card.id];
+          const play = () =>
+            summon(state, playerIndex, card.id, 0, depth, 1, 1, random);
+          if (card.combatType === "melee" ? depth < 2 : depth >= 1)
+            expect(play().state.players[playerIndex]!.board[0]!.depth).toBe(
+              depth,
+            );
+          else {
+            expect(play).toThrow("colonnes");
+            expect(state.players[playerIndex]!.hand).toEqual([card.id]);
+            expect(state.players[playerIndex]!.board).toEqual([]);
+          }
         }
       }
-    }
-  });
+    },
+  );
   it("can win immediately without switching to the defeated player", () => {
     const state = initial();
     const id = state.players[0]!.hand[0]!;
     const card = state.players[0]!.cards.find((c) => c.id === id)!;
     state.players[1]!.heroHp = card.attack;
-    const result = summon(state, 0, id, 0, getCombatType(card) === "melee" ? 0 : 2, 1, 1, random);
+    const result = summon(
+      state,
+      0,
+      id,
+      0,
+      getCombatType(card) === "melee" ? 0 : 2,
+      1,
+      1,
+      random,
+    );
     expect(result.state.winner).toBe(0);
     expect(result.state.status).toBe("finished");
-    expect(result.events.map((event) => event.type)).toEqual(["summon", "attack", "victory"]);
+    expect(result.events.map((event) => event.type)).toEqual([
+      "summon",
+      "attack",
+      "victory",
+    ]);
   });
 });
 describe("retrait du terrain", () => {
@@ -246,7 +304,13 @@ describe("retrait du terrain", () => {
       0,
       result.players[0]!.hand[0]!,
       0,
-      getCombatType(result.players[0]!.cards.find((card) => card.id === result.players[0]!.hand[0])!) === "melee" ? 0 : 2,
+      getCombatType(
+        result.players[0]!.cards.find(
+          (card) => card.id === result.players[0]!.hand[0],
+        )!,
+      ) === "melee"
+        ? 0
+        : 2,
       1,
       3,
       random,
@@ -342,32 +406,46 @@ describe("combat", () => {
     expect(next.players[1]!.board[0]!.hp).toBe(10);
     expect(next.players[0]!.board[0]!.hp).toBe(8);
   });
-  it.each([0, 1])("blocks only melee units behind allied melee on the same row for player %i", (player) => {
-    const state = initial();
-    state.activePlayer = player;
-    unit(state, player, "guardian", 1, 0);
-    unit(state, player, "stag", 1, 1);
-    unit(state, player, "fox", 1, 2);
-    unit(state, player, "owl", 0, 1);
-    unit(state, player, "turtle", 2, 1);
-    const own = state.players[player]!;
-    expect(isMeleeBlocked(own.board[1]!, own.board, own.cards)).toBe(true);
-    expect(isMeleeBlocked(own.board[4]!, own.board, own.cards)).toBe(false);
-    const result = endTurn(state, player, 1, 1, random);
-    expect(result.events.filter((event) => event.type === "attack").map((event) => event.cardId))
-      .toEqual(["owl", "guardian", "fox", "turtle"]);
-    expect(result.state.players[1 - player]!.heroHp).toBe(18);
-  });
+  it.each([0, 1])(
+    "blocks only melee units behind allied melee on the same row for player %i",
+    (player) => {
+      const state = initial();
+      state.activePlayer = player;
+      unit(state, player, "guardian", 1, 0);
+      unit(state, player, "stag", 1, 1);
+      unit(state, player, "fox", 1, 2);
+      unit(state, player, "owl", 0, 1);
+      unit(state, player, "turtle", 2, 1);
+      const own = state.players[player]!;
+      expect(isMeleeBlocked(own.board[1]!, own.board, own.cards)).toBe(true);
+      expect(isMeleeBlocked(own.board[4]!, own.board, own.cards)).toBe(false);
+      const result = endTurn(state, player, 1, 1, random);
+      expect(
+        result.events
+          .filter((event) => event.type === "attack")
+          .map((event) => event.cardId),
+      ).toEqual(["owl", "guardian", "fox", "turtle"]);
+      expect(result.state.players[1 - player]!.heroHp).toBe(18);
+    },
+  );
   it("blocks a newly summoned melee unit, then lets it act once the front unit is withdrawn", () => {
     const state = initial();
     unit(state, 0, "guardian", 0, 0);
     state.players[0]!.hand = ["stag"];
     const played = summon(state, 0, "stag", 0, 1, 1, 1, random);
-    expect(played.events.filter((event) => event.type === "attack").map((event) => event.cardId)).toEqual(["guardian"]);
+    expect(
+      played.events
+        .filter((event) => event.type === "attack")
+        .map((event) => event.cardId),
+    ).toEqual(["guardian"]);
     const next = endTurn(played.state, 1, 2, 2, random).state;
     const removed = withdraw(next, 0, "guardian", 3, 3).state;
     const result = endTurn(removed, 0, 3, 4, random);
-    expect(result.events.filter((event) => event.type === "attack").map((event) => event.cardId)).toEqual(["stag"]);
+    expect(
+      result.events
+        .filter((event) => event.type === "attack")
+        .map((event) => event.cardId),
+    ).toEqual(["stag"]);
   });
   it("unblocks the rear melee unit after the front unit dies, including legacy snapshots", () => {
     const state = initial();
@@ -380,7 +458,11 @@ describe("combat", () => {
     const next = endTurn(state, 1, 1, 1, random).state;
     expect(next.players[0]!.board.map((unit) => unit.cardId)).toEqual(["stag"]);
     const result = endTurn(next, 0, 2, 2, random);
-    expect(result.events.filter((event) => event.type === "attack").map((event) => event.cardId)).toEqual(["stag"]);
+    expect(
+      result.events
+        .filter((event) => event.type === "attack")
+        .map((event) => event.cardId),
+    ).toEqual(["stag"]);
   });
 });
 describe("pioche et cycle des cartes", () => {
@@ -437,9 +519,12 @@ describe("pioche et cycle des cartes", () => {
       for (let turn = 0; turn < 200 && state.status === "active"; turn++) {
         const index = state.activePlayer;
         const player = state.players[index]!;
-        const moves = player.hand.flatMap((cardId) => legalPlacements(
-          player.cards.find((card) => card.id === cardId)!, player.board,
-        ).map((cell) => ({ cardId, ...cell })));
+        const moves = player.hand.flatMap((cardId) =>
+          legalPlacements(
+            player.cards.find((card) => card.id === cardId)!,
+            player.board,
+          ).map((cell) => ({ cardId, ...cell })),
+        );
         if (moves.length) {
           const move = moves[Math.floor(rng() * moves.length)]!;
           state = summon(
@@ -452,7 +537,8 @@ describe("pioche et cycle des cartes", () => {
             turn * 1000,
             rng,
           ).state;
-        } else state = endTurn(state, index, state.turn, turn * 1000 + 1, rng).state;
+        } else
+          state = endTurn(state, index, state.turn, turn * 1000 + 1, rng).state;
         for (const owner of state.players) {
           const ids = [
             ...owner.hand,
@@ -466,9 +552,16 @@ describe("pioche et cycle des cartes", () => {
               .size,
           ).toBe(owner.board.length);
           expect(owner.board.every((unit) => unit.hp > 0)).toBe(true);
-          expect(owner.board.every((unit) => unit.row < ROWS && isDeploymentDepth(
-            owner.cards.find((card) => card.id === unit.cardId)!, unit.depth,
-          ))).toBe(true);
+          expect(
+            owner.board.every(
+              (unit) =>
+                unit.row < ROWS &&
+                isDeploymentDepth(
+                  owner.cards.find((card) => card.id === unit.cardId)!,
+                  unit.depth,
+                ),
+            ),
+          ).toBe(true);
         }
       }
       expect(state.status).toBe("finished");

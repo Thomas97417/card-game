@@ -1,0 +1,353 @@
+[data-rarity="common"] {
+  --rarity-color: #a4b4a0;
+  --rarity-rgb: 164, 180, 160;
+}
+[data-rarity="rare"] {
+  --rarity-color: #56b2ff;
+  --rarity-rgb: 86, 178, 255;
+}
+[data-rarity="epic"] {
+  --rarity-color: #c080ff;
+  --rarity-rgb: 192, 128, 255;
+}
+[data-rarity="legendary"] {
+  --rarity-color: #f7cb59;
+  --rarity-rgb: 247, 203, 89;
+}
+.creature-card[data-rarity],
+.workshop-card[data-rarity] {
+  border-color: var(--rarity-color);
+  box-shadow:
+    0 5px 10px #08130f77,
+    0 0 12px rgba(var(--rarity-rgb), 0.22),
+    inset 0 0 0 1px rgba(var(--rarity-rgb), 0.3);
+}
+.creature-card[data-rarity="common"],
+.workshop-card[data-rarity="common"] {
+  border-color: transparent;
+  box-shadow: 0 5px 10px #08130f77;
+}
+.workshop-card[data-rarity]:hover:not(:disabled) {
+  border-color: var(--rarity-color);
+}
+.workshop-card[data-rarity="common"]:hover:not(:disabled) {
+  border-color: transparent;
+}
+.card-level {
+  position: absolute;
+  z-index: 3;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: #16271fd9;
+  color: #f8e9c7;
+  font:
+    600 9px/1.2 "Avenir Next",
+    sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.creature-card .card-level {
+  top: auto;
+  bottom: 7px;
+}
+.creature-card.selected {
+  outline: 2px solid #b5ecbb;
+  outline-offset: 3px;
+}
+.workshop-copies {
+  font:
+    600 9px/1.2 "Avenir Next",
+    sans-serif;
+  letter-spacing: 0.4px;
+  color: #f2dfa9;
+}
+.workshop-card-caption {
+  gap: 5px;
+  padding-bottom: 9px;
+}
+.workshop-empty-slot {
+  width: 100%;
+  cursor: pointer;
+  align-content: center;
+  gap: 12px;
+  color: #e0c58b88;
+  font-size: 10px;
+  border-style: dashed;
+}
+.workshop-empty-slot.is-target {
+  border-color: #b7dba3;
+  background: #7fbc7330;
+}
+.workshop-empty-slot:hover {
+  background: #d7b77716;
+}
+.workshop-rarity-filter {
+  margin-left: auto;
+}
+.workshop-rarity-filter select {
+  max-width: 160px;
+  padding: 8px 10px;
+  border: 1px solid #dabf7c66;
+  border-radius: 4px;
+  color: #f3dfb7;
+  background: #32291ed9;
+  font-size: 10px;
+}
+.workshop-rarity-filter option {
+  background: #32291e;
+}
+.rarity-label {
+  display: block;
+  color: var(--rarity-color, #758369);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.rarity-label[data-rarity="common"] {
+  color: #6d7d65;
+}
+.rarity-label[data-rarity="rare"] {
+  color: #2473b5;
+}
+.rarity-label[data-rarity="epic"] {
+  color: #8640b2;
+}
+.rarity-label[data-rarity="legendary"] {
+  color: #9a6c15;
+}
+.upgrade-dialog .rarity-label {
+  margin-bottom: 10px;
+}
+.upgrade-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1fr;
+  gap: 24px;
+  margin: 22px 0;
+}
+.upgrade-portrait {
+  height: 200px;
+  border: 2px solid var(--rarity-color);
+  border-radius: 12px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--rarity-rgb), 0.2),
+    #e6eadc
+  );
+}
+.upgrade-portrait[data-rarity="common"] {
+  border-color: transparent;
+}
+.upgrade-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.upgrade-statistics {
+  align-self: center;
+  display: grid;
+  gap: 14px;
+}
+.upgrade-statistics > span,
+.upgrade-statistics small {
+  color: #697664;
+  font-size: 10px;
+}
+.upgrade-statistics > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.upgrade-statistics .stat-badge {
+  width: 44px;
+  height: 44px;
+}
+.upgrade-statistics > div > strong {
+  font:
+    600 25px Georgia,
+    serif;
+  color: #376342;
+}
+.upgrade-copies {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.upgrade-progress {
+  display: block;
+  width: 100%;
+  height: 7px;
+  margin: 12px 0 20px;
+  accent-color: #547943;
+}
+.upgrade-action {
+  width: 100%;
+}
+.upgrade-help {
+  margin-top: 8px;
+  font-size: 10px;
+  text-align: center;
+  color: #697664;
+}
+.upgrade-deck-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid #d9dfcf;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.upgrade-deck-actions > button {
+  flex: 1;
+  font-size: 10px;
+}
+.chest-reveal-dialog {
+  max-width: 880px;
+}
+.chest-reveal-heading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-right: 18px;
+}
+.chest-reveal-heading > img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px #735d3533);
+}
+.chest-reveal-heading h2 {
+  font-size: 28px;
+}
+.chest-reveal-heading p {
+  margin-top: 6px;
+}
+.chest-reveal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 24px 16px;
+  margin: 30px 0;
+}
+.chest-reveal-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+  animation: reveal-card 450ms both;
+}
+.chest-reveal-item .creature-card {
+  width: 100%;
+  max-width: 140px;
+  opacity: 1;
+  cursor: default;
+}
+.chest-reveal-item > strong {
+  font:
+    600 12px/1.3 Georgia,
+    serif;
+}
+.chest-reveal-item > small {
+  font-size: 9px;
+  color: #697664;
+}
+.chest-loot-quantity {
+  position: absolute;
+  z-index: 4;
+  top: -10px;
+  right: -5px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: #3f5e3d;
+  color: #fff2cd;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 2px 4px #0003;
+}
+.loot-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #39723f;
+  font-size: 10px;
+  font-weight: 700;
+}
+.duel-reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 16px 0;
+  border: 1px solid #bc9e6355;
+  border-radius: 8px;
+  background: #d8ba7722;
+  text-align: left;
+  font-size: 12px;
+}
+.duel-reward img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+}
+.duel-reward strong {
+  display: block;
+  font:
+    600 18px Georgia,
+    serif;
+  margin-bottom: 4px;
+}
+@keyframes reveal-card {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 760px) {
+  .workshop-collection-heading {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .workshop-rarity-filter select {
+    max-width: 145px;
+    font-size: 9px;
+  }
+  .workshop-collection-heading h2 {
+    font-size: 21px;
+  }
+  .chest-reveal-heading {
+    gap: 10px;
+  }
+  .chest-reveal-heading > img {
+    width: 65px;
+    height: 65px;
+  }
+  .chest-reveal-heading h2 {
+    font-size: 23px;
+  }
+  .chest-reveal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .upgrade-preview {
+    gap: 16px;
+  }
+  .upgrade-portrait {
+    height: 170px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chest-reveal-item {
+    animation: none;
+  }
+}

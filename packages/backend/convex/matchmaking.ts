@@ -29,6 +29,7 @@ export const enqueue = mutation({
       .first();
     if (opponent) {
       const gameId = await ctx.db.insert("games", {
+        mode: "public",
         hostId: opponent.userId,
         hostName: opponent.name,
         hostCards: opponent.cards,

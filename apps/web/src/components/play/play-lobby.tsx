@@ -1,0 +1,254 @@
+import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import {
+  Bot,
+  Swords,
+  UsersRound,
+  Layers3,
+  Hourglass,
+  Sparkles,
+  X,
+  LoaderCircle,
+} from "lucide-react";
+import { DECK_SIZE, type CardRarity } from "@sylve/game";
+import { CHEST_LABELS } from "@sylve/game/progression";
+
+export interface LobbyChest {
+  _id: string;
+  slot: number;
+  rarity: CardRarity;
+  unlockAt: number;
+}
+export function remainingTime(milliseconds: number) {
+  const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = String(seconds % 60).padStart(2, "0");
+  return hours
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}`
+    : `${minutes}:${rest}`;
+}
+
+export function PlayLobby({
+  deckSize,
+  collectionSize,
+  chests,
+  now,
+  ready,
+  busy,
+  locked,
+  queued,
+  onSolo,
+  onPublic,
+  onPrivate,
+  onCancelQueue,
+  onOpenChest,
+  children,
+}: {
+  deckSize: number;
+  collectionSize: number;
+  chests: LobbyChest[];
+  now: number;
+  ready: boolean;
+  busy: boolean;
+  locked: boolean;
+  queued: boolean;
+  onSolo: () => void;
+  onPublic: () => void;
+  onPrivate: () => void;
+  onCancelQueue: () => void;
+  onOpenChest: (chest: LobbyChest) => void;
+  children?: ReactNode;
+}) {
+  const full = chests.length >= 4;
+  return (
+    <main className="play-lobby" aria-busy={!ready}>
+      <img
+        className="play-background"
+        src="/art/play-lobby.webp"
+        alt=""
+        fetchPriority="high"
+        draggable={false}
+      />
+      <div className="play-shade" />
+      <header className="play-header">
+        <Link to="/hub" className="workshop-back" aria-label="Retour au refuge">
+          <img
+            src="/art/ui/back-arrow.webp"
+            alt=""
+            width={288}
+            height={157}
+            draggable={false}
+          />
+        </Link>
+        <h1>L’arène des gardiens</h1>
+        <span className="play-collection-count">
+          <Layers3 size={18} />
+          <span>
+            {ready ? collectionSize : "—"}
+            <small> / 48 compagnons</small>
+          </span>
+        </span>
+      </header>
+      <div className="play-main">
+        <Link
+          className="play-hero"
+          to="/decks"
+          aria-label="Mon deck, voir et améliorer mes cartes"
+        >
+          <span className="play-hero-aura" />
+          <img
+            src="/art/heroes/hero-sylve.webp"
+            alt="Ton héros de la Sylve"
+            width={512}
+            height={768}
+            draggable={false}
+          />
+          <span className="play-hero-plaque">
+            <strong>
+              Mon deck{" "}
+              <span>
+                {ready ? deckSize : "—"}/{DECK_SIZE}
+              </span>
+            </strong>
+            <small>Renforcer mes compagnons</small>
+          </span>
+        </Link>
+        <section className="play-battles" aria-label="Choisir un combat">
+          <span className="play-eyebrow">LE CERCLE T’ATTEND</span>
+          <h2>Écris ta légende.</h2>
+          <p className="play-intro">
+            Un combat. Un trésor. De nouveaux alliés.
+          </p>
+          <button
+            type="button"
+            className="play-battle-button play-solo"
+            disabled={!ready || locked}
+            onClick={onSolo}
+          >
+            <Bot />
+            <span>
+              <strong>Combat solo</strong>
+              <small>Défier le Gardien mécanique</small>
+            </span>
+            <Swords className="play-button-mark" />
+          </button>
+          {queued ? (
+            <div className="play-searching" role="status">
+              <LoaderCircle className="animate-spin" />
+              <span>Recherche d’un adversaire…</span>
+              <button
+                aria-label="Annuler la recherche"
+                disabled={busy}
+                onClick={onCancelQueue}
+              >
+                <X size={20} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="play-battle-button play-public"
+              disabled={!ready || locked}
+              onClick={onPublic}
+            >
+              <Swords />
+              <span>
+                <strong>Duel public</strong>
+                <small>Affronter un autre gardien</small>
+              </span>
+              <span className="play-button-mark">→</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="play-friendly"
+            disabled={!ready || busy || queued}
+            onClick={onPrivate}
+          >
+            <UsersRound size={17} />
+            Défi amical<span>Inviter ou rejoindre un ami</span>
+          </button>
+          <p
+            className={`play-reward-note ${full ? "is-full" : ""}`}
+            role="status"
+          >
+            {full ? (
+              <>
+                <Hourglass size={15} />
+                Emplacements pleins : le prochain coffre sera perdu.
+              </>
+            ) : (
+              <>
+                <Sparkles size={15} />
+                Chaque victoire solo ou publique rapporte un coffre.
+              </>
+            )}
+          </p>
+        </section>
+      </div>
+      <section className="play-treasures" aria-label="Tes coffres">
+        <div className="play-treasures-heading">
+          <h2>Trésors de victoire</h2>
+          <span>{chests.length} / 4 emplacements</span>
+        </div>
+        <div className="play-chest-row">
+          {Array.from({ length: 4 }, (_, slot) => {
+            const chest = chests.find((chest) => chest.slot === slot);
+            const remaining = chest ? chest.unlockAt - now : 0;
+            return chest ? (
+              <button
+                type="button"
+                key={slot}
+                className={`play-chest ${remaining <= 0 ? "is-ready" : ""}`}
+                data-rarity={chest.rarity}
+                disabled={!ready || busy || remaining > 0}
+                onClick={() => onOpenChest(chest)}
+                aria-label={`Coffre ${CHEST_LABELS[chest.rarity]}, ${remaining <= 0 ? "ouvrir" : `prêt dans ${remainingTime(remaining)}`}`}
+              >
+                <span className="play-chest-rarity">
+                  {CHEST_LABELS[chest.rarity]}
+                </span>
+                <img
+                  src={`/art/chests/${chest.rarity}.webp`}
+                  alt=""
+                  width={512}
+                  height={512}
+                  draggable={false}
+                />
+                <span className="play-chest-action">
+                  {remaining <= 0 ? (
+                    <>
+                      <Sparkles size={15} />
+                      Ouvrir
+                    </>
+                  ) : (
+                    <>
+                      <Hourglass size={13} />
+                      <time>{remainingTime(remaining)}</time>
+                    </>
+                  )}
+                </span>
+              </button>
+            ) : (
+              <div
+                key={slot}
+                className="play-chest play-chest-empty"
+                aria-label={`Emplacement ${slot + 1} libre`}
+              >
+                <span className="play-chest-number">0{slot + 1}</span>
+                <Swords size={30} />
+                <span>
+                  Une victoire,
+                  <br />
+                  un nouveau trésor.
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+      {children}
+    </main>
+  );
+}

@@ -20,6 +20,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CATALOG,
   DECK_SIZE,
+  MIN_DECK_SIZE,
   HAND_SIZE,
   HERO_HP,
   ROWS,
@@ -103,6 +104,7 @@ const hotspotStyle = cn(
 interface VillageHubProps {
   playerName?: string;
   deckCount?: number;
+  collectionCount?: number;
   activity?: {
     gameId: Id<"games"> | null;
     status: string | null;
@@ -113,6 +115,7 @@ interface VillageHubProps {
 export function VillageHub({
   playerName,
   deckCount,
+  collectionCount,
   activity,
 }: VillageHubProps) {
   const [modal, setModal] = useState<ModalId>("home");
@@ -304,7 +307,11 @@ export function VillageHub({
         className={modal === "sanctuary" ? "max-w-3xl" : undefined}
       >
         {modal === "home" && (
-          <HomeContent playerName={playerName} deckCount={deckCount} />
+          <HomeContent
+            playerName={playerName}
+            deckCount={deckCount}
+            collectionCount={collectionCount}
+          />
         )}
         {modal === "archives" && <ArchivesContent />}
         {modal === "sanctuary" && <SanctuaryContent />}
@@ -358,7 +365,8 @@ function ModalEyebrow({
 function HomeContent({
   playerName,
   deckCount,
-}: Pick<VillageHubProps, "playerName" | "deckCount">) {
+  collectionCount,
+}: Pick<VillageHubProps, "playerName" | "deckCount" | "collectionCount">) {
   return (
     <>
       <ModalEyebrow icon={Crown}>Maison des gardiens</ModalEyebrow>
@@ -380,13 +388,16 @@ function HomeContent({
         </div>
         <div className="rounded-xl border border-[#dee2d3] bg-[#eef0e5] p-5">
           <Gem size={20} className="mb-3 text-[#6a805a]" />
-          <span className="block font-serif text-3xl">{CATALOG.length}</span>
-          <span className="text-xs text-[#697664]">créatures disponibles</span>
+          <span className="block font-serif text-3xl">
+            {collectionCount ?? "—"} <small className="text-base">/ 48</small>
+          </span>
+          <span className="text-xs text-[#697664]">variantes débloquées</span>
         </div>
       </div>
       <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
-        Toutes les cartes sont offertes. Ton premier deck t’attend à l’atelier :
-        la stratégie fait la différence.
+        Quatre compagnons communs t’accompagnent au départ. Gagne des combats,
+        ouvre tes coffres et utilise les exemplaires en réserve pour renforcer
+        tes cartes à l’atelier.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <Link to="/decks" className="sylve-button">
@@ -408,7 +419,7 @@ function ArchivesContent() {
     {
       icon: Layers3,
       title: "Rassemble ton alliance",
-      copy: `Compose un deck de ${DECK_SIZE} cartes uniques. Au début de chaque tour, ta main est complétée à ${HAND_SIZE} cartes.`,
+      copy: `Compose un deck de ${MIN_DECK_SIZE} à ${DECK_SIZE} variantes distinctes. Une même créature peut y figurer dans plusieurs raretés. Au début de chaque tour, ta main est complétée à ${HAND_SIZE} cartes, tant que des cartes sont disponibles.`,
     },
     {
       icon: MapPin,
@@ -449,8 +460,8 @@ function ArchivesContent() {
       <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
         Tu peux aussi retirer une créature de ton camp pendant ton tour : elle
         rejoint la défausse et pourra être repiochée. Fais tes retraits avant de
-        poser ta carte. Si aucune carte ne peut être posée, tu peux attaquer sans
-        invoquer.
+        poser ta carte. Si aucune carte ne peut être posée, tu peux attaquer
+        sans invoquer.
       </p>
       <p className="mt-6 flex items-center gap-2 border-t border-[#dee2d3] pt-4 text-xs text-[#697664]">
         <Shield size={16} className="shrink-0 text-[#8d7950]" />{" "}
@@ -472,8 +483,10 @@ function SanctuaryContent() {
       <ModalEyebrow icon={Gem}>Le sanctuaire</ModalEyebrow>
       <DialogTitle>Des alliés, pas de simples cartes.</DialogTitle>
       <DialogDescription>
-        Les {CATALOG.length} créatures de la Sylve sont déjà à ta disposition.
-        Sélectionne un compagnon pour le découvrir.
+        Les {CATALOG.length} créatures de la Sylve existent chacune en quatre
+        raretés. Découvre leurs caractéristiques communes au niveau 1. Les
+        coffres débloquent de nouvelles variantes ; leurs exemplaires permettent
+        de les améliorer à l’atelier.
       </DialogDescription>
       <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
