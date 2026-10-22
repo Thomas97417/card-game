@@ -1,4 +1,3 @@
-import { BookOpen, Layers, Leaf, Shield } from "lucide-react";
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import {
   DEPTHS,
@@ -52,35 +51,6 @@ export function DuelArena({
   onInspectUnit: (unit: Player["board"][number], playerIndex: number) => void;
   onInspectHero: (playerIndex: number) => void;
 }) {
-  function hero(player: Player, own: boolean) {
-    return (
-      <button
-        type="button"
-        className={`hero-panel ${own ? "own" : "enemy"}`}
-        aria-label={`Voir les caractéristiques et le deck de ${player.name}`}
-        aria-haspopup="dialog"
-        title={player.name}
-        onClick={() => onInspectHero(own ? me : 1 - me)}
-      >
-        <div className="hero-crest">
-          {own ? <Leaf size={27} /> : <Shield size={27} />}
-        </div>
-        <div className="hero-info">
-          <strong>{player.name}</strong>
-        </div>
-        <div className="hero-piles">
-          <span title="Cartes en main">
-            <BookOpen size={13} />
-            {player.handCount}
-          </span>
-          <span title="Cartes du deck">
-            <Layers size={13} />
-            {player.deck.length}
-          </span>
-        </div>
-      </button>
-    );
-  }
   function heroFigure(player: Player, index: number, own: boolean) {
     const hit =
       combatEvent?.type === "attack" &&
@@ -275,10 +245,6 @@ export function DuelArena({
             ])}
           />
         </svg>
-        <div className="arena-heroes">
-          {hero(mine, true)}
-          {hero(enemy, false)}
-        </div>
         <div className="battlefield">
           {half(mine, me, true)}
           {half(enemy, 1 - me, false)}

@@ -178,6 +178,9 @@ describe("inspection pendant un duel", () => {
         onSurrender: vi.fn(),
       };
       render(<DuelScreen data={data} {...actions} />);
+      expect(
+        document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+      ).toBe("true");
       const { dialog } = await openHandCard(data);
       const choose = dialog.getByRole("button", {
         name: "Choisir une case",
@@ -259,39 +262,55 @@ describe("inspection pendant un duel", () => {
     ).toBeNull();
   });
 
-  it.each(["figure", "panel"] as const)(
-    "opens the enemy hero's %s, deck and individual cards",
+  it.each(["own hero", "own deck", "enemy hero"] as const)(
+    "opens %s on its side, with its deck and individual cards",
     async (target) => {
       const { data } = setup();
+      const own = target !== "enemy hero";
       fireEvent.click(
         await screen.findByRole("button", {
           name:
-            target === "figure"
-              ? "Voir le héros adverse, Bob, 30 PV"
-              : "Voir les caractéristiques et le deck de Bob",
+            target === "own deck"
+              ? "Voir mon deck"
+              : own
+                ? "Voir ton héros, Alice, 30 PV"
+                : "Voir le héros adverse, Bob, 30 PV",
         }),
       );
+      expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
+        own ? "left" : "right",
+      );
       let dialog = within(await screen.findByRole("dialog"));
-      expect(dialog.getByRole("heading", { name: "Bob" })).toBeTruthy();
+      expect(
+        dialog.getByRole("heading", { name: own ? "Alice" : "Bob" }),
+      ).toBeTruthy();
       expect(dialog.getByText("30 / 30")).toBeTruthy();
       expect(
-        dialog.getByRole("heading", { name: "Deck adverse" }),
+        dialog.getByRole("heading", {
+          name: own ? "Ton deck" : "Deck adverse",
+        }),
       ).toBeTruthy();
       expect(
         dialog.getAllByRole("button", { name: /voir les informations/ }),
       ).toHaveLength(8);
-      const card = data.players[1]!.deck[0]!;
+      const card = data.players[own ? 0 : 1]!.deck[0]!;
       fireEvent.click(
         dialog.getByRole("button", { name: new RegExp(`${card.name},`) }),
       );
       dialog = within(screen.getByRole("dialog"));
+      expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
+        own ? "left" : "right",
+      );
       expect(dialog.getByRole("heading", { name: card.name })).toBeTruthy();
-      expect(
-        dialog.queryByRole("button", { name: "Choisir une case" }),
-      ).toBeNull();
+      if (!own)
+        expect(
+          dialog.queryByRole("button", { name: "Choisir une case" }),
+        ).toBeNull();
       fireEvent.click(dialog.getByRole("button", { name: "Retour au héros" }));
       expect(
-        dialog.getByRole("heading", { name: "Deck adverse" }),
+        dialog.getByRole("heading", {
+          name: own ? "Ton deck" : "Deck adverse",
+        }),
       ).toBeTruthy();
       fireEvent.click(
         dialog.getByRole("button", { name: "Fermer la fenêtre" }),
@@ -299,6 +318,42 @@ describe("inspection pendant un duel", () => {
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     },
   );
+
+  it("restores playable cards when the opponent's turn ends", async () => {
+    const data = matchData();
+    data.activePlayer = 1;
+    const { actions, rerender } = setup(data);
+    expect(
+      document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+    ).toBe("true");
+    let { dialog } = await openHandCard(data);
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Choisir une case",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    fireEvent.click(dialog.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    const next = { ...data, activePlayer: data.me };
+    rerender(<DuelScreen data={next} {...actions} practice />);
+    await waitFor(() =>
+      expect(
+        document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+      ).toBe("false"),
+    );
+    ({ dialog } = await openHandCard(next));
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Choisir une case",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    expect(actions.onPlayCard).not.toHaveBeenCalled();
+  });
 
   it("keeps displayed HP current and prevents withdrawing a creature that left the board", async () => {
     const { data, actions, rerender } = setup();

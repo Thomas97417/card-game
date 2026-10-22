@@ -14,7 +14,6 @@ import {
   type UnitPosition,
 } from "@sylve/game";
 import {
-  ArrowLeft,
   ArrowRight,
   CircleHelp,
   Flag,
@@ -269,14 +268,6 @@ export function DuelScreen({
       }}
     >
       <div className="game-toolbar">
-        <Link
-          to="/play"
-          className="icon-button"
-          aria-label="Retour au salon"
-          title="Retour au salon"
-        >
-          <ArrowLeft size={19} />
-        </Link>
         <div className="duel-status">
           <span
             className={`turn-dot ${myTurn && !catchingUp ? "active" : ""}`}
@@ -367,7 +358,7 @@ export function DuelScreen({
           <Layers size={22} strokeWidth={1.3} />
           <span>{mine.deck.length}</span>
         </button>
-        <div className="player-hand">
+        <div className="player-hand" data-inactive={!canSummon}>
           {mine.hand.map((card) => (
             <CreatureCard
               key={card.id}
@@ -408,7 +399,7 @@ export function DuelScreen({
         </div>
       </section>
       <dialog
-        className="sylve-dialog combat-history"
+        className="sylve-dialog game-dialog combat-history"
         ref={historyDialog}
         aria-labelledby="history-title"
       >
@@ -437,7 +428,7 @@ export function DuelScreen({
       </dialog>
       {data.status === "finished" && !catchingUp && (
         <div className="result-overlay">
-          <section className="result-card" role="status">
+          <section className="result-card game-dialog" role="status">
             <div className="result-icon">
               {data.winner === data.me ? (
                 <Trophy size={40} />
@@ -492,21 +483,23 @@ export function DuelScreen({
                     : " · Chaque victoire solo compte."}
                 </p>
               )}
-            {onRestart && (
-              <button
-                className="sylve-button practice-replay"
-                onClick={onRestart}
+            <div className="result-actions">
+              {onRestart && (
+                <button
+                  className="sylve-button practice-replay"
+                  onClick={onRestart}
+                >
+                  <RotateCcw size={16} />
+                  Rejouer contre l’ordinateur
+                </button>
+              )}
+              <Link
+                to="/play"
+                className={`sylve-button ${practice ? "secondary" : ""}`}
               >
-                <RotateCcw size={16} />
-                Rejouer contre l’ordinateur
-              </button>
-            )}
-            <Link
-              to="/play"
-              className={`sylve-button ${practice ? "secondary" : ""}`}
-            >
-              Retour au salon <ArrowRight size={16} />
-            </Link>
+                Retour au salon <ArrowRight size={16} />
+              </Link>
+            </div>
           </section>
         </div>
       )}
@@ -538,7 +531,7 @@ export function DuelScreen({
         }
       />
       <dialog
-        className="sylve-dialog"
+        className="sylve-dialog game-dialog"
         ref={surrenderDialog}
         aria-labelledby="surrender-title"
       >
@@ -561,7 +554,7 @@ export function DuelScreen({
         </form>
       </dialog>
       <dialog
-        className="sylve-dialog"
+        className="sylve-dialog game-dialog"
         ref={rulesDialog}
         aria-labelledby="rules-title"
       >
