@@ -86,9 +86,7 @@ function dragCard(
 describe("l’atelier des decks", () => {
   it("opens the player's saved deck and keeps its cards out of the collection", () => {
     setup();
-    expect(
-      (screen.getByLabelText("Nom du deck") as HTMLInputElement).value,
-    ).toBe(savedDeck.name);
+    expect(screen.queryByRole("textbox")).toBeNull();
     expect(deckRow().getAllByRole("button")).toHaveLength(DECK_SIZE);
     expect(card(deckRow(), "Loup de lune")).toBeTruthy();
     expect(
@@ -130,7 +128,6 @@ describe("l’atelier des decks", () => {
       expect(saved.deckId).toBe(deckId);
       expect(saved.cardIds).toEqual(["knight", ...savedDeck.cardIds.slice(1)]);
       expect(new Set(saved.cardIds).size).toBe(DECK_SIZE);
-      await screen.findByText("Modifications enregistrées automatiquement");
     },
   );
 
@@ -208,43 +205,5 @@ describe("l’atelier des decks", () => {
     fireEvent.click(card(deckRow(), "Gardien de pierre"), { detail: 0 });
     expect(card(deckRow(), "Chevalier ronce")).toBeTruthy();
     expect(card(collection(), "Gardien de pierre")).toBeTruthy();
-  });
-
-  it("saves a rename immediately and never creates a new deck", async () => {
-    const { onSave } = setup();
-    fireEvent.change(screen.getByLabelText("Nom du deck"), {
-      target: { value: "Les ronces" },
-    });
-    await waitFor(() =>
-      expect(onSave).toHaveBeenCalledWith({
-        deckId,
-        name: "Les ronces",
-        cardIds: savedDeck.cardIds,
-      }),
-    );
-    await screen.findByText("Modifications enregistrées automatiquement");
-  });
-
-  it("saves card changes even while the name is temporarily empty", async () => {
-    const { onSave } = setup();
-    fireEvent.change(screen.getByLabelText("Nom du deck"), {
-      target: { value: "" },
-    });
-    dragCard(
-      card(collection(), "Chevalier ronce"),
-      card(deckRow(), "Gardien de pierre"),
-    );
-    await waitFor(() =>
-      expect(onSave).toHaveBeenCalledWith({
-        deckId,
-        name: savedDeck.name,
-        cardIds: ["knight", ...savedDeck.cardIds.slice(1)],
-      }),
-    );
-    fireEvent.blur(screen.getByLabelText("Nom du deck"));
-    expect(
-      (screen.getByLabelText("Nom du deck") as HTMLInputElement).value,
-    ).toBe(savedDeck.name);
-    await screen.findByText("Modifications enregistrées automatiquement");
   });
 });

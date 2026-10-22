@@ -105,14 +105,12 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
     target: HTMLButtonElement;
   } | null>(null);
 
-  const lastValidName = useRef("");
   const { status, initialize, enqueue, flush, hasPendingChanges } =
     useDeckAutosave(onSave);
 
   useEffect(() => {
     if (!deck || draft) return;
     setDraft(deckDraft(deck));
-    lastValidName.current = deck.name;
     initialize({
       deckId: deck._id,
       name: deck.name,
@@ -144,10 +142,9 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
 
   function updateDraft(next: Draft) {
     setDraft(next);
-    if (next.name.trim()) lastValidName.current = next.name.trim();
     enqueue({
       deckId: next.id,
-      name: lastValidName.current,
+      name: next.name,
       cardIds: [...next.cards],
     });
   }
@@ -277,11 +274,6 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
           onDragStart={(event) => event.preventDefault()}
         >
           <CardArtwork card={card} />
-          {slot !== undefined && (
-            <span className="workshop-card-number" aria-hidden="true">
-              {String(slot + 1).padStart(2, "0")}
-            </span>
-          )}
           {target && (
             <span className="workshop-drop-label">
               <ArrowRightLeft size={14} />
@@ -349,40 +341,9 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
       <div className="workshop-content">
         <section
           className="workshop-current"
-          aria-labelledby="current-deck-title"
+          aria-label="Ton deck"
           aria-busy={!ready}
         >
-          <div className="workshop-deck-toolbar">
-            <div className="workshop-deck-identity">
-              <div className="workshop-section-kicker">
-                <h2 id="current-deck-title">TON DECK</h2>
-                <span>
-                  {cards.length}/{DECK_SIZE} cartes
-                </span>
-              </div>
-              <label className="sr-only" htmlFor="workshop-deck-name">
-                Nom du deck
-              </label>
-              <input
-                id="workshop-deck-name"
-                value={draft?.name ?? "Chargement du grimoire…"}
-                maxLength={60}
-                onBlur={() => {
-                  if (draft)
-                    updateDraft({
-                      ...draft,
-                      name: draft.name.trim() || lastValidName.current,
-                    });
-                }}
-                disabled={!ready}
-                onChange={(event) => {
-                  if (draft)
-                    updateDraft({ ...draft, name: event.target.value });
-                }}
-              />
-            </div>
-          </div>
-
           <div
             className="workshop-card-row"
             ref={currentRow}
@@ -401,41 +362,22 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
                   </div>
                 ))}
           </div>
-          <div className="workshop-deck-footnote">
-            <span
-              aria-live="polite"
-              role={status === "error" ? "alert" : undefined}
-            >
-              <span
-                className={`workshop-ready-dot ${status === "saving" ? "is-dirty" : status === "error" ? "is-error" : ""}`}
-              />
-              {!ready
-                ? "Ouverture du grimoire…"
-                : status === "saving"
-                  ? "Enregistrement automatique…"
-                  : status === "error"
-                    ? "Connexion interrompue · nouvelle tentative automatique…"
-                    : "Modifications enregistrées automatiquement"}
-            </span>
-            <div className="workshop-scroll-controls">
-              <button
-                aria-label="Voir les cartes précédentes du deck"
-                onClick={() => scrollRow(currentRow.current, -1)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                aria-label="Voir les cartes suivantes du deck"
-                onClick={() => scrollRow(currentRow.current, 1)}
-              >
-                <ChevronRight size={17} />
-              </button>
-            </div>
-            <span className="workshop-unique-note">
-              {DECK_SIZE} compagnons · une alliance
-            </span>
-          </div>
         </section>
+
+        <div className="workshop-deck-navigation workshop-scroll-controls">
+          <button
+            aria-label="Voir les cartes précédentes du deck"
+            onClick={() => scrollRow(currentRow.current, -1)}
+          >
+            <ChevronLeft size={17} />
+          </button>
+          <button
+            aria-label="Voir les cartes suivantes du deck"
+            onClick={() => scrollRow(currentRow.current, 1)}
+          >
+            <ChevronRight size={17} />
+          </button>
+        </div>
 
         <section
           className="workshop-collection"
@@ -443,17 +385,12 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
         >
           <div className="workshop-collection-heading">
             <div>
-              <span className="workshop-section-kicker">LE BESTIAIRE</span>
               <h2 id="collection-title">
                 Ta collection{" "}
                 <span>
                   {ready ? `${visible.length} / ${available.length}` : "—"}
                 </span>
               </h2>
-            </div>
-            <div className="workshop-collection-hint">
-              <ArrowRightLeft size={16} />
-              <span>Une nouvelle carte, une nouvelle alliance.</span>
             </div>
             <div className="workshop-scroll-controls">
               <button
@@ -532,11 +469,15 @@ export function DeckWorkshop({ deck, onSave }: DeckWorkshopProps) {
         <p
           id="workshop-instructions"
           className={`workshop-instructions ${selectedCard ? "has-selection" : ""}`}
-          role="status"
+          role={status === "error" ? "alert" : "status"}
           aria-live="polite"
         >
           <ArrowRightLeft size={17} />
-          <span>{message}</span>
+          <span>
+            {status === "error"
+              ? "Enregistrement interrompu · nouvelle tentative automatique…"
+              : message}
+          </span>
           {selectedCard && (
             <button
               aria-label="Annuler la sélection"
