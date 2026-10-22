@@ -19,6 +19,7 @@ import {
 } from "@sylve/game/practice";
 import { DuelScreen } from "./duel-screen";
 import { GameLoading } from "./shared";
+import { COMBAT_TIMING } from "./combat-timing";
 
 /** The session is local; no account, multiplayer lock or server mutation is needed. */
 export function PracticeGame({ deck }: { deck?: string }) {
@@ -111,7 +112,7 @@ function PracticeMatch({
             )
           : endTurn(state, 1, state.turn, Date.now(), Math.random),
       );
-    }, 650);
+    }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
   }, [session, settledSequence]);
   return (

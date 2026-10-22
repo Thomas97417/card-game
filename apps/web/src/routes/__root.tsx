@@ -84,7 +84,9 @@ function RootDocument() {
         (match) =>
           match.routeId === "/hub" ||
           match.routeId === "/decks" ||
-          match.routeId === "/play",
+          match.routeId === "/play" ||
+          match.routeId === "/game/$gameId" ||
+          match.routeId === "/practice",
       ),
   });
   return (

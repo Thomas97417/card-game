@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -17,6 +18,7 @@ import {
   validateDeck,
 } from "@sylve/game";
 import { DuelScreen, type DuelData } from "./duel-screen";
+import { COMBAT_TIMING } from "./combat-timing";
 
 const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 
@@ -77,6 +79,18 @@ async function openHandCard(data: DuelData) {
 }
 
 describe("inspection pendant un duel", () => {
+  it("announces the result when the winning summon leaves hasSummoned set", async () => {
+    const data = matchData();
+    data.status = "finished";
+    data.winner = data.me;
+    data.hasSummoned = true;
+    setup(data);
+    expect(await screen.findByText("Duel terminé")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "La victoire est tienne." }),
+    ).toBeTruthy();
+  });
+
   it.each(["guardian", "fox"])(
     "inspects %s and preserves its legal deployment zones",
     async (cardId) => {
@@ -93,6 +107,14 @@ describe("inspection pendant un duel", () => {
       expect(actions.onPlayCard).not.toHaveBeenCalled();
       fireEvent.click(dialog.getByRole("button", { name: "Choisir une case" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      const hints = document.querySelectorAll(".placement-hint .game-icon");
+      expect(hints).toHaveLength(8);
+      for (const hint of hints) {
+        expect(hint.getAttribute("src")).toContain(
+          isDeploymentDepth(card, 0) ? "melee-sword" : "ranged-bow",
+        );
+        expect(hint.closest("[data-own-cell]")).toBeTruthy();
+      }
       const depth = isDeploymentDepth(card, 0) ? 0 : 2;
       const forbiddenDepth = depth === 0 ? 2 : 0;
       fireEvent.click(
@@ -168,6 +190,9 @@ describe("inspection pendant un duel", () => {
         onSurrender: vi.fn(),
       };
       render(<DuelScreen data={data} {...actions} />);
+      expect(
+        document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+      ).toBe("true");
       const { dialog } = await openHandCard(data);
       const choose = dialog.getByRole("button", {
         name: "Choisir une case",
@@ -249,39 +274,55 @@ describe("inspection pendant un duel", () => {
     ).toBeNull();
   });
 
-  it.each(["figure", "panel"] as const)(
-    "opens the enemy hero's %s, deck and individual cards",
+  it.each(["own hero", "own deck", "enemy hero"] as const)(
+    "opens %s on its side, with its deck and individual cards",
     async (target) => {
       const { data } = setup();
+      const own = target !== "enemy hero";
       fireEvent.click(
         await screen.findByRole("button", {
           name:
-            target === "figure"
-              ? "Voir le héros adverse, Bob, 30 PV"
-              : "Voir les caractéristiques et le deck de Bob",
+            target === "own deck"
+              ? "Voir mon deck"
+              : own
+                ? "Voir ton héros, Alice, 30 PV"
+                : "Voir le héros adverse, Bob, 30 PV",
         }),
       );
+      expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
+        own ? "left" : "right",
+      );
       let dialog = within(await screen.findByRole("dialog"));
-      expect(dialog.getByRole("heading", { name: "Bob" })).toBeTruthy();
+      expect(
+        dialog.getByRole("heading", { name: own ? "Alice" : "Bob" }),
+      ).toBeTruthy();
       expect(dialog.getByText("30 / 30")).toBeTruthy();
       expect(
-        dialog.getByRole("heading", { name: "Deck adverse" }),
+        dialog.getByRole("heading", {
+          name: own ? "Ton deck" : "Deck adverse",
+        }),
       ).toBeTruthy();
       expect(
         dialog.getAllByRole("button", { name: /voir les informations/ }),
       ).toHaveLength(8);
-      const card = data.players[1]!.deck[0]!;
+      const card = data.players[own ? 0 : 1]!.deck[0]!;
       fireEvent.click(
         dialog.getByRole("button", { name: new RegExp(`${card.name},`) }),
       );
       dialog = within(screen.getByRole("dialog"));
+      expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
+        own ? "left" : "right",
+      );
       expect(dialog.getByRole("heading", { name: card.name })).toBeTruthy();
-      expect(
-        dialog.queryByRole("button", { name: "Choisir une case" }),
-      ).toBeNull();
+      if (!own)
+        expect(
+          dialog.queryByRole("button", { name: "Choisir une case" }),
+        ).toBeNull();
       fireEvent.click(dialog.getByRole("button", { name: "Retour au héros" }));
       expect(
-        dialog.getByRole("heading", { name: "Deck adverse" }),
+        dialog.getByRole("heading", {
+          name: own ? "Ton deck" : "Deck adverse",
+        }),
       ).toBeTruthy();
       fireEvent.click(
         dialog.getByRole("button", { name: "Fermer la fenêtre" }),
@@ -289,6 +330,42 @@ describe("inspection pendant un duel", () => {
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     },
   );
+
+  it("restores playable cards when the opponent's turn ends", async () => {
+    const data = matchData();
+    data.activePlayer = 1;
+    const { actions, rerender } = setup(data);
+    expect(
+      document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+    ).toBe("true");
+    let { dialog } = await openHandCard(data);
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Choisir une case",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    fireEvent.click(dialog.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+    const next = { ...data, activePlayer: data.me };
+    rerender(<DuelScreen data={next} {...actions} practice />);
+    await waitFor(() =>
+      expect(
+        document.querySelector(".player-hand")?.getAttribute("data-inactive"),
+      ).toBe("false"),
+    );
+    ({ dialog } = await openHandCard(next));
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Choisir une case",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    expect(actions.onPlayCard).not.toHaveBeenCalled();
+  });
 
   it("keeps displayed HP current and prevents withdrawing a creature that left the board", async () => {
     const { data, actions, rerender } = setup();
@@ -328,5 +405,53 @@ describe("inspection pendant un duel", () => {
         "Cette créature a quitté le terrain.",
       ),
     ).toBeTruthy();
+  });
+
+  it("keeps lethal damage visible after the creature leaves the board", () => {
+    vi.useFakeTimers();
+    try {
+      const { data, actions, rerender, unmount } = setup();
+      const next = structuredClone(data);
+      next.sequence = 2;
+      next.players[1]!.board = [];
+      next.events = [
+        {
+          seq: 1,
+          type: "attack",
+          player: 0,
+          cardId: "guardian",
+          row: 1,
+          depth: 1,
+          targetPlayer: 1,
+          targetCardId: "fox",
+          targetRow: 1,
+          targetDepth: 2,
+          damage: 2,
+          hp: 0,
+        },
+        { seq: 2, type: "death", player: 1, cardId: "fox", row: 1, depth: 2 },
+      ];
+      rerender(<DuelScreen data={next} {...actions} practice />);
+      act(() => vi.advanceTimersByTime(0));
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.impact));
+      const damage = "Renard des braises subit 2 dégâts";
+      expect(screen.getByLabelText(damage)).toBeTruthy();
+      act(() =>
+        vi.advanceTimersByTime(
+          COMBAT_TIMING.attack - COMBAT_TIMING.impact + COMBAT_TIMING.death,
+        ),
+      );
+      expect(
+        screen.queryByRole("button", {
+          name: /Renard des braises.*0 PV.*voir les informations/,
+        }),
+      ).toBeNull();
+      expect(screen.getByLabelText(damage)).toBeTruthy();
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.damage));
+      expect(screen.queryByLabelText(damage)).toBeNull();
+      unmount();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

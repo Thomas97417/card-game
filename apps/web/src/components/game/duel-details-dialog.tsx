@@ -78,12 +78,18 @@ export function DuelDetailsDialog({
 
   return (
     <Dialog
+      modal={false}
       open={inspection !== null}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="duel-details-dialog max-w-2xl">
+      <DialogContent
+        className="duel-details-dialog"
+        appearance="game"
+        placement={own ? "left" : "right"}
+        showBackdrop={false}
+      >
         {inspection && player && (
           <>
             {card ? (
@@ -149,7 +155,7 @@ export function DuelDetailsDialog({
                         </dd>
                       </div>
                       <div>
-                        <dt>{unit ? "Points de vie" : "Points de vie max."}</dt>
+                        <dt>{unit ? "Vie actuelle" : "Vie maximale"}</dt>
                         <dd>
                           <StatBadge
                             kind="health"
@@ -167,14 +173,14 @@ export function DuelDetailsDialog({
                       </p>
                     )}
                     <p className="details-note">
-                      À l’assaut, inflige {card.attack} dégâts au premier ennemi
-                      de sa ligne, ou au héros adverse si la voie est libre.
+                      Inflige {card.attack} dégâts au premier ennemi de la
+                      ligne, sinon au héros.
                     </p>
                     {getCombatType(card) === "melee" && (
                       <p className="details-note">
                         {blocked
                           ? "Bloquée : une unité au corps à corps est devant elle sur cette ligne."
-                          : "Ne peut pas attaquer si une autre unité au corps à corps est devant elle sur la même ligne."}
+                          : "Attaque bloquée si un allié au corps à corps est devant."}
                       </p>
                     )}
                     {source === "board" && !unit && (
@@ -188,7 +194,7 @@ export function DuelDetailsDialog({
                   <div className="details-actions">
                     <p className="details-note">
                       {canChooseCell
-                        ? "Choisis une case autorisée : l’invocation déclenche l’assaut et passe le tour à l’adversaire."
+                        ? "Choisis une case pour invoquer et lancer l’assaut."
                         : !hasPlacement
                           ? "Aucune case autorisée n’est libre pour cette carte."
                           : "L’invocation est disponible pendant ton tour."}
@@ -206,10 +212,8 @@ export function DuelDetailsDialog({
                 {own && unit && (
                   <div className="details-actions">
                     <p className="details-note">
-                      Le retrait libère sa case sans changer ta main. Cette
-                      carte reste disponible aux prochains tirages. Retire tes
-                      créatures avant d’invoquer : poser une carte déclenche
-                      l’assaut et termine ton tour.
+                      Libère sa case avant d’invoquer. Ta main ne change pas et
+                      cette carte reste disponible aux prochains tirages.
                     </p>
                     <button
                       type="button"

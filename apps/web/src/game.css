@@ -891,75 +891,85 @@ button:disabled {
   color: var(--forest);
 }
 .game-room {
-  background: var(--paper);
-  min-height: 100%;
-  padding: 17px max(24px, calc((100% - 1160px) / 2)) 20px;
+  --hand-card-width: clamp(46px, min(17vw, 10svh), 116px);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #29472f;
+  color: #f7edcf;
+}
+.game-room::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #0d201b99,
+    transparent 19%,
+    transparent 73%,
+    #10231d99
+  );
 }
 .game-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
 }
-.game-toolbar > div {
+.game-tools {
+  position: absolute;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
   display: flex;
   gap: 8px;
+  pointer-events: auto;
 }
-.game-toolbar > .eyebrow {
-  font-size: 9px;
-  letter-spacing: 2.2px;
+.game-toolbar .icon-button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e3d1a140;
+  border-radius: 50%;
+  background: #15352b85;
+  color: #f0e4c5;
+  backdrop-filter: blur(6px);
+  transition:
+    background 160ms,
+    border-color 160ms;
 }
-.game-toolbar > .text-link {
-  font-size: 11px;
+.game-toolbar .icon-button:hover:not(:disabled) {
+  background: #264f40d9;
+  border-color: #e3d1a185;
 }
 .practice-option {
   background: linear-gradient(125deg, #edf1e1, #faf7ed);
   border-color: #bbc9a7;
 }
-.practice-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  margin-top: 15px;
-  border: 1px solid #d2dbbf;
-  border-radius: 10px;
-  background: #eef1e3;
-  color: var(--forest);
-}
-.practice-banner > svg {
-  flex-shrink: 0;
-}
-.practice-banner > div {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 5px;
-}
-.practice-banner strong {
-  font:
-    17px Georgia,
-    serif;
-}
-.practice-banner > div > span {
-  color: var(--quiet);
-  font-size: 11px;
-  line-height: 1.6;
-}
-.practice-badge {
-  font-size: 8px;
-  letter-spacing: 1px;
-  white-space: nowrap;
-}
 .practice-replay {
   margin-bottom: 12px;
 }
 .duel-status {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  padding: 11px 0 17px;
+  gap: 9px;
+  font-size: 11px;
+  padding: 9px 16px;
+  border: 1px solid #e3d1a133;
+  border-radius: 30px;
+  background: #102c24c4;
+  color: #f3e7c8;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  pointer-events: auto;
 }
 .turn-dot {
   width: 6px;
@@ -968,27 +978,25 @@ button:disabled {
   background: #b6ab87;
 }
 .turn-dot.active {
-  background: #6d9565;
-  box-shadow: 0 0 0 4px #719b6c18;
+  background: #b5d4a1;
+  box-shadow: 0 0 0 3px #b5d4a118;
 }
 .turn-number {
   font-size: 9px;
   letter-spacing: 1px;
-  color: #98a087;
+  color: #d8c9a5;
   padding-left: 9px;
   margin-left: 3px;
-  border-left: 1px solid #d9decc;
+  border-left: 1px solid #d9ceaa33;
 }
 .arena-scroll {
-  overflow-x: auto;
-  border-radius: 16px 16px 0 0;
-  border: 2px solid #7b7952;
-  box-shadow: 0 10px 36px #233e3326;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 .arena {
-  min-width: 1024px;
   width: 100%;
-  aspect-ratio: 1659 / 948;
+  height: 100%;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -1018,126 +1026,11 @@ button:disabled {
   stroke: #c8ac705e;
   stroke-width: 1.5;
 }
-.arena-heroes {
-  position: absolute;
-  top: 14px;
-  left: 20px;
-  right: 20px;
-  display: grid;
-  grid-template-columns: 1fr 150px 1fr;
-  align-items: start;
-  gap: 8%;
-  z-index: 10;
-}
-.hero-panel {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 7px 12px 7px 8px;
-  color: #fff6d6;
-  border: 1px solid #d5c57e;
-  border-radius: 9px 24px 9px 9px;
-  background: linear-gradient(110deg, #164f4cf0, #277f77e8);
-  box-shadow:
-    0 3px 0 #1a3535,
-    inset 0 0 0 3px #ffffff15,
-    0 6px 15px #122f3255;
-  text-align: left;
-  width: 100%;
-  transition: filter 0.15s;
-}
-.hero-panel:hover {
-  filter: brightness(1.12);
-}
-.hero-panel:focus-visible,
 .hero-figure:focus-visible,
 .board-unit-control:focus-visible {
   outline: 3px solid #f3d98f;
   outline-offset: 3px;
   border-radius: 8px;
-}
-.hero-panel.enemy {
-  flex-direction: row-reverse;
-  text-align: right;
-  border-radius: 24px 9px 9px 9px;
-  background: linear-gradient(250deg, #813c39f0, #aa5748e8);
-}
-.hero-crest {
-  flex-shrink: 0;
-  border: 2px solid #d3c791;
-  border-radius: 10px 10px 45% 45%;
-  width: 36px;
-  height: 42px;
-  background: #193c36;
-  color: #eee1a0;
-  display: grid;
-  place-items: center;
-  box-shadow: inset 0 0 0 3px #ffffff15;
-}
-.hero-crest svg {
-  width: 22px;
-}
-.enemy .hero-crest {
-  background: #5d2d2c;
-}
-.hero-info {
-  flex: 1;
-  min-width: 0;
-}
-.hero-info > .eyebrow {
-  font-size: 7px;
-  letter-spacing: 1.7px;
-  color: #efdfad;
-}
-.hero-info > strong {
-  font:
-    700 17px/1.3 Georgia,
-    serif;
-  display: block;
-  margin-top: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-shadow: 0 2px 1px #162f34;
-}
-.hero-piles {
-  display: flex;
-  gap: 8px;
-  align-self: end;
-  padding-bottom: 3px;
-  font-size: 9px;
-  color: #fff5d6;
-}
-.hero-piles > span {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-.arena-round {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 6px 13px;
-  gap: 6px;
-  background: linear-gradient(#193e3cf0, #193e3cb0);
-  border: 1px solid #e5d69b80;
-  border-top: 0;
-  border-radius: 0 0 30px 30px;
-  color: #fff2c7;
-  margin-top: -15px;
-  box-shadow: 0 5px 15px #1d3f3440;
-}
-.arena-round span {
-  font-size: 6px;
-  letter-spacing: 1.3px;
-}
-.arena-round strong {
-  font:
-    900 25px/1 Georgia,
-    serif;
-  color: #ffd783;
-  text-shadow: 0 2px 0 #443b26;
 }
 .battlefield {
   position: absolute;
@@ -1165,8 +1058,35 @@ button:disabled {
   transition: background 0.15s;
 }
 .board-cell.drop-target {
-  background: #ead79c2b;
-  box-shadow: inset 0 0 20px #e4ca7b70;
+  background: #ead79c26;
+}
+.placement-hint {
+  display: grid;
+  place-items: center;
+  width: clamp(28px, 3vw, 42px);
+  aspect-ratio: 1;
+  border: 1px solid #f0dfb1a6;
+  border-radius: 50%;
+  background: #28433370;
+  box-shadow:
+    0 2px 8px #233c2926,
+    inset 0 0 0 3px #f5e5b90d;
+  pointer-events: none;
+  transition:
+    transform 160ms,
+    background 160ms,
+    border-color 160ms;
+}
+.placement-hint .game-icon {
+  width: 64%;
+  height: 64%;
+  opacity: 0.9;
+}
+.drop-target .placement-hint,
+.legal-placement:focus-visible .placement-hint {
+  transform: scale(1.14);
+  background: #244b3ac9;
+  border-color: #fff1c8;
 }
 .board-cell:focus-visible {
   outline: 2px solid #eddb9d;
@@ -1211,22 +1131,6 @@ button:disabled {
 .board-unit.blocked > .creature-portrait {
   opacity: 0.6;
 }
-.unit-role {
-  position: absolute;
-  bottom: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 3px 5px;
-  border-radius: 5px;
-  background: #263e31e6;
-  color: #fff7d6;
-  font-size: 9px;
-}
-.blocked .unit-role {
-  background: #785239;
-}
 .unit-shadow {
   position: absolute;
   width: 66%;
@@ -1260,27 +1164,32 @@ button:disabled {
   position: absolute;
   display: flex;
   justify-content: space-between;
-  top: -4px;
-  left: -8px;
-  right: -8px;
+  top: 0;
+  left: 3%;
+  right: 3%;
   z-index: 2;
 }
 .unit-stats .stat-badge {
-  width: 29px;
-  height: 31px;
+  width: clamp(22px, 2.8vw, 43px);
+  height: auto;
+  aspect-ratio: 1;
 }
-.unit-stats .stat-badge.attack {
-  width: 34px;
-  height: 44px;
+.unit-stats .stat-badge.attack .game-icon {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
 }
 .unit-stats .stat-badge strong {
-  font-size: 18px;
+  align-self: center;
+  margin-top: -1px;
+  font-size: clamp(15px, 1.7vw, 26px);
 }
 .hero-slot {
   position: absolute;
   top: 66%;
   width: 14%;
-  height: 28%;
+  aspect-ratio: 4 / 5;
   transform: translate(-50%, -100%);
   z-index: 5;
   pointer-events: none;
@@ -1293,6 +1202,7 @@ button:disabled {
 }
 .hero-figure {
   position: relative;
+  display: block;
   width: 100%;
   height: 100%;
   border: 0;
@@ -1336,110 +1246,103 @@ button:disabled {
   background: #183d3860;
   filter: blur(4px);
 }
-.hero-figure .damage-float {
-  top: 15%;
-  z-index: 4;
-}
-.board-footnote {
-  position: absolute;
-  left: 15%;
-  right: 15%;
-  bottom: 5.8%;
-  display: flex;
-  justify-content: space-between;
-  color: #fff1c7;
-  text-shadow:
-    0 1px 4px #263e21,
-    0 1px 2px #263e21;
-  font-size: 7px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  pointer-events: none;
-}
 .hand-area {
-  padding: 15px 24px 4px;
-  border: 1px solid #d6d7ba;
-  border-top: 3px solid #b8a56a;
-  border-radius: 0 0 14px 14px;
-  background: linear-gradient(120deg, #ece9d7, #f8f5e9 55%, #e6e9d5);
-}
-.hand-heading {
+  position: absolute;
+  z-index: 20;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(20px, env(safe-area-inset-left));
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 13px;
+  gap: 20px;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  padding: 10px 20px;
+  border: 1px solid #e3d1a147;
+  border-radius: 12px;
+  background: linear-gradient(115deg, #183c30c9, #122b23b8);
+  box-shadow: 0 8px 32px #091a1b40;
+  backdrop-filter: blur(12px);
 }
-.hand-heading > div {
+.hand-deck {
   display: flex;
-  gap: 18px;
+  flex-direction: column;
   align-items: center;
-}
-.hand-heading .eyebrow {
-  font-size: 9px;
-}
-.hand-heading .small {
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  width: 38px;
+  min-height: 54px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #e5d5ac;
   font-size: 10px;
 }
-.hand-and-actions {
-  display: grid;
-  grid-template-columns: 1fr 205px;
-  gap: 30px;
-  align-items: center;
+.hand-deck:hover {
+  background: #e7dbb714;
 }
 .player-hand {
   display: flex;
-  gap: 12px;
-  min-height: 150px;
-  overflow-x: auto;
-  padding: 5px 4px 12px;
+  gap: clamp(8px, 1.2vw, 18px);
+  padding: 2px 0;
 }
 .player-hand .creature-card {
-  width: 122px;
+  width: var(--hand-card-width);
   flex-shrink: 0;
   height: fit-content;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
-.compact .card-stats .stat-badge strong {
-  font-size: 26px;
+.player-hand[data-inactive="true"] .creature-card {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.player-hand[data-inactive="true"] .creature-card:hover {
+  opacity: 0.8;
+}
+.player-hand .card-stats .stat-badge {
+  width: 42%;
+}
+.player-hand .card-stats .stat-badge strong {
+  font-size: clamp(16px, 2.5svh, 28px);
 }
 .turn-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
 }
 .turn-actions .sylve-button {
-  width: 100%;
-}
-.turn-actions .small {
-  font-size: 9px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-color: #d9c99c80;
+  background: #1a4034e6;
+  font-size: 11px;
 }
 .turn-clock {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: #768367;
-  font-size: 22px;
+  gap: 6px;
+  padding-left: 10px;
+  margin-left: 2px;
+  border-left: 1px solid #d9ceaa33;
+  color: #e5d5ac;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   font-family: Georgia, serif;
 }
 .turn-clock.urgent {
-  color: #b46f58;
+  color: #ffc3a0;
 }
 .empty-hand {
-  color: var(--quiet);
+  color: #e5d5ac;
   font-size: 12px;
-  padding: 30px;
+  padding: 16px;
   max-width: 420px;
   line-height: 1.9;
 }
 .combat-history {
-  color: #8a927e;
-  font-size: 10px;
-  padding: 12px 4px;
-  border-top: 1px solid var(--line);
+  font-size: 12px;
 }
 .combat-history ol {
   padding: 10px 17px;
@@ -1447,27 +1350,15 @@ button:disabled {
 }
 .drag-preview {
   position: fixed;
-  width: 100px;
+  width: clamp(76px, 8vw, 112px);
   z-index: 100;
   pointer-events: none;
-  transform: translate(-50%, -65%) rotate(4deg);
-  background: #e9e6cd;
-  border: 2px solid #799466;
-  border-radius: 7px;
-  box-shadow: 0 15px 25px #243b3340;
-  padding: 4px;
+  transform: translate(-50%, -75%) rotate(2deg);
+  filter: drop-shadow(0 8px 9px #142a2566);
+  opacity: 0.9;
 }
 .drag-preview > .creature-portrait {
   width: 100%;
-  border-radius: 4px;
-}
-.drag-preview > span {
-  display: block;
-  font:
-    10px Georgia,
-    serif;
-  text-align: center;
-  padding: 4px;
 }
 .sylve-dialog {
   margin: auto;
@@ -1475,6 +1366,8 @@ button:disabled {
   border-radius: 14px;
   max-width: 470px;
   width: calc(100vw - 40px);
+  max-height: calc(100svh - 40px);
+  overflow-y: auto;
   padding: 32px;
   background: var(--paper);
   color: var(--ink);
@@ -1502,32 +1395,163 @@ button:disabled {
   gap: 10px;
   margin-top: 23px;
 }
-.duel-details-dialog {
+.game-dialog {
+  --paper: #18392c;
+  --ink: #f4ecd6;
+  --quiet: #becbb8;
+  --line: #cbb78333;
+  color: var(--ink);
+  color-scheme: dark;
+  background: linear-gradient(145deg, #254334, #122c23 85%);
+  border: 1px solid #c5b38366;
+  border-radius: 16px;
+  box-shadow:
+    0 16px 48px #091c2266,
+    inset 0 0 0 1px #f2e1b409;
   font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+}
+.game-dialog::backdrop {
+  background: transparent;
+  backdrop-filter: none;
+}
+.game-dialog[data-slot="dialog-content"] {
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+}
+.game-dialog[data-placement="left"] {
+  left: max(16px, 3vw, env(safe-area-inset-left));
+  right: auto;
+  translate: 0 -50%;
+}
+.game-dialog[data-placement="right"] {
+  right: max(16px, 3vw, env(safe-area-inset-right));
+  left: auto;
+  translate: 0 -50%;
+}
+.game-dialog > [data-slot="dialog-body"] {
+  padding: 26px;
+}
+.game-dialog [data-slot="dialog-close"] {
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  color: #e2d5b2;
+  border: 1px solid #c5b38347;
+  background: #152f25;
+}
+.game-dialog [data-slot="dialog-close"]:hover {
+  color: #fff4d3;
+  background: #314e3d;
+}
+.game-dialog [data-slot="dialog-title"],
+.game-dialog h2 {
+  color: var(--ink);
+  font:
+    28px/1.15 Georgia,
+    serif;
+  letter-spacing: -0.5px;
+}
+.game-dialog [data-slot="dialog-description"] {
+  margin-top: 8px;
+  color: var(--quiet);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.game-dialog .eyebrow {
+  color: #d6c394;
+  font-size: 9px;
+  letter-spacing: 1.6px;
+}
+.game-dialog .text-link {
+  color: #e1cf9a;
+}
+.game-dialog button:focus-visible,
+.game-dialog a:focus-visible {
+  outline: 2px solid #d4be88;
+  outline-offset: 3px;
+}
+.game-dialog .sylve-button {
+  color: #1e392b;
+  background: #d4be88;
+  border-color: #d4be88;
+  font-weight: 600;
+}
+.game-dialog .sylve-button:hover:not(:disabled) {
+  background: #e3cd99;
+}
+.game-dialog .sylve-button.secondary {
+  color: #eee2c0;
+  background: #ffffff06;
+  border-color: #c5b38366;
+}
+.game-dialog .sylve-button.secondary:hover:not(:disabled) {
+  background: #d4be8817;
+}
+.game-dialog .rarity-label {
+  margin-top: 10px;
+}
+.game-dialog .rarity-label[data-rarity="common"] {
+  color: #c7d2bc;
+}
+.game-dialog .rarity-label[data-rarity="rare"] {
+  color: #9fcbef;
+}
+.game-dialog .rarity-label[data-rarity="epic"] {
+  color: #d3b3ea;
+}
+.game-dialog .rarity-label[data-rarity="legendary"] {
+  color: #e3c57e;
+}
+.game-dialog .section-label {
+  color: var(--quiet);
+}
+.game-dialog .section-label h3 {
+  color: var(--ink);
+  font:
+    21px Georgia,
+    serif;
+  letter-spacing: 0;
+}
+.duel-details-dialog {
+  --dialog-bottom-space: 72px;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+}
+.duel-details-dialog[data-placement="left"] {
+  --dialog-bottom-space: calc(
+    clamp(46px, min(17vw, 10svh), 116px) * 4 / 3 + 44px
+  );
+}
+.duel-details-dialog[data-slot="dialog-content"] {
+  top: calc((100svh - var(--dialog-bottom-space)) / 2);
+  max-height: calc(100svh - var(--dialog-bottom-space) - 32px);
+}
+.duel-details-dialog > [data-slot="dialog-body"] {
+  max-height: calc(100svh - var(--dialog-bottom-space) - 34px);
 }
 .duel-details-dialog .eyebrow {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   padding-right: 36px;
 }
 .details-back {
-  margin-bottom: 22px;
+  margin-bottom: 12px;
 }
 .card-details-role {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 .card-details-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
-  gap: 24px;
-  margin: 24px 0;
+  gap: 18px;
+  margin: 18px 0;
 }
 .card-details-portrait {
   padding: 12px;
-  border: 1px solid #c8ceb6;
-  border-radius: 18px;
-  background-image: radial-gradient(ellipse at center, #fff9e0a0, transparent);
+  border: 1px solid #c5b38347;
+  border-radius: 12px;
+  background-image: radial-gradient(ellipse at center, #e9d89b26, transparent);
 }
 .card-details-portrait > .creature-portrait {
   width: 100%;
@@ -1553,6 +1577,23 @@ button:disabled {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-bottom: 18px;
 }
+.card-details-stats .stat-badge {
+  width: 44px;
+  height: 44px;
+}
+.card-details-stats .stat-badge strong {
+  font-size: 26px;
+}
+.card-details-stats .stat-badge.attack .game-icon {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+}
+.card-details-stats .stat-badge.attack strong {
+  align-self: center;
+  margin-top: -2px;
+}
 .details-note {
   color: var(--quiet);
   font-size: 12px;
@@ -1564,9 +1605,9 @@ button:disabled {
 .details-actions {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
   border-top: 1px solid var(--line);
-  padding-top: 20px;
+  padding-top: 16px;
 }
 .details-actions > .sylve-button {
   align-self: flex-start;
@@ -1585,7 +1626,7 @@ button:disabled {
 }
 .hero-details-stats {
   flex: 1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .hero-details-stats dd {
   font-size: 17px;
@@ -1600,21 +1641,18 @@ button:disabled {
 }
 .result-overlay {
   position: fixed;
-  inset: 76px 0 0;
+  inset: 0;
   display: grid;
   place-items: center;
-  background: #203c2f90;
-  backdrop-filter: blur(5px);
   z-index: 40;
 }
 .result-card {
   text-align: center;
   padding: 42px;
   border-radius: 16px;
-  background: var(--paper);
-  border: 1px solid #d8dfc6;
   width: min(470px, calc(100vw - 36px));
-  box-shadow: 0 20px 100px #18302255;
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
 }
 .result-icon {
   color: #a48e58;
@@ -1626,6 +1664,7 @@ button:disabled {
   font-size: 37px;
   line-height: 1.2;
   margin: 17px 0;
+  color: var(--ink);
 }
 .result-card p {
   font-size: 12px;
@@ -1633,34 +1672,62 @@ button:disabled {
   color: var(--quiet);
   margin-bottom: 28px;
 }
+.result-card.game-dialog .duel-reward {
+  color: #f0e4c5;
+  background: #d4be880d;
+  border-color: #c5b38347;
+}
+.result-card.game-dialog .duel-victory-progress {
+  color: var(--quiet);
+}
+.result-actions {
+  display: grid;
+  gap: 10px;
+}
+.result-actions .practice-replay {
+  margin-bottom: 0;
+}
 .own .attacking {
-  animation: lunge-right 0.42s ease-in-out;
+  animation: lunge-right 0.52s ease-in-out;
   z-index: 3;
 }
 .enemy .attacking {
-  animation: lunge-left 0.42s ease-in-out;
+  animation: lunge-left 0.52s ease-in-out;
   z-index: 3;
 }
 .taking-hit,
 .hero-hit {
-  animation: take-hit 0.42s ease-out;
+  animation: take-hit 0.4s 0.26s ease-out;
 }
 .spawning {
-  animation: spawn 0.3s ease-out;
+  animation: spawn 0.42s ease-out;
 }
 .dying {
-  animation: die 0.23s ease-out forwards;
+  animation: die 0.38s ease-out forwards;
+}
+.combat-effects {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
 }
 .damage-float {
   position: absolute;
-  top: 13px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #ab5748;
-  text-shadow: 0 1px 4px white;
-  font-weight: 700;
-  font-size: 23px;
-  animation: damage 0.42s ease-out forwards;
+  transform: translate(-50%, -50%);
+  padding: 5px 13px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #632e24c4, #632e2400 72%);
+  color: #fff1d0;
+  font:
+    900 clamp(30px, 3.4vw, 54px)/1.1 "Avenir Next",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px #71352b;
+  text-shadow:
+    0 2px 0 #54271e,
+    0 4px 10px #25170ed9;
+  animation: damage var(--damage-duration) ease-out forwards;
   pointer-events: none;
 }
 @keyframes lunge-right {
@@ -1707,13 +1774,22 @@ button:disabled {
   }
 }
 @keyframes damage {
-  from {
-    opacity: 1;
-    margin-top: 7px;
-  }
-  to {
+  0% {
     opacity: 0;
-    margin-top: -22px;
+    transform: translate(-50%, -30%) scale(0.75);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+  24%,
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -110%) scale(0.96);
   }
 }
 @media (max-width: 1100px) {
@@ -1723,32 +1799,12 @@ button:disabled {
   .catalog-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .hand-and-actions {
-    grid-template-columns: 1fr 180px;
-    gap: 16px;
-  }
-  .player-hand {
-    gap: 8px;
-  }
-  .player-hand .creature-card {
-    width: 114px;
-  }
-  .hero-piles {
-    display: none;
-  }
   .home-intro {
     grid-template-columns: 1fr;
     gap: 30px;
   }
 }
 @media (max-width: 760px) {
-  .practice-banner {
-    padding: 12px;
-    gap: 10px;
-  }
-  .practice-badge {
-    display: none;
-  }
   .header-inner {
     padding: 0 18px;
     height: 65px;
@@ -1873,52 +1929,34 @@ button:disabled {
   .sylve-footer > span:nth-child(2) {
     display: none;
   }
-  .game-room {
-    padding: 11px 14px;
-  }
-  .game-toolbar > .eyebrow {
-    font-size: 7px;
-    letter-spacing: 1px;
+  .game-tools {
+    right: max(12px, env(safe-area-inset-right));
   }
   .duel-status {
     font-size: 10px;
-    padding: 12px 0;
-  }
-  .hand-and-actions {
-    grid-template-columns: 1fr;
-    gap: 0;
+    gap: 7px;
+    padding: 8px 11px;
   }
   .hand-area {
-    padding: 14px 12px 4px;
+    left: max(12px, env(safe-area-inset-left));
+    padding: 8px 12px;
+    gap: 12px;
   }
-  .hand-heading > div {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+  .hand-deck {
+    width: 28px;
   }
-  .hand-heading .small {
-    font-size: 9px;
+  .player-hand .card-level {
+    bottom: 4px;
+    padding: 2px 4px;
+    font-size: 7px;
   }
-  .player-hand {
-    gap: 8px;
+  .hero-figure > .stat-badge {
+    width: 36px;
+    height: 36px;
+    top: -18px;
   }
-  .player-hand .creature-card {
-    width: 110px;
-  }
-  .turn-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin: 7px 0 13px;
-  }
-  .turn-actions .sylve-button {
-    width: auto;
-  }
-  .turn-actions .small {
-    display: none;
-  }
-  .result-overlay {
-    top: 65px;
+  .hero-figure > .stat-badge strong {
+    font-size: 22px;
   }
   .card-details-layout {
     gap: 16px;
@@ -1934,8 +1972,26 @@ button:disabled {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
-  .details-deck {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 560px) {
+  .game-tools {
+    bottom: calc(
+      var(--hand-card-width) * 4 / 3 + 44px + env(safe-area-inset-bottom)
+    );
+  }
+  .game-dialog > [data-slot="dialog-body"] {
+    padding: 22px;
+  }
+}
+@media (max-aspect-ratio: 4 / 5) {
+  .arena::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("/art/duel-arena-overhead.webp") center / cover no-repeat;
+  }
+  .arena-ground image {
+    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1945,5 +2001,9 @@ button:disabled {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  .damage-float {
+    animation: none;
+    opacity: 1;
   }
 }

@@ -137,7 +137,9 @@ export async function saveTransition(
   ) {
     if (game.mode === "solo") {
       if (state.activePlayer === 1)
-        await ctx.scheduler.runAfter(10_000, internal.games.soloTurnFallback, {
+        // A full board can take twenty seconds to animate before the client
+        // asks the computer to act. Keep the recovery path behind playback.
+        await ctx.scheduler.runAfter(30_000, internal.games.soloTurnFallback, {
           gameId,
           expectedTurn: state.turn,
         });

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { GameEvent, GameView } from "@sylve/game";
+import { COMBAT_TIMING } from "./combat-timing";
 
 type View = GameView & { events: GameEvent[] };
 
@@ -20,25 +21,36 @@ export function useCombatPlayback(latest: View | undefined) {
     if (!pending.length) {
       setDisplay(latest);
       setPlaying(false);
+      setEvent(null);
       return;
     }
     setPlaying(true);
     const timers: number[] = [];
     let delay = 0;
+    let effectsEnd = 0;
     for (const entry of pending) {
       timers.push(window.setTimeout(() => setEvent(entry), delay));
       const duration =
         entry.type === "attack"
-          ? 420
+          ? COMBAT_TIMING.attack
           : entry.type === "death"
-            ? 220
-            : entry.type === "summon" || entry.type === "withdraw"
-              ? 260
-              : 0;
-      delay += duration;
+            ? COMBAT_TIMING.death
+            : entry.type === "summon"
+              ? COMBAT_TIMING.summon
+              : entry.type === "withdraw"
+                ? COMBAT_TIMING.withdraw
+                : 0;
+      const commitAt =
+        delay +
+        (entry.type === "summon"
+          ? 0
+          : entry.type === "attack"
+            ? COMBAT_TIMING.impact
+            : duration);
+      if (entry.type === "attack")
+        effectsEnd = Math.max(effectsEnd, commitAt + COMBAT_TIMING.damage);
       timers.push(
         window.setTimeout(() => {
-          last.current = entry.seq;
           setDisplay((previous) => {
             if (!previous) return latest;
             if (entry.type === "turn" || entry.type === "victory")
@@ -80,16 +92,25 @@ export function useCombatPlayback(latest: View | undefined) {
             });
             return { ...previous, players };
           });
+        }, commitAt),
+      );
+      delay += duration;
+      timers.push(
+        window.setTimeout(() => {
+          last.current = entry.seq;
         }, delay),
       );
     }
     timers.push(
-      window.setTimeout(() => {
-        setDisplay(latest);
-        setPlaying(false);
-        setEvent(null);
-        last.current = latest.sequence;
-      }, delay + 40),
+      window.setTimeout(
+        () => {
+          setDisplay(latest);
+          setPlaying(false);
+          setEvent(null);
+          last.current = latest.sequence;
+        },
+        Math.max(delay + COMBAT_TIMING.settle, effectsEnd),
+      ),
     );
     return () => timers.forEach(window.clearTimeout);
   }, [latest]);

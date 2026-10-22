@@ -7,11 +7,18 @@ import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
 import { useEffect, useState } from "react";
+import { COMBAT_TIMING } from "@/components/game/combat-timing";
+import { optimisticallyPlayCard } from "@/lib/optimistic-game";
 
 export const Route = createFileRoute("/game/$gameId")({
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
-  head: () => ({ meta: [{ title: "Le duel — Sylve" }] }),
+  head: () => ({
+    meta: [{ title: "Le duel — Sylve" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/duel-arena-overhead.webp" },
+    ],
+  }),
   component: GamePage,
   errorComponent: () => (
     <main className="sylve-page">
@@ -29,7 +36,9 @@ function GamePage() {
   const { gameId: rawId } = Route.useParams();
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
-  const playCard = useMutation(api.games.playCard);
+  const playCard = useMutation(api.games.playCard).withOptimisticUpdate(
+    optimisticallyPlayCard,
+  );
   const withdrawCard = useMutation(api.games.withdrawCard);
   const endTurn = useMutation(api.games.endTurn);
   const surrender = useMutation(api.games.surrender);
@@ -46,7 +55,7 @@ function GamePage() {
     const expectedTurn = data.turn;
     const timer = window.setTimeout(() => {
       void soloTurn({ gameId, expectedTurn }).catch(showGameError);
-    }, 650);
+    }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
   }, [
     data?.mode,
