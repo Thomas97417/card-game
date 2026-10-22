@@ -11,7 +11,13 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { DECK_SIZE, type CardRarity } from "@sylve/game";
-import { CHEST_LABELS } from "@sylve/game/progression";
+import {
+  CHEST_LABELS,
+  CHEST_SLOTS,
+  LOCKED_CHEST_SLOTS,
+  VICTORY_CHEST_WINS,
+  type VictoryChestProgress,
+} from "@sylve/game/progression";
 
 export interface LobbyChest {
   _id: string;
@@ -33,6 +39,7 @@ export function PlayLobby({
   deckSize,
   collectionSize,
   chests,
+  victoryChest = { wins: 0, requiredWins: VICTORY_CHEST_WINS, cycle: 0 },
   now,
   ready,
   busy,
@@ -43,11 +50,13 @@ export function PlayLobby({
   onPrivate,
   onCancelQueue,
   onOpenChest,
+  onOpenVictoryChest,
   children,
 }: {
   deckSize: number;
   collectionSize: number;
   chests: LobbyChest[];
+  victoryChest?: VictoryChestProgress;
   now: number;
   ready: boolean;
   busy: boolean;
@@ -58,9 +67,11 @@ export function PlayLobby({
   onPrivate: () => void;
   onCancelQueue: () => void;
   onOpenChest: (chest: LobbyChest) => void;
+  onOpenVictoryChest: () => void;
   children?: ReactNode;
 }) {
-  const full = chests.length >= 4;
+  const full = chests.length >= CHEST_SLOTS;
+  const victoryReady = victoryChest.wins >= victoryChest.requiredWins;
   return (
     <main className="play-lobby" aria-busy={!ready}>
       <img
@@ -176,12 +187,14 @@ export function PlayLobby({
             {full ? (
               <>
                 <Hourglass size={15} />
-                Emplacements pleins : le prochain coffre sera perdu.
+                Emplacements pleins : le prochain coffre de combat sera perdu.
+                Les victoires comptent pour le coffre commun.
               </>
             ) : (
               <>
                 <Sparkles size={15} />
-                Chaque victoire solo ou publique rapporte un coffre.
+                Le solo rapporte des coffres. Trois victoires ouvrent le coffre
+                commun.
               </>
             )}
           </p>
@@ -190,10 +203,60 @@ export function PlayLobby({
       <section className="play-treasures" aria-label="Tes coffres">
         <div className="play-treasures-heading">
           <h2>Trésors de victoire</h2>
-          <span>{chests.length} / 4 emplacements</span>
+          <span>
+            {CHEST_SLOTS + 1} ouverts · {LOCKED_CHEST_SLOTS} verrouillés
+            {chests.length > CHEST_SLOTS
+              ? ` · ${chests.length - CHEST_SLOTS} à récupérer ensuite`
+              : ""}
+          </span>
         </div>
         <div className="play-chest-row">
-          {Array.from({ length: 4 }, (_, slot) => {
+          <button
+            type="button"
+            className={`play-chest play-victory-chest ${victoryReady ? "is-ready" : ""}`}
+            data-rarity="common"
+            disabled={!ready || busy || !victoryReady}
+            onClick={onOpenVictoryChest}
+            aria-label={`Coffre commun de victoires, ${victoryReady ? "ouvrir" : `${victoryChest.wins} sur ${victoryChest.requiredWins} victoires`}`}
+          >
+            <span className="play-chest-rarity">Commun · Victoires</span>
+            <img
+              src="/art/chests/common.webp"
+              alt=""
+              width={512}
+              height={512}
+              draggable={false}
+            />
+            <span
+              className="play-victory-progress"
+              role="progressbar"
+              aria-label="Victoires pour le coffre commun"
+              aria-valuenow={victoryChest.wins}
+              aria-valuemin={0}
+              aria-valuemax={victoryChest.requiredWins}
+            >
+              {Array.from({ length: victoryChest.requiredWins }, (_, index) => (
+                <span
+                  key={index}
+                  className={index < victoryChest.wins ? "is-earned" : ""}
+                />
+              ))}
+            </span>
+            <span className="play-chest-action">
+              {victoryReady ? (
+                <>
+                  <Sparkles size={14} />
+                  Ouvrir
+                </>
+              ) : (
+                <>
+                  <Swords size={13} />
+                  {victoryChest.wins}/{victoryChest.requiredWins} victoires
+                </>
+              )}
+            </span>
+          </button>
+          {Array.from({ length: CHEST_SLOTS }, (_, slot) => {
             const chest = chests.find((chest) => chest.slot === slot);
             const remaining = chest ? chest.unlockAt - now : 0;
             return chest ? (
@@ -234,9 +297,9 @@ export function PlayLobby({
               <div
                 key={slot}
                 className="play-chest play-chest-empty"
-                aria-label={`Emplacement ${slot + 1} libre`}
+                aria-label={`Emplacement ${slot + 2} libre`}
               >
-                <span className="play-chest-number">0{slot + 1}</span>
+                <span className="play-chest-number">0{slot + 2}</span>
                 <Swords size={30} />
                 <span>
                   Une victoire,
@@ -246,6 +309,27 @@ export function PlayLobby({
               </div>
             );
           })}
+          {Array.from({ length: LOCKED_CHEST_SLOTS }, (_, index) => (
+            <div
+              className="play-chest play-chest-locked"
+              key={`locked-${index}`}
+              role="img"
+              aria-label={`Emplacement ${CHEST_SLOTS + index + 2} verrouillé par une chaîne`}
+            >
+              <span className="play-chest-number">
+                0{CHEST_SLOTS + index + 2}
+              </span>
+              <img
+                className="play-slot-chain"
+                src="/art/ui/slot-chains.webp"
+                alt=""
+                width={512}
+                height={512}
+                draggable={false}
+              />
+              <span className="play-chest-action">Verrouillé</span>
+            </div>
+          ))}
         </div>
       </section>
       {children}

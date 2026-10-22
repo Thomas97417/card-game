@@ -304,6 +304,12 @@
     serif;
   margin-bottom: 4px;
 }
+.duel-victory-progress {
+  font-size: 12px;
+  color: #91b17f;
+  line-height: 1.6;
+  margin: 12px 0 18px;
+}
 @keyframes reveal-card {
   from {
     opacity: 0;

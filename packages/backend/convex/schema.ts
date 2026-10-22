@@ -11,6 +11,15 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  victoryChests: defineTable({
+    ownerId: v.string(),
+    wins: v.number(),
+    cycle: v.number(),
+    contents: v.array(lootValidator),
+    lastClaim: v.optional(
+      v.object({ cycle: v.number(), reveals: v.array(revealValidator) }),
+    ),
+  }).index("by_owner", ["ownerId"]),
   collection: defineTable({
     ownerId: v.string(),
     variantId: v.string(),
@@ -50,6 +59,7 @@ export default defineSchema({
         status: v.union(v.literal("awarded"), v.literal("lost")),
         chestId: v.optional(v.id("chests")),
         rarity: v.optional(rarityValidator),
+        victoryWins: v.optional(v.number()),
       }),
     ),
     status: v.union(

@@ -8,14 +8,16 @@ Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en p
 
 ### Salon et trésors
 
-`/play` est un salon illustré en plein écran : le héros à gauche ouvre le deck, les boutons de combat sont à droite et quatre emplacements de coffres occupent le bas. Les illustrations originales reprennent l’univers peint de Sylve.
+`/play` est un salon illustré en plein écran : le héros à gauche ouvre le deck, les boutons de combat sont à droite et sept emplacements de trésors occupent le bas. Le premier contient un coffre commun récurrent, les deux suivants accueillent les coffres de combat et les quatre derniers sont verrouillés par des chaînes. Les illustrations originales reprennent l’univers peint de Sylve.
 
 - **Combat solo** : affronte le Gardien mécanique avec ton deck et gagne des coffres. La partie est enregistrée sur Convex, reprend après actualisation, commence par le joueur humain et n’a pas de chronomètre. L’IA ne connaît que les informations visibles. Elle joue après les animations ; une relance serveur après dix secondes permet de poursuivre si le client disparaît.
 - **Duel public** : cherche un autre joueur. La présence en file est renouvelée toutes les quinze secondes et expire après quarante-cinq secondes d’absence. Le vainqueur gagne un coffre.
 - **Défi amical** : crée ou rejoins une invitation de huit caractères, valable dix minutes. Le lien retrouve sa destination après connexion. Ces parties ne rapportent pas de coffre.
 - **Entraînement local** : `/practice` reste accessible sans compte et sans récompenses. La session recommence à l’actualisation.
 
-Chaque victoire éligible attribue un coffre si une place est libre. Les délais démarrent automatiquement et en parallèle : **15 minutes, 1 heure, 3 heures ou 8 heures**, selon la rareté. Un coffre prêt continue d’occuper son emplacement jusqu’à son ouverture. Si les quatre places sont occupées au moment de la victoire, **le coffre est perdu**. Le salon et le résultat du combat l’indiquent.
+Le **coffre commun tout à gauche se déverrouille après trois victoires**, y compris contre le Gardien mécanique en combat solo. Son bouton « Ouvrir » permet de récupérer les cartes, puis le compteur repart à zéro pour un nouveau cycle de trois victoires. Il n’a aucun délai et progresse même si les places de combat sont pleines. Le compteur reste à 3/3 tant que le coffre n’a pas été ouvert.
+
+Chaque victoire éligible attribue aussi un coffre de combat si une des deux places est libre. Les délais démarrent automatiquement et en parallèle : **15 minutes, 1 heure, 3 heures ou 8 heures**, selon la rareté. Un coffre prêt continue d’occuper son emplacement jusqu’à son ouverture. Si les deux places sont occupées au moment de la victoire, **ce coffre de combat est perdu**. Le salon et le résultat du combat l’indiquent ; la victoire compte toujours pour le coffre commun.
 
 L’ouverture révèle les lots reçus, les nouvelles variantes et les améliorations disponibles. Le contenu est tiré côté serveur à l’attribution, puis conservé jusqu’à l’ouverture. Il reste caché avant celle-ci. Une ouverture répétée ne crédite jamais une deuxième fois ses exemplaires.
 

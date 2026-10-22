@@ -29,13 +29,17 @@ import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
-import { CHEST_LABELS } from "@sylve/game/progression";
+import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
 
 export type DuelData = GameView & {
   events: GameEvent[];
   mode?: "solo" | "public" | "private";
-  reward?: { status: "awarded" | "lost"; rarity?: CardRarity } | null;
+  reward?: {
+    status: "awarded" | "lost";
+    rarity?: CardRarity;
+    victoryWins?: number;
+  } | null;
 };
 interface DuelScreenProps {
   data: DuelData;
@@ -468,13 +472,22 @@ export function DuelScreen({
                   </>
                 ) : (
                   <span>
-                    <strong>Emplacements pleins</strong>Le coffre de cette
-                    victoire est perdu. Ouvre tes coffres pour libérer une
-                    place.
+                    <strong>Emplacements pleins</strong>Le coffre de combat est
+                    perdu. Ouvre tes coffres pour libérer une place.
                   </span>
                 )}
               </div>
             )}
+            {data.winner === data.me &&
+              data.reward?.victoryWins !== undefined && (
+                <p className="duel-victory-progress" role="status">
+                  Coffre commun : {data.reward.victoryWins}/{VICTORY_CHEST_WINS}{" "}
+                  victoires
+                  {data.reward.victoryWins >= VICTORY_CHEST_WINS
+                    ? " · Prêt à ouvrir dans le salon !"
+                    : " · Chaque victoire solo compte."}
+                </p>
+              )}
             {onRestart && (
               <button
                 className="sylve-button practice-replay"

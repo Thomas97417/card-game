@@ -1,6 +1,14 @@
 import { CATALOG, RARITIES, type CardRarity } from "./index";
 
-export const CHEST_SLOTS = 4;
+/** Two combat-chest slots, one recurring victory chest and four locked slots. */
+export const CHEST_SLOTS = 2;
+export const LOCKED_CHEST_SLOTS = 4;
+export const VICTORY_CHEST_WINS = 3;
+export interface VictoryChestProgress {
+  wins: number;
+  requiredWins: number;
+  cycle: number;
+}
 export const CHEST_LABELS: Record<CardRarity, string> = {
   common: "Commun",
   rare: "Rare",

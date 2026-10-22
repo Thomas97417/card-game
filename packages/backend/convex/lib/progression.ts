@@ -2,8 +2,11 @@ import { resolveCard, validateDeck, type GameState } from "@sylve/game";
 import {
   CHEST_RULES,
   CHEST_SLOTS,
+  VICTORY_CHEST_WINS,
   chestLoot,
   rollChest,
+  type LootStack,
+  type LootReveal,
 } from "@sylve/game/progression";
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
@@ -40,6 +43,57 @@ export async function ownedDeck(
   );
 }
 
+export async function victoryChest(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+) {
+  return ctx.db
+    .query("victoryChests")
+    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+    .unique();
+}
+
+/** Both kinds of chest use exactly the same first-copy unlock and duplicate rules. */
+export async function grantLoot(
+  ctx: MutationCtx,
+  ownerId: string,
+  contents: readonly LootStack[],
+): Promise<LootReveal[]> {
+  const reveals: LootReveal[] = [];
+  for (const { variantId, count } of contents) {
+    const owned = await ownedCard(ctx, ownerId, variantId);
+    const copies = (owned?.copies ?? -1) + count;
+    if (owned) await ctx.db.patch(owned._id, { copies });
+    else
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId,
+        level: 1,
+        copies,
+      });
+    reveals.push({
+      variantId,
+      count,
+      isNew: !owned,
+      level: owned?.level ?? 1,
+      copies,
+    });
+  }
+  return reveals;
+}
+
+async function advanceVictoryChest(ctx: MutationCtx, ownerId: string) {
+  const chest = await victoryChest(ctx, ownerId);
+  if (chest && chest.wins >= VICTORY_CHEST_WINS) return VICTORY_CHEST_WINS;
+  const wins = (chest?.wins ?? 0) + 1;
+  const contents =
+    wins === VICTORY_CHEST_WINS ? chestLoot("common", Math.random) : [];
+  if (chest) await ctx.db.patch(chest._id, { wins, contents });
+  else
+    await ctx.db.insert("victoryChests", { ownerId, wins, cycle: 0, contents });
+  return wins;
+}
+
 /** Called in the same transaction as the victory: capacity and attribution cannot race. */
 export async function awardVictoryChest(
   ctx: MutationCtx,
@@ -54,6 +108,7 @@ export async function awardVictoryChest(
     return;
   const ownerId = state.players[state.winner]!.userId;
   if (game.mode === "solo" && ownerId !== game.hostId) return;
+  const victoryWins = await advanceVictoryChest(ctx, ownerId);
   const unopened = await ctx.db
     .query("chests")
     .withIndex("by_owner_status", (q) =>
@@ -61,7 +116,9 @@ export async function awardVictoryChest(
     )
     .collect();
   if (unopened.length >= CHEST_SLOTS) {
-    await ctx.db.patch(game._id, { reward: { ownerId, status: "lost" } });
+    await ctx.db.patch(game._id, {
+      reward: { ownerId, status: "lost", victoryWins },
+    });
     return;
   }
   const rarity = rollChest(Math.random);
@@ -80,6 +137,6 @@ export async function awardVictoryChest(
     contents: chestLoot(rarity, Math.random),
   });
   await ctx.db.patch(game._id, {
-    reward: { ownerId, status: "awarded", chestId, rarity },
+    reward: { ownerId, status: "awarded", chestId, rarity, victoryWins },
   });
 }

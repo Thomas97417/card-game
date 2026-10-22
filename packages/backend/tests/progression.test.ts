@@ -2,7 +2,7 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEFAULT_DECK, MAX_CARD_LEVEL, getCombatType } from "@sylve/game";
-import { CHEST_RULES } from "@sylve/game/progression";
+import { CHEST_RULES, CHEST_SLOTS } from "@sylve/game/progression";
 import { PRACTICE_DEADLINE } from "@sylve/game/practice";
 import { api, components, internal } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
@@ -311,13 +311,11 @@ describe("victoires, coffres et améliorations", () => {
       ).sort(),
     );
   });
-  it("runs four parallel timers, loses the fifth reward even if chests are ready and reuses a released slot", async () => {
+  it("runs two parallel timers, loses the third combat chest even if chests are ready and reuses a released slot", async () => {
     const { t, alice, deckId } = await fixture();
-    for (let i = 0; i < 4; i++) await winSolo(t, alice, deckId);
+    for (let i = 0; i < CHEST_SLOTS; i++) await winSolo(t, alice, deckId);
     const inventory = await alice.query(api.chests.list, {});
-    expect(inventory.chests.map((chest) => chest.slot).sort()).toEqual([
-      0, 1, 2, 3,
-    ]);
+    expect(inventory.chests.map((chest) => chest.slot).sort()).toEqual([0, 1]);
     const stored = await t.run((ctx) => ctx.db.query("chests").collect());
     expect(new Set(stored.map((chest) => chest.awardedAt)).size).toBe(1);
     for (const chest of stored)
@@ -329,7 +327,9 @@ describe("victoires, coffres et améliorations", () => {
     expect(
       (await alice.query(api.games.get, { gameId: lostGame })).reward?.status,
     ).toBe("lost");
-    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(4);
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(
+      CHEST_SLOTS,
+    );
     await expect(
       alice.mutation(api.games.surrender, { gameId: lostGame }),
     ).rejects.toThrow("terminée");
@@ -338,7 +338,7 @@ describe("victoires, coffres et améliorations", () => {
     });
     await winSolo(t, alice, deckId);
     const next = (await alice.query(api.chests.list, {})).chests;
-    expect(next).toHaveLength(4);
+    expect(next).toHaveLength(CHEST_SLOTS);
     expect(
       next.some(
         (chest) =>
@@ -461,5 +461,151 @@ describe("solo persistant", () => {
     expect(restored.turn).toBe(3);
     expect(restored.activePlayer).toBe(0);
     expect(restored.players[1]!.board).toHaveLength(1);
+  });
+});
+
+describe("coffre commun de trois victoires", () => {
+  it("counts solo wins through full slots, claims once and restarts successive cycles", async () => {
+    const { t, alice, deckId } = await fixture();
+    const bob = await player(t, "bob");
+    expect((await alice.query(api.chests.list, {})).victoryChest).toEqual({
+      wins: 0,
+      requiredWins: 3,
+      cycle: 0,
+    });
+    await expect(
+      alice.mutation(api.chests.openVictory, { cycle: 0 }),
+    ).rejects.toThrow("trois victoires");
+    let lastGame: Id<"games"> | undefined;
+    for (let wins = 1; wins <= 3; wins++) {
+      lastGame = await winSolo(t, alice, deckId);
+      const inventory = await alice.query(api.chests.list, {});
+      expect(inventory.victoryChest).toEqual({
+        wins,
+        requiredWins: 3,
+        cycle: 0,
+      });
+      expect(inventory.victoryChest).not.toHaveProperty("contents");
+      expect(
+        (await alice.query(api.games.get, { gameId: lastGame })).reward
+          ?.victoryWins,
+      ).toBe(wins);
+      if (wins < 3)
+        await expect(
+          alice.mutation(api.chests.openVictory, { cycle: 0 }),
+        ).rejects.toThrow("trois victoires");
+    }
+    expect(
+      (await alice.query(api.games.get, { gameId: lastGame! })).reward?.status,
+    ).toBe("lost");
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(2);
+    await expect(
+      alice.mutation(api.games.surrender, { gameId: lastGame! }),
+    ).rejects.toThrow("terminée");
+    await expect(
+      bob.mutation(api.chests.openVictory, { cycle: 0 }),
+    ).rejects.toThrow("trois victoires");
+    const row = (
+      await t.run((ctx) => ctx.db.query("victoryChests").collect())
+    )[0]!;
+    const frozenContents = row.contents;
+    await winSolo(t, alice, deckId);
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(3);
+    expect((await t.run((ctx) => ctx.db.get(row._id)))!.contents).toEqual(
+      frozenContents,
+    );
+    await t.run((ctx) =>
+      ctx.db.patch(row._id, {
+        contents: [
+          { variantId: "guardian:common", count: 5 },
+          { variantId: "fox:common", count: 1 },
+        ],
+      }),
+    );
+    const claims = await Promise.all([
+      alice.mutation(api.chests.openVictory, { cycle: 0 }),
+      alice.mutation(api.chests.openVictory, { cycle: 0 }),
+    ]);
+    expect(claims[0]).toEqual(claims[1]);
+    expect(claims[0]!.rarity).toBe("common");
+    expect(
+      claims[0]!.reveals.find((item) => item.variantId === "fox:common"),
+    ).toMatchObject({ isNew: true, copies: 0 });
+    const owned = await alice.query(api.collection.list, {});
+    expect(
+      owned.find((entry) => entry.card.id === "guardian:common")!.copies,
+    ).toBe(5);
+    expect((await alice.query(api.chests.list, {})).victoryChest).toEqual({
+      wins: 0,
+      requiredWins: 3,
+      cycle: 1,
+    });
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(2);
+    await winSolo(t, alice, deckId);
+    await alice.mutation(api.chests.openVictory, { cycle: 0 });
+    expect(await alice.query(api.collection.list, {})).toEqual(owned);
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(1);
+    await winSolo(t, alice, deckId);
+    await winSolo(t, alice, deckId);
+    await alice.mutation(api.chests.openVictory, { cycle: 1 });
+    expect((await alice.query(api.chests.list, {})).victoryChest).toEqual({
+      wins: 0,
+      requiredWins: 3,
+      cycle: 2,
+    });
+    await expect(
+      alice.mutation(api.chests.openVictory, { cycle: 0 }),
+    ).rejects.toThrow("trois victoires");
+  });
+  it("ignores friendly victories and defeats but counts public victories", async () => {
+    const { t, alice, deckId } = await fixture();
+    const bob = await player(t, "bob");
+    const bobDeck = await bob.mutation(api.decks.ensureStarter, {});
+    const room = await alice.mutation(api.games.createPrivate, { deckId });
+    await bob.mutation(api.games.joinPrivate, {
+      code: room.code,
+      deckId: bobDeck,
+    });
+    await bob.mutation(api.games.surrender, { gameId: room.gameId });
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(0);
+    await alice.mutation(api.matchmaking.enqueue, { deckId });
+    const matched = await bob.mutation(api.matchmaking.enqueue, {
+      deckId: bobDeck,
+    });
+    await bob.mutation(api.games.surrender, { gameId: matched.gameId! });
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(1);
+    expect((await bob.query(api.chests.list, {})).victoryChest.wins).toBe(0);
+    const solo = await alice.mutation(api.games.createSolo, { deckId });
+    await alice.mutation(api.games.surrender, { gameId: solo });
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(1);
+  });
+  it("keeps existing chests accessible when legacy slots exceed the new capacity", async () => {
+    const { t, alice, deckId } = await fixture();
+    await winSolo(t, alice, deckId);
+    await t.run(async (ctx) => {
+      const old = (await ctx.db.query("chests").collect())[0]!;
+      await ctx.db.patch(old._id, { slot: 3, unlockAt: 0 });
+      const values = {
+        ownerId: old.ownerId,
+        gameId: old.gameId,
+        rarity: old.rarity,
+        status: "unopened" as const,
+        awardedAt: old.awardedAt,
+        unlockAt: 0,
+        contents: old.contents,
+      };
+      await ctx.db.insert("chests", { ...values, slot: 2 });
+      await ctx.db.insert("chests", { ...values, slot: 1 });
+    });
+    const legacy = await alice.query(api.chests.list, {});
+    expect(legacy.chests.map((chest) => chest.slot)).toEqual([0, 1, 2]);
+    await winSolo(t, alice, deckId);
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(3);
+    await alice.mutation(api.chests.open, { chestId: legacy.chests[0]!._id });
+    expect(
+      (await alice.query(api.chests.list, {})).chests.map(
+        (chest) => chest.slot,
+      ),
+    ).toEqual([0, 1]);
   });
 });

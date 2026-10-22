@@ -50,6 +50,7 @@ function PlayPage() {
   const cancelQueue = useMutation(api.matchmaking.cancel);
   const heartbeat = useMutation(api.matchmaking.heartbeat);
   const openChest = useMutation(api.chests.open);
+  const openVictory = useMutation(api.chests.openVictory);
   const [code, setCode] = useState(invite ?? "");
   const [busy, setBusy] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -137,6 +138,7 @@ function PlayPage() {
       deckSize={deck?.cardIds.length ?? 0}
       collectionSize={collection?.length ?? 0}
       chests={treasures?.chests ?? []}
+      victoryChest={treasures?.victoryChest}
       now={now}
       ready={ready}
       busy={busy}
@@ -157,6 +159,14 @@ function PlayPage() {
         void action(() => cancelQueue());
       }}
       onOpenChest={open}
+      onOpenVictoryChest={() => {
+        if (treasures)
+          void action(async () => {
+            setReward(
+              await openVictory({ cycle: treasures.victoryChest.cycle }),
+            );
+          });
+      }}
     >
       <Dialog open={privateOpen} onOpenChange={setPrivateOpen}>
         <DialogContent className="friendly-dialog">

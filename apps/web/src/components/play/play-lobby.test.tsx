@@ -29,6 +29,7 @@ function setup(overrides: Partial<Parameters<typeof PlayLobby>[0]> = {}) {
     onPrivate: vi.fn(),
     onCancelQueue: vi.fn(),
     onOpenChest: vi.fn(),
+    onOpenVictoryChest: vi.fn(),
   };
   render(
     <PlayLobby
@@ -58,13 +59,19 @@ describe("le salon de combat", () => {
     expect(
       screen.getByRole("link", { name: /Mon deck/ }).getAttribute("href"),
     ).toBe("/decks");
-    expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(4);
+    expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(2);
+    expect(
+      screen.getAllByRole("img", { name: /verrouillé par une chaîne/ }),
+    ).toHaveLength(4);
+    expect(
+      screen.getByRole("button", {
+        name: "Coffre commun de victoires, 0 sur 3 victoires",
+      }),
+    ).toBeTruthy();
   });
-  it("shows four independent chest timers and allows only a ready chest to open", () => {
-    const actions = setup({ chests });
+  it("shows two independent combat chest timers and allows only a ready chest to open", () => {
+    const actions = setup({ chests: chests.slice(0, 2) });
     expect(screen.getByText("1:00:00")).toBeTruthy();
-    expect(screen.getByText("3:00:00")).toBeTruthy();
-    expect(screen.getByText("8:00:00")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Coffre Commun, ouvrir" }),
     );
@@ -75,12 +82,44 @@ describe("le salon de combat", () => {
   it("warns about lost rewards while permitting combat with full slots", () => {
     setup({ chests });
     expect(screen.getByRole("status").textContent).toContain(
-      "le prochain coffre sera perdu",
+      "le prochain coffre de combat sera perdu",
     );
     expect(
       (screen.getByRole("button", { name: /Combat solo/ }) as HTMLButtonElement)
         .disabled,
     ).toBe(false);
+  });
+  it("opens the left common chest only at three wins and starts the next cycle at zero", () => {
+    const actions = setup({
+      victoryChest: { wins: 3, requiredWins: 3, cycle: 1 },
+    });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Coffre commun de victoires, ouvrir",
+      }),
+    );
+    expect(actions.onOpenVictoryChest).toHaveBeenCalledOnce();
+    expect(actions.onOpenChest).not.toHaveBeenCalled();
+    expect(
+      screen
+        .getByRole("progressbar", { name: "Victoires pour le coffre commun" })
+        .getAttribute("aria-valuenow"),
+    ).toBe("3");
+  });
+  it("keeps the left chest locked at two wins and retains progress when combat slots are full", () => {
+    const actions = setup({
+      chests: chests.slice(0, 2),
+      victoryChest: { wins: 2, requiredWins: 3, cycle: 0 },
+    });
+    const bonus = screen.getByRole("button", {
+      name: "Coffre commun de victoires, 2 sur 3 victoires",
+    });
+    expect((bonus as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(bonus);
+    expect(actions.onOpenVictoryChest).not.toHaveBeenCalled();
+    expect(screen.getByRole("status").textContent).toContain(
+      "Les victoires comptent pour le coffre commun",
+    );
   });
   it("locks competing actions while matchmaking and preserves cancellation", () => {
     const actions = setup({ queued: true, locked: true });

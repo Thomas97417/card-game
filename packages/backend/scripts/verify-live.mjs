@@ -285,6 +285,8 @@ try {
     earlyOpeningBlocked = true;
   }
   check(earlyOpeningBlocked, "Opening before the server deadline is rejected");
+  const soloProgressBefore = (await clients[0].query(api.chests.list, {}))
+    .victoryChest.wins;
   const soloId = await clients[0].mutation(api.games.createSolo, {
     deckId: deckIds[0],
   });
@@ -322,6 +324,44 @@ try {
     solo.status === "finished" &&
       (solo.winner !== 0 || solo.reward?.status === "awarded"),
     `A complete server solo ends and grants its eligible reward (${soloTurns} turns)`,
+  );
+  let victory = (await clients[0].query(api.chests.list, {})).victoryChest;
+  check(
+    victory.wins ===
+      Math.min(3, soloProgressBefore + (solo.winner === 0 ? 1 : 0)),
+    "The solo result updates the recurring common chest exactly once",
+  );
+  while (victory.wins < 3) {
+    await clients[0].mutation(api.matchmaking.enqueue, { deckId: deckIds[0] });
+    const extra = await clients[1].mutation(api.matchmaking.enqueue, {
+      deckId: deckIds[1],
+    });
+    await clients[1].mutation(api.games.surrender, { gameId: extra.gameId });
+    victory = (await clients[0].query(api.chests.list, {})).victoryChest;
+  }
+  const slotsBefore = (await clients[0].query(api.chests.list, {})).chests
+    .length;
+  const bonus = await clients[0].mutation(api.chests.openVictory, {
+    cycle: victory.cycle,
+  });
+  const reset = (await clients[0].query(api.chests.list, {})).victoryChest;
+  check(
+    bonus.rarity === "common" &&
+      bonus.reveals.length > 0 &&
+      reset.wins === 0 &&
+      reset.cycle === victory.cycle + 1,
+    "Three victories open a common chest and restart the counter immediately",
+  );
+  const afterClaim = JSON.stringify(
+    await clients[0].query(api.collection.list, {}),
+  );
+  await clients[0].mutation(api.chests.openVictory, { cycle: victory.cycle });
+  check(
+    JSON.stringify(await clients[0].query(api.collection.list, {})) ===
+      afterClaim &&
+      (await clients[0].query(api.chests.list, {})).chests.length ===
+        slotsBefore,
+    "Retrying a victory-chest claim neither duplicates cards nor changes combat slots",
   );
   if (process.argv.includes("--keep")) {
     const room = await clients[0].mutation(api.games.createPrivate, {

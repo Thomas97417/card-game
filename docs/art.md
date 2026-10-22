@@ -138,10 +138,16 @@ Constraints: actual alpha-transparent background, including inside the bow. No c
 
 ## Salon et coffres de progression
 
-Le salon `/play` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les quatre emplacements de trésors sont des éléments HTML superposés.
+Le salon `/play` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
 
 Les quatre sprites `apps/web/public/art/chests/{common,rare,epic,legendary}.webp` ont chacun été générés séparément avec ImageGen et une transparence demandée. Ils partagent une vue de trois quarts : bois et fer, métal bleu, cristaux violets puis or lumineux. Le canal alpha des quatre WebP a été vérifié avec `webpinfo`. Les coffres sont encodés à 512 × 512 px, qualité 90 ; le décor à 1672 × 941 px, qualité 88, avec `cwebp`. Aucun fallback CLI de génération n’a été utilisé.
 
 Les cinq prompts exacts sont conservés dans [art-prompts-progression.json](art-prompts-progression.json). Les PNG originaux restent dans `/Users/thomas/.codex/generated_images/01a164cc-a67f-78d2-9443-a99ddbff74c8/`. Les images consommées par le jeu sont toutes copiées dans le dépôt. Les raretés et niveaux des cartes utilisent les portraits existants avec une bordure et un badge HTML ; aucune statistique n’est incrustée dans les images.
 
 Le salon a été contrôlé dans le navigateur à 1440 × 900 px et 390 × 844 px, ainsi que la fiche d’amélioration sur mobile. Aperçus : [ordinateur](play-validation.jpg), [mobile](play-mobile-validation.jpg), [amélioration](card-upgrade-mobile-validation.jpg). Les commandes, le retour de focus des fenêtres et les cartes ont été vérifiés ; aucune erreur n’a été relevée dans la console du navigateur.
+
+### Emplacements enchaînés
+
+`apps/web/public/art/ui/slot-chains.webp` est une chaîne croisée en X avec un cadenas fermé, générée séparément avec l’outil intégré **ImageGen**. Le fond est réellement transparent et le canal alpha a été vérifié avec `webpinfo`. L’image est encodée en WebP de 512 × 512 px, qualité 90. Le prompt exact est enregistré dans [art-prompts-slot-chains.json](art-prompts-slot-chains.json). Les quatre emplacements verrouillés du salon utilisent cette même illustration ; le premier emplacement affiche toujours le coffre commun de trois victoires.
+
+Cette disposition à sept emplacements a été contrôlée à 1440 × 900 px et 390 × 844 px, y compris le défilement horizontal jusqu’aux quatre emplacements enchaînés sur mobile. Aperçus : [ordinateur](play-chained-slots-validation.jpg), [mobile](play-chained-slots-mobile-validation.jpg).
