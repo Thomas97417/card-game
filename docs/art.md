@@ -37,7 +37,7 @@ Le décor plein écran de `/decks` est enregistré dans `apps/web/public/art/dec
 
 Le deck enregistré s’ouvre en haut et les créatures qui n’y figurent pas composent la collection en dessous. Glisser une carte de la collection sur une carte du deck remplace cette dernière ; glisser deux cartes du deck échange leur position. La composition conserve huit cartes uniques. Une sélection suivie d’un clic ou d’une activation au clavier offre la même interaction. Les filtres à icônes en bas (« Toutes », « Corps à corps », « À distance ») s’appliquent à la collection. Les changements de cartes sont enregistrés automatiquement, avec reprise après erreur réseau. Chaque joueur dispose d’un seul deck ; les contrôles de création, de suppression et de sélection ont été retirés.
 
-Un [aperçu de l’atelier](decks-validation.webp) est conservé après vérification dans le navigateur à 1599 × 1314 px. Le rendu a aussi été contrôlé à 390 × 844 px, avec défilement horizontal des cartes. Le contenu commence juste sous le bord de la table, en tenant compte du recadrage du décor en `cover`. L’en-tête conserve le titre principal et le retour au refuge.
+Le rendu actuel est conservé dans les aperçus [ordinateur](ui-deck-filters-validation.jpg) à 1440 × 900 px et [mobile](ui-deck-filters-mobile-validation.jpg) à 390 × 844 px, avec défilement horizontal des cartes. Le contenu commence juste sous le bord de la table, en tenant compte du recadrage du décor en `cover`. L’en-tête conserve le retour au refuge et le solde d’or ; l’inscription « L’atelier des gardiens » a été retirée.
 
 Prompt final :
 
@@ -159,3 +159,13 @@ Cette disposition à sept emplacements a été contrôlée à 1440 × 900 px et 
 Le canal alpha du WebP a été vérifié avec `webpinfo`. Le fichier final mesure 384 × 384 px, environ 46 Ko, encodé avec `cwebp` en qualité 90. Le prompt exact est conservé dans [art-prompts-currency.json](art-prompts-currency.json). Le PNG original reste dans le dossier de génération local ; le fichier consommé par le jeu est dans le dépôt. Aucun fallback CLI de génération n’a été utilisé.
 
 La présentation a été contrôlée dans un aperçu local avec des données de démonstration, à 1440 × 900 px et 390 × 844 px. Le solde, les deux récompenses, le coût du prochain niveau et le blocage en cas d’or insuffisant ont été vérifiés. Aperçus : [salon](gold-lobby-validation.webp), [récompenses](gold-rewards-validation.webp), [amélioration sur mobile](gold-upgrade-mobile-validation.webp).
+
+## Filtres de rareté et dialogues
+
+Les quatre petites cartes `apps/web/public/art/ui/rarity-{common,rare,epic,legendary}.webp` ont été générées séparément avec l’outil intégré **ImageGen**. Elles représentent des dos de cartes à feuille centrale : argent et sauge pour commune, bleu saphir pour rare, violet améthyste pour épique et or pour légendaire. Les images ont été recadrées sur leur transparence puis encodées avec `sharp` en WebP de 160 × 216 px, qualité 90, environ 74 Ko pour les quatre. Le canal alpha des fichiers finaux a été vérifié (valeurs de 0 à 255). Les prompts exacts, les PNG sources conservés localement et chaque chemin final sont enregistrés dans [art-prompts-rarity-filters.json](art-prompts-rarity-filters.json).
+
+Les icônes remplacent le sélecteur de rareté et sont placées à côté des filtres de combat, sur une seconde ligne sur mobile. Chaque rareté se sélectionne indépendamment ; les raretés sélectionnées sont réunies, puis combinées avec le type de combat. Sans rareté sélectionnée, toutes sont visibles. « Toutes » réinitialise les deux groupes. Les boutons conservent un libellé accessible, un état `aria-pressed`, une coche et une infobulle au survol ou au focus. La combinaison épique + légendaire + corps à corps a été vérifiée dans le navigateur, ainsi que les activations avec Entrée et Espace.
+
+Les fiches d’amélioration et les récompenses de coffre réutilisent l’apparence `game` des dialogues de duel : fond vert profond, texte crème, bordure et actions dorées. Les ressources de la fiche sont regroupées, les statistiques nommées et les couleurs de rareté restent lisibles sur fond sombre. Les cartes révélées conservent leur pleine opacité. Le rendu a été vérifié sur ordinateur et mobile avec des données de démonstration, ainsi que la fermeture par Échap et le retour du focus, sans erreur dans la console.
+
+Aperçus : [fiche ordinateur](ui-card-dialog-validation.jpg), [fiche mobile](ui-card-mobile-validation.jpg), [coffre ordinateur](ui-chest-dialog-validation.jpg), [coffre mobile](ui-chest-mobile-validation.jpg).

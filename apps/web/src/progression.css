@@ -33,36 +33,35 @@
 .play-header > .gold-balance {
   margin-left: auto;
 }
-.workshop-header h1,
 .play-header h1 {
   min-width: 0;
 }
 .upgrade-gold {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 12px;
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border: 1px solid #b99a5055;
-  border-radius: 8px;
-  background: #d8ba771c;
-  color: #725016;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: #e5cb94;
   font-size: 12px;
 }
 .upgrade-gold .gold-amount {
+  grid-column: 2;
+  grid-row: 1 / 3;
   font-size: 17px;
   font-weight: 700;
 }
 .upgrade-gold small {
-  flex-basis: 100%;
-  text-align: center;
+  grid-column: 1;
+  text-align: left;
+  color: var(--quiet);
   font-size: 10px;
 }
 .upgrade-gold[data-insufficient="true"] small,
 .upgrade-shortage {
-  color: #a24d30;
+  color: #f0ad91;
 }
 .upgrade-shortage {
   display: block;
@@ -154,21 +153,6 @@
 .workshop-empty-slot:hover {
   background: #d7b77716;
 }
-.workshop-rarity-filter {
-  margin-left: auto;
-}
-.workshop-rarity-filter select {
-  max-width: 160px;
-  padding: 8px 10px;
-  border: 1px solid #dabf7c66;
-  border-radius: 4px;
-  color: #f3dfb7;
-  background: #32291ed9;
-  font-size: 10px;
-}
-.workshop-rarity-filter option {
-  background: #32291e;
-}
 .rarity-label {
   display: block;
   color: var(--rarity-color, #758369);
@@ -190,27 +174,58 @@
 .rarity-label[data-rarity="legendary"] {
   color: #9a6c15;
 }
-.upgrade-dialog .rarity-label {
-  margin-bottom: 10px;
+.game-dialog.upgrade-dialog[data-slot="dialog-content"] {
+  width: min(500px, calc(100vw - 32px));
+}
+.upgrade-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  padding-right: 32px;
+}
+.upgrade-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 12px;
+}
+.upgrade-meta .rarity-label {
+  margin-top: 0;
+}
+.upgrade-combat-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--quiet);
+  font-size: 11px;
 }
 .upgrade-preview {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 1fr;
-  gap: 24px;
-  margin: 22px 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  margin: 18px 0;
 }
 .upgrade-portrait {
-  height: 200px;
-  border: 2px solid var(--rarity-color);
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--rarity-rgb), 0.6);
   border-radius: 12px;
   background: radial-gradient(
     ellipse at center,
-    rgba(var(--rarity-rgb), 0.2),
-    #e6eadc
+    rgba(var(--rarity-rgb), 0.22),
+    #0e251d
   );
+  box-shadow: inset 0 0 30px #081b2355;
 }
-.upgrade-portrait[data-rarity="common"] {
-  border-color: transparent;
+.upgrade-portrait::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(var(--rarity-rgb), 0.18);
+  border-radius: 8px;
+  pointer-events: none;
 }
 .upgrade-portrait img {
   width: 100%;
@@ -220,41 +235,78 @@
 .upgrade-statistics {
   align-self: center;
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 .upgrade-statistics > span,
 .upgrade-statistics small {
-  color: #697664;
+  color: var(--quiet);
   font-size: 10px;
 }
-.upgrade-statistics > div {
+.upgrade-statistics > span {
+  color: #d6c394;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.upgrade-stat > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--quiet);
+  font-size: 10px;
+}
+.upgrade-stat > div {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  color: #b8c5ad;
 }
 .upgrade-statistics .stat-badge {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
 }
-.upgrade-statistics > div > strong {
+.upgrade-stat strong {
   font:
     600 25px Georgia,
     serif;
-  color: #376342;
+  color: #d8e9b5;
+}
+.upgrade-resources {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #071f193d;
 }
 .upgrade-copies {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12px;
+  color: #e2d5b2;
 }
 .upgrade-progress {
   display: block;
   width: 100%;
   height: 7px;
-  margin: 12px 0 20px;
-  accent-color: #547943;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 4px;
+  background: #e5d19d1c;
+  accent-color: #d4be88;
+}
+.upgrade-progress::-webkit-progress-bar {
+  border-radius: 4px;
+  background: #e5d19d1c;
+}
+.upgrade-progress::-webkit-progress-value {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #789b68, #d4be88);
+}
+.upgrade-progress::-moz-progress-bar {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #789b68, #d4be88);
 }
 .upgrade-action {
   width: 100%;
@@ -263,13 +315,14 @@
   margin-top: 8px;
   font-size: 10px;
   text-align: center;
-  color: #697664;
+  color: var(--quiet);
+  line-height: 1.7;
 }
 .upgrade-deck-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  border-top: 1px solid #d9dfcf;
+  border-top: 1px solid var(--line);
   margin-top: 20px;
   padding-top: 20px;
 }
@@ -277,20 +330,24 @@
   flex: 1;
   font-size: 10px;
 }
-.chest-reveal-dialog {
-  max-width: 600px;
+.game-dialog.chest-reveal-dialog[data-slot="dialog-content"] {
+  width: min(620px, calc(100vw - 32px));
+  background:
+    radial-gradient(ellipse at top, rgba(var(--rarity-rgb), 0.1), transparent 65%),
+    linear-gradient(145deg, #254334, #122c23 85%);
 }
 .chest-reveal-heading {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding-right: 18px;
+  gap: 18px;
+  padding-right: 20px;
 }
 .chest-reveal-heading > img {
   width: 100px;
   height: 100px;
   object-fit: contain;
-  filter: drop-shadow(0 5px 6px #735d3533);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 18px rgba(var(--rarity-rgb), 0.25));
 }
 .chest-reveal-heading h2 {
   font-size: 28px;
@@ -301,8 +358,8 @@
 .chest-reveal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 16px;
-  margin: 30px 0;
+  gap: 16px;
+  margin: 24px 0;
 }
 .chest-reveal-item {
   position: relative;
@@ -310,6 +367,10 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  padding: 20px 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #091f1940;
   min-width: 0;
   text-align: center;
   animation: reveal-card 450ms both;
@@ -317,8 +378,17 @@
 .chest-reveal-item .creature-card {
   width: 100%;
   max-width: 140px;
-  opacity: 1;
   cursor: default;
+  margin-bottom: 8px;
+}
+.chest-reveal-item .creature-card:disabled {
+  opacity: 1;
+}
+.chest-reveal-dialog .chest-reveal-item .rarity-label {
+  margin-top: 0;
+}
+.chest-reveal-dialog > [data-slot="dialog-body"] > .sylve-button {
+  width: 100%;
 }
 .chest-reveal-item > strong {
   font:
@@ -327,14 +397,15 @@
 }
 .chest-reveal-item > small {
   font-size: 9px;
-  color: #697664;
+  color: var(--quiet);
+  line-height: 1.6;
 }
 .chest-gold-reward {
   justify-content: center;
   align-self: stretch;
   border: 1px solid #c2a25a66;
   border-radius: 12px;
-  background: radial-gradient(ellipse at center, #f2cd6e38, #e7cd8b0d);
+  background: radial-gradient(ellipse at center, #e7bd4e1f, #091f1940 80%);
   padding: 20px 8px;
 }
 .chest-gold-reward > .gold-icon {
@@ -342,22 +413,23 @@
   height: 140px;
 }
 .chest-gold-reward > strong {
-  color: #8c6019;
+  color: #f2d28b;
   font-size: 30px;
 }
 .chest-gold-reward > span {
-  color: #725016;
+  color: #e5cb94;
   font-size: 12px;
   font-weight: 700;
 }
 .chest-loot-quantity {
   position: absolute;
   z-index: 4;
-  top: -10px;
-  right: -5px;
+  top: 9px;
+  right: 9px;
   padding: 4px 9px;
   border-radius: 5px;
-  background: #3f5e3d;
+  border: 1px solid rgba(var(--rarity-rgb), 0.6);
+  background: #1c392d;
   color: #fff2cd;
   font-size: 14px;
   font-weight: 800;
@@ -367,7 +439,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #39723f;
+  padding: 4px 8px;
+  border: 1px solid #b7dba33d;
+  border-radius: 20px;
+  background: #b7dba30f;
+  color: #c1e3a7;
   font-size: 10px;
   font-weight: 700;
 }
@@ -415,7 +491,6 @@
   .workshop-header {
     gap: 10px;
   }
-  .workshop-header h1,
   .play-header h1 {
     font-size: clamp(17px, 4.5vw, 24px);
   }
@@ -435,15 +510,12 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  .workshop-rarity-filter select {
-    max-width: 145px;
-    font-size: 9px;
-  }
   .workshop-collection-heading h2 {
     font-size: 21px;
   }
   .chest-reveal-heading {
     gap: 10px;
+    padding-right: 14px;
   }
   .chest-reveal-heading > img {
     width: 65px;
@@ -454,6 +526,13 @@
   }
   .chest-reveal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .chest-reveal-item {
+    padding: 16px 8px 12px;
+  }
+  .chest-gold-reward > .gold-icon {
+    height: 110px;
   }
   .upgrade-preview {
     gap: 16px;

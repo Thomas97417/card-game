@@ -54,7 +54,6 @@
 .deck-workshop button,
 .deck-workshop a,
 .deck-workshop input,
-.deck-workshop select,
 .deck-workshop [tabindex="0"] {
   outline-offset: 4px;
   outline-color: #f1d494;
@@ -105,13 +104,6 @@
 }
 .workshop-back:active {
   transform: translateX(-2px) scale(0.96);
-}
-.workshop-title {
-  font:
-    400 clamp(23px, 2.4vw, 34px)/1.15 Georgia,
-    serif;
-  letter-spacing: -0.8px;
-  text-shadow: 0 2px 12px #10261b88;
 }
 .workshop-content {
   min-height: 0;
@@ -351,6 +343,9 @@
   gap: 16px;
   padding-inline: 8px;
 }
+.workshop-collection-heading > .workshop-scroll-controls {
+  margin-left: auto;
+}
 .workshop-collection-heading h2 {
   display: flex;
   align-items: center;
@@ -420,6 +415,14 @@
   gap: 8px;
   flex-shrink: 0;
 }
+.workshop-rarity-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding-left: 14px;
+  border-left: 1px solid #bb9c5a44;
+}
 .workshop-filter-label {
   display: inline-flex;
   align-items: center;
@@ -459,6 +462,82 @@
 }
 .workshop-filters button.is-active svg {
   color: #f0d392;
+}
+.workshop-filters .workshop-rarity-toggle {
+  position: relative;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 54px;
+  padding: 4px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  transition:
+    background 160ms,
+    border-color 160ms;
+}
+.workshop-rarity-toggle > img {
+  width: 32px;
+  height: 44px;
+  object-fit: contain;
+  opacity: 0.75;
+  filter: drop-shadow(0 3px 3px #0008);
+  user-select: none;
+  pointer-events: none;
+  transition:
+    transform 160ms,
+    opacity 160ms,
+    filter 160ms;
+}
+.workshop-rarity-toggle:hover:not(:disabled) > img,
+.workshop-rarity-toggle:focus-visible > img,
+.workshop-rarity-toggle.is-active > img {
+  opacity: 1;
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 5px rgba(var(--rarity-rgb), 0.5));
+}
+.workshop-filters .workshop-rarity-toggle:hover:not(:disabled),
+.workshop-filters .workshop-rarity-toggle.is-active {
+  border-color: rgba(var(--rarity-rgb), 0.7);
+  background: rgba(var(--rarity-rgb), 0.12);
+  box-shadow: 0 0 14px rgba(var(--rarity-rgb), 0.18);
+}
+.workshop-rarity-check {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--rarity-color);
+  border-radius: 50%;
+  background: #14271e;
+}
+.workshop-filters .workshop-rarity-toggle .workshop-rarity-check > svg {
+  color: var(--rarity-color);
+}
+.workshop-rarity-toggle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 5px 9px;
+  border: 1px solid rgba(var(--rarity-rgb), 0.5);
+  border-radius: 5px;
+  background: #14271ef5;
+  color: #f4ebd4;
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.workshop-rarity-toggle:hover:not(:disabled)::after,
+.workshop-rarity-toggle:focus-visible::after {
+  opacity: 1;
 }
 .workshop-instructions {
   display: flex;
@@ -509,7 +588,13 @@
     display: flex;
   }
   .workshop-footer {
-    gap: 22px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .workshop-instructions {
+    max-width: none;
+    margin-left: 0;
+    justify-content: flex-start;
   }
   .workshop-filter-label span {
     display: none;
@@ -532,9 +617,6 @@
   .workshop-back {
     width: 60px;
     height: 50px;
-  }
-  .workshop-title {
-    font-size: 24px;
   }
   .workshop-card-row {
     padding-inline: 18px;
@@ -559,22 +641,35 @@
     padding-top: 12px;
   }
   .workshop-filters {
+    flex-wrap: wrap;
     gap: 7px;
     width: 100%;
   }
   .workshop-filter-label {
-    margin-right: 4px;
+    display: none;
   }
   .workshop-filters button {
     flex: 1;
     gap: 7px;
-    min-height: 40px;
+    min-height: 44px;
     padding-inline: 9px;
     font-size: 9px;
     white-space: nowrap;
   }
   .workshop-filters button svg {
     width: 17px;
+  }
+  .workshop-rarity-filters {
+    justify-content: center;
+    flex-basis: 100%;
+    margin: 1px 0 0;
+    padding: 4px 0 0;
+    border-left: 0;
+    border-top: 1px solid #bb9c5a33;
+    gap: 12px;
+  }
+  .workshop-rarity-check > svg {
+    width: 10px;
   }
   .workshop-instructions {
     max-width: none;

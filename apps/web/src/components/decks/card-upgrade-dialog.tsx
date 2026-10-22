@@ -13,6 +13,8 @@ import {
   resolveCard,
   upgradeCost,
   upgradeGoldCost,
+  combatTypeLabel,
+  getCombatType,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -23,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
+import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 
@@ -75,17 +78,30 @@ export function CardUpgradeDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="upgrade-dialog">
+      <DialogContent
+        className="upgrade-dialog"
+        appearance="game"
+        data-rarity={card?.rarity ?? "common"}
+      >
         {card && entry && (
           <>
-            <span
-              className="rarity-label"
-              data-rarity={card.rarity ?? "common"}
-            >
-              {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
+            <span className="eyebrow upgrade-eyebrow">
+              {inDeck ? "TON COMPAGNON" : "TA COLLECTION"}
             </span>
             <DialogTitle>{card.name}</DialogTitle>
             <DialogDescription>{card.title}</DialogDescription>
+            <div className="upgrade-meta">
+              <span
+                className="rarity-label"
+                data-rarity={card.rarity ?? "common"}
+              >
+                {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
+              </span>
+              <span className="upgrade-combat-type">
+                <GameIcon kind={getCombatType(card)} size={18} />
+                {combatTypeLabel(card)}
+              </span>
+            </div>
             <div className="upgrade-preview">
               <div
                 className="upgrade-portrait"
@@ -95,55 +111,71 @@ export function CardUpgradeDialog({
               </div>
               <div className="upgrade-statistics">
                 <span>Caractéristiques</span>
-                <div>
-                  <StatBadge
-                    kind="attack"
-                    value={card.attack}
-                    combatType={card.combatType}
-                  />
-                  {next && (
-                    <>
-                      <ArrowRight size={15} />
-                      <strong>{next.attack}</strong>
-                    </>
-                  )}
+                <div className="upgrade-stat">
+                  <span>Attaque</span>
+                  <div>
+                    <StatBadge
+                      kind="attack"
+                      value={card.attack}
+                      combatType={getCombatType(card)}
+                    />
+                    {next && (
+                      <>
+                        <ArrowRight size={15} aria-hidden="true" />
+                        <strong
+                          aria-label={`${next.attack} au niveau ${level + 1}`}
+                        >
+                          {next.attack}
+                        </strong>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <StatBadge kind="health" value={card.health} />
-                  {next && (
-                    <>
-                      <ArrowRight size={15} />
-                      <strong>{next.health}</strong>
-                    </>
-                  )}
+                <div className="upgrade-stat">
+                  <span>Vie maximale</span>
+                  <div>
+                    <StatBadge kind="health" value={card.health} />
+                    {next && (
+                      <>
+                        <ArrowRight size={15} aria-hidden="true" />
+                        <strong
+                          aria-label={`${next.health} au niveau ${level + 1}`}
+                        >
+                          {next.health}
+                        </strong>
+                      </>
+                    )}
+                  </div>
                 </div>
                 {next && <small>Au niveau {level + 1}</small>}
               </div>
             </div>
-            <div className="upgrade-copies">
-              <Layers3 size={18} />
-              <span>
-                {entry.copies}{" "}
-                {max ? "exemplaires en réserve" : `/ ${cost} exemplaires`}
-              </span>
-            </div>
-            <progress
-              className="upgrade-progress"
-              max={max ? Math.max(1, entry.copies) : cost}
-              value={entry.copies}
-              aria-label="Exemplaires pour le prochain niveau"
-            />
-            {!max && (
-              <div className="upgrade-gold" data-insufficient={!enoughGold}>
-                <span>Coût en or</span>
-                <GoldAmount amount={goldCost} />
-                <small>
-                  {gold == null
-                    ? "Chargement du solde…"
-                    : `${gold.toLocaleString("fr-FR")} en réserve`}
-                </small>
+            <div className="upgrade-resources">
+              <div className="upgrade-copies">
+                <Layers3 size={18} />
+                <span>
+                  {entry.copies}{" "}
+                  {max ? "exemplaires en réserve" : `/ ${cost} exemplaires`}
+                </span>
               </div>
-            )}
+              <progress
+                className="upgrade-progress"
+                max={max ? Math.max(1, entry.copies) : cost}
+                value={entry.copies}
+                aria-label="Exemplaires pour le prochain niveau"
+              />
+              {!max && (
+                <div className="upgrade-gold" data-insufficient={!enoughGold}>
+                  <span>Coût en or</span>
+                  <GoldAmount amount={goldCost} />
+                  <small>
+                    {gold == null
+                      ? "Chargement du solde…"
+                      : `${gold.toLocaleString("fr-FR")} en réserve`}
+                  </small>
+                </div>
+              )}
+            </div>
             <button
               className="sylve-button upgrade-action"
               disabled={busy || max || entry.copies < cost || !enoughGold}

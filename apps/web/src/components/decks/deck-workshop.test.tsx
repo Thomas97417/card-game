@@ -120,9 +120,16 @@ describe("l’atelier et la collection", () => {
     expect(
       screen.queryByRole("button", { name: /Enregistrer|Créer|Supprimer/ }),
     ).toBeNull();
-    expect(
-      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
-    ).toBeTruthy();
+    const rarities = within(
+      screen.getByRole("group", { name: "Filtrer par rareté" }),
+    );
+    for (const name of ["Commune", "Rare", "Épique", "Légendaire"]) {
+      expect(
+        rarities.getByRole("button", { name }).getAttribute("aria-pressed"),
+      ).toBe("false");
+    }
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.queryByText("L’atelier des gardiens")).toBeNull();
   });
   it.each(["mouse", "touch"])(
     "replaces a card by dragging with %s and saves eight unique variants",
@@ -163,7 +170,7 @@ describe("l’atelier et la collection", () => {
   it("ignores invalid drops and cancels dragging with Escape", () => {
     setup();
     const source = card(collection(), "Chevalier ronce");
-    dragCard(source, screen.getByRole("heading", { level: 1 }));
+    dragCard(source, screen.getByRole("main", { name: "Deck et collection" }));
     expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
     fireEvent.pointerDown(source, {
       button: 0,
@@ -177,24 +184,73 @@ describe("l’atelier et la collection", () => {
     expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
-  it("combines combat-type and rarity filters without filtering the deck", () => {
+  it("combines multiple rarity toggles with combat type and leaves the deck intact", () => {
+    setup(savedDeck, [
+      ...fullCollection,
+      { card: variantCard("guardian", "epic"), copies: 0 },
+      { card: variantCard("wolf", "legendary"), copies: 0 },
+      { card: variantCard("fox", "epic"), copies: 0 },
+      { card: variantCard("dragon", "legendary"), copies: 0 },
+      { card: variantCard("guardian", "rare"), copies: 0 },
+    ]);
+    const epic = screen.getByRole("button", { name: "Épique" });
+    const legendary = screen.getByRole("button", { name: "Légendaire" });
+    fireEvent.click(epic);
+    fireEvent.click(legendary);
+    expect(epic.getAttribute("aria-pressed")).toBe("true");
+    expect(legendary.getAttribute("aria-pressed")).toBe("true");
+    expect(collection().getAllByRole("button")).toHaveLength(4);
+
+    fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
+    expect(collection().getAllByRole("button")).toHaveLength(2);
+    expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+    expect(card(collection(), "Loup de lune")).toBeTruthy();
+    expect(
+      collection().queryByRole("button", { name: /^Renard des braises,/ }),
+    ).toBeNull();
+    expect(deckCards()).toHaveLength(8);
+
+    fireEvent.click(epic);
+    expect(epic.getAttribute("aria-pressed")).toBe("false");
+    expect(legendary.getAttribute("aria-pressed")).toBe("true");
+    expect(collection().getAllByRole("button")).toHaveLength(1);
+    expect(card(collection(), "Loup de lune")).toBeTruthy();
+
+    fireEvent.click(legendary);
+    expect(
+      collection().getByRole("button", { name: /Gardien de pierre,.*Rare,/ }),
+    ).toBeTruthy();
+    fireEvent.click(epic);
+    fireEvent.click(screen.getByRole("button", { name: "Toutes" }));
+    expect(epic.getAttribute("aria-pressed")).toBe("false");
+    expect(
+      screen
+        .getByRole("button", { name: "Corps à corps" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(collection().getAllByRole("button")).toHaveLength(9);
+  });
+  it("resets both filter groups from an empty result", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "À distance" }));
     expect(collection().getAllByRole("button")).toHaveLength(2);
-    fireEvent.change(
-      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
-      { target: { value: "epic" } },
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Épique" }));
+    fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
     expect(
-      collection().queryAllByRole("button", { name: /points de vie/ }),
-    ).toHaveLength(0);
-    expect(deckCards()).toHaveLength(8);
-    fireEvent.change(
-      screen.getByRole("combobox", { name: "Filtrer par rareté" }),
-      { target: { value: "all" } },
+      screen.getByText("Aucune carte ne correspond à tes filtres."),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Voir toute la collection" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "À distance" }));
     expect(collection().getAllByRole("button")).toHaveLength(4);
+    expect(
+      screen.getByRole("button", { name: "Toutes" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    for (const name of ["Épique", "Légendaire"]) {
+      expect(
+        screen.getByRole("button", { name }).getAttribute("aria-pressed"),
+      ).toBe("false");
+    }
   });
   it("opens the card dialog on click and permits keyboard replacement with cancellation", async () => {
     setup();
