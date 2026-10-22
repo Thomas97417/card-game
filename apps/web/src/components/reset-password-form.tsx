@@ -1,3 +1,4 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
@@ -54,8 +55,12 @@ function PasswordInput({
 
 export default function ResetPasswordForm() {
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { token?: string };
+  const search = useSearch({ strict: false }) as {
+    token?: string;
+    returnTo?: string;
+  };
   const token = search?.token;
+  const returnTo = safeReturnTo(search.returnTo);
 
   const form = useForm({
     defaultValues: {
@@ -68,22 +73,22 @@ export default function ResetPasswordForm() {
         token: token!,
       });
       if (error) {
-        toast.error(error.message || "Failed to reset password.");
+        toast.error(
+          error.message || "Impossible de réinitialiser le mot de passe.",
+        );
       } else {
-        toast.success("Password reset successfully.");
-        navigate({ to: "/sign-in" });
+        toast.success("Mot de passe modifié.");
+        navigate({ to: "/sign-in", search: { returnTo } });
       }
     },
     validators: {
       onSubmit: z
         .object({
-          newPassword: z
-            .string()
-            .min(8, "Password must be at least 8 characters."),
+          newPassword: z.string().min(8, "Utilise au moins 8 caractères."),
           confirmPassword: z.string(),
         })
         .refine((data) => data.newPassword === data.confirmPassword, {
-          message: "Passwords do not match.",
+          message: "Les mots de passe ne correspondent pas.",
           path: ["confirmPassword"],
         }),
     },
@@ -92,15 +97,16 @@ export default function ResetPasswordForm() {
   if (!token) {
     return (
       <div className="mx-auto mt-10 w-full max-w-md p-6 text-center space-y-3">
-        <h1 className="text-3xl font-bold">Invalid link</h1>
+        <h1 className="text-3xl font-bold">Lien invalide</h1>
         <p className="text-sm text-muted-foreground">
-          This password reset link is invalid or has expired.
+          Ce lien de réinitialisation est invalide ou a expiré.
         </p>
         <Link
           to="/forgot-password"
+          search={{ returnTo }}
           className="inline-block text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
-          Request a new link
+          Demander un nouveau lien
         </Link>
       </div>
     );
@@ -108,7 +114,9 @@ export default function ResetPasswordForm() {
 
   return (
     <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-2 text-center text-3xl font-bold">Reset password</h1>
+      <h1 className="mb-2 text-center text-3xl font-bold">
+        Modifier le mot de passe
+      </h1>
       <p className="mb-6 text-center text-sm text-muted-foreground">
         Enter your new password below.
       </p>
@@ -124,10 +132,10 @@ export default function ResetPasswordForm() {
         <form.Field name="newPassword">
           {(field) => (
             <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
+              <Label htmlFor="newPassword">Nouveau mot de passe</Label>
               <PasswordInput
                 id="newPassword"
-                placeholder="New password"
+                placeholder="Nouveau mot de passe"
                 autoComplete="new-password"
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -170,7 +178,7 @@ export default function ResetPasswordForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Saving..." : "Reset password"}
+              {state.isSubmitting ? "Saving..." : "Modifier le mot de passe"}
             </Button>
           )}
         </form.Subscribe>
@@ -179,9 +187,10 @@ export default function ResetPasswordForm() {
       <div className="mt-4 text-center">
         <Link
           to="/sign-in"
+          search={{ returnTo }}
           className="text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
-          Back to sign in
+          Retour à la connexion
         </Link>
       </div>
     </div>

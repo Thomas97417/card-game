@@ -1,5 +1,6 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Mail, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import z from "zod";
@@ -12,6 +13,8 @@ import { Label } from "./ui/label";
 import { useState } from "react";
 
 export default function VerifyEmailForm() {
+  const search = useSearch({ strict: false });
+  const returnTo = safeReturnTo(search.returnTo);
   const [sent, setSent] = useState(false);
 
   const form = useForm({
@@ -22,16 +25,16 @@ export default function VerifyEmailForm() {
       try {
         await authClient.sendVerificationEmail({
           email: value.email,
-          callbackURL: "/sign-in",
+          callbackURL: `${window.location.origin}/sign-in?returnTo=${encodeURIComponent(returnTo)}`,
         });
         setSent(true);
       } catch {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Une erreur est survenue. Réessaie.");
       }
     },
     validators: {
       onSubmit: z.object({
-        email: z.email("Invalid email address"),
+        email: z.email("Adresse email invalide"),
       }),
     },
   });
@@ -42,15 +45,15 @@ export default function VerifyEmailForm() {
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <MailCheck className="h-6 w-6 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold">Check your inbox</h1>
+        <h1 className="text-3xl font-bold">Vérifie tes emails.</h1>
         <p className="text-sm text-muted-foreground">
-          If an account exists for that email, a verification link has been
-          sent.
+          Si un compte existe pour cette adresse, un lien de vérification a été
+          envoyé.
         </p>
-        <Link to="/sign-in">
+        <Link to="/sign-in" search={{ returnTo }}>
           <Button variant="outline" className="mt-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to sign in
+            Retour à la connexion
           </Button>
         </Link>
       </div>
@@ -63,9 +66,9 @@ export default function VerifyEmailForm() {
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
           <Mail className="h-6 w-6 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold">Verify your email</h1>
+        <h1 className="text-3xl font-bold">Vérifie ton adresse email.</h1>
         <p className="text-center text-sm text-muted-foreground">
-          Enter your email and we'll send you a verification link.
+          Entre ton adresse email pour recevoir un lien de vérification.
         </p>
       </div>
 
@@ -106,7 +109,9 @@ export default function VerifyEmailForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Sending..." : "Send verification email"}
+              {state.isSubmitting
+                ? "Envoi…"
+                : "Envoyer le lien de vérification"}
             </Button>
           )}
         </form.Subscribe>
@@ -115,10 +120,11 @@ export default function VerifyEmailForm() {
       <div className="mt-4 text-center">
         <Link
           to="/sign-in"
+          search={{ returnTo }}
           className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to sign in
+          Retour à la connexion
         </Link>
       </div>
     </div>

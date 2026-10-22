@@ -22,11 +22,13 @@ export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        aria-label="Mon compte"
         render={
           <Button variant="outline" className="flex items-center gap-2 px-2" />
         }
       >
-        <span className="hidden text-sm font-medium sm:inline-block">
+        <User className="size-4 shrink-0" />
+        <span className="hidden max-w-32 truncate text-sm font-medium sm:inline-block">
           {user?.name}
         </span>
       </DropdownMenuTrigger>
@@ -43,13 +45,13 @@ export default function UserMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+          <DropdownMenuItem onClick={() => navigate({ to: "/play" })}>
             <User className="mr-2 size-4" />
-            Dashboard
+            Salon de jeu
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
             <Settings className="mr-2 size-4" />
-            Settings
+            Paramètres
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -67,7 +69,7 @@ export default function UserMenu() {
           }}
         >
           <LogOut className="mr-2 size-4" />
-          Sign Out
+          Se déconnecter
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

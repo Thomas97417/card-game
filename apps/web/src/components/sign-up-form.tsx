@@ -1,5 +1,6 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -12,9 +13,8 @@ import { Label } from "./ui/label";
 import PasswordInput from "./ui/password-input";
 
 export default function SignUpForm() {
-  const navigate = useNavigate({
-    from: "/",
-  });
+  const search = useSearch({ strict: false });
+  const returnTo = safeReturnTo(search.returnTo);
 
   const form = useForm({
     defaultValues: {
@@ -28,14 +28,15 @@ export default function SignUpForm() {
           email: value.email,
           password: value.password,
           name: value.name,
+          callbackURL: `${window.location.origin}/sign-in?returnTo=${encodeURIComponent(returnTo)}`,
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
+            window.location.assign(
+              `/verify-email?returnTo=${encodeURIComponent(returnTo)}`,
+            );
             toast.success(
-              "Sign up successful, please check your email for verification.",
+              "Compte créé. Vérifie tes emails pour activer ton compte.",
             );
           },
           onError: (error) => {
@@ -46,14 +47,14 @@ export default function SignUpForm() {
     },
     validators: {
       onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.email("Invalid email address"),
+        name: z.string().min(2, "Choisis un nom de 2 caractères minimum"),
+        email: z.email("Adresse email invalide"),
         password: z
           .string()
-          .min(8, "Password must be at least 8 characters")
+          .min(8, "Le mot de passe doit contenir au moins 8 caractères")
           .regex(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
-            "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character",
+            "Ajoute une majuscule, une minuscule, un chiffre et un caractère spécial",
           ),
       }),
     },
@@ -61,7 +62,9 @@ export default function SignUpForm() {
 
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Create Account</h1>
+      <h1 className="mb-6 text-center text-3xl font-bold">
+        Rejoindre le cercle.
+      </h1>
 
       <form
         onSubmit={(e) => {
@@ -75,7 +78,7 @@ export default function SignUpForm() {
           <form.Field name="name">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
+                <Label htmlFor={field.name}>Pseudo</Label>
                 <Input
                   id={field.name}
                   name={field.name}
@@ -122,7 +125,7 @@ export default function SignUpForm() {
           <form.Field name="password">
             {(field) => (
               <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
+                <Label htmlFor={field.name}>Mot de passe</Label>
                 <PasswordInput
                   id={field.name}
                   placeholder="********"
@@ -148,7 +151,7 @@ export default function SignUpForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Submitting..." : "Sign Up"}
+              {state.isSubmitting ? "Un instant…" : "Créer un compte"}
             </Button>
           )}
         </form.Subscribe>
@@ -160,25 +163,24 @@ export default function SignUpForm() {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            Ou continuer avec
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <GitHubLoginButton />
-        <GoogleLoginButton />
+        <GitHubLoginButton returnTo={returnTo} />
+        <GoogleLoginButton returnTo={returnTo} />
       </div>
 
       <div className="mt-4 text-center">
-        <span className="text-sm text-muted-foreground">
-          Already have an account?{" "}
-        </span>
+        <span className="text-sm text-muted-foreground">Déjà un compte ? </span>
         <Link
           to="/sign-in"
+          search={{ returnTo }}
           className="hover:underline text-sm text-muted-foreground hover:text-foreground hover:cursor-pointer"
         >
-          <span className="font-bold">Sign In</span>
+          <span className="font-bold">Se connecter</span>
         </Link>
       </div>
     </div>

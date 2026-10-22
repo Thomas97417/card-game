@@ -3,26 +3,32 @@ import { Authenticated, Unauthenticated } from "convex/react";
 
 import UserMenu from "./user-menu";
 import { ModeToggle } from "./mode-toggle";
-import { buttonVariants } from "./ui/button";
+import { Leaf, Swords } from "lucide-react";
 
-const linkStyles =
-  "text-sm text-muted-foreground transition-colors hover:text-foreground [&.active]:text-foreground [&.active]:font-medium";
+const linkStyles = "sylve-nav-link";
 
 export default function Header() {
   return (
-    <header className="border-b">
-      <div className="flex h-12 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="text-base font-semibold tracking-tight">
-            Toma Stack
+    <header className="sylve-header">
+      <div className="header-inner">
+        <div className="header-brand-nav">
+          <Link to="/" className="sylve-logo">
+            <span className="logo-mark">
+              <Leaf size={22} />
+            </span>
+            Sylve<span className="logo-dot">.</span>
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="sylve-nav" aria-label="Navigation principale">
+            <Link to="/play" className={linkStyles}>
+              <Swords size={15} />
+              Jouer
+            </Link>
+            <Link to="/decks" className={linkStyles}>
+              Mes decks
+            </Link>
             <Authenticated>
-              <Link to="/dashboard" className={linkStyles}>
-                Dashboard
-              </Link>
               <Link to="/settings" className={linkStyles}>
-                Settings
+                Paramètres
               </Link>
             </Authenticated>
           </nav>
@@ -33,11 +39,8 @@ export default function Header() {
             <UserMenu />
           </Authenticated>
           <Unauthenticated>
-            <Link
-              to="/sign-in"
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Login
+            <Link to="/sign-in" className="sylve-button secondary small-button">
+              Connexion
             </Link>
           </Unauthenticated>
         </div>

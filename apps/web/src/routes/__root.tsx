@@ -9,7 +9,6 @@ import {
   createRootRouteWithContext,
   useRouteContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -20,6 +19,7 @@ import Header from "../components/header";
 import ErrorBoundary from "../components/error-boundary";
 import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
+import gameCss from "../game.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
@@ -42,7 +42,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Toma Stack",
+        title: "Sylve — Le cercle des gardiens",
       },
     ],
     links: [
@@ -50,6 +50,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "stylesheet", href: gameCss },
     ],
   }),
 
@@ -76,7 +77,7 @@ function RootDocument() {
       authClient={authClient}
       initialToken={context.token}
     >
-      <html lang="en" suppressHydrationWarning>
+      <html lang="fr" suppressHydrationWarning>
         <head>
           <HeadContent />
         </head>
@@ -94,7 +95,6 @@ function RootDocument() {
               </div>
             </div>
             <Toaster richColors />
-            <TanStackRouterDevtools position="bottom-left" />
             <Scripts />
           </ThemeProvider>
         </body>

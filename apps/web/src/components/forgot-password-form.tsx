@@ -1,5 +1,6 @@
+import { safeReturnTo } from "@/lib/game-auth";
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -11,6 +12,8 @@ import { Label } from "./ui/label";
 import { useState } from "react";
 
 export default function ForgotPasswordForm() {
+  const search = useSearch({ strict: false });
+  const returnTo = safeReturnTo(search.returnTo);
   const [sent, setSent] = useState(false);
 
   const form = useForm({
@@ -21,16 +24,16 @@ export default function ForgotPasswordForm() {
       try {
         await authClient.requestPasswordReset({
           email: value.email,
-          redirectTo: "/reset-password",
+          redirectTo: `${window.location.origin}/reset-password?returnTo=${encodeURIComponent(returnTo)}`,
         });
         setSent(true);
       } catch {
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Une erreur est survenue. Réessaie.");
       }
     },
     validators: {
       onSubmit: z.object({
-        email: z.email("Invalid email address"),
+        email: z.email("Adresse email invalide"),
       }),
     },
   });
@@ -38,15 +41,17 @@ export default function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="mx-auto w-full mt-10 max-w-md p-6 text-center space-y-3">
-        <h1 className="text-3xl font-bold">Check your inbox</h1>
+        <h1 className="text-3xl font-bold">Vérifie tes emails.</h1>
         <p className="text-sm text-muted-foreground">
-          If an account exists for that email, a reset link has been sent.
+          Si un compte existe pour cette adresse, un lien de réinitialisation a
+          été envoyé.
         </p>
         <Link
           to="/sign-in"
+          search={{ returnTo }}
           className="inline-block text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
-          Back to sign in
+          Retour à la connexion
         </Link>
       </div>
     );
@@ -54,9 +59,11 @@ export default function ForgotPasswordForm() {
 
   return (
     <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-2 text-center text-3xl font-bold">Forgot password?</h1>
+      <h1 className="mb-2 text-center text-3xl font-bold">
+        Mot de passe oublié ?
+      </h1>
       <p className="mb-6 text-center text-sm text-muted-foreground">
-        Enter your email and we'll send you a reset link.
+        Entre ton adresse email pour recevoir un lien de réinitialisation.
       </p>
 
       <form
@@ -98,7 +105,7 @@ export default function ForgotPasswordForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting}
             >
-              {state.isSubmitting ? "Sending..." : "Send reset link"}
+              {state.isSubmitting ? "Envoi…" : "Envoyer le lien"}
             </Button>
           )}
         </form.Subscribe>
@@ -107,9 +114,10 @@ export default function ForgotPasswordForm() {
       <div className="mt-4 text-center">
         <Link
           to="/sign-in"
+          search={{ returnTo }}
           className="text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
-          Back to sign in
+          Retour à la connexion
         </Link>
       </div>
     </div>
