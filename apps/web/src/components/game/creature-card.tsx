@@ -9,6 +9,7 @@ export function CreatureCard({
   selected = false,
   compact = false,
   disabled = false,
+  inspectable = false,
   onClick,
   onPointerDown,
 }: {
@@ -16,6 +17,7 @@ export function CreatureCard({
   selected?: boolean;
   compact?: boolean;
   disabled?: boolean;
+  inspectable?: boolean;
   onClick?: () => void;
   onPointerDown?: PointerEventHandler<HTMLButtonElement>;
 }) {
@@ -26,8 +28,9 @@ export function CreatureCard({
       disabled={disabled}
       onClick={onClick}
       onPointerDown={onPointerDown}
-      aria-pressed={selected}
-      aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie${selected ? ", sélectionnée" : ""}`}
+      aria-pressed={inspectable ? undefined : selected}
+      aria-haspopup={inspectable ? "dialog" : undefined}
+      aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie${selected ? ", sélectionnée" : ""}${inspectable ? ", voir les informations" : ""}`}
       title={`${card.name} · ${combatTypeLabel(card)}`}
     >
       <div

@@ -523,6 +523,8 @@ export function playerView(state: GameState, userId: string) {
     players: state.players.map((player, index) => ({
       name: player.name,
       heroHp: player.heroHp,
+      // Deck composition is public; hand contents and draw order stay private.
+      deck: player.cards.map((card) => ({ ...card })),
       board: player.board.map((unit) => ({
         ...unit,
         card: player.cards.find((card) => card.id === unit.cardId)!,

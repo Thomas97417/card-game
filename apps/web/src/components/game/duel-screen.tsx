@@ -5,10 +5,8 @@ import {
   CATALOG,
   DECK_SIZE,
   HAND_SIZE,
-  combatTypeLabel,
   getCombatType,
   isDeploymentDepth,
-  isMeleeBlocked,
   legalPlacements,
   type CardDefinition,
   type GameView,
@@ -22,14 +20,13 @@ import {
   Hourglass,
   Leaf,
   Trophy,
-  Undo2,
-  X,
   RotateCcw,
   Bot,
 } from "lucide-react";
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
+import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { useCombatPlayback } from "./use-combat-playback";
 
@@ -63,7 +60,7 @@ export function DuelScreen({
   const { display, event: combatEvent, playing } = useCombatPlayback(data);
   const [now, setNow] = useState(Date.now());
   const [selected, setSelected] = useState<string | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [inspection, setInspection] = useState<DuelInspection | null>(null);
   const [pending, setPending] = useState(false);
   const [drag, setDrag] = useState<{
     card: CardDefinition;
@@ -87,7 +84,6 @@ export function DuelScreen({
   }, [practice]);
   useEffect(() => {
     setSelected(null);
-    setSelectedUnit(null);
   }, [data?.turn, data?.hasSummoned]);
   const catchingUp = playing || display?.sequence !== data.sequence;
   useEffect(() => {
@@ -113,16 +109,22 @@ export function DuelScreen({
     (card) => legalPlacements(card, mine.board).length > 0,
   );
   const selectedCard = mine.hand.find((card) => card.id === selected);
-  const inspectedUnit = mine.board.find((unit) => unit.cardId === selectedUnit);
-  const inspectedBlocked = !!inspectedUnit && isMeleeBlocked(
-    inspectedUnit, mine.board, mine.board.map((unit) => unit.card),
-  );
-  async function withdrawSelected() {
-    if (!canWithdraw || !selectedUnit) return;
+  const selectedUnit =
+    inspection?.type === "card" &&
+    inspection.source === "board" &&
+    inspection.playerIndex === data.me
+      ? inspection.card.id
+      : null;
+  function inspect(next: DuelInspection) {
+    setSelected(null);
+    setInspection(next);
+  }
+  async function withdrawCard(cardId: string) {
+    if (!canWithdraw || !mine.board.some((unit) => unit.cardId === cardId)) return;
     setPending(true);
     try {
-      await onWithdrawCard(selectedUnit, data.turn);
-      setSelectedUnit(null);
+      await onWithdrawCard(cardId, data.turn);
+      setInspection(null);
     } catch (error) {
       showGameError(error);
     } finally {
@@ -220,7 +222,6 @@ export function DuelScreen({
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           setSelected(null);
-          setSelectedUnit(null);
         }
       }}
       onPointerMove={pointerMove}
@@ -294,48 +295,17 @@ export function DuelScreen({
         selectedUnit={selectedUnit}
         hovered={hovered}
         canSummon={canSummon}
-        canWithdraw={canWithdraw}
         combatEvent={combatEvent}
         onPlace={(cardId, row, depth) => void place(cardId, row, depth)}
-        onSelectUnit={(cardId) => {
-          setSelected(null);
-          setSelectedUnit((current) => (current === cardId ? null : cardId));
+        onInspectUnit={(cardId, playerIndex) => {
+          const unit = display.players[playerIndex]?.board.find(
+            (entry) => entry.cardId === cardId,
+          );
+          if (unit)
+            inspect({ type: "card", card: unit.card, playerIndex, source: "board" });
         }}
+        onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
       />
-      {inspectedUnit && (
-        <div
-          className="unit-inspector"
-          role="region"
-          aria-label="Créature sélectionnée"
-        >
-          <CreaturePortrait card={inspectedUnit.card} />
-          <div>
-            <strong>{inspectedUnit.card.name}</strong>
-            <span>
-              {combatTypeLabel(inspectedUnit.card)}
-              {inspectedBlocked && " · Bloquée : une unité au corps à corps est devant elle sur cette ligne."}
-            </span>
-            <span>
-              La carte retirée rejoint la défausse et pourra être repiochée.
-            </span>
-          </div>
-          <button
-            className="sylve-button secondary small-button"
-            disabled={!canWithdraw}
-            onClick={() => void withdrawSelected()}
-          >
-            <Undo2 size={15} />
-            Retirer du terrain
-          </button>
-          <button
-            className="icon-button"
-            aria-label="Fermer la sélection"
-            onClick={() => setSelectedUnit(null)}
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
       <section className="hand-area">
         <div className="hand-heading">
           <div>
@@ -346,7 +316,7 @@ export function DuelScreen({
                   ? "Corps à corps : colonne du milieu ou colonne vers l’ennemi."
                   : "À distance : colonne du milieu ou colonne vers ton héros."
                 : canSummon
-                  ? "Pose une carte : tes unités attaquent et le tour passe à l’adversaire."
+                  ? "Glisse une carte, ou ouvre sa fiche. La poser déclenche l’assaut."
                   : `La main est complétée à ${HAND_SIZE} au début de ton tour.`}
             </span>
           </div>
@@ -361,15 +331,14 @@ export function DuelScreen({
                 key={card.id}
                 card={card}
                 compact
+                inspectable
                 selected={selected === card.id}
-                disabled={!canSummon || !legalPlacements(card, mine.board).length}
                 onPointerDown={(event) => pointerDown(event, card)}
                 onClick={() => {
                   if (!suppressClick.current) {
-                    setSelectedUnit(null);
-                    setSelected((current) =>
-                      current === card.id ? null : card.id,
-                    );
+                    inspect({
+                      type: "card", card, playerIndex: data.me, source: "hand",
+                    });
                   }
                 }}
               />
@@ -475,6 +444,21 @@ export function DuelScreen({
           <span>{drag.card.name}</span>
         </div>
       )}
+      <DuelDetailsDialog
+        inspection={inspection}
+        view={display}
+        canSummon={canSummon}
+        canWithdraw={canWithdraw}
+        onInspect={setInspection}
+        onClose={() => setInspection(null)}
+        onSelectCard={(cardId) => {
+          const card = mine.hand.find((entry) => entry.id === cardId);
+          if (!canSummon || !card || !legalPlacements(card, mine.board).length) return;
+          setSelected(cardId);
+          setInspection(null);
+        }}
+        onWithdrawCard={(cardId) => void withdrawCard(cardId)}
+      />
       <dialog
         className="sylve-dialog"
         ref={surrenderDialog}
