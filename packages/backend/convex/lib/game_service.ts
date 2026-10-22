@@ -120,6 +120,11 @@ export async function saveTransition(
   await ctx.db.patch(gameId, { state, status: state.status });
   for (const event of events)
     await ctx.db.insert("gameEvents", { gameId, seq: event.seq, event });
+  if (state.status === "active" && events.some((event) => event.type === "turn"))
+    await ctx.scheduler.runAt(state.turnEndsAt, internal.games.expireTurn, {
+      gameId,
+      expectedTurn: state.turn,
+    });
   if (state.status === "finished") {
     for (const player of state.players) {
       const activity = await getActivity(ctx, player.userId);
