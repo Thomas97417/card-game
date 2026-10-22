@@ -1689,7 +1689,7 @@ button:disabled {
   .sylve-nav-link:last-child:not(:nth-child(2)) {
     display: none;
   }
-  .sylve-nav:has(a[href="/dashboard"]) .sylve-nav-link[href="/decks"] {
+  .sylve-nav:has(a[href="/hub"]) .sylve-nav-link[href="/decks"] {
     display: none;
   }
   .sylve-header .logo-mark {

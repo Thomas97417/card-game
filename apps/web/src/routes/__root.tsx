@@ -74,7 +74,7 @@ function RootDocument() {
   const context = useRouteContext({ from: Route.id });
   const isVillage = useRouterState({
     select: (state) =>
-      state.matches.some((match) => match.routeId === "/dashboard"),
+      state.matches.some((match) => match.routeId === "/hub"),
   });
   return (
     <ConvexBetterAuthProvider

@@ -20,7 +20,7 @@ export default function Header() {
           </Link>
           <nav className="sylve-nav" aria-label="Navigation principale">
             <Authenticated>
-              <Link to="/dashboard" className={linkStyles}>
+              <Link to="/hub" className={linkStyles}>
                 <Map size={15} />
                 Le refuge
               </Link>

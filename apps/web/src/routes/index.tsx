@@ -5,7 +5,7 @@ import { CreatureCard } from "@/components/game/creature-card";
 
 export const Route = createFileRoute("/")({
   beforeLoad: ({ context }) => {
-    if (context.isAuthenticated) throw redirect({ to: "/dashboard" });
+    if (context.isAuthenticated) throw redirect({ to: "/hub" });
   },
   head: () => ({
     meta: [
