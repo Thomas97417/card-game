@@ -11,7 +11,6 @@ import {
 } from "@sylve/game";
 import type { CardDefinition, CombatType } from "@sylve/game";
 import {
-  ArrowLeft,
   ArrowRightLeft,
   BowArrow,
   Check,
@@ -382,9 +381,19 @@ export function DeckWorkshop({ decks, onSave, onDelete }: DeckWorkshopProps) {
       <div className="workshop-shade" />
 
       <header className="workshop-header">
-        <Link to="/hub" className="workshop-back" aria-label="Retour au refuge">
-          <ArrowLeft size={18} />
-          <span>Le refuge</span>
+        <Link
+          to="/hub"
+          className="workshop-back"
+          aria-label="Retour au refuge"
+          draggable={false}
+        >
+          <img
+            src="/art/ui/back-arrow.webp"
+            alt=""
+            width={288}
+            height={157}
+            draggable={false}
+          />
         </Link>
         <h1 className="workshop-title">L’atelier des gardiens</h1>
       </header>

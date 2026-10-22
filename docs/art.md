@@ -51,3 +51,22 @@ Lighting/mood: cozy late-afternoon honey light from upper left, deep forest-teal
 Style: sophisticated detailed painterly 2D storybook fantasy, same world as an emerald forest village with teal-roofed stone towers and warm lanterns. Polished natural materials, soft brushwork, original scenery.
 Constraints: scenery only; no cards, no characters, no creatures, no text, no letters, no numbers, no logos, no watermark, no interface, no buttons, no icons, no frame around the whole image. Do not draw a screenshot or a game UI.
 ```
+
+## Flèche de retour
+
+`apps/web/public/art/ui/back-arrow.webp` : flèche de retour originale en bois sculpté, laiton doré et incrustations de feuilles vertes, créée avec l’outil intégré **ImageGen**. Son canal alpha a été vérifié, puis l’image a été recadrée sur son contenu transparent, réduite et encodée en WebP avec `sharp` (288 × 157 px, environ 17 Ko). Le PNG original reste dans le dossier de génération local.
+
+La flèche remplace l’ancien lien illustré d’une icône et du texte « Le refuge » dans l’en-tête de `/decks`. Le lien conserve sa destination `/hub` et le libellé accessible « Retour au refuge », avec une zone cliquable adaptée au tactile et un focus visible au clavier.
+
+Prompt final, outil intégré ImageGen :
+
+```text
+Use case: stylized-concept.
+Asset type: a single transparent game interface navigation asset, the back arrow for Sylve, a hand-painted woodland fantasy card game.
+Primary request: create one beautiful, compact, LEFT-pointing return arrow, made from warm carved walnut wood with an aged golden brass edge. It must feel crafted inside an enchanted forest workshop with ancient timber, amber lantern light and forest-green accents.
+Subject: one unmistakable broad left-pointing arrow silhouette, large triangular arrowhead on the left, short thick straight horizontal shaft ending in a softly rounded tail on the right. Fine dark wood grain, a modest beveled brass rim with honey highlights, a tiny restrained carved vine detail near the tail with muted jade green inlay. Strong clean readable outline. The arrow is the complete clickable icon: no additional button, no plaque behind it, no circle or square surrounding it.
+Style/medium: premium hand-painted 2D storybook fantasy game asset, tactile painted wood and slightly worn brass, soft painterly shading, natural materials matching a cozy forest card-maker's lodge. Almost front-on orthographic view, no dramatic perspective. Subtle depth from the bevel only.
+Composition/framing: square canvas, isolated single arrow centered, arrow occupies about 90 percent of the canvas width and 60 percent of its height, balanced compact 3:2 silhouette with a thick shape that stays legible when displayed at 72 by 48 pixels.
+Lighting/mood: soft warm lantern highlights from upper left, dark emerald ambient shade, gentle dark contour around the silhouette for legibility over a busy forest background.
+Constraints: true alpha-transparent background; transparency visible around every outer edge. No background scenery, no checkerboard pattern painted into the image, no backing plate, no text, no letters, no symbols other than the left arrow, no logo, no watermark, no border around the canvas, no duplicate arrows. Deliver just the single finished arrow asset.
+```
