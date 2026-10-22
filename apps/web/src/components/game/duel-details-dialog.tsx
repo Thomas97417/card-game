@@ -8,6 +8,7 @@ import {
   legalPlacements,
   type CardDefinition,
   type GameView,
+  type UnitPosition,
 } from "@sylve/game";
 import {
   Dialog,
@@ -21,12 +22,14 @@ import { StatBadge } from "./stat-badge";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
-  | {
+  | ({
       type: "card";
       card: CardDefinition;
       playerIndex: number;
-      source: "hand" | "board" | "deck";
-    };
+    } & (
+      | { source: "hand" | "deck" }
+      | { source: "board"; position: UnitPosition }
+    ));
 
 export function DuelDetailsDialog({
   inspection,
@@ -45,15 +48,20 @@ export function DuelDetailsDialog({
   onInspect: (inspection: DuelInspection) => void;
   onClose: () => void;
   onSelectCard: (cardId: string) => void;
-  onWithdrawCard: (cardId: string) => void;
+  onWithdrawCard: (cardId: string, position: UnitPosition) => void;
 }) {
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
   const own = inspection?.playerIndex === view.me;
   const card = inspection?.type === "card" ? inspection.card : null;
   const source = inspection?.type === "card" ? inspection.source : null;
   const unit =
-    source === "board"
-      ? player?.board.find((entry) => entry.cardId === card?.id)
+    inspection?.type === "card" && inspection.source === "board"
+      ? player?.board.find(
+          (entry) =>
+            entry.cardId === card?.id &&
+            entry.row === inspection.position.row &&
+            entry.depth === inspection.position.depth,
+        )
       : undefined;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
   const hasPlacement =
@@ -198,15 +206,21 @@ export function DuelDetailsDialog({
                 {own && unit && (
                   <div className="details-actions">
                     <p className="details-note">
-                      La carte retirée rejoint la défausse et pourra être
-                      repiochée. Retire tes créatures avant d’invoquer : poser
-                      une carte déclenche l’assaut et termine ton tour.
+                      Le retrait libère sa case sans changer ta main. Cette
+                      carte reste disponible aux prochains tirages. Retire tes
+                      créatures avant d’invoquer : poser une carte déclenche
+                      l’assaut et termine ton tour.
                     </p>
                     <button
                       type="button"
                       className="sylve-button secondary"
                       disabled={!canWithdraw}
-                      onClick={() => onWithdrawCard(card.id)}
+                      onClick={() =>
+                        onWithdrawCard(card.id, {
+                          row: unit.row,
+                          depth: unit.depth,
+                        })
+                      }
                     >
                       <Undo2 size={16} /> Retirer du terrain
                     </button>
@@ -246,12 +260,8 @@ export function DuelDetailsDialog({
                       <dd>{player.handCount}</dd>
                     </div>
                     <div>
-                      <dt>Pioche</dt>
-                      <dd>{player.drawCount}</dd>
-                    </div>
-                    <div>
-                      <dt>Défausse</dt>
-                      <dd>{player.discardCount}</dd>
+                      <dt>Dans le deck</dt>
+                      <dd>{player.deck.length}</dd>
                     </div>
                   </dl>
                 </div>
@@ -279,8 +289,7 @@ export function DuelDetailsDialog({
                 </div>
                 <p className="details-note details-deck-note">
                   Clique sur une carte pour consulter ses caractéristiques.
-                  {!own &&
-                    " La main adverse et l’ordre de pioche restent cachés."}
+                  {!own && " La main adverse reste cachée."}
                 </p>
               </>
             )}

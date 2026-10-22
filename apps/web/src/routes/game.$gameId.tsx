@@ -68,8 +68,8 @@ function GamePage() {
       onPlayCard={(cardId, row, depth, expectedTurn) =>
         playCard({ gameId, cardId, row, depth, expectedTurn })
       }
-      onWithdrawCard={(cardId, expectedTurn) =>
-        withdrawCard({ gameId, cardId, expectedTurn })
+      onWithdrawCard={(cardId, expectedTurn, position) =>
+        withdrawCard({ gameId, cardId, expectedTurn, position })
       }
       onEndTurn={(expectedTurn) => endTurn({ gameId, expectedTurn })}
       onSurrender={() => surrender({ gameId })}

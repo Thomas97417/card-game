@@ -53,7 +53,12 @@ export function useCombatPlayback(latest: View | undefined) {
                 return {
                   ...player,
                   board: player.board.filter(
-                    (unit) => unit.cardId !== entry.cardId,
+                    (unit) =>
+                      !(
+                        unit.cardId === entry.cardId &&
+                        unit.row === entry.row &&
+                        unit.depth === entry.depth
+                      ),
                   ),
                 };
               if (entry.type === "attack" && index === entry.targetPlayer)
@@ -61,7 +66,11 @@ export function useCombatPlayback(latest: View | undefined) {
                   ? {
                       ...player,
                       board: player.board.map((unit) =>
-                        unit.cardId === entry.targetCardId
+                        unit.cardId === entry.targetCardId &&
+                        (entry.targetRow === undefined ||
+                          unit.row === entry.targetRow) &&
+                        (entry.targetDepth === undefined ||
+                          unit.depth === entry.targetDepth)
                           ? { ...unit, hp: entry.hp! }
                           : unit,
                       ),

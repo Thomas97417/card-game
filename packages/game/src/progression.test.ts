@@ -60,7 +60,7 @@ describe("variantes et progression", () => {
     expect(() => validateDeck([...deck, "guardian:common"])).toThrow("unique");
   });
   it.each([4, 8])(
-    "conserves all variants in complete games with %i cards, even with an exhausted hand",
+    "keeps four distinct hand variants and reusable cards throughout games with %i cards",
     (size) => {
       const random = seeded();
       const ids = [
@@ -97,15 +97,17 @@ describe("variantes et progression", () => {
                 random,
               ).state
             : endTurn(state, state.activePlayer, state.turn, i, random).state;
-        for (const owner of state.players)
-          expect(
-            [
-              ...owner.hand,
-              ...owner.drawPile,
-              ...owner.discard,
-              ...owner.board.map((unit) => unit.cardId),
-            ].sort(),
-          ).toEqual([...ids].sort());
+        for (const owner of state.players) {
+          expect([...owner.hand, ...owner.drawPile].sort()).toEqual(
+            [...ids].sort(),
+          );
+          expect(owner.cards.map((card) => card.id)).toEqual(ids);
+          expect(owner.hand).toHaveLength(4);
+          expect(new Set(owner.hand).size).toBe(4);
+          expect(owner.board.every((unit) => ids.includes(unit.cardId))).toBe(
+            true,
+          );
+        }
       }
       expect(state.status).toBe("finished");
     },

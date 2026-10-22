@@ -135,7 +135,7 @@ describe("terrain d’entraînement", () => {
     second.players[0]!.drawPile.reverse();
     expect(choose(first)).toEqual(choose(second));
   });
-  it("finishes simulated training matches while conserving cards and legal positions", () => {
+  it("finishes simulated training matches with a full unique hand and legal positions", () => {
     for (let seed = 1; seed <= 8; seed++) {
       let value = seed;
       const random = () => {
@@ -172,15 +172,15 @@ describe("terrain d’entraînement", () => {
             random,
           ).state;
         for (const [index, owner] of state.players.entries()) {
+          expect([...owner.hand, ...owner.drawPile].sort()).toEqual(
+            decks[index],
+          );
+          expect(owner.hand).toHaveLength(4);
+          expect(new Set(owner.hand).size).toBe(4);
+          expect(owner.discard).toEqual([]);
           expect(
-            [
-              ...owner.hand,
-              ...owner.drawPile,
-              ...owner.discard,
-              ...owner.board.map((unit) => unit.cardId),
-            ].sort(),
-          ).toEqual(decks[index]);
-          expect(owner.hand.length).toBeLessThanOrEqual(4);
+            owner.board.every((unit) => decks[index]!.includes(unit.cardId)),
+          ).toBe(true);
           expect(
             owner.board.every((unit) =>
               isDeploymentDepth(

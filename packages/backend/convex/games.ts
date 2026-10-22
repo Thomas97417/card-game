@@ -192,14 +192,17 @@ export const withdrawCard = mutation({
     gameId: v.id("games"),
     cardId: v.string(),
     expectedTurn: v.number(),
+    position: v.optional(v.object({ row: v.number(), depth: v.number() })),
   },
-  handler: async (ctx, { gameId, cardId, expectedTurn }) => {
+  handler: async (ctx, { gameId, cardId, expectedTurn, position }) => {
     const user = await requirePlayer(ctx);
     const { state, player } = await requireMatch(ctx, gameId, user.userId);
     await saveTransition(
       ctx,
       gameId,
-      rules(() => withdraw(state, player, cardId, expectedTurn, Date.now())),
+      rules(() =>
+        withdraw(state, player, cardId, expectedTurn, Date.now(), position),
+      ),
     );
   },
 });

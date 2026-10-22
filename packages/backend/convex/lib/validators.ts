@@ -74,6 +74,8 @@ export const eventValidator = v.object({
   depth: v.optional(v.number()),
   targetPlayer: v.optional(v.number()),
   targetCardId: v.optional(v.string()),
+  targetRow: v.optional(v.number()),
+  targetDepth: v.optional(v.number()),
   damage: v.optional(v.number()),
   hp: v.optional(v.number()),
 });

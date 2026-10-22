@@ -33,11 +33,11 @@ Les changements du deck sont enregistrés automatiquement dans leur ordre, avec 
 
 ### Règles du combat
 
-La main est complétée à quatre cartes au début du tour, tant qu’il reste des cartes disponibles. Jouer une carte déclenche les attaques puis le tour adverse. En multijoueur, le délai de soixante secondes déclenche aussi les attaques. Si aucun placement n’est possible, « Attaquer sans invoquer » permet de poursuivre.
+La main contient quatre variantes distinctes. Chaque carte jouée est immédiatement remplacée par un tirage aléatoire parmi toutes les variantes du deck absentes de la main. La carte qui vient d’être posée est éligible, même si elle reste sur le terrain ; plusieurs créatures de cette variante peuvent donc coexister. Les cartes déjà en main sont exclues du tirage. Avec le deck de départ à quatre cartes, la carte jouée revient toujours. Jouer une carte déclenche les attaques puis le tour adverse. En multijoueur, le délai de soixante secondes déclenche aussi les attaques. Si aucun placement n’est possible, « Attaquer sans invoquer » permet de poursuivre.
 
 Chaque camp possède quatre lignes et trois colonnes. La colonne centrale est partagée. Le corps à corps peut aussi se placer vers l’ennemi et la distance vers son héros. Une unité au corps à corps derrière une autre unité au corps à corps sur la même ligne est bloquée ; une unité à distance attaque derrière ses alliés. Chaque unité qui peut agir vise le premier ennemi dans sa ligne, sinon le héros adverse. Le premier héros à zéro PV perd.
 
-Avant de jouer sa carte, on peut retirer une créature vers la défausse. Les créatures mortes y retournent également ; elle est remélangée lorsque la pioche est vide. Les règles et les paramètres de progression sont centralisés dans `packages/game`. Convex valide les actions, les possessions, les récompenses, les délais et les améliorations.
+Avant de jouer sa carte, on peut retirer une créature pour libérer sa case sans modifier la main. La case permet de sélectionner un exemplaire précis lorsque plusieurs créatures partagent une variante ; les dégâts et animations ciblent aussi cet exemplaire. Les morts et retraits ne consomment aucune carte du deck ni exemplaire de la collection. Les règles et les paramètres de progression sont centralisés dans `packages/game`. Convex valide les actions, les possessions, les récompenses, les délais et les améliorations.
 
 Les [règles de progression](docs/progression.md) détaillent les probabilités et les garanties des coffres. Les [notes sur les illustrations](docs/art.md) documentent les images et leurs prompts.
 
@@ -49,7 +49,7 @@ bun run check-types
 bun run build
 ```
 
-Les tests couvrent le moteur, la conservation des cartes sur 20 duels simulés et 8 entraînements complets, les choix offensifs et défensifs de l’ordinateur, les autorisations avec de vraies identités du composant Better Auth, les invitations concurrentes, la confidentialité, les échéances et le matchmaking.
+Les tests couvrent le moteur, le maintien de quatre cartes distinctes en main sur 20 duels simulés et 8 entraînements complets, les créatures répétées et leurs animations, les choix offensifs et défensifs de l’ordinateur, les autorisations avec de vraies identités du composant Better Auth, les invitations concurrentes, la confidentialité, les échéances et le matchmaking.
 
 Un scénario sur le backend réel est disponible, **uniquement pour un déploiement `dev:`** :
 

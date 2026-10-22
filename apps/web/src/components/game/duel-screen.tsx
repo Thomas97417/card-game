@@ -12,6 +12,7 @@ import {
   type GameView,
   type GameEvent,
   type CardRarity,
+  type UnitPosition,
 } from "@sylve/game";
 import {
   ArrowLeft,
@@ -49,7 +50,11 @@ interface DuelScreenProps {
     depth: number,
     turn: number,
   ) => Promise<unknown>;
-  onWithdrawCard: (cardId: string, turn: number) => Promise<unknown>;
+  onWithdrawCard: (
+    cardId: string,
+    turn: number,
+    position: UnitPosition,
+  ) => Promise<unknown>;
   onEndTurn: (turn: number) => Promise<unknown>;
   onSurrender: () => Promise<unknown>;
   practice?: boolean;
@@ -127,18 +132,26 @@ export function DuelScreen({
     inspection?.type === "card" &&
     inspection.source === "board" &&
     inspection.playerIndex === data.me
-      ? inspection.card.id
+      ? `${inspection.position.row}-${inspection.position.depth}`
       : null;
   function inspect(next: DuelInspection) {
     setSelected(null);
     setInspection(next);
   }
-  async function withdrawCard(cardId: string) {
-    if (!canWithdraw || !mine.board.some((unit) => unit.cardId === cardId))
+  async function withdrawCard(cardId: string, position: UnitPosition) {
+    if (
+      !canWithdraw ||
+      !mine.board.some(
+        (unit) =>
+          unit.cardId === cardId &&
+          unit.row === position.row &&
+          unit.depth === position.depth,
+      )
+    )
       return;
     setPending(true);
     try {
-      await onWithdrawCard(cardId, data.turn);
+      await onWithdrawCard(cardId, data.turn, position);
       setInspection(null);
     } catch (error) {
       showGameError(error);
@@ -321,17 +334,14 @@ export function DuelScreen({
         canSummon={canSummon}
         combatEvent={combatEvent}
         onPlace={(cardId, row, depth) => void place(cardId, row, depth)}
-        onInspectUnit={(cardId, playerIndex) => {
-          const unit = display.players[playerIndex]?.board.find(
-            (entry) => entry.cardId === cardId,
-          );
-          if (unit)
-            inspect({
-              type: "card",
-              card: unit.card,
-              playerIndex,
-              source: "board",
-            });
+        onInspectUnit={(unit, playerIndex) => {
+          inspect({
+            type: "card",
+            card: unit.card,
+            playerIndex,
+            source: "board",
+            position: { row: unit.row, depth: unit.depth },
+          });
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
       />
@@ -346,7 +356,7 @@ export function DuelScreen({
                   : "À distance : colonne du milieu ou colonne vers ton héros."
                 : canSummon
                   ? "Glisse une carte, ou ouvre sa fiche. La poser déclenche l’assaut."
-                  : `La main est complétée à ${HAND_SIZE} au début de ton tour.`}
+                  : `Chaque carte jouée est remplacée. ${HAND_SIZE} cartes en main, sans doublon.`}
             </span>
           </div>
           <span className="small muted">
@@ -526,7 +536,9 @@ export function DuelScreen({
           setSelected(cardId);
           setInspection(null);
         }}
-        onWithdrawCard={(cardId) => void withdrawCard(cardId)}
+        onWithdrawCard={(cardId, position) =>
+          void withdrawCard(cardId, position)
+        }
       />
       <dialog
         className="sylve-dialog"
@@ -572,19 +584,22 @@ export function DuelScreen({
           pas agir. Les unités à distance peuvent attaquer depuis l’arrière.
         </p>
         <p>
-          Pas de déplacement ni de riposte. Les morts rejoignent la défausse,
-          remélangée quand la pioche est vide. Ton deck contient de{" "}
-          {MIN_DECK_SIZE} à {DECK_SIZE} cartes uniques et ta main est complétée
-          à {HAND_SIZE} au début de ton tour.{" "}
+          Pas de déplacement ni de riposte. Ton deck contient de {MIN_DECK_SIZE}{" "}
+          à {DECK_SIZE} cartes uniques. Chaque carte jouée est immédiatement
+          remplacée pour garder {HAND_SIZE} cartes en main. Le tirage peut
+          redonner la carte que tu viens de poser, même si elle est encore sur
+          le terrain. Une même carte ne peut pas être présente deux fois dans ta
+          main.{" "}
           {practice
             ? "Prends tout le temps qu’il te faut pour réfléchir."
             : "Tu as 60 secondes pour agir."}
         </p>
         <p>
           Pour retirer une créature pendant ton tour, sélectionne-la sur le
-          terrain puis choisis « Retirer du terrain ». Elle rejoint la défausse.
-          Fais tes retraits avant de jouer ta carte. Si aucun placement n’est
-          possible, « Attaquer sans invoquer » permet de continuer le combat.
+          terrain puis choisis « Retirer du terrain ». Seule cette créature
+          quitte sa case ; ta main ne change pas. Fais tes retraits avant de
+          jouer ta carte. Si aucun placement n’est possible, « Attaquer sans
+          invoquer » permet de continuer le combat.
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
         <form method="dialog">

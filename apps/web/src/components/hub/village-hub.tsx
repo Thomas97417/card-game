@@ -419,7 +419,7 @@ function ArchivesContent() {
     {
       icon: Layers3,
       title: "Rassemble ton alliance",
-      copy: `Compose un deck de ${MIN_DECK_SIZE} à ${DECK_SIZE} variantes distinctes. Une même créature peut y figurer dans plusieurs raretés. Au début de chaque tour, ta main est complétée à ${HAND_SIZE} cartes, tant que des cartes sont disponibles.`,
+      copy: `Compose un deck de ${MIN_DECK_SIZE} à ${DECK_SIZE} variantes distinctes. Chaque carte jouée est remplacée immédiatement pour garder ${HAND_SIZE} cartes en main. Une carte déjà sur le terrain peut revenir en main ; une carte déjà en main ne peut pas y apparaître en double.`,
     },
     {
       icon: MapPin,
@@ -458,10 +458,10 @@ function ArchivesContent() {
         ))}
       </ol>
       <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
-        Tu peux aussi retirer une créature de ton camp pendant ton tour : elle
-        rejoint la défausse et pourra être repiochée. Fais tes retraits avant de
-        poser ta carte. Si aucune carte ne peut être posée, tu peux attaquer
-        sans invoquer.
+        Tu peux aussi retirer une créature de ton camp pendant ton tour pour
+        libérer sa case, sans changer ta main. Fais tes retraits avant de poser
+        ta carte. Si aucune carte ne peut être posée, tu peux attaquer sans
+        invoquer.
       </p>
       <p className="mt-6 flex items-center gap-2 border-t border-[#dee2d3] pt-4 text-xs text-[#697664]">
         <Shield size={16} className="shrink-0 text-[#8d7950]" />{" "}

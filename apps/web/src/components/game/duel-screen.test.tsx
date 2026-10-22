@@ -190,8 +190,35 @@ describe("inspection pendant un duel", () => {
     expect(dialog.getByText("/ 9")).toBeTruthy();
     expect(dialog.getByText("Ligne 2 · Milieu")).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: "Retirer du terrain" }));
-    expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn);
+    expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn, {
+      row: 1,
+      depth: 1,
+    });
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("inspects and withdraws the selected copy when two creatures share a variant", async () => {
+    const data = matchData();
+    const player = data.players[0]!;
+    const card = player.deck.find((card) => card.id === "guardian")!;
+    player.hand.push(card);
+    player.handCount = player.hand.length;
+    player.board.push({ cardId: card.id, card, row: 3, depth: 0, hp: 7 });
+    const { actions } = setup(data);
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "Gardien de pierre, Corps à corps, puissance 2, 7 PV, voir les informations",
+      }),
+    );
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByLabelText("7 points de vie")).toBeTruthy();
+    expect(dialog.getByText("Ligne 4 · Avant")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Retirer du terrain" }));
+    expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn, {
+      row: 3,
+      depth: 0,
+    });
+    expect(actions.onPlayCard).not.toHaveBeenCalled();
   });
 
   it("closes with Escape without playing or withdrawing a card", async () => {

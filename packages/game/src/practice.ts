@@ -59,7 +59,7 @@ function visibleState(view: GameView): GameState {
       userId: String(index),
       name: player.name,
       heroHp: player.heroHp,
-      cards: [...player.hand, ...player.board.map((unit) => unit.card)],
+      cards: player.deck.map((card) => ({ ...card })),
       hand: player.hand.map((card) => card.id),
       drawPile: [],
       discard: [],

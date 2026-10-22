@@ -292,13 +292,16 @@ export interface Unit {
   depth: number;
   hp: number;
 }
+export type UnitPosition = Pick<Unit, "row" | "depth">;
 export interface PlayerState {
   userId: string;
   name: string;
   heroHp: number;
   cards: CardDefinition[];
   hand: string[];
+  /** Variants outside the hand, all eligible even while deployed. */
   drawPile: string[];
+  /** Kept empty for compatibility with saved games from the finite-deck rules. */
   discard: string[];
   board: Unit[];
 }
@@ -321,6 +324,8 @@ export interface GameEvent {
   depth?: number;
   targetPlayer?: number;
   targetCardId?: string;
+  targetRow?: number;
+  targetDepth?: number;
   damage?: number;
   hp?: number;
 }
@@ -358,15 +363,20 @@ export function shuffle<T>(items: readonly T[], random: () => number): T[] {
 }
 
 function refill(player: PlayerState, random: () => number) {
+  const held = new Set(player.hand);
+  const available = shuffle(
+    [...new Set(player.cards.map((card) => card.id))].filter(
+      (id) => !held.has(id),
+    ),
+    random,
+  );
   while (player.hand.length < HAND_SIZE) {
-    if (!player.drawPile.length && player.discard.length) {
-      player.drawPile = shuffle(player.discard, random);
-      player.discard = [];
-    }
-    const next = player.drawPile.shift();
+    const next = available.shift();
     if (!next) break;
     player.hand.push(next);
   }
+  player.drawPile = available;
+  player.discard = [];
 }
 
 export function createGame(
@@ -382,10 +392,7 @@ export function createGame(
       cards: player.cards.map((c) => ({ ...c, combatType: getCombatType(c) })),
       heroHp: HERO_HP,
       hand: [],
-      drawPile: shuffle(
-        player.cards.map((c) => c.id),
-        random,
-      ),
+      drawPile: [],
       discard: [],
       board: [],
     })),
@@ -455,6 +462,7 @@ export function summon(
     );
   player.hand.splice(player.hand.indexOf(cardId), 1);
   player.board.push({ cardId, row, depth, hp: card.health });
+  refill(player, random);
   state.hasSummoned = true;
   const events: GameEvent[] = [];
   emit(state, events, {
@@ -468,23 +476,32 @@ export function summon(
   return { state: resolved.state, events: [...events, ...resolved.events] };
 }
 
-/** Withdraw before playing a card; the creature returns to the discard pile. */
+/** Remove only the selected creature; the hand and reusable deck are unchanged. */
 export function withdraw(
   input: GameState,
   playerIndex: number,
   cardId: string,
   turn: number,
   now: number,
+  position?: UnitPosition,
 ): Transition {
   checkTurn(input, playerIndex, turn);
   if (now >= input.turnEndsAt)
     throw new GameError("Le temps du tour est écoulé.");
   const state = cloneGame(input);
   const player = state.players[playerIndex]!;
-  const unit = player.board.find((entry) => entry.cardId === cardId);
+  const matches = player.board.filter(
+    (entry) =>
+      entry.cardId === cardId &&
+      (!position ||
+        (entry.row === position.row && entry.depth === position.depth)),
+  );
+  if (matches.length > 1)
+    throw new GameError("Choisis la créature à retirer sur le terrain.");
+  const unit = matches[0];
   if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
   player.board = player.board.filter((entry) => entry !== unit);
-  player.discard.push(cardId);
+  player.discard = [];
   const events: GameEvent[] = [];
   emit(state, events, {
     type: "withdraw",
@@ -528,12 +545,14 @@ export function endTurn(
         depth: unit.depth,
         targetPlayer: opponentIndex,
         targetCardId: target.cardId,
+        targetRow: target.row,
+        targetDepth: target.depth,
         damage: card.attack,
         hp: target.hp,
       });
       if (target.hp === 0) {
         defender.board = defender.board.filter((other) => other !== target);
-        defender.discard.push(target.cardId);
+        defender.discard = [];
         emit(state, events, {
           type: "death",
           player: opponentIndex,

@@ -213,6 +213,43 @@ try {
     restored.players[actor].board.length === 1,
     "A new authenticated session restores the persisted game",
   );
+  const redrawn = await clients[actor].query(api.games.get, { gameId });
+  const repeatCard = own.players[actor].hand[0];
+  const repeatDepth = getCombatType(repeatCard) === "melee" ? 0 : 2;
+  check(
+    redrawn.players[actor].hand.length === 4 &&
+      new Set(redrawn.players[actor].hand.map((card) => card.id)).size === 4 &&
+      redrawn.players[actor].hand.some((card) => card.id === repeatCard.id),
+    "Playing a starter variant immediately redraws it without a duplicate in hand",
+  );
+  await clients[1 - actor].mutation(api.games.endTurn, {
+    gameId,
+    expectedTurn: own.turn + 1,
+  });
+  await clients[actor].mutation(api.games.playCard, {
+    gameId,
+    cardId: repeatCard.id,
+    row: 2,
+    depth: repeatDepth,
+    expectedTurn: own.turn + 2,
+  });
+  await clients[1 - actor].mutation(api.games.endTurn, {
+    gameId,
+    expectedTurn: own.turn + 3,
+  });
+  await clients[actor].mutation(api.games.withdrawCard, {
+    gameId,
+    cardId: repeatCard.id,
+    expectedTurn: own.turn + 4,
+    position: { row: 2, depth: repeatDepth },
+  });
+  const oneCopy = await clients[actor].query(api.games.get, { gameId });
+  check(
+    oneCopy.players[actor].board.length === 1 &&
+      oneCopy.players[actor].board[0].row === 0 &&
+      oneCopy.players[actor].hand.length === 4,
+    "The same variant can be deployed twice and only the selected copy is withdrawn",
+  );
   await clients[0].mutation(api.games.surrender, { gameId });
   check(
     (await clients[1].query(api.games.get, { gameId })).winner === 1,
@@ -298,7 +335,12 @@ try {
     "Persistent solo starts the human first without a deadline",
   );
   let soloTurns = 0;
+  let soloHandsStayFull = true;
   for (; soloTurns < 200 && solo.status !== "finished"; soloTurns++) {
+    soloHandsStayFull &&=
+      solo.players[0].hand.length === 4 &&
+      new Set(solo.players[0].hand.map((card) => card.id)).size === 4 &&
+      solo.players[1].handCount === 4;
     if (solo.activePlayer === 1)
       await clients[0].mutation(api.games.soloTurn, {
         gameId: soloId,
@@ -324,6 +366,10 @@ try {
     solo.status === "finished" &&
       (solo.winner !== 0 || solo.reward?.status === "awarded"),
     `A complete server solo ends and grants its eligible reward (${soloTurns} turns)`,
+  );
+  check(
+    soloHandsStayFull,
+    "Both players keep four distinct hand variants throughout the server solo",
   );
   let victory = (await clients[0].query(api.chests.list, {})).victoryChest;
   check(
