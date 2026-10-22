@@ -4,21 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { CATALOG, HERO_HP, type CardDefinition } from "@sylve/game";
+import {
+  CATALOG,
+  DECK_SIZE,
+  HAND_SIZE,
+  type CardDefinition,
+} from "@sylve/game";
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   CircleHelp,
   Flag,
-  Heart,
   Hourglass,
-  Layers,
   Leaf,
-  Shield,
-  Swords,
   Trophy,
+  Undo2,
+  X,
 } from "lucide-react";
+import { DuelArena } from "@/components/game/duel-arena";
 import { CreatureCard } from "@/components/game/creature-card";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameLoading, showGameError } from "@/components/game/shared";
@@ -47,11 +50,13 @@ function GamePage() {
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
   const playCard = useMutation(api.games.playCard);
+  const withdrawCard = useMutation(api.games.withdrawCard);
   const endTurn = useMutation(api.games.endTurn);
   const surrender = useMutation(api.games.surrender);
   const { display, event: combatEvent, playing } = useCombatPlayback(data);
   const [now, setNow] = useState(Date.now());
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [drag, setDrag] = useState<{
     card: CardDefinition;
@@ -74,6 +79,7 @@ function GamePage() {
   }, []);
   useEffect(() => {
     setSelected(null);
+    setSelectedUnit(null);
   }, [data?.turn, data?.hasSummoned]);
   if (!data || !display) return <GameLoading />;
   const mine = display.players[data.me]!;
@@ -89,6 +95,24 @@ function GamePage() {
     seconds > 0 &&
     data.status === "active";
   const canEnd = myTurn && !pending && !catchingUp && data.status === "active";
+  const canWithdraw = canEnd && seconds > 0;
+  const inspectedUnit = mine.board.find((unit) => unit.cardId === selectedUnit);
+  async function withdrawSelected() {
+    if (!canWithdraw || !selectedUnit) return;
+    setPending(true);
+    try {
+      await withdrawCard({
+        gameId,
+        cardId: selectedUnit,
+        expectedTurn: data!.turn,
+      });
+      setSelectedUnit(null);
+    } catch (error) {
+      showGameError(error);
+    } finally {
+      setPending(false);
+    }
+  }
   async function place(cardId: string, row: number, depth: number) {
     if (!canSummon) return;
     setPending(true);
@@ -166,123 +190,15 @@ function GamePage() {
             ? "Ton monstre est prêt. Lance l’assaut !"
             : "À toi de jouer. Invoque un compagnon."
           : "Ton adversaire prépare sa stratégie…";
-  function hero(player: typeof mine, index: number, own: boolean) {
-    const hit =
-      combatEvent?.type === "attack" &&
-      combatEvent.targetPlayer === index &&
-      !combatEvent.targetCardId;
-    return (
-      <div
-        className={`hero-panel ${own ? "own" : "enemy"} ${hit ? "hero-hit" : ""}`}
-      >
-        <div className="hero-crest">
-          {own ? <Leaf size={24} /> : <Shield size={24} />}
-        </div>
-        <div className="hero-info">
-          <span className="eyebrow">
-            {own ? "TON HÉROS" : "TON ADVERSAIRE"}
-          </span>
-          <strong>{player.name}</strong>
-          <div className="hero-life">
-            <Heart size={14} fill="currentColor" />
-            <span>
-              {player.heroHp}
-              <small> / {HERO_HP}</small>
-            </span>
-            <div className="hero-health-track">
-              <div style={{ width: `${(player.heroHp / HERO_HP) * 100}%` }} />
-            </div>
-          </div>
-        </div>
-        <div className="hero-piles" title="Main · Pioche · Défausse">
-          <span>
-            <BookOpen size={13} />
-            {player.handCount}
-          </span>
-          <span>
-            <Layers size={13} />
-            {player.drawCount}
-          </span>
-          <span>↻ {player.discardCount}</span>
-        </div>
-      </div>
-    );
-  }
-  function half(player: typeof mine, playerIndex: number, own: boolean) {
-    return (
-      <div
-        className={`board-half ${own ? "own" : "enemy"}`}
-        role="group"
-        aria-label={own ? "Ton camp" : "Camp adverse"}
-      >
-        {Array.from({ length: 12 }, (_, index) => {
-          const row = Math.floor(index / 3);
-          const depth = own ? 2 - (index % 3) : index % 3;
-          const unit = player.board.find(
-            (entry) => entry.row === row && entry.depth === depth,
-          );
-          const legal = own && !unit && canSummon && !!selected;
-          const acting =
-            combatEvent?.player === playerIndex &&
-            combatEvent.cardId === unit?.cardId;
-          const attacking = acting && combatEvent?.type === "attack";
-          const spawning = acting && combatEvent?.type === "summon";
-          const dying = acting && combatEvent?.type === "death";
-          const hit =
-            combatEvent?.type === "attack" &&
-            combatEvent.targetPlayer === playerIndex &&
-            combatEvent.targetCardId === unit?.cardId &&
-            !!unit;
-          return (
-            <button
-              key={`${row}-${depth}`}
-              type="button"
-              className={`board-cell ${legal ? "legal" : ""} ${hovered === `${row}-${depth}` && own ? "hovered" : ""} ${unit ? "occupied" : ""}`}
-              data-own-cell={own && !unit ? "true" : undefined}
-              data-row={row}
-              data-depth={depth}
-              aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, ${depth === 0 ? "avant" : depth === 1 ? "milieu" : "arrière"}${unit ? `, ${unit.card.name}, attaque ${unit.card.attack}, ${unit.hp} PV` : ", vide"}`}
-              aria-disabled={!legal}
-              onClick={() => {
-                if (legal && selected) void place(selected, row, depth);
-              }}
-            >
-              <span className="cell-rune">✧</span>
-              {unit && (
-                <div
-                  className={`board-unit ${attacking ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${spawning ? "spawning" : ""} ${dying ? "dying" : ""}`}
-                >
-                  <CreaturePortrait card={unit.card} />
-                  <span className="unit-name">{unit.card.name}</span>
-                  <div className="unit-stats">
-                    <span>
-                      <Swords size={12} />
-                      {unit.card.attack}
-                    </span>
-                    <span
-                      className={unit.hp < unit.card.health ? "wounded" : ""}
-                    >
-                      <Heart size={12} />
-                      {unit.hp}
-                    </span>
-                  </div>
-                  {hit && (
-                    <span key={combatEvent.seq} className="damage-float">
-                      −{combatEvent.damage}
-                    </span>
-                  )}
-                </div>
-              )}
-              {legal && <span className="place-hint">Invoquer</span>}
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
   return (
     <main
       className="game-room"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          setSelected(null);
+          setSelectedUnit(null);
+        }
+      }}
       onPointerMove={pointerMove}
       onPointerUp={pointerUp}
       onPointerCancel={() => {
@@ -320,36 +236,53 @@ function GamePage() {
         <span role="status">{statusText}</span>
         <span className="turn-number">TOUR {data.turn}</span>
       </div>
-      <div className="arena-scroll">
-        <section className="arena">
-          <div className="arena-heroes">
-            {hero(mine, data.me, true)}
-            <span className="versus">VS</span>
-            {hero(enemy, 1 - data.me, false)}
-          </div>
-          <div className="board-labels">
-            <span>TON TERRITOIRE</span>
-            <span>LA FRONTIÈRE</span>
-            <span>TERRITOIRE ADVERSE</span>
-          </div>
-          <div className="battlefield">
-            {half(mine, data.me, true)}
-            <div className="board-divider">
-              <span>❖</span>
-            </div>
-            {half(enemy, 1 - data.me, false)}
-          </div>
-          <div className="board-footnote">
+      <DuelArena
+        mine={mine}
+        enemy={enemy}
+        me={data.me}
+        turn={data.turn}
+        selected={selected}
+        selectedUnit={selectedUnit}
+        hovered={hovered}
+        canSummon={canSummon}
+        canWithdraw={canWithdraw}
+        combatEvent={combatEvent}
+        onPlace={(cardId, row, depth) => void place(cardId, row, depth)}
+        onSelectUnit={(cardId) => {
+          setSelected(null);
+          setSelectedUnit((current) => (current === cardId ? null : cardId));
+        }}
+      />
+      {inspectedUnit && (
+        <div
+          className="unit-inspector"
+          role="region"
+          aria-label="Créature sélectionnée"
+        >
+          <CreaturePortrait card={inspectedUnit.card} />
+          <div>
+            <strong>{inspectedUnit.card.name}</strong>
             <span>
-              ARRIÈRE <ArrowRight size={12} /> AVANT
-            </span>
-            <span>4 LIGNES · 24 CASES</span>
-            <span>
-              AVANT <ArrowRight size={12} /> ARRIÈRE
+              La carte retirée rejoint la défausse et pourra être repiochée.
             </span>
           </div>
-        </section>
-      </div>
+          <button
+            className="sylve-button secondary small-button"
+            disabled={!canWithdraw}
+            onClick={() => void withdrawSelected()}
+          >
+            <Undo2 size={15} />
+            Retirer du terrain
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Fermer la sélection"
+            onClick={() => setSelectedUnit(null)}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       <section className="hand-area">
         <div className="hand-heading">
           <div>
@@ -359,10 +292,12 @@ function GamePage() {
                 ? "Glisse une carte, ou sélectionne-la puis choisis une case."
                 : data.hasSummoned && myTurn
                   ? "Une invocation par tour. Tes compagnons sont prêts à attaquer."
-                  : "La main est complétée à 5 au début de ton tour."}
+                  : `La main est complétée à ${HAND_SIZE} au début de ton tour.`}
             </span>
           </div>
-          <span className="small muted">{mine.hand.length} / 5</span>
+          <span className="small muted">
+            {mine.hand.length} / {HAND_SIZE}
+          </span>
         </div>
         <div className="hand-and-actions">
           <div className="player-hand">
@@ -375,10 +310,12 @@ function GamePage() {
                 disabled={!canSummon}
                 onPointerDown={(event) => pointerDown(event, card)}
                 onClick={() => {
-                  if (!suppressClick.current)
+                  if (!suppressClick.current) {
+                    setSelectedUnit(null);
                     setSelected((current) =>
                       current === card.id ? null : card.id,
                     );
+                  }
                 }}
               />
             ))}
@@ -501,8 +438,14 @@ function GamePage() {
         </p>
         <p>
           Pas de déplacement ni de riposte. Les morts rejoignent la défausse,
-          remélangée quand la pioche est vide. Ta main est complétée à 5 au
-          début de ton tour. Tu as 60 secondes pour agir.
+          remélangée quand la pioche est vide. Ton deck contient {DECK_SIZE}{" "}
+          cartes uniques et ta main est complétée à {HAND_SIZE} au début de ton
+          tour. Tu as 60 secondes pour agir.
+        </p>
+        <p>
+          Pour retirer une créature pendant ton tour, sélectionne-la sur le
+          terrain puis choisis « Retirer du terrain ». Elle rejoint la défausse.
+          Une invocation déjà utilisée reste consommée.
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
         <form method="dialog">

@@ -4,15 +4,18 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 ## Jouer
 
-Se connecter, puis ouvrir `/play`. Un deck de départ de 10 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles.
+Se connecter, puis ouvrir `/play`. Un deck de départ de 8 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles.
 
 - **Partie privée** : créer une invitation et partager le lien ou le code de 8 caractères. L’adversaire sélectionne son deck et rejoint la partie. L’invitation expire après 10 minutes.
 - **Recherche automatique** : les deux joueurs choisissent « Trouver un adversaire ». La présence en file est renouvelée toutes les 15 secondes et expire après 45 secondes sans renouvellement.
 - **Duel** : glisser une carte vers une case libre de son camp, ou sélectionner la carte puis la case à la souris ou au clavier. Une invocation par tour, sans mana. Les attaques se déclenchent en terminant son tour, automatiquement au bout de 60 secondes.
+- **Retrait** : pendant son tour, sélectionner une créature de son camp puis choisir « Retirer du terrain ». La carte rejoint la défausse et pourra être repiochée. Le retrait ne rend pas une invocation déjà utilisée.
 - Chaque camp possède 4 lignes et 3 colonnes. Chaque monstre attaque le premier ennemi dans sa ligne, sinon le héros adverse. Le premier héros à 0 PV perd.
-- La main est complétée à 5 au début du tour. Les monstres morts rejoignent la défausse, remélangée lorsque la pioche est vide. Actualiser la page restaure la partie ; les tours continuent pendant les déconnexions.
+- La main est complétée à 4 au début du tour. Les monstres morts rejoignent la défausse, remélangée lorsque la pioche est vide. Actualiser la page restaure la partie ; les tours continuent pendant les déconnexions.
 
 Les règles et les valeurs d’équilibrage sont centralisées dans `packages/game/src/index.ts`. Les fonctions Convex sont autoritaires : les clients ne choisissent ni les dégâts ni le contenu des pioches et ne reçoivent pas la main adverse.
+
+Les anciens decks de 10 cartes sont ramenés aux 8 premières cartes, dans leur ordre enregistré, à l’ouverture du salon ou du grimoire, ou à leur prochaine utilisation. Les invitations et recherches déjà en attente utilisent aussi 8 cartes au démarrage du duel. Les parties déjà commencées conservent leurs cartes ; les nouvelles parties démarrent avec une main de 4.
 
 ## Vérifier le jeu
 

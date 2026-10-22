@@ -73,7 +73,7 @@ function HomePage() {
             <span>01</span>
             <h3>Compose ton alliance</h3>
             <p>
-              Choisis 10 cartes uniques dans le bestiaire. Chaque créature a son
+              Choisis 8 cartes uniques dans le bestiaire. Chaque créature a son
               attaque, ses points de vie et sa place dans ta stratégie.
             </p>
           </div>

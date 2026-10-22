@@ -139,7 +139,7 @@ function PlayPage() {
             ))}
           </select>
           <p className="muted small">
-            10 cartes uniques · Toutes les cartes sont disponibles
+            8 cartes uniques · Toutes les cartes sont disponibles
           </p>
           <div className="deck-miniatures">
             {selectedDeck?.cardIds.slice(0, 6).map((id) => (
@@ -148,7 +148,7 @@ function PlayPage() {
                 card={CATALOG.find((card) => card.id === id)!}
               />
             ))}
-            <span>+4</span>
+            <span>+{Math.max(0, (selectedDeck?.cardIds.length ?? 0) - 6)}</span>
           </div>
           <Link to="/decks" className="text-link">
             Personnaliser mon deck <ArrowRight size={14} />

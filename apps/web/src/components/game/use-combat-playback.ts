@@ -32,7 +32,7 @@ export function useCombatPlayback(latest: View | undefined) {
           ? 420
           : entry.type === "death"
             ? 220
-            : entry.type === "summon"
+            : entry.type === "summon" || entry.type === "withdraw"
               ? 260
               : 0;
       delay += duration;
@@ -44,7 +44,10 @@ export function useCombatPlayback(latest: View | undefined) {
             if (entry.type === "turn" || entry.type === "victory")
               return latest;
             const players = previous.players.map((player, index) => {
-              if (entry.type === "summon" && index === entry.player)
+              if (
+                (entry.type === "summon" || entry.type === "withdraw") &&
+                index === entry.player
+              )
                 return latest.players[index]!;
               if (entry.type === "death" && index === entry.player)
                 return {

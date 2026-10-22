@@ -1,4 +1,4 @@
-import { DEFAULT_DECK, validateDeck } from "@sylve/game";
+import { DEFAULT_DECK, DECK_SIZE, validateDeck } from "@sylve/game";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer, rules } from "./lib/game_service";
@@ -20,8 +20,16 @@ export const ensureStarter = mutation({
     const existing = await ctx.db
       .query("decks")
       .withIndex("by_owner", (q) => q.eq("ownerId", user.userId))
-      .first();
-    if (existing) return existing._id;
+      .collect();
+    // Preserve the player's ordering when adapting decks saved under the old rules.
+    for (const deck of existing) {
+      if (deck.cardIds.length === 10)
+        await ctx.db.patch(deck._id, {
+          cardIds: deck.cardIds.slice(0, DECK_SIZE),
+          updatedAt: Date.now(),
+        });
+    }
+    if (existing[0]) return existing[0]._id;
     return await ctx.db.insert("decks", {
       ownerId: user.userId,
       name: "Les gardiens de la Sylve",
