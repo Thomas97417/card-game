@@ -3,7 +3,7 @@ import type { GameEvent, GameView } from "@sylve/game";
 
 type View = GameView & { events: GameEvent[] };
 
-/** Animate only server-confirmed events; refreshing starts at the current snapshot. */
+/** Animate committed engine events; mounting starts at the current snapshot. */
 export function useCombatPlayback(latest: View | undefined) {
   const [display, setDisplay] = useState<View>();
   const [event, setEvent] = useState<GameEvent | null>(null);
@@ -32,7 +32,7 @@ export function useCombatPlayback(latest: View | undefined) {
           ? 420
           : entry.type === "death"
             ? 220
-            : entry.type === "summon"
+            : entry.type === "summon" || entry.type === "withdraw"
               ? 260
               : 0;
       delay += duration;
@@ -44,7 +44,10 @@ export function useCombatPlayback(latest: View | undefined) {
             if (entry.type === "turn" || entry.type === "victory")
               return latest;
             const players = previous.players.map((player, index) => {
-              if (entry.type === "summon" && index === entry.player)
+              if (
+                (entry.type === "summon" || entry.type === "withdraw") &&
+                index === entry.player
+              )
                 return latest.players[index]!;
               if (entry.type === "death" && index === entry.player)
                 return {

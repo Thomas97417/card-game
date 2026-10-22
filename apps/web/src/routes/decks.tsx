@@ -57,7 +57,7 @@ function DecksPage() {
       <PageTitle
         eyebrow="Le grimoire"
         title="De belles alliances."
-        description="Dix compagnons, un destin commun. Compose le deck qui te ressemble."
+        description="Huit compagnons, un destin commun. Compose le deck qui te ressemble."
       />
       <div className="deck-builder-layout">
         <section>
@@ -118,7 +118,11 @@ function DecksPage() {
                 >
                   <span>{deck.name}</span>
                   <span>
-                    {editingId === deck._id ? <Check size={15} /> : "10"}
+                    {editingId === deck._id ? (
+                      <Check size={15} />
+                    ) : (
+                      deck.cardIds.length
+                    )}
                   </span>
                 </button>
               ))}
@@ -142,7 +146,7 @@ function DecksPage() {
               onChange={(event) => setName(event.target.value)}
             />
             <p className="small muted">
-              Sélectionne 10 cartes différentes dans le bestiaire.
+              Sélectionne {DECK_SIZE} cartes différentes dans le bestiaire.
             </p>
             <div className="selected-cards">
               {cards.map((id) => {

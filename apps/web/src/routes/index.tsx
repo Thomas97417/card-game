@@ -32,16 +32,16 @@ function HomePage() {
             Grandes stratégies.
           </h1>
           <p>
-            Entre dans le cercle. Rassemble dix compagnons, défends ton
+            Entre dans le cercle. Rassemble huit compagnons, défends ton
             territoire et fais basculer le destin d’un duel.
           </p>
           <div className="home-actions">
             <Link to="/play" className="sylve-button">
               Entrer dans le cercle <ArrowRight size={17} />
             </Link>
-            <a href="#how-to-play" className="text-link">
-              Découvrir les règles <ArrowRight size={15} />
-            </a>
+            <Link to="/practice" className="text-link">
+              S’entraîner contre l’ordinateur <ArrowRight size={15} />
+            </Link>
           </div>
           <div className="home-proof">
             <span>
@@ -73,7 +73,7 @@ function HomePage() {
             <span>01</span>
             <h3>Compose ton alliance</h3>
             <p>
-              Choisis 10 cartes uniques dans le bestiaire. Chaque créature a son
+              Choisis 8 cartes uniques dans le bestiaire. Chaque créature a son
               attaque, ses points de vie et sa place dans ta stratégie.
             </p>
           </div>

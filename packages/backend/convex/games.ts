@@ -2,6 +2,7 @@ import {
   endTurn as resolveTurn,
   playerView,
   summon,
+  withdraw,
   surrender as concede,
 } from "@sylve/game";
 import { ConvexError, v } from "convex/values";
@@ -166,6 +167,22 @@ export const playCard = mutation({
       ),
     );
     await saveTransition(ctx, args.gameId, transition);
+  },
+});
+export const withdrawCard = mutation({
+  args: {
+    gameId: v.id("games"),
+    cardId: v.string(),
+    expectedTurn: v.number(),
+  },
+  handler: async (ctx, { gameId, cardId, expectedTurn }) => {
+    const user = await requirePlayer(ctx);
+    const { state, player } = await requireMatch(ctx, gameId, user.userId);
+    await saveTransition(
+      ctx,
+      gameId,
+      rules(() => withdraw(state, player, cardId, expectedTurn, Date.now())),
+    );
   },
 });
 export const endTurn = mutation({

@@ -1,5 +1,5 @@
-export const DECK_SIZE = 10;
-export const HAND_SIZE = 5;
+export const DECK_SIZE = 8;
+export const HAND_SIZE = 4;
 export const HERO_HP = 30;
 export const ROWS = 4;
 export const DEPTHS = 3;
@@ -131,7 +131,9 @@ export class GameError extends Error {}
 
 export function validateDeck(ids: readonly string[]): CardDefinition[] {
   if (ids.length !== DECK_SIZE)
-    throw new GameError("Un deck doit contenir exactement 10 cartes.");
+    throw new GameError(
+      `Un deck doit contenir exactement ${DECK_SIZE} cartes.`,
+    );
   if (new Set(ids).size !== DECK_SIZE)
     throw new GameError("Chaque carte doit être unique dans le deck.");
   return ids.map((id) => {
@@ -170,7 +172,7 @@ export interface GameState {
 }
 export interface GameEvent {
   seq: number;
-  type: "summon" | "attack" | "death" | "turn" | "victory";
+  type: "summon" | "withdraw" | "attack" | "death" | "turn" | "victory";
   player: number;
   cardId?: string;
   row?: number;
@@ -312,6 +314,34 @@ export function summon(
     cardId,
     row,
     depth,
+  });
+  return { state, events };
+}
+
+/** Withdrawing sends a creature to the discard pile and never refunds a summon. */
+export function withdraw(
+  input: GameState,
+  playerIndex: number,
+  cardId: string,
+  turn: number,
+  now: number,
+): Transition {
+  checkTurn(input, playerIndex, turn);
+  if (now >= input.turnEndsAt)
+    throw new GameError("Le temps du tour est écoulé.");
+  const state = cloneGame(input);
+  const player = state.players[playerIndex]!;
+  const unit = player.board.find((entry) => entry.cardId === cardId);
+  if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
+  player.board = player.board.filter((entry) => entry !== unit);
+  player.discard.push(cardId);
+  const events: GameEvent[] = [];
+  emit(state, events, {
+    type: "withdraw",
+    player: playerIndex,
+    cardId,
+    row: unit.row,
+    depth: unit.depth,
   });
   return { state, events };
 }

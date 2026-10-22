@@ -7,6 +7,7 @@ import {
   HERO_HP,
   playerView,
   summon,
+  withdraw,
   surrender,
   TURN_MS,
   validateDeck,
@@ -43,9 +44,12 @@ function unit(
   });
 }
 describe("construction de deck", () => {
-  it("requires exactly ten known unique cards", () => {
-    expect(validateDeck(DEFAULT_DECK)).toHaveLength(10);
-    expect(() => validateDeck(DEFAULT_DECK.slice(1))).toThrow("10 cartes");
+  it("requires exactly eight known unique cards", () => {
+    expect(validateDeck(DEFAULT_DECK)).toHaveLength(8);
+    expect(() =>
+      validateDeck(CATALOG.slice(0, 9).map((card) => card.id)),
+    ).toThrow("8 cartes");
+    expect(() => validateDeck(DEFAULT_DECK.slice(1))).toThrow("8 cartes");
     expect(() =>
       validateDeck([...DEFAULT_DECK.slice(1), DEFAULT_DECK[1]!]),
     ).toThrow("unique");
@@ -60,14 +64,14 @@ describe("construction de deck", () => {
   });
 });
 describe("début de partie et confidentialité", () => {
-  it("starts with two 30 HP heroes, five cards and a server-selected first player", () => {
+  it("starts with two 30 HP heroes, four cards and a server-selected first player", () => {
     const state = initial();
     expect(state.activePlayer).toBe(0);
     expect(state.turnEndsAt).toBe(TURN_MS);
     for (const player of state.players) {
       expect(player.heroHp).toBe(HERO_HP);
-      expect(player.hand).toHaveLength(5);
-      expect(player.drawPile).toHaveLength(5);
+      expect(player.hand).toHaveLength(4);
+      expect(player.drawPile).toHaveLength(4);
     }
   });
   it("rejects self-play and spectators", () => {
@@ -85,9 +89,9 @@ describe("début de partie et confidentialité", () => {
   });
   it("hides opponent hands, unseen definitions, user IDs and draw order", () => {
     const view = playerView(initial(), "alice");
-    expect(view.players[0]!.hand).toHaveLength(5);
+    expect(view.players[0]!.hand).toHaveLength(4);
     expect(view.players[1]!.hand).toEqual([]);
-    expect(view.players[1]!.handCount).toBe(5);
+    expect(view.players[1]!.handCount).toBe(4);
     expect(view.players[1]).not.toHaveProperty("cards");
     expect(view.players[1]).not.toHaveProperty("drawPile");
     expect(view.players[1]).not.toHaveProperty("userId");
@@ -104,7 +108,7 @@ describe("invocation", () => {
       row: 2,
       depth: 1,
     });
-    expect(result.state.players[0]!.hand).toHaveLength(4);
+    expect(result.state.players[0]!.hand).toHaveLength(3);
     expect(result.events[0]!.type).toBe("summon");
     expect(() =>
       summon(result.state, 0, result.state.players[0]!.hand[0]!, 0, 0, 1, 11),
@@ -141,6 +145,74 @@ describe("invocation", () => {
     expect(endTurn(invoked, 0, 1, 2, random).state.players[1]!.heroHp).toBe(
       30 - card.attack,
     );
+  });
+});
+describe("retrait du terrain", () => {
+  it("discards a creature without mutating input or refunding the summon", () => {
+    const state = initial();
+    const id = state.players[0]!.hand[0]!;
+    const invoked = summon(state, 0, id, 2, 1, 1, 1).state;
+    const result = withdraw(invoked, 0, id, 1, 2);
+    expect(invoked.players[0]!.board).toHaveLength(1);
+    expect(result.state.players[0]!.board).toEqual([]);
+    expect(result.state.players[0]!.discard).toEqual([id]);
+    expect(result.state.players[0]!.hand).toEqual(invoked.players[0]!.hand);
+    expect(result.state.hasSummoned).toBe(true);
+    expect(result.events).toEqual([
+      { seq: 2, type: "withdraw", player: 0, cardId: id, row: 2, depth: 1 },
+    ]);
+    expect(() =>
+      summon(result.state, 0, result.state.players[0]!.hand[0]!, 2, 1, 1, 3),
+    ).toThrow("déjà");
+    expect(
+      endTurn(result.state, 0, 1, 3, random).state.players[1]!.heroHp,
+    ).toBe(HERO_HP);
+  });
+  it("preserves an unused summon and allows withdrawing with a full hand", () => {
+    const state = initial();
+    const id = state.players[0]!.drawPile[0]!;
+    unit(state, 0, id, 0, 0);
+    const result = withdraw(state, 0, id, 1, 2).state;
+    expect(result.players[0]!.hand).toHaveLength(4);
+    expect(result.hasSummoned).toBe(false);
+    const next = summon(
+      result,
+      0,
+      result.players[0]!.hand[0]!,
+      0,
+      0,
+      1,
+      3,
+    ).state;
+    expect(next.players[0]!.board).toHaveLength(1);
+    expect(next.players[0]!.discard).toEqual([id]);
+  });
+  it("rejects enemy units, duplicate withdrawals, wrong or stale turns and deadlines", () => {
+    const state = initial();
+    unit(state, 1, "guardian", 0, 0);
+    expect(() => withdraw(state, 0, "guardian", 1, 1)).toThrow("camp");
+    unit(state, 0, "fox", 0, 0);
+    expect(() => withdraw(state, 1, "guardian", 1, 1)).toThrow("tour");
+    expect(() => withdraw(state, 0, "fox", 0, 1)).toThrow("changé");
+    expect(() => withdraw(state, 0, "fox", 1, TURN_MS)).toThrow("écoulé");
+    const removed = withdraw(state, 0, "fox", 1, 2).state;
+    expect(() => withdraw(removed, 0, "fox", 1, 3)).toThrow("camp");
+    expect(() => withdraw(surrender(state, 0).state, 0, "fox", 1, 3)).toThrow(
+      "terminée",
+    );
+  });
+  it("recycles withdrawn creatures when the draw pile runs out", () => {
+    const state = initial();
+    unit(state, 0, "fox", 0, 0, 1);
+    state.players[0]!.drawPile = [];
+    state.players[0]!.hand = [];
+    const removed = withdraw(state, 0, "fox", 1, 1).state;
+    const opponentTurn = endTurn(removed, 0, 1, 2, random).state;
+    const next = endTurn(opponentTurn, 1, 2, 3, random).state;
+    expect(next.players[0]!.hand).toEqual(["fox"]);
+    expect(
+      summon(next, 0, "fox", 1, 1, 3, 4).state.players[0]!.board[0]!.hp,
+    ).toBe(3);
   });
 });
 describe("combat", () => {
@@ -222,13 +294,8 @@ describe("pioche et cycle des cartes", () => {
     state.players[1]!.hand = ["fox"];
     state.players[1]!.drawPile = ["owl", "stag", "mushroom", "dragon"];
     const next = endTurn(state, 0, 1, 1, random).state;
-    expect(next.players[1]!.hand).toEqual([
-      "fox",
-      "owl",
-      "stag",
-      "mushroom",
-      "dragon",
-    ]);
+    expect(next.players[1]!.hand).toEqual(["fox", "owl", "stag", "mushroom"]);
+    expect(next.players[1]!.drawPile).toEqual(["dragon"]);
     expect(next.turn).toBe(2);
     expect(next.hasSummoned).toBe(false);
     expect(next.turnEndsAt).toBe(TURN_MS + 1);

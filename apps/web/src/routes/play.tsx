@@ -5,6 +5,7 @@ import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   ArrowRight,
+  Bot,
   Check,
   Copy,
   Globe2,
@@ -139,7 +140,7 @@ function PlayPage() {
             ))}
           </select>
           <p className="muted small">
-            10 cartes uniques · Toutes les cartes sont disponibles
+            8 cartes uniques · Toutes les cartes sont disponibles
           </p>
           <div className="deck-miniatures">
             {selectedDeck?.cardIds.slice(0, 6).map((id) => (
@@ -148,7 +149,7 @@ function PlayPage() {
                 card={CATALOG.find((card) => card.id === id)!}
               />
             ))}
-            <span>+4</span>
+            <span>+{Math.max(0, (selectedDeck?.cardIds.length ?? 0) - 6)}</span>
           </div>
           <Link to="/decks" className="text-link">
             Personnaliser mon deck <ArrowRight size={14} />
@@ -156,6 +157,29 @@ function PlayPage() {
         </section>
         <section className="match-options">
           <div className="section-label">02 / TON ADVERSAIRE</div>
+          <div className="match-option sylve-panel practice-option">
+            <div className="option-icon">
+              <Bot />
+            </div>
+            <span className="eyebrow">LE TERRAIN D’ENTRAÎNEMENT</span>
+            <h2>Une partie pour apprendre.</h2>
+            <p className="muted">
+              Affronte le Gardien mécanique avec ton deck. Prends le temps
+              d’essayer tes placements, sans chronomètre.
+            </p>
+            <button
+              className="sylve-button"
+              disabled={locked || !selectedDeck}
+              onClick={() =>
+                void navigate({
+                  to: "/practice",
+                  search: { deck: selectedDeck?.cardIds.join(",") },
+                })
+              }
+            >
+              Jouer contre l’ordinateur <ArrowRight size={17} />
+            </button>
+          </div>
           <div className="match-option sylve-panel">
             <div className="option-icon">
               <Globe2 />
