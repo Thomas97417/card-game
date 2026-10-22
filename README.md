@@ -10,7 +10,7 @@ Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en p
 
 `/play` est un salon illustré en plein écran : le héros à gauche ouvre le deck, les boutons de combat sont à droite et sept emplacements de trésors occupent le bas. Le premier contient un coffre commun récurrent, les deux suivants accueillent les coffres de combat et les quatre derniers sont verrouillés par des chaînes. Les illustrations originales reprennent l’univers peint de Sylve.
 
-- **Combat solo** : affronte le Gardien mécanique avec ton deck et gagne des coffres. La partie est enregistrée sur Convex, reprend après actualisation, commence par le joueur humain et n’a pas de chronomètre. L’IA ne connaît que les informations visibles. Elle joue après les animations ; une relance serveur après dix secondes permet de poursuivre si le client disparaît.
+- **Combat solo** : affronte le Gardien mécanique avec ton deck et gagne des coffres. La partie est enregistrée sur Convex, reprend après actualisation, commence par le joueur humain et n’a pas de chronomètre. L’IA ne connaît que les informations visibles. Elle joue après les animations ; une relance serveur après trente secondes permet de poursuivre si le client disparaît.
 - **Duel public** : cherche un autre joueur. La présence en file est renouvelée toutes les quinze secondes et expire après quarante-cinq secondes d’absence. Le vainqueur gagne un coffre.
 - **Défi amical** : crée ou rejoins une invitation de huit caractères, valable dix minutes. Le lien retrouve sa destination après connexion. Ces parties ne rapportent pas de coffre.
 - **Entraînement local** : `/practice` reste accessible sans compte et sans récompenses. La session recommence à l’actualisation.

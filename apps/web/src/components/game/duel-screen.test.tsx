@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -17,6 +18,7 @@ import {
   validateDeck,
 } from "@sylve/game";
 import { DuelScreen, type DuelData } from "./duel-screen";
+import { COMBAT_TIMING } from "./combat-timing";
 
 const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 
@@ -93,6 +95,14 @@ describe("inspection pendant un duel", () => {
       expect(actions.onPlayCard).not.toHaveBeenCalled();
       fireEvent.click(dialog.getByRole("button", { name: "Choisir une case" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      const hints = document.querySelectorAll(".placement-hint .game-icon");
+      expect(hints).toHaveLength(8);
+      for (const hint of hints) {
+        expect(hint.getAttribute("src")).toContain(
+          isDeploymentDepth(card, 0) ? "melee-sword" : "ranged-bow",
+        );
+        expect(hint.closest("[data-own-cell]")).toBeTruthy();
+      }
       const depth = isDeploymentDepth(card, 0) ? 0 : 2;
       const forbiddenDepth = depth === 0 ? 2 : 0;
       fireEvent.click(
@@ -328,5 +338,53 @@ describe("inspection pendant un duel", () => {
         "Cette créature a quitté le terrain.",
       ),
     ).toBeTruthy();
+  });
+
+  it("keeps lethal damage visible after the creature leaves the board", () => {
+    vi.useFakeTimers();
+    try {
+      const { data, actions, rerender, unmount } = setup();
+      const next = structuredClone(data);
+      next.sequence = 2;
+      next.players[1]!.board = [];
+      next.events = [
+        {
+          seq: 1,
+          type: "attack",
+          player: 0,
+          cardId: "guardian",
+          row: 1,
+          depth: 1,
+          targetPlayer: 1,
+          targetCardId: "fox",
+          targetRow: 1,
+          targetDepth: 2,
+          damage: 2,
+          hp: 0,
+        },
+        { seq: 2, type: "death", player: 1, cardId: "fox", row: 1, depth: 2 },
+      ];
+      rerender(<DuelScreen data={next} {...actions} practice />);
+      act(() => vi.advanceTimersByTime(0));
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.impact));
+      const damage = "Renard des braises subit 2 dégâts";
+      expect(screen.getByLabelText(damage)).toBeTruthy();
+      act(() =>
+        vi.advanceTimersByTime(
+          COMBAT_TIMING.attack - COMBAT_TIMING.impact + COMBAT_TIMING.death,
+        ),
+      );
+      expect(
+        screen.queryByRole("button", {
+          name: /Renard des braises.*0 PV.*voir les informations/,
+        }),
+      ).toBeNull();
+      expect(screen.getByLabelText(damage)).toBeTruthy();
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.damage));
+      expect(screen.queryByLabelText(damage)).toBeNull();
+      unmount();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

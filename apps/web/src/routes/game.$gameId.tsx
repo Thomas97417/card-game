@@ -7,11 +7,17 @@ import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
 import { useEffect, useState } from "react";
+import { COMBAT_TIMING } from "@/components/game/combat-timing";
 
 export const Route = createFileRoute("/game/$gameId")({
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
-  head: () => ({ meta: [{ title: "Le duel — Sylve" }] }),
+  head: () => ({
+    meta: [{ title: "Le duel — Sylve" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/duel-arena-overhead.webp" },
+    ],
+  }),
   component: GamePage,
   errorComponent: () => (
     <main className="sylve-page">
@@ -46,7 +52,7 @@ function GamePage() {
     const expectedTurn = data.turn;
     const timer = window.setTimeout(() => {
       void soloTurn({ gameId, expectedTurn }).catch(showGameError);
-    }, 650);
+    }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
   }, [
     data?.mode,

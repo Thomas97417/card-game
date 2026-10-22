@@ -1,4 +1,5 @@
 import { BookOpen, Layers, Leaf, Shield } from "lucide-react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import {
   DEPTHS,
   HERO_HP,
@@ -13,6 +14,7 @@ import {
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
+import { COMBAT_TIMING } from "./combat-timing";
 import {
   ARENA_CELLS,
   ARENA_CORNERS,
@@ -29,7 +31,6 @@ export function DuelArena({
   mine,
   enemy,
   me,
-  turn,
   selected,
   selectedUnit,
   hovered,
@@ -42,7 +43,6 @@ export function DuelArena({
   mine: Player;
   enemy: Player;
   me: number;
-  turn: number;
   selected: string | null;
   selectedUnit: string | null;
   hovered: string | null;
@@ -59,13 +59,13 @@ export function DuelArena({
         className={`hero-panel ${own ? "own" : "enemy"}`}
         aria-label={`Voir les caractéristiques et le deck de ${player.name}`}
         aria-haspopup="dialog"
+        title={player.name}
         onClick={() => onInspectHero(own ? me : 1 - me)}
       >
         <div className="hero-crest">
           {own ? <Leaf size={27} /> : <Shield size={27} />}
         </div>
         <div className="hero-info">
-          <span className="eyebrow">{own ? "TON HÉROS" : "ADVERSAIRE"}</span>
           <strong>{player.name}</strong>
         </div>
         <div className="hero-piles">
@@ -112,11 +112,6 @@ export function DuelArena({
             value={player.heroHp}
             wounded={player.heroHp < HERO_HP}
           />
-          {hit && (
-            <span key={combatEvent.seq} className="damage-float">
-              −{combatEvent.damage}
-            </span>
-          )}
         </button>
       </div>
     );
@@ -178,7 +173,7 @@ export function DuelArena({
             >
               <button
                 type="button"
-                className={`board-cell ${legal && hovered === `${row}-${depth}` ? "drop-target" : ""}`}
+                className={`board-cell ${legal ? "legal-placement" : ""} ${legal && hovered === `${row}-${depth}` ? "drop-target" : ""}`}
                 style={{ clipPath: cell.clipPath }}
                 data-own-cell={own && !unit ? "true" : undefined}
                 data-row={row}
@@ -191,7 +186,13 @@ export function DuelArena({
                   if (legal && selected) onPlace(selected, row, depth);
                   else if (unit) onInspectUnit(unit, playerIndex);
                 }}
-              />
+              >
+                {legal && (
+                  <span className="placement-hint" aria-hidden="true">
+                    <GameIcon kind={getCombatType(selectedCard!)} size={23} />
+                  </span>
+                )}
+              </button>
               {unit && (
                 <button
                   type="button"
@@ -218,16 +219,7 @@ export function DuelArena({
                         wounded={unit.hp < unit.card.health}
                       />
                     </div>
-                    <span className="unit-role" aria-hidden="true">
-                      <GameIcon kind={getCombatType(unit.card)} size={17} />
-                      {blocked && "Bloquée"}
-                    </span>
                     <span className="unit-name">{unit.card.name}</span>
-                    {hit && (
-                      <span key={combatEvent.seq} className="damage-float">
-                        −{combatEvent.damage}
-                      </span>
-                    )}
                   </div>
                 </button>
               )}
@@ -239,10 +231,17 @@ export function DuelArena({
   }
   return (
     <div className="arena-scroll">
-      <section className="arena" aria-label="Terrain de duel de la Sylve">
+      <section
+        className="arena"
+        aria-label="Terrain de duel de la Sylve"
+        style={
+          { "--damage-duration": `${COMBAT_TIMING.damage}ms` } as CSSProperties
+        }
+      >
         <svg
           className="arena-ground"
           viewBox={`0 0 ${ARENA_WIDTH} ${ARENA_HEIGHT}`}
+          preserveAspectRatio="none"
           aria-hidden="true"
         >
           <defs>
@@ -278,30 +277,105 @@ export function DuelArena({
         </svg>
         <div className="arena-heroes">
           {hero(mine, true)}
-          <div className="arena-round">
-            <span>DUEL DE LA SYLVE</span>
-            <strong>TOUR {turn}</strong>
-            <span>LE CERCLE DES GARDIENS</span>
-          </div>
           {hero(enemy, false)}
         </div>
         <div className="battlefield">
           {half(mine, me, true)}
-          <div className="board-divider" aria-hidden="true">
-            <span>❖</span>
-          </div>
           {half(enemy, 1 - me, false)}
         </div>
         {heroFigure(mine, me, true)}
         {heroFigure(enemy, 1 - me, false)}
-        <div className="board-footnote">
-          <span>DISTANCE · MIXTE · CORPS À CORPS</span>
-          <span>
-            {ROWS} LIGNES · {ROWS * DEPTHS * 2} CASES
-          </span>
-          <span>CORPS À CORPS · MIXTE · DISTANCE</span>
-        </div>
+        <CombatEffects event={combatEvent} mine={mine} enemy={enemy} me={me} />
       </section>
     </div>
+  );
+}
+
+/** Damage stays on the terrain after the impact, including when its target dies. */
+function CombatEffects({
+  event,
+  mine,
+  enemy,
+  me,
+}: {
+  event: GameEvent | null;
+  mine: Player;
+  enemy: Player;
+  me: number;
+}) {
+  const [hits, setHits] = useState<GameEvent[]>([]);
+  useEffect(() => {
+    if (event?.type !== "attack") return;
+    const timer = window.setTimeout(() => {
+      setHits((previous) =>
+        previous.some((hit) => hit.seq === event.seq)
+          ? previous
+          : [...previous, event],
+      );
+    }, COMBAT_TIMING.impact);
+    return () => window.clearTimeout(timer);
+  }, [event]);
+  const removeHit = useCallback((sequence: number) => {
+    setHits((previous) => previous.filter((hit) => hit.seq !== sequence));
+  }, []);
+  return (
+    <div
+      className="combat-effects"
+      aria-live="polite"
+      aria-relevant="additions"
+    >
+      {hits.map((hit) => {
+        const own = hit.targetPlayer === me;
+        const player = own ? mine : enemy;
+        const target = player.deck.find((card) => card.id === hit.targetCardId);
+        const position =
+          hit.targetCardId &&
+          hit.targetRow !== undefined &&
+          hit.targetDepth !== undefined
+            ? groundCell(
+                hit.targetRow,
+                own ? DEPTHS - 1 - hit.targetDepth : DEPTHS + hit.targetDepth,
+              ).impact
+            : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
+        return (
+          <DamageNumber
+            key={hit.seq}
+            hit={hit}
+            position={position}
+            targetName={target?.name ?? player.name}
+            onComplete={removeHit}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function DamageNumber({
+  hit,
+  position,
+  targetName,
+  onComplete,
+}: {
+  hit: GameEvent;
+  position: CSSProperties;
+  targetName: string;
+  onComplete: (sequence: number) => void;
+}) {
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => onComplete(hit.seq),
+      COMBAT_TIMING.damage,
+    );
+    return () => window.clearTimeout(timer);
+  }, [hit.seq, onComplete]);
+  return (
+    <span
+      className="damage-float"
+      style={position}
+      aria-label={`${targetName} subit ${hit.damage} dégâts`}
+    >
+      −{hit.damage}
+    </span>
   );
 }

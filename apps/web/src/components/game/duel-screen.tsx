@@ -5,7 +5,6 @@ import {
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
-  getCombatType,
   isDeploymentDepth,
   legalPlacements,
   type CardDefinition,
@@ -20,6 +19,8 @@ import {
   CircleHelp,
   Flag,
   Hourglass,
+  History,
+  Layers,
   Leaf,
   Trophy,
   RotateCcw,
@@ -92,6 +93,7 @@ export function DuelScreen({
   const suppressClick = useRef(false);
   const surrenderDialog = useRef<HTMLDialogElement>(null);
   const rulesDialog = useRef<HTMLDialogElement>(null);
+  const historyDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (practice) return;
     const timer = window.setInterval(() => setNow(Date.now()), 200);
@@ -123,7 +125,6 @@ export function DuelScreen({
   const hasPlacement = mine.hand.some(
     (card) => legalPlacements(card, mine.board).length > 0,
   );
-  const selectedCard = mine.hand.find((card) => card.id === selected);
   const cardName = (id: string | undefined) =>
     display.players
       .flatMap((player) => player.deck)
@@ -239,22 +240,24 @@ export function DuelScreen({
     setDrag(null);
     setHovered(null);
   }
-  const statusText =
-    data.status === "finished"
-      ? "Le duel est terminé"
-      : playing
-        ? "Les créatures passent à l’action…"
-        : myTurn
-          ? "À toi de jouer. Une carte déclenche l’assaut."
-          : practice
-            ? "Le Gardien mécanique prépare sa stratégie…"
-            : "Ton adversaire prépare sa stratégie…";
+  const statusText = catchingUp
+    ? "L’assaut"
+    : data.status === "finished"
+      ? "Duel terminé"
+      : myTurn
+        ? "À toi de jouer"
+        : practice
+          ? "Le Gardien réfléchit…"
+          : "Tour adverse";
   return (
     <main
       className="game-room"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           setSelected(null);
+          origin.current = null;
+          setDrag(null);
+          setHovered(null);
         }
       }}
       onPointerMove={pointerMove}
@@ -266,18 +269,34 @@ export function DuelScreen({
       }}
     >
       <div className="game-toolbar">
-        <Link to="/play" className="text-link">
-          <ArrowLeft size={15} />
-          Salon
+        <Link
+          to="/play"
+          className="icon-button"
+          aria-label="Retour au salon"
+          title="Retour au salon"
+        >
+          <ArrowLeft size={19} />
         </Link>
-        <span className="eyebrow">
-          {data.mode === "solo"
-            ? "COMBAT SOLO"
-            : practice
-              ? "TERRAIN D’ENTRAÎNEMENT"
-              : "LE CERCLE DE LA SYLVE"}
-        </span>
-        <div>
+        <div className="duel-status">
+          <span
+            className={`turn-dot ${myTurn && !catchingUp ? "active" : ""}`}
+          />
+          <span role="status">{statusText}</span>
+          <span className="turn-number">Tour {display.turn}</span>
+          <span
+            className={`turn-clock ${seconds <= 10 ? "urgent" : ""}`}
+            aria-label={practice ? "Sans chronomètre" : "Temps restant"}
+            title={practice ? "Sans chronomètre" : "Temps restant"}
+          >
+            {practice ? <Bot size={14} /> : <Hourglass size={13} />}
+            {practice
+              ? "∞"
+              : data.status === "finished"
+                ? "—"
+                : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`}
+          </span>
+        </div>
+        <div className="game-tools">
           {onRestart && (
             <button
               className="icon-button"
@@ -291,13 +310,23 @@ export function DuelScreen({
           <button
             className="icon-button"
             aria-label="Lire les règles"
+            title="Lire les règles"
             onClick={() => rulesDialog.current?.showModal()}
           >
             <CircleHelp size={18} />
           </button>
           <button
             className="icon-button"
+            aria-label="Journal du duel"
+            title="Journal du duel"
+            onClick={() => historyDialog.current?.showModal()}
+          >
+            <History size={17} />
+          </button>
+          <button
+            className="icon-button"
             aria-label="Abandonner la partie"
+            title="Abandonner la partie"
             disabled={data.status !== "active" || pending}
             onClick={() => surrenderDialog.current?.showModal()}
           >
@@ -305,29 +334,10 @@ export function DuelScreen({
           </button>
         </div>
       </div>
-      {practice && (
-        <aside className="practice-banner">
-          <Bot size={22} />
-          <div>
-            <strong>Entraîne-toi à ton rythme.</strong>
-            <span>
-              Affronte le Gardien mécanique, teste tes placements et recommence
-              librement. Tu joues en premier.
-            </span>
-          </div>
-          <span className="practice-badge">SANS CHRONOMÈTRE</span>
-        </aside>
-      )}
-      <div className="duel-status">
-        <span className={`turn-dot ${myTurn ? "active" : ""}`} />
-        <span role="status">{statusText}</span>
-        <span className="turn-number">TOUR {data.turn}</span>
-      </div>
       <DuelArena
         mine={mine}
         enemy={enemy}
         me={data.me}
-        turn={data.turn}
         selected={selected}
         selectedUnit={selectedUnit}
         hovered={hovered}
@@ -345,86 +355,64 @@ export function DuelScreen({
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
       />
-      <section className="hand-area">
-        <div className="hand-heading">
-          <div>
-            <span className="eyebrow">TES COMPAGNONS</span>
-            <span className="small muted">
-              {canSummon && selectedCard
-                ? getCombatType(selectedCard) === "melee"
-                  ? "Corps à corps : colonne du milieu ou colonne vers l’ennemi."
-                  : "À distance : colonne du milieu ou colonne vers ton héros."
-                : canSummon
-                  ? "Glisse une carte, ou ouvre sa fiche. La poser déclenche l’assaut."
-                  : `Chaque carte jouée est remplacée. ${HAND_SIZE} cartes en main, sans doublon.`}
-            </span>
-          </div>
-          <span className="small muted">
-            {mine.hand.length} / {HAND_SIZE}
-          </span>
+      <section className="hand-area" aria-label="Ta main">
+        <button
+          type="button"
+          className="hand-deck"
+          aria-label="Voir mon deck"
+          title="Voir mon deck"
+          aria-haspopup="dialog"
+          onClick={() => inspect({ type: "hero", playerIndex: data.me })}
+        >
+          <Layers size={22} strokeWidth={1.3} />
+          <span>{mine.deck.length}</span>
+        </button>
+        <div className="player-hand">
+          {mine.hand.map((card) => (
+            <CreatureCard
+              key={card.id}
+              card={card}
+              compact
+              inspectable
+              selected={selected === card.id}
+              onPointerDown={(event) => pointerDown(event, card)}
+              onClick={() => {
+                if (!suppressClick.current) {
+                  inspect({
+                    type: "card",
+                    card,
+                    playerIndex: data.me,
+                    source: "hand",
+                  });
+                }
+              }}
+            />
+          ))}
+          {mine.hand.length === 0 && (
+            <p className="empty-hand">Aucune carte en main.</p>
+          )}
         </div>
-        <div className="hand-and-actions">
-          <div className="player-hand">
-            {mine.hand.map((card) => (
-              <CreatureCard
-                key={card.id}
-                card={card}
-                compact
-                inspectable
-                selected={selected === card.id}
-                onPointerDown={(event) => pointerDown(event, card)}
-                onClick={() => {
-                  if (!suppressClick.current) {
-                    inspect({
-                      type: "card",
-                      card,
-                      playerIndex: data.me,
-                      source: "hand",
-                    });
-                  }
-                }}
-              />
-            ))}
-            {mine.hand.length === 0 && (
-              <p className="empty-hand">
-                Tous tes compagnons sont sur le terrain. Les cartes des monstres
-                vaincus reviendront dans ta pioche.
-              </p>
+        <div className="turn-actions">
+          {myTurn &&
+            data.status === "active" &&
+            (!hasPlacement || data.hasSummoned) && (
+              <button
+                className="sylve-button"
+                disabled={!canEnd || seconds <= 0}
+                onClick={() => void finish()}
+              >
+                {pending ? "Un instant…" : "Attaquer sans invoquer"}
+                <ArrowRight size={16} />
+              </button>
             )}
-          </div>
-          <div className="turn-actions">
-            <div className={`turn-clock ${seconds <= 10 ? "urgent" : ""}`}>
-              {practice ? <Bot size={18} /> : <Hourglass size={16} />}
-              <span>
-                {practice
-                  ? "À ton rythme"
-                  : data.status === "finished"
-                    ? "—"
-                    : `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`}
-              </span>
-            </div>
-            {myTurn &&
-              data.status === "active" &&
-              (!hasPlacement || data.hasSummoned) && (
-                <button
-                  className="sylve-button"
-                  disabled={!canEnd || seconds <= 0}
-                  onClick={() => void finish()}
-                >
-                  {pending ? "Un instant…" : "Attaquer sans invoquer"}
-                  <ArrowRight size={16} />
-                </button>
-              )}
-            <span className="small muted">
-              {myTurn && !hasPlacement
-                ? "Aucun placement possible. Retire une unité ou lance l’assaut."
-                : "Les attaques sont automatiques dès qu’une carte est posée."}
-            </span>
-          </div>
         </div>
       </section>
-      <details className="combat-history">
-        <summary>Journal du duel</summary>
+      <dialog
+        className="sylve-dialog combat-history"
+        ref={historyDialog}
+        aria-labelledby="history-title"
+      >
+        <h2 id="history-title">Journal du duel</h2>
         <ol>
           {data.events
             .filter((entry) => entry.type === "attack")
@@ -440,7 +428,13 @@ export function DuelScreen({
               </li>
             ))}
         </ol>
-      </details>
+        {!data.events.some((entry) => entry.type === "attack") && (
+          <p>Le combat n’a pas encore commencé.</p>
+        )}
+        <form method="dialog">
+          <button className="sylve-button secondary">Fermer</button>
+        </form>
+      </dialog>
       {data.status === "finished" && !catchingUp && (
         <div className="result-overlay">
           <section className="result-card" role="status">
@@ -517,9 +511,12 @@ export function DuelScreen({
         </div>
       )}
       {drag && (
-        <div className="drag-preview" style={{ left: drag.x, top: drag.y }}>
+        <div
+          className="drag-preview"
+          style={{ left: drag.x, top: drag.y }}
+          aria-hidden="true"
+        >
           <CreaturePortrait card={drag.card} />
-          <span>{drag.card.name}</span>
         </div>
       )}
       <DuelDetailsDialog

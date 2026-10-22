@@ -71,11 +71,16 @@ function makeCell(row: number, column: number) {
       height: `${(height / ARENA_HEIGHT) * 100}%`,
     },
     clipPath: `polygon(${points.map((point) => `${((point.x - left) / width) * 100}% ${((point.y - top) / height) * 100}%`).join(",")})`,
+    impact: {
+      left: `${(anchor.x / ARENA_WIDTH) * 100}%`,
+      top: `${(anchor.y / ARENA_HEIGHT) * 100}%`,
+      marginTop: `${-((cellWidth * 0.55) / ARENA_WIDTH) * 100}vw`,
+    },
     unit: {
       left: `${((anchor.x - left) / width) * 100}%`,
       top: `${((anchor.y - top) / height) * 100}%`,
-      width: `${((cellWidth * 0.72) / width) * 100}%`,
-      height: `${((cellWidth * 0.82) / height) * 100}%`,
+      width: `${((cellWidth * 0.94) / width) * 100}%`,
+      aspectRatio: "1 / 1.1",
     },
   };
 }

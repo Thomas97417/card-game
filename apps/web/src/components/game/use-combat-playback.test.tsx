@@ -8,6 +8,7 @@ import {
   type GameEvent,
 } from "@sylve/game";
 import { useCombatPlayback } from "./use-combat-playback";
+import { COMBAT_TIMING } from "./combat-timing";
 
 afterEach(() => vi.useRealTimers());
 
@@ -62,14 +63,24 @@ describe("animations des créatures répétées", () => {
       { initialProps: { view: initial } },
     );
     rerender({ view: latest });
-    act(() => vi.advanceTimersByTime(420));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.impact - 1));
+    expect(result.current.display!.players[1]!.board[0]!.hp).toBe(2);
+    act(() => vi.advanceTimersByTime(1));
     expect(
       result.current.display!.players[1]!.board.map((unit) => unit.hp),
     ).toEqual([0, 9]);
-    act(() => vi.advanceTimersByTime(220));
+    expect(result.current.event?.type).toBe("attack");
+    act(() =>
+      vi.advanceTimersByTime(COMBAT_TIMING.attack - COMBAT_TIMING.impact),
+    );
+    expect(result.current.event?.type).toBe("death");
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.death));
     expect(result.current.display!.players[1]!.board).toEqual(
       latest.players[1]!.board,
     );
     expect(result.current.display!.players[1]!.board[0]!.row).toBe(1);
+    expect(result.current.playing).toBe(true);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.damage));
+    expect(result.current.playing).toBe(false);
   });
 });
