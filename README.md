@@ -4,7 +4,9 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 ## Jouer
 
-Se connecter, puis ouvrir `/play`. Un deck de départ de 10 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles.
+Après connexion, `/dashboard` ouvre le refuge des gardiens, un village illustré en plein écran. La navigation passe par les bâtiments, sans en-tête ni barre de raccourcis. Cliquer sur l’arène mène à `/play` (ou reprend le duel en cours), et sur l’atelier à `/decks`. La maison affiche le compte et les decks disponibles ; les archives présentent les règles ; le sanctuaire permet de parcourir les 12 créatures. Ces trois bâtiments ouvrent des modales accessibles au clavier. Les icônes de compte et de thème sont superposées au décor. Quand la carte dépasse la largeur de l’écran, elle s’ouvre centrée et défile horizontalement ; des flèches en surimpression permettent aussi de l’explorer.
+
+Un deck de départ de 10 cartes uniques est fourni automatiquement ; `/decks` permet de le modifier ou d’en créer d’autres parmi les 12 monstres disponibles. Les liens d’invitation conservent leur destination après connexion.
 
 - **Partie privée** : créer une invitation et partager le lien ou le code de 8 caractères. L’adversaire sélectionne son deck et rejoint la partie. L’invitation expire après 10 minutes.
 - **Recherche automatique** : les deux joueurs choisissent « Trouver un adversaire ». La présence en file est renouvelée toutes les 15 secondes et expire après 45 secondes sans renouvellement.

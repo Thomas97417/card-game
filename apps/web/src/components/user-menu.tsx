@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Map, Settings, User } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -12,10 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 import { Button } from "./ui/button";
 
-export default function UserMenu() {
+export default function UserMenu({
+  overlay = false,
+}: { overlay?: boolean } = {}) {
   const user = useCurrentUser();
   const navigate = useNavigate();
 
@@ -24,15 +27,31 @@ export default function UserMenu() {
       <DropdownMenuTrigger
         aria-label="Mon compte"
         render={
-          <Button variant="outline" className="flex items-center gap-2 px-2" />
+          <Button
+            variant="outline"
+            className={cn(
+              "flex items-center gap-2 px-2",
+              overlay &&
+                "size-11 rounded-full border-[#d1be85]/70 bg-[#1a3026]/90 p-0 text-[#f1d28b] shadow-lg backdrop-blur-sm hover:bg-[#304a31] hover:text-[#fff6dd] focus-visible:ring-[#e9ca82] dark:bg-[#1a3026]/90 dark:hover:bg-[#304a31]",
+            )}
+          />
         }
       >
         <User className="size-4 shrink-0" />
-        <span className="hidden max-w-32 truncate text-sm font-medium sm:inline-block">
-          {user?.name}
-        </span>
+        {!overlay && (
+          <span className="hidden max-w-32 truncate text-sm font-medium sm:inline-block">
+            {user?.name}
+          </span>
+        )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-card">
+      <DropdownMenuContent
+        align="end"
+        className={cn(
+          "w-56 bg-card",
+          overlay &&
+            "rounded-xl border border-[#c2b489] bg-[#f8f6ee] p-1 text-[#283e33] [--muted-foreground:#697664] [--muted:#e8eadf] [--foreground:#283e33]",
+        )}
+      >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-1">
@@ -45,10 +64,18 @@ export default function UserMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate({ to: "/play" })}>
-            <User className="mr-2 size-4" />
-            Salon de jeu
-          </DropdownMenuItem>
+          {!overlay && (
+            <>
+              <DropdownMenuItem onClick={() => navigate({ to: "/dashboard" })}>
+                <Map className="mr-2 size-4" />
+                Mon refuge
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate({ to: "/play" })}>
+                <User className="mr-2 size-4" />
+                Salon de jeu
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
             <Settings className="mr-2 size-4" />
             Paramètres

@@ -3,7 +3,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 
 import UserMenu from "./user-menu";
 import { ModeToggle } from "./mode-toggle";
-import { Leaf, Swords } from "lucide-react";
+import { Leaf, Map, Swords } from "lucide-react";
 
 const linkStyles = "sylve-nav-link";
 
@@ -19,6 +19,12 @@ export default function Header() {
             Sylve<span className="logo-dot">.</span>
           </Link>
           <nav className="sylve-nav" aria-label="Navigation principale">
+            <Authenticated>
+              <Link to="/dashboard" className={linkStyles}>
+                <Map size={15} />
+                Le refuge
+              </Link>
+            </Authenticated>
             <Link to="/play" className={linkStyles}>
               <Swords size={15} />
               Jouer
