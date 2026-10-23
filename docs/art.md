@@ -197,3 +197,10 @@ Les offres ont été allégées : les surtitres et les étoiles décoratives son
 Les pourcentages de réduction sont remplacés par un ruban doré « 1 tirage gratuit » sur les deux boutons ×10. La note sous les offres et le message initial « Le sanctuaire s’éveille… » sont supprimés ; les boutons restent désactivés pendant l’initialisation, sans bloc qui déplace les packs. Le rendu est vérifié à 2265 × 1314, 1280 × 720 et 390 × 844 px, sans débordement horizontal ni défilement vertical sur ordinateur. Aperçus : [rubans sur ordinateur](sanctuary-offer-ribbons-validation.jpg), [rubans sur mobile](sanctuary-offer-ribbons-mobile-validation.jpg).
 
 Les raccourcis Bestiaire et Ma collection sont désormais centrés juste sous les deux offres, avec un espacement de 12 px. Les offres et leur navigation forment un seul groupe centré ; sur mobile, les raccourcis suivent la seconde carte. Le placement est vérifié à 2265 × 1314, 1280 × 720 et 390 × 844 px, avec accès au clavier et sans défilement vertical sur ordinateur. [Aperçu de la navigation sous les offres](sanctuary-bottom-navigation-validation.jpg).
+
+
+## Cartes communes et renforts — 23 octobre 2026
+
+Onze illustrations originales ont été générées avec l’outil intégré **ImageGen** pour compléter le catalogue : `healer`, `gnome`, `idol`, `enchantress`, `lynx`, `bard`, `tree`, `vampire`, `captain`, `witch` et le jeton `sporeling`. Les personnages, le totem et l’arbre conservent la direction peinte de Sylve, leurs silhouettes entières et un fond transparent. Les images ne reprennent pas les illustrations de Mighty Party.
+
+Les fichiers sont intégrés dans `apps/web/public/art/characters/`, en WebP avec canal alpha, dans une boîte maximale de 512 px. Les portraits et unités partagent ces mêmes fichiers ; l’Éclaireur invoqué réutilise l’illustration du Renard des braises. Le [manifeste des prompts](art-prompts-cards.json) conserve chaque prompt intégral, le PNG source généré et le chemin final. L’[équilibrage des cartes](card-balance.md) détaille leurs rôles et capacités.

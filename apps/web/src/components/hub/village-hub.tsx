@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
+  CATALOG,
+  RARITIES,
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
@@ -393,7 +395,10 @@ function HomeContent({
         <div className="rounded-xl border border-[#dee2d3] bg-[#eef0e5] p-5">
           <Gem size={20} className="mb-3 text-[#6a805a]" />
           <span className="block font-serif text-3xl">
-            {collectionCount ?? "—"} <small className="text-base">/ 48</small>
+            {collectionCount ?? "—"}{" "}
+            <small className="text-base">
+              / {CATALOG.length * RARITIES.length}
+            </small>
           </span>
           <span className="text-xs text-[#697664]">variantes débloquées</span>
         </div>
@@ -428,12 +433,12 @@ function ArchivesContent() {
     {
       icon: MapPin,
       title: "Choisis ton terrain",
-      copy: `Ton camp compte ${ROWS} lignes et ${DEPTHS} colonnes. Le corps à corps se place au milieu ou vers l’ennemi, les unités à distance au milieu ou vers ton héros. La colonne centrale est partagée. Aucun coût de mana.`,
+      copy: `Ton camp compte ${ROWS} lignes et ${DEPTHS} colonnes. Le corps à corps se place au milieu ou vers l’ennemi, les unités à distance au milieu ou vers ton héros. Les bâtiments se placent partout et n’attaquent pas. Aucun coût de mana.`,
     },
     {
       icon: Swords,
       title: "Fais basculer le duel",
-      copy: `Jouer une carte déclenche les attaques et le tour adverse. Chaque créature vise le premier ennemi de sa ligne, ou son héros si la voie est libre. Une unité au corps à corps derrière une autre unité au corps à corps sur la même ligne ne peut pas agir. Réduis les ${HERO_HP} PV du héros à zéro pour gagner.`,
+      copy: `Jouer une carte déclenche ses capacités, les attaques et le tour adverse. Chaque créature vise le premier ennemi de sa ligne, ou son héros si la voie est libre. Une unité au corps à corps derrière un allié sur la même ligne ne peut pas agir. Réduis les ${HERO_HP} PV du héros à zéro pour gagner.`,
     },
   ];
   return (

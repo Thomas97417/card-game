@@ -1,6 +1,6 @@
 # Progression de Sylve
 
-Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` ; les ligues, trophées et déblocages sont dans `packages/game/src/leagues.ts` ; les statistiques, les raretés et le coût des niveaux sont dans `packages/game/src/index.ts`.
+Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` ; les ligues, trophées et déblocages sont dans `packages/game/src/leagues.ts` ; les statistiques, les raretés, les capacités et le coût des niveaux sont dans `packages/game/src/cards.ts`. Le [détail de l’équilibrage](card-balance.md) décrit les données et leur adaptation.
 
 ## Ligues
 
@@ -21,22 +21,22 @@ Le minimum reste de 4 cartes : un nouvel emplacement n’oblige pas à agrandir 
 
 ## Gardien mécanique
 
-Au début de Fer IV, le Gardien utilise les mêmes quatre créatures de départ, communes et de niveau 1. Oracle des brumes rejoint son choix en Fer III et Cerf couronné en Fer II ; Bronze ajoute Renard des braises, Chevalier ronce et Ours des cimes ; Argent donne accès à tout le catalogue. Son deck contient autant de cartes que celui du joueur, avec des créatures distinctes et un mélange de corps à corps et de distance.
+Au début de Fer IV, le Gardien utilise les mêmes quatre créatures de départ, communes et de niveau 1. Oracle des brumes rejoint son choix en Fer III et Cerf couronné en Fer II ; Bronze ajoute Renard des braises, Chevalier ronce et Ours des cimes. Argent IV ajoute Dragon d’ambre, Loup de lune et Vipère de jade ; Argent II ajoute Féline des clairières, Artisan des racines et Totem de l’aurore. Or IV ajoute Tisseuse de runes, Lynx du crépuscule et Chanteur des feuillages ; Platine IV donne accès aux 22 cartes. Son deck contient autant de cartes que celui du joueur, avec des créatures distinctes et une préférence alternée pour la mêlée et la distance. Dès qu’un bâtiment est débloqué, 40 % des decks du Gardien réservent leur dernière place à un bâtiment de soutien ; les autres places conservent des attaquants.
 
 | Ligue | Niveau maximal | Rareté maximale |
 |---|---:|---|
-| Fer | 1 | Commune |
-| Bronze | 2 | Commune |
-| Argent | 3 | Rare |
-| Or | 4 | Rare |
-| Platine | 5 | Épique |
-| Émeraude | 6 | Épique |
-| Diamant | 7 | Légendaire |
-| Maître | 8 | Légendaire |
-| Grand maître | 9 | Légendaire |
-| Challenger | 10 | Légendaire |
+| Fer | 1–3 | Commune |
+| Bronze | 4–6 | Commune |
+| Argent | 7–10 | Rare |
+| Or | 11–13 | Rare |
+| Platine | 14–16 | Épique |
+| Émeraude | 17–20 | Épique |
+| Diamant | 21–23 | Légendaire |
+| Maître | 24 | Légendaire |
+| Grand maître | 25 | Légendaire |
+| Challenger | 26 | Légendaire |
 
-Ces plafonds ne dépassent pas les niveaux et raretés des cartes du deck humain correspondant. Un débutant n’affronte donc pas un deck entièrement amélioré ou légendaire parce qu’il a obtenu une seule carte très forte. Si une rétrogradation laisse au joueur plus de places que le choix de créatures normalement disponible dans sa ligue, le Gardien complète son deck avec les créatures à plus faible attaque, sans dupliquer une créature. Les nouvelles règles de composition s’appliquent aux nouveaux combats ; les combats en cours gardent leur deck initial.
+Ces plafonds suivent `1 + floor(indexDeLigue × 25 / 30)` et ne dépassent pas les niveaux et raretés des cartes du deck humain correspondant. Un débutant n’affronte donc pas un deck entièrement amélioré ou légendaire parce qu’il a obtenu une seule carte très forte. Si une rétrogradation laisse au joueur plus de places que le choix de créatures normalement disponible dans sa ligue, le Gardien complète son deck avec les créatures à plus faible attaque, sans dupliquer une créature. Les nouvelles règles de composition s’appliquent aux nouveaux combats ; les combats en cours gardent leur deck initial.
 
 L’IA mémorise ses trois dernières cartes, conserve cette mémoire après une actualisation et partage la même logique entre le tour demandé par le navigateur et le tour de secours serveur. Elle évite de rejouer immédiatement la même carte lorsqu’une alternative sûre existe, pénalise les cartes récemment jouées et les copies déjà sur le terrain, puis varie entre les choix tactiques proches. Une victoire immédiate ou une défense indispensable contre une attaque visible mortelle reste prioritaire. Elle utilise uniquement les informations publiques et sa propre main. L’entraînement local emploie les mêmes principes avec une difficulté de début de jeu et une mémoire limitée à la session.
 
@@ -51,13 +51,13 @@ Le tableau suivant correspond à **Fer IV**. À chaque promotion, la probabilit�
 | Épique | 8 % | 3 h | 60–100 | 300–500 |
 | Légendaire | 2 % | 8 h | 150–220 | 750–1 100 |
 
-Chaque coffre donne exactement deux récompenses : des pièces d’or et un lot d’exemplaires d’une seule variante. La carte a toujours la rareté du coffre : un coffre commun contient une carte commune, un rare une rare, un épique une épique et un légendaire une légendaire. La créature est choisie uniformément parmi les douze du catalogue. Le nombre d’exemplaires et l’or sont des entiers uniformes dans leurs intervalles respectifs ; les quantités de cartes sont doublées par rapport à la version précédente.
+Chaque coffre donne exactement deux récompenses : des pièces d’or et un lot d’exemplaires d’une seule variante. La carte a toujours la rareté du coffre : un coffre commun contient une carte commune, un rare une rare, un épique une épique et un légendaire une légendaire. La créature est choisie uniformément parmi les 22 cartes du catalogue. Le nombre d’exemplaires et l’or sont des entiers uniformes dans leurs intervalles respectifs ; les quantités de cartes sont doublées par rapport à la version précédente.
 
-Les identifiants de variante sont stables (`guardian:common`, `guardian:rare`…) et indépendants du niveau. Le premier exemplaire débloque la variante au niveau 1, les autres alimentent la réserve. Les quatre cartes initiales ont une réserve vide. Le passage du niveau `n` au niveau suivant coûte **`5 × n` exemplaires de cette variante et `50 × n` pièces d’or**, jusqu’au niveau 10. Exemple : niveau 1 → 2 = 5 exemplaires et 50 pièces ; niveau 2 → 3 = 10 exemplaires et 100 pièces. Les deux ressources sont vérifiées et débitées dans la même transaction ; un refus ne consomme rien. Les réserves restent conservées après ce plafond. Il n’existe aucune conversion entre raretés.
+Les identifiants de variante sont stables (`guardian:common`, `guardian:rare`…) et indépendants du niveau. Le premier exemplaire débloque la variante au niveau 1, les autres alimentent la réserve. Les quatre cartes initiales ont une réserve vide. Le plafond est **26**. Les coûts par rareté suivent les tables collectées : une commune passe de 1 à 2 pour 25 exemplaires et 50 pièces, de 2 à 3 pour 50 exemplaires et 80 pièces, de 10 à 11 pour 450 exemplaires et 3 000 pièces. Le passage de 25 à 26 coûte 18 000 exemplaires et 50 000 pièces. Le [tableau complet](references/mighty-party/common-cards.md) et le [JSON source](references/mighty-party/common-cards.json) conservent tous les paliers. Les deux ressources sont vérifiées et débitées dans la même transaction ; un refus ne consomme rien. Les réserves restent conservées après ce plafond. Il n’existe aucune conversion entre raretés.
 
 Chaque joueur commence avec un solde d’or nul, y compris les comptes existants. L’or est commun à toute la collection et s’obtient à l’ouverture des coffres. Son solde est affiché en haut des pages connectées, sauf pendant les combats (`/game/$gameId` et `/practice`), et se met à jour après une ouverture ou une amélioration. La fiche de carte montre le coût, le solde disponible et l’or manquant ; l’action nécessite les deux ressources.
 
-Les bonus de rareté sont respectivement `+0/+0`, `+1/+2`, `+2/+4`, `+4/+8` en attaque/PV. Chaque niveau après le premier ajoute `+1/+2`. Les illustrations restent associées à la créature ; les bordures indiquent la rareté et un badge indique le niveau.
+Les bonus de rareté sont respectivement `+0/+0`, `+1/+2`, `+2/+4`, `+4/+8` en attaque/PV. Les 26 paires ATQ/PV et les paliers des capacités viennent des 22 cartes communes de référence ; il n’y a plus de formule linéaire. Les bonus des raretés supérieures sont une adaptation propre à Sylve ; l’attaque des bâtiments reste nulle. Les illustrations restent associées à la créature ; les bordures indiquent la rareté et un badge indique le niveau.
 
 Le salon possède sept emplacements : un coffre commun de victoires à gauche, deux places actives pour les coffres de combat, puis quatre places verrouillées par des chaînes. Les coffres de combat déjà présents dans une ancienne version restent récupérables ; s’il y en a plus de deux, les suivants deviennent visibles au fur et à mesure des ouvertures.
 
@@ -86,7 +86,7 @@ Le premier exemplaire débloque la variante ; les suivants rejoignent sa réserv
 
 ## Vérifications
 
-Les tests du moteur couvrent les 48 identités, les statistiques, les bornes des tirages et des combats complets à quatre et huit cartes. Les tests Convex couvrent le parcours victoire → coffre → ouverture → déblocage → amélioration → nouveau combat, les ouvertures concurrentes, les délais parallèles, la saturation, les autorisations et le solo persistant. Les tests d’interface couvrent la composition du deck, la fiche d’amélioration, les filtres, le salon et la révélation des récompenses.
+Les tests du moteur couvrent les 88 identités, les 572 paires ATQ/PV communes et les 34 progressions de capacités, les statistiques, les bornes des tirages et des combats complets à quatre et huit cartes. Les tests Convex couvrent le parcours victoire → coffre → ouverture → déblocage → amélioration → nouveau combat, les ouvertures concurrentes, les délais parallèles, la saturation, les autorisations et le solo persistant. Les tests d’interface couvrent la composition du deck, la fiche d’amélioration, les filtres, le salon et la révélation des récompenses.
 
 Les tests de ligues couvrent tous les seuils et les distributions du butin, huit victoires jusqu’à Fer III, les trophées malgré les coffres pleins, l’absence de double crédit ou débit, les défaites naturelles, abandons et parties amicales, le plancher à zéro, les résultats publics des deux joueurs, la conservation des emplacements après rétrogradation, la limite du deck côté serveur, les anciens decks et les instantanés, ainsi que le butin conservé entre deux promotions. Les tests du Gardien couvrent les plafonds de toutes les ligues, les decks de débutants, les choix variés, les exceptions tactiques et la mémoire entre les tours du client et les tours de secours. L’interface vérifie les chaînes, les conditions de déblocage, l’ajout de la cinquième carte, le parcours, la promotion et les pertes affichées au joueur vaincu. Les rendus ont été contrôlés à 1 440 × 900 et 390 × 844 px : [arène](leagues-lobby-validation.webp), [atelier](leagues-deck-validation.webp), [parcours](leagues-dialog-validation.webp), [arène mobile](leagues-lobby-mobile-validation.webp), [chaînes sur mobile](leagues-chains-mobile-validation.webp).
 

@@ -24,6 +24,60 @@ export const revealValidator = v.object({
   copies: v.number(),
 });
 
+const abilityValidator = v.object({
+  id: v.string(),
+  name: v.string(),
+  description: v.string(),
+  unlockLevel: v.number(),
+  active: v.boolean(),
+  value: v.number(),
+  effect: v.union(
+    v.literal("attack"),
+    v.literal("health"),
+    v.literal("heal"),
+    v.literal("block"),
+    v.literal("spikes"),
+    v.literal("vampirism"),
+    v.literal("regeneration"),
+    v.literal("shield"),
+    v.literal("extra_attack"),
+    v.literal("pierce"),
+    v.literal("rune"),
+    v.literal("summon"),
+    v.literal("attack_per_ally"),
+  ),
+  trigger: v.union(
+    v.literal("deploy"),
+    v.literal("turn_start"),
+    v.literal("nature_ally_appears"),
+    v.literal("death"),
+    v.literal("enemy_hero_attacked"),
+    v.literal("passive"),
+  ),
+  target: v.union(
+    v.literal("self"),
+    v.literal("random_ally"),
+    v.literal("column_allies"),
+    v.literal("row_allies"),
+    v.literal("melee_allies"),
+    v.literal("nature_allies"),
+    v.literal("order_allies"),
+    v.literal("all_allies"),
+    v.literal("all_enemies"),
+    v.literal("ally_hero"),
+    v.literal("ally_buildings"),
+    v.literal("random_zombie"),
+  ),
+  temporary: v.optional(v.boolean()),
+  summon: v.optional(
+    v.object({
+      kind: v.union(v.literal("archer"), v.literal("zombie")),
+      attack: v.number(),
+      health: v.number(),
+      level: v.number(),
+    }),
+  ),
+});
 export const cardValidator = v.object({
   id: v.string(),
   name: v.string(),
@@ -32,7 +86,14 @@ export const cardValidator = v.object({
   health: v.number(),
   color: v.string(),
   kind: v.string(),
-  combatType: v.optional(v.union(v.literal("melee"), v.literal("ranged"))),
+  combatType: v.optional(
+    v.union(v.literal("melee"), v.literal("ranged"), v.literal("building")),
+  ),
+  faction: v.optional(
+    v.union(v.literal("order"), v.literal("nature"), v.literal("chaos")),
+  ),
+  sourceHero: v.optional(v.string()),
+  abilities: v.optional(v.array(abilityValidator)),
   baseId: v.optional(v.string()),
   rarity: v.optional(rarityValidator),
   level: v.optional(v.number()),
@@ -42,6 +103,20 @@ const unitValidator = v.object({
   row: v.number(),
   depth: v.number(),
   hp: v.number(),
+  attack: v.optional(v.number()),
+  maxHp: v.optional(v.number()),
+  block: v.optional(v.number()),
+  spikes: v.optional(v.number()),
+  vampirism: v.optional(v.number()),
+  regeneration: v.optional(v.number()),
+  shield: v.optional(v.boolean()),
+  temporaryAttack: v.optional(v.number()),
+  definition: v.optional(cardValidator),
+});
+const runeValidator = v.object({
+  row: v.number(),
+  depth: v.number(),
+  health: v.number(),
 });
 export const stateValidator = v.object({
   players: v.array(
@@ -54,6 +129,7 @@ export const stateValidator = v.object({
       drawPile: v.array(v.string()),
       discard: v.array(v.string()),
       board: v.array(unitValidator),
+      runes: v.optional(v.array(runeValidator)),
     }),
   ),
   activePlayer: v.number(),
@@ -73,6 +149,7 @@ export const eventValidator = v.object({
     v.literal("death"),
     v.literal("turn"),
     v.literal("victory"),
+    v.literal("ability"),
   ),
   player: v.number(),
   cardId: v.optional(v.string()),
@@ -84,4 +161,8 @@ export const eventValidator = v.object({
   targetDepth: v.optional(v.number()),
   damage: v.optional(v.number()),
   hp: v.optional(v.number()),
+  ability: v.optional(v.string()),
+  amount: v.optional(v.number()),
+  unit: v.optional(unitValidator),
+  runes: v.optional(v.array(runeValidator)),
 });

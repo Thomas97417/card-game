@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { legacyDeck } from "./legacy-fixture";
 import {
   CATALOG,
   DEFAULT_DECK as STARTER_DECK,
@@ -11,6 +12,7 @@ import {
   variantCard,
   getCombatType,
   RARITIES,
+  MAX_CARD_LEVEL,
   type GameState,
 } from "./index";
 import {
@@ -33,12 +35,12 @@ function initial() {
       {
         userId: PRACTICE_PLAYER_ID,
         name: "Toi",
-        cards: validateDeck(DEFAULT_DECK),
+        cards: legacyDeck(DEFAULT_DECK),
       },
       {
         userId: PRACTICE_COMPUTER_ID,
         name: "Ordinateur",
-        cards: validateDeck(DEFAULT_DECK),
+        cards: legacyDeck(DEFAULT_DECK),
       },
     ],
     0,
@@ -66,13 +68,13 @@ describe("terrain d’entraînement", () => {
     expect(
       computer.every((card) => card.level === 1 && card.rarity === "common"),
     ).toBe(true);
-    expect(computer.reduce((sum, card) => sum + card.attack, 0)).toBe(8);
+    expect(computer.reduce((sum, card) => sum + card.attack, 0)).toBe(13);
   });
 
   it("progressively unlocks creatures, rarities and levels by league, capped by the human deck's upgrades", () => {
     for (const league of LEAGUES) {
       const human = CATALOG.slice(0, 8).map((base) =>
-        variantCard(base.id, "legendary", 10),
+        variantCard(base.id, "legendary", MAX_CARD_LEVEL),
       );
       const profile = computerProfile(league.minTrophies);
       const computer = computerDeckForLeague(
@@ -109,7 +111,7 @@ describe("terrain d’entraînement", () => {
       else expect(profile.baseIds).not.toContain("dragon");
     }
     expect(RARITIES.indexOf(computerProfile(1600).maxRarity)).toBe(1);
-    expect(computerProfile(6000).maxLevel).toBe(10);
+    expect(computerProfile(6000).maxLevel).toBe(26);
   });
 
   it("supports retained eight-slot decks after a demotion without bringing high-attack creatures into Iron IV", () => {
@@ -121,6 +123,19 @@ describe("terrain d’entraînement", () => {
     expect(computer.every((card) => card.attack <= 4 && card.level === 1)).toBe(
       true,
     );
+  });
+  it("can include one unlocked support building while keeping melee and ranged attackers", () => {
+    const human = validateDeck(STARTER_DECK);
+    const before = computerDeckForLeague(1800, human, () => 0.25);
+    expect(before.some((card) => getCombatType(card) === "building")).toBe(
+      false,
+    );
+    const after = computerDeckForLeague(2000, human, () => 0.25);
+    expect(
+      after.filter((card) => getCombatType(card) === "building"),
+    ).toHaveLength(1);
+    expect(after.some((card) => getCombatType(card) === "melee")).toBe(true);
+    expect(after.some((card) => getCombatType(card) === "ranged")).toBe(true);
   });
   it("offers a four-card local starter and a matching computer deck", () => {
     const state = createPracticeGame(STARTER_DECK, 0, () => 0.25);
@@ -226,7 +241,7 @@ describe("terrain d’entraînement", () => {
     const state = initial();
     state.players[1]!.hand = ["dragon", "turtle"];
     state.players[1]!.heroHp = 5;
-    const attacker = variantCard("fox", "common", 4);
+    const attacker = variantCard("mushroom", "common", 10);
     state.players[0]!.cards = [attacker];
     state.players[0]!.hand = [attacker.id];
     state.players[0]!.board = [1, 2].map((depth) => ({

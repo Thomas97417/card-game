@@ -113,6 +113,99 @@ describe("réactivité du placement", () => {
 });
 
 describe("animations des créatures répétées", () => {
+  it("animates a summoned token from its event without inserting it into the deck", () => {
+    vi.useFakeTimers();
+    const cards = validateDeck([
+      "witch:common",
+      "guardian:common",
+      "turtle:common",
+      "wisp:common",
+    ]);
+    const state = createGame(
+      [
+        { userId: "alice", name: "Alice", cards },
+        { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+      ],
+      0,
+      () => 0.25,
+    );
+    const initial = {
+      ...playerView(state, "alice"),
+      events: [] as GameEvent[],
+    };
+    const transition = summon(state, 0, "witch:common", 0, 2, 1, 1, () => 0.25);
+    const confirmed = {
+      ...playerView(transition.state, "alice"),
+      events: transition.events,
+    };
+    const { result, rerender } = renderHook(
+      ({ view }) => useCombatPlayback(view),
+      { initialProps: { view: initial } },
+    );
+    rerender({ view: confirmed });
+    act(() => vi.advanceTimersByTime(0));
+    expect(result.current.display!.players[0]!.board).toHaveLength(1);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
+    expect(result.current.event?.ability).toBe("Renfort");
+    expect(result.current.display!.players[0]!.board[1]).toMatchObject({
+      card: { name: "Rejeton des spores", attack: 2, health: 2 },
+      row: 0,
+      depth: 1,
+    });
+    expect(result.current.display!.players[0]!.deck).toHaveLength(4);
+    act(() => vi.runAllTimers());
+    expect(result.current.display).toEqual(confirmed);
+  });
+
+  it("commits a health buff and its new maximum at the ability impact", () => {
+    vi.useFakeTimers();
+    const cards = validateDeck([
+      "bard:common",
+      "guardian:common",
+      "turtle:common",
+      "wisp:common",
+    ]);
+    const state = createGame(
+      [
+        { userId: "alice", name: "Alice", cards },
+        { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+      ],
+      0,
+      () => 0.25,
+    );
+    state.players[0]!.board = [
+      { cardId: "guardian:common", row: 0, depth: 0, hp: 8 },
+    ];
+    const initial = {
+      ...playerView(state, "alice"),
+      events: [] as GameEvent[],
+    };
+    const transition = summon(state, 0, "bard:common", 1, 2, 1, 1, () => 0.25);
+    const confirmed = {
+      ...playerView(transition.state, "alice"),
+      events: transition.events,
+    };
+    const { result, rerender } = renderHook(
+      ({ view }) => useCombatPlayback(view),
+      { initialProps: { view: initial } },
+    );
+    rerender({ view: confirmed });
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon + 179));
+    expect(result.current.display!.players[0]!.board[0]).toMatchObject({
+      hp: 8,
+      card: { health: 8 },
+    });
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.display!.players[0]!.board[0]).toMatchObject({
+      hp: 10,
+      maxHp: 10,
+      card: { health: 10 },
+    });
+    expect(initial.players[0]!.board[0]!.hp).toBe(8);
+    act(() => vi.runAllTimers());
+    expect(result.current.display).toEqual(confirmed);
+  });
+
   it("wounds and removes only the targeted copy during playback", () => {
     vi.useFakeTimers();
     const state = createGame(

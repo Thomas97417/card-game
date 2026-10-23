@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { legacyDeck } from "./legacy-fixture";
 import {
   CATALOG,
   DEFAULT_DECK as STARTER_DECK,
@@ -25,8 +26,8 @@ const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 function initial() {
   return createGame(
     [
-      { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
-      { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+      { userId: "alice", name: "Alice", cards: legacyDeck(DEFAULT_DECK) },
+      { userId: "bob", name: "Bob", cards: legacyDeck(DEFAULT_DECK) },
     ],
     0,
     random,
@@ -70,13 +71,16 @@ describe("construction de deck", () => {
     deck[0]!.attack = 100;
     expect(CATALOG[0]!.attack).not.toBe(100);
   });
-  it("defines both combat types and infers them for legacy snapshots", () => {
+  it("defines three combat types and infers them for legacy snapshots", () => {
     expect(CATALOG.filter((card) => card.combatType === "melee")).toHaveLength(
-      6,
+      11,
     );
     expect(CATALOG.filter((card) => card.combatType === "ranged")).toHaveLength(
-      6,
+      9,
     );
+    expect(
+      CATALOG.filter((card) => card.combatType === "building"),
+    ).toHaveLength(2);
     for (const { combatType, ...legacy } of CATALOG)
       expect(getCombatType(legacy)).toBe(combatType);
   });
@@ -110,8 +114,8 @@ describe("début de partie et confidentialité", () => {
     expect(view.players[0]!.hand).toHaveLength(4);
     expect(view.players[1]!.hand).toEqual([]);
     expect(view.players[1]!.handCount).toBe(4);
-    expect(view.players[0]!.deck).toEqual(validateDeck(DEFAULT_DECK));
-    expect(view.players[1]!.deck).toEqual(validateDeck(DEFAULT_DECK));
+    expect(view.players[0]!.deck).toEqual(legacyDeck(DEFAULT_DECK));
+    expect(view.players[1]!.deck).toEqual(legacyDeck(DEFAULT_DECK));
     expect(view.players[1]).not.toHaveProperty("cards");
     expect(view.players[1]).not.toHaveProperty("drawPile");
     expect(view.players[1]).not.toHaveProperty("userId");
@@ -148,7 +152,12 @@ describe("invocation", () => {
     );
     expect(
       summon(state, 0, "owl", 2, 1, 1, 1, random).state.players[0]!.board,
-    ).toContainEqual({ cardId: "owl", row: 2, depth: 1, hp: ranged.health });
+    ).toContainEqual({
+      cardId: "owl",
+      row: 2,
+      depth: 1,
+      hp: state.players[0]!.cards.find((c) => c.id === "owl")!.health,
+    });
   });
   it("summons, attacks and switches players atomically without mutating input", () => {
     const state = initial();
@@ -239,7 +248,10 @@ describe("invocation", () => {
           state.players[playerIndex]!.hand = [card.id];
           const play = () =>
             summon(state, playerIndex, card.id, 0, depth, 1, 1, random);
-          if (card.combatType === "melee" ? depth < 2 : depth >= 1)
+          if (
+            card.combatType === "building" ||
+            (card.combatType === "melee" ? depth < 2 : depth >= 1)
+          )
             expect(play().state.players[playerIndex]!.board[0]!.depth).toBe(
               depth,
             );

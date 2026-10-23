@@ -138,7 +138,10 @@ export async function saveTransition(
       ? events
           .filter(
             (event) =>
-              event.type === "summon" && event.player === 1 && event.cardId,
+              event.type === "summon" &&
+              event.player === 1 &&
+              event.cardId &&
+              !event.unit?.definition,
           )
           .map((event) => event.cardId!)
       : [];

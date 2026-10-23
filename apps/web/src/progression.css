@@ -180,7 +180,11 @@
   z-index: -1;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(var(--rarity-rgb), 0.3), transparent 75%),
+    radial-gradient(
+      ellipse at 50% 30%,
+      rgba(var(--rarity-rgb), 0.3),
+      transparent 75%
+    ),
     linear-gradient(0deg, #102a20, #142b2477 40%, #142b241a),
     url("/art/deck-workshop.webp") 50% 0 / auto 175% no-repeat;
   opacity: 0.8;
@@ -253,7 +257,9 @@
 }
 .upgrade-portrait-name {
   color: #fff1d3;
-  font: 600 clamp(22px, 2.2vw, 28px)/1.15 Georgia, serif;
+  font:
+    600 clamp(22px, 2.2vw, 28px)/1.15 Georgia,
+    serif;
   text-wrap: balance;
   text-shadow: 0 2px 4px #06150e;
 }
@@ -301,7 +307,9 @@
 }
 .upgrade-section-heading > h3 {
   color: #e8d39f;
-  font: 600 16px/1.2 Georgia, serif;
+  font:
+    600 16px/1.2 Georgia,
+    serif;
 }
 .upgrade-section-heading > span {
   color: var(--quiet);
@@ -336,7 +344,8 @@
   background: linear-gradient(#c8c18a, #8d9e5a);
   box-shadow: inset 0 2px #fff4;
 }
-.upgrade-progression[data-ready="true"] .upgrade-progress::-webkit-progress-value {
+.upgrade-progression[data-ready="true"]
+  .upgrade-progress::-webkit-progress-value {
   background: linear-gradient(#a6ce71, #5c943e);
 }
 .upgrade-progression[data-ready="true"] .upgrade-progress::-moz-progress-bar {
@@ -375,7 +384,9 @@
   border-radius: 9px 9px 15px 15px;
   background: linear-gradient(135deg, #75944a, #345b30);
   color: #fff6d7;
-  font: 700 28px/1 Georgia, serif;
+  font:
+    700 28px/1 Georgia,
+    serif;
   box-shadow:
     0 3px 0 #0d261a,
     inset 0 0 0 2px #e6dea31c;
@@ -424,7 +435,9 @@
 }
 .upgrade-stat-next {
   color: #d3e8ae;
-  font: 700 29px/1 Georgia, serif;
+  font:
+    700 29px/1 Georgia,
+    serif;
 }
 .upgrade-evolution-action {
   margin-top: auto;
@@ -478,7 +491,9 @@
 .upgrade-action .gold-amount {
   flex-direction: row-reverse;
   gap: 7px;
-  font: 700 29px/1.2 Georgia, serif;
+  font:
+    700 29px/1.2 Georgia,
+    serif;
 }
 .upgrade-action .gold-icon {
   width: 36px;
@@ -527,7 +542,9 @@
   text-align: center;
   clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
 }
-.game-dialog .upgrade-deck-actions .sylve-button.secondary:hover:not(:disabled) {
+.game-dialog
+  .upgrade-deck-actions
+  .sylve-button.secondary:hover:not(:disabled) {
   background: linear-gradient(110deg, #466848, #35583d);
 }
 .game-dialog .upgrade-deck-actions .sylve-button.secondary:focus-visible {
@@ -536,7 +553,11 @@
 .game-dialog.chest-reveal-dialog[data-slot="dialog-content"] {
   width: min(620px, calc(100vw - 32px));
   background:
-    radial-gradient(ellipse at top, rgba(var(--rarity-rgb), 0.1), transparent 65%),
+    radial-gradient(
+      ellipse at top,
+      rgba(var(--rarity-rgb), 0.1),
+      transparent 65%
+    ),
     linear-gradient(145deg, #254334, #122c23 85%);
 }
 .chest-reveal-heading {
@@ -946,5 +967,33 @@
 @media (prefers-reduced-motion: reduce) {
   .chest-reveal-item {
     animation: none;
+  }
+}
+
+.upgrade-main .card-abilities h3 {
+  margin: 0 0 8px;
+  color: #e5d5ae;
+}
+.upgrade-main .card-abilities li {
+  background: #35513a;
+  border-color: #81966b66;
+  color: #f0edd8;
+}
+.upgrade-main .card-abilities li[data-locked="true"] {
+  background: #293e31;
+  border-color: #81966b33;
+  color: #c0c5ad;
+}
+.upgrade-main .ability-title > span {
+  background: #152e2477;
+  color: #e6cc8e;
+}
+.upgrade-main .card-abilities .ability-next {
+  color: #cce9a6;
+  border-color: #9bb97b44;
+}
+@media (max-width: 600px) {
+  .upgrade-main > .card-abilities {
+    grid-column: 1 / -1;
   }
 }

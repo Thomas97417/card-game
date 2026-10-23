@@ -6,6 +6,7 @@ import {
   getCombatType,
   isMeleeBlocked,
   legalPlacements,
+  FACTION_LABELS,
   type CardDefinition,
   type GameView,
   type UnitPosition,
@@ -19,6 +20,7 @@ import {
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
+import { CardAbilities } from "./card-abilities";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
@@ -52,17 +54,18 @@ export function DuelDetailsDialog({
 }) {
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
   const own = inspection?.playerIndex === view.me;
-  const card = inspection?.type === "card" ? inspection.card : null;
+  const inspectedCard = inspection?.type === "card" ? inspection.card : null;
   const source = inspection?.type === "card" ? inspection.source : null;
   const unit =
     inspection?.type === "card" && inspection.source === "board"
       ? player?.board.find(
           (entry) =>
-            entry.cardId === card?.id &&
+            entry.cardId === inspectedCard?.id &&
             entry.row === inspection.position.row &&
             entry.depth === inspection.position.depth,
         )
       : undefined;
+  const card = unit?.card ?? inspectedCard;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
   const hasPlacement =
     !!card && !!player && legalPlacements(card, player.board).length > 0;
@@ -133,7 +136,10 @@ export function DuelDetailsDialog({
                   {combatTypeLabel(card)} ·{" "}
                   {getCombatType(card) === "melee"
                     ? "Déploiement au milieu ou vers l’ennemi."
-                    : "Déploiement au milieu ou vers ton héros."}
+                    : getCombatType(card) === "building"
+                      ? "Déploiement sur toute case libre. N’attaque pas."
+                      : "Déploiement au milieu ou vers ton héros."}
+                  {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
                 </p>
                 <div className="card-details-layout">
                   <div
@@ -173,14 +179,15 @@ export function DuelDetailsDialog({
                       </p>
                     )}
                     <p className="details-note">
-                      Inflige {card.attack} dégâts au premier ennemi de la
-                      ligne, sinon au héros.
+                      {getCombatType(card) === "building"
+                        ? "Ce bâtiment soutient l’alliance avec ses capacités."
+                        : `Inflige ${card.attack} dégâts au premier ennemi de la rangée, sinon au héros.`}
                     </p>
                     {getCombatType(card) === "melee" && (
                       <p className="details-note">
                         {blocked
-                          ? "Bloquée : une unité au corps à corps est devant elle sur cette ligne."
-                          : "Attaque bloquée si un allié au corps à corps est devant."}
+                          ? "Bloquée : un allié est devant elle sur cette rangée."
+                          : "Attaque bloquée si un allié est devant."}
                       </p>
                     )}
                     {source === "board" && !unit && (
@@ -190,6 +197,7 @@ export function DuelDetailsDialog({
                     )}
                   </div>
                 </div>
+                <CardAbilities card={card} />
                 {inHand && source !== "board" && (
                   <div className="details-actions">
                     <p className="details-note">

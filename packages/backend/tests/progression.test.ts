@@ -397,7 +397,7 @@ describe("gardien adapté aux ligues", () => {
     expect(snapshot.players[1]!.deck).toHaveLength(8);
     expect(
       snapshot.players[1]!.deck.every(
-        (card) => card.rarity === "rare" && card.level === 4,
+        (card) => card.rarity === "rare" && card.level === 10,
       ),
     ).toBe(true);
     expect(
@@ -445,6 +445,90 @@ describe("gardien adapté aux ligues", () => {
 });
 
 describe("collection autoritaire", () => {
+  it("upgrades past the old level ten cap and persists the newly unlocked ability", async () => {
+    const { t, alice, deckId } = await fixture();
+    await t.run(async (ctx) => {
+      const deck = (await ctx.db.get(deckId))!;
+      const owned = (await ctx.db
+        .query("collection")
+        .withIndex("by_owner_variant", (q) =>
+          q.eq("ownerId", deck.ownerId).eq("variantId", "guardian:common"),
+        )
+        .unique())!;
+      await ctx.db.patch(owned._id, { level: 10, copies: 450 });
+      await ctx.db.insert("wallets", { ownerId: deck.ownerId, gold: 3000 });
+    });
+    const result = await alice.mutation(api.collection.upgrade, {
+      variantId: "guardian:common",
+    });
+    expect(result).toMatchObject({
+      copies: 0,
+      gold: 0,
+      card: { level: 11, attack: 8, health: 16 },
+    });
+    expect(result.card.abilities?.[1]).toMatchObject({
+      active: true,
+      unlockLevel: 11,
+      value: 1,
+    });
+    expect(
+      (await alice.query(api.collection.list, {})).find(
+        (e) => e.card.id === "guardian:common",
+      )!.card.abilities,
+    ).toEqual(result.card.abilities);
+  });
+  it("persists summoned tokens and their events without adding cards to the player's deck", async () => {
+    const { t, alice, deckId } = await fixture();
+    await t.run(async (ctx) => {
+      const deck = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("collection", {
+        ownerId: deck.ownerId,
+        variantId: "witch:common",
+        level: 1,
+        copies: 0,
+      });
+      await ctx.db.patch(deckId, {
+        cardIds: ["witch:common", ...DEFAULT_DECK.slice(1)],
+      });
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    const before = await alice.query(api.games.get, { gameId });
+    await alice.mutation(api.games.playCard, {
+      gameId,
+      cardId: "witch:common",
+      row: 0,
+      depth: 2,
+      expectedTurn: before.turn,
+    });
+    const view = await alice.query(api.games.get, { gameId });
+    expect(view.players[0]!.deck).toHaveLength(4);
+    expect(view.players[0]!.board).toHaveLength(2);
+    expect(
+      view.players[0]!.board.find((u) => u.definition)?.card,
+    ).toMatchObject({ name: "Rejeton des spores", attack: 2, health: 2 });
+    expect(view.events.filter((e) => e.type === "summon")).toHaveLength(2);
+    expect(
+      (await alice.query(api.collection.list, {})).some(
+        (e) => e.card.kind === "zombie",
+      ),
+    ).toBe(false);
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[1]!.cards = state.players[0]!.cards;
+      state.players[1]!.hand = ["witch:common"];
+      await ctx.db.patch(gameId, { state });
+    });
+    await alice.mutation(api.games.soloTurn, {
+      gameId,
+      expectedTurn: view.turn,
+    });
+    const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
+    expect(stored.state!.players[1]!.board.some((u) => u.definition)).toBe(
+      true,
+    );
+    expect(stored.soloRecentCards).toEqual(["witch:common"]);
+  });
   it("initializes exactly four common variants once", async () => {
     const t = setup();
     const alice = await player(t, "alice");
@@ -538,7 +622,7 @@ describe("collection autoritaire", () => {
           q.eq("ownerId", deck.ownerId).eq("variantId", "guardian:common"),
         )
         .unique())!;
-      await ctx.db.patch(entry._id, { copies: 5 });
+      await ctx.db.patch(entry._id, { copies: 25 });
       await ctx.db.insert("wallets", { ownerId: deck.ownerId, gold: 50 });
     });
     const results = await Promise.allSettled([
@@ -565,7 +649,7 @@ describe("collection autoritaire", () => {
         .withIndex("by_owner_variant", (q) => q.eq("ownerId", deck.ownerId))
         .collect();
       for (const entry of entries)
-        await ctx.db.patch(entry._id, { copies: 20 });
+        await ctx.db.patch(entry._id, { copies: 40 });
     });
     const original = await alice.query(api.collection.list, {});
     await expect(
@@ -588,9 +672,9 @@ describe("collection autoritaire", () => {
     expect(await bob.query(api.collection.gold, {})).toBe(0);
     const upgraded = await alice.query(api.collection.list, {});
     expect(upgraded.filter((entry) => entry.card.level === 2)).toHaveLength(1);
-    expect(upgraded.reduce((sum, entry) => sum + entry.copies, 0)).toBe(75);
+    expect(upgraded.reduce((sum, entry) => sum + entry.copies, 0)).toBe(135);
   });
-  it("rejects unowned variants, another player's cards, insufficient copies and levels past ten", async () => {
+  it("rejects unowned variants, another player's cards, insufficient copies and levels past 26", async () => {
     const { t, alice, deckId } = await fixture();
     const bob = await player(t, "bob");
     await expect(
@@ -647,7 +731,7 @@ describe("victoires, coffres et améliorations", () => {
       ctx.db.patch(chest._id, {
         rarity: "rare",
         unlockAt,
-        contents: [{ variantId: "fox:rare", count: 24 }],
+        contents: [{ variantId: "fox:rare", count: 40 }],
         gold: 150,
       }),
     );
@@ -679,7 +763,7 @@ describe("victoires, coffres et améliorations", () => {
       entries.find((entry) => entry.card.id === "guardian:common")!.copies,
     ).toBe(0);
     expect(entries.find((entry) => entry.card.id === "fox:rare")!.copies).toBe(
-      23,
+      39,
     );
     await alice.mutation(api.collection.upgrade, {
       variantId: "fox:rare",
@@ -687,7 +771,7 @@ describe("victoires, coffres et améliorations", () => {
     entries = await alice.query(api.collection.list, {});
     expect(entries.find((entry) => entry.card.id === "fox:rare")).toMatchObject(
       {
-        copies: 18,
+        copies: 14,
         card: { level: 2, rarity: "rare" },
       },
     );
@@ -700,7 +784,7 @@ describe("victoires, coffres et améliorations", () => {
         (entry) => entry.card.id === "guardian:common",
       )!.copies,
     ).toBe(0);
-    expect(await alice.query(api.collection.gold, {})).toBe(100);
+    expect(await alice.query(api.collection.gold, {})).toBe(50);
     await setTrophies(t, deckId, 200);
     await alice.mutation(api.decks.save, {
       deckId,
@@ -716,7 +800,7 @@ describe("victoires, coffres et améliorations", () => {
     expect(
       original.players[0]!.deck.find((card) => card.id === "guardian:common")!
         .attack,
-    ).toBe(2);
+    ).toBe(3);
     expect(
       next.players[1]!.deck.map(
         (card) => `${card.rarity}:${card.level}`,
@@ -824,7 +908,7 @@ describe("victoires, coffres et améliorations", () => {
           q.eq("ownerId", deck.ownerId).eq("variantId", "guardian:common"),
         )
         .unique())!;
-      await ctx.db.patch(owned._id, { copies: 5 });
+      await ctx.db.patch(owned._id, { copies: 25 });
       await ctx.db.insert("wallets", { ownerId: deck.ownerId, gold: 50 });
     });
     await alice.mutation(api.matchmaking.enqueue, { deckId });

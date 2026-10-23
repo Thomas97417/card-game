@@ -100,6 +100,9 @@ export function DuelArena({
           const unit = player.board.find(
             (entry) => entry.row === row && entry.depth === depth,
           );
+          const rune = player.runes?.find(
+            (r) => r.row === row && r.depth === depth,
+          );
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
           const legal =
@@ -148,7 +151,7 @@ export function DuelArena({
                 data-own-cell={own && !unit ? "true" : undefined}
                 data-row={row}
                 data-depth={depth}
-                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}` : ", vide"}`}
+                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}` : ", vide"}`}
                 aria-disabled={!legal && !unit}
                 aria-haspopup={unit ? "dialog" : undefined}
                 tabIndex={unit ? -1 : 0}
@@ -157,6 +160,15 @@ export function DuelArena({
                   else if (unit) onInspectUnit(unit, playerIndex);
                 }}
               >
+                {!unit && rune && (
+                  <span
+                    className="board-rune"
+                    title={`Rune de vie : +${rune.health} PV`}
+                    aria-label={`Rune de vie : +${rune.health} PV`}
+                  >
+                    ✦ +{rune.health}
+                  </span>
+                )}
                 {legal && (
                   <span className="placement-hint" aria-hidden="true">
                     <GameIcon kind={getCombatType(selectedCard!)} size={23} />
@@ -168,7 +180,7 @@ export function DuelArena({
                   type="button"
                   className="board-unit-control"
                   style={cell.unit}
-                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par une unité au corps à corps devant elle" : ""}, voir les informations`}
+                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
                   onClick={() => onInspectUnit(unit, playerIndex)}
                 >
@@ -190,6 +202,48 @@ export function DuelArena({
                       />
                     </div>
                     <span className="unit-name">{unit.card.name}</span>
+                    <span className="unit-statuses">
+                      {unit.shield && (
+                        <span
+                          title="Bouclier mental"
+                          aria-label="Bouclier mental"
+                        >
+                          ◈
+                        </span>
+                      )}
+                      {!!unit.block && (
+                        <span
+                          title={`Blocage ${unit.block}`}
+                          aria-label={`Blocage ${unit.block}`}
+                        >
+                          ▣ {unit.block}
+                        </span>
+                      )}
+                      {!!unit.spikes && (
+                        <span
+                          title={`Épines ${unit.spikes}`}
+                          aria-label={`Épines ${unit.spikes}`}
+                        >
+                          ✦ {unit.spikes}
+                        </span>
+                      )}
+                      {!!unit.regeneration && (
+                        <span
+                          title={`Régénération ${unit.regeneration}`}
+                          aria-label={`Régénération ${unit.regeneration}`}
+                        >
+                          ✚ {unit.regeneration}
+                        </span>
+                      )}
+                      {!!unit.vampirism && (
+                        <span
+                          title={`Vampirisme ${unit.vampirism}`}
+                          aria-label={`Vampirisme ${unit.vampirism}`}
+                        >
+                          ◆ {unit.vampirism}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </button>
               )}
@@ -271,7 +325,12 @@ function CombatEffects({
 }) {
   const [hits, setHits] = useState<GameEvent[]>([]);
   useEffect(() => {
-    if (event?.type !== "attack") return;
+    if (
+      !event ||
+      (event.type !== "attack" &&
+        (event.type !== "ability" || !event.amount || event.runes))
+    )
+      return;
     const timer = window.setTimeout(() => {
       setHits((previous) =>
         previous.some((hit) => hit.seq === event.seq)
@@ -293,7 +352,9 @@ function CombatEffects({
       {hits.map((hit) => {
         const own = hit.targetPlayer === me;
         const player = own ? mine : enemy;
-        const target = player.deck.find((card) => card.id === hit.targetCardId);
+        const target =
+          player.deck.find((card) => card.id === hit.targetCardId) ??
+          player.board.find((u) => u.cardId === hit.targetCardId)?.card;
         const position =
           hit.targetCardId &&
           hit.targetRow !== undefined &&
@@ -337,11 +398,17 @@ function DamageNumber({
   }, [hit.seq, onComplete]);
   return (
     <span
-      className="damage-float"
+      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""}`}
       style={position}
-      aria-label={`${targetName} subit ${hit.damage} dégâts`}
+      aria-label={
+        hit.type === "ability"
+          ? `${targetName} : ${hit.ability} ${hit.amount}`
+          : `${targetName} subit ${hit.damage} dégâts`
+      }
     >
-      −{hit.damage}
+      {hit.type === "ability"
+        ? `${(hit.amount ?? 0) > 0 ? "+" : "−"}${Math.abs(hit.amount ?? 0)}`
+        : `−${hit.damage}`}
     </span>
   );
 }

@@ -1,0 +1,85 @@
+# Cartes de base : équilibrage et capacités
+
+Adaptation du 23 octobre 2026. Le catalogue contient **22 identités**, déclinées en **88 variantes**, et le plafond commun à toutes les variantes passe de 10 à **26 niveaux**. Les noms, l’univers et les illustrations restent propres à Sylve.
+
+## Données utilisées
+
+Les **572 paires ATQ/PV** et les **34 capacités** des 22 cartes communes suivent les [fiches collectées](references/mighty-party/common-cards.md), niveau par niveau, sans interpolation. Les capacités ne deviennent actives qu’à leur niveau de déblocage ; leurs valeurs suivent leurs propres paliers. Certains niveaux débloquent une capacité sans augmenter l’attaque ou la vie.
+
+Les coûts d’amélioration utilisent les tables de chaque rareté. Les données exécutées sont dans `packages/game/src/data/mighty-party.json`, les identités et la traduction mécanique dans `packages/game/src/cards.ts`. Le [JSON complet de recherche](references/mighty-party/common-cards.json) conserve les sources, dates et bonus de renaissance séparés. Les tests comparent les données exécutées à cette référence complète.
+
+Les fiches historiques datent de 2020–2021 et les coûts de 2023 ; la recherche du 23 octobre 2026 n’établit pas leur conformité au client actuel de Mighty Party. L’implémentation utilise ces valeurs comme référence acceptée pour Sylve.
+
+## Correspondances
+
+| Carte de Sylve | Référence commune | Faction | Type |
+|---|---|---|---|
+| Gardien de pierre | Warrior | Ordre | Mêlée |
+| Renard des braises | Archer | Ordre | Distance |
+| Oracle des brumes | Apprentice | Ordre | Distance |
+| Cerf couronné | Pilgrim | Ordre | Mêlée |
+| Sentinelle mousse | Dryad | Nature | Distance |
+| Dragon d’ambre | Shaman | Nature | Distance |
+| Tortue millénaire | Big Toad | Nature | Mêlée |
+| Esprit des sources | Raven | Nature | Distance |
+| Loup de lune | Red Orc | Chaos | Mêlée |
+| Chevalier ronce | Servant | Ordre | Mêlée |
+| Vipère de jade | Blood Cult Adept | Chaos | Distance |
+| Ours des cimes | Lumberjack | Nature | Mêlée |
+| Féline des clairières | Cat Lady | Nature | Mêlée |
+| Artisan des racines | Gnome | Ordre | Mêlée |
+| Totem de l’aurore | Idol | Ordre | Bâtiment |
+| Tisseuse de runes | Love Lady | Ordre | Distance |
+| Lynx du crépuscule | Shinobi | Ordre | Mêlée |
+| Chanteur des feuillages | Singer | Ordre | Distance |
+| Saule des murmures | Tree | Chaos | Bâtiment |
+| Chauve-souris pourpre | Vampire | Chaos | Mêlée |
+| Capitaine des clairières | Warrioress | Ordre | Mêlée |
+| Sorcière des spores | Witch | Chaos | Distance |
+
+Les dix dernières identités sont nouvelles. Elles rejoignent automatiquement le bestiaire, les tirages de coffres, les invocations et les filtres de collection. Elles ne sont pas ajoutées gratuitement aux collections. Le deck initial conserve les quatre variantes communes de départ.
+
+## Progression et raretés
+
+| Passage | Commune, exemplaires / or | Rare | Épique | Légendaire |
+|---|---:|---:|---:|---:|
+| 1 → 2 | 25 / 50 | 25 / 100 | 15 / 300 | 5 / 600 |
+| 2 → 3 | 50 / 80 | 50 / 300 | 30 / 600 | 10 / 900 |
+| 10 → 11 | 450 / 3 000 | 330 / 6 000 | 200 / 7 000 | 150 / 11 000 |
+
+Le [tableau source](references/mighty-party/common-cards.md) détaille les autres passages. Les exemplaires et l’or sont contrôlés puis débités dans la même transaction serveur. Au niveau 26, l’amélioration est désactivée et les exemplaires supplémentaires restent en réserve.
+
+**Les variantes rares, épiques et légendaires restent une adaptation Sylve** : elles partagent les courbes et capacités communes et conservent les anciens bonus respectifs ATQ/PV `+1/+2`, `+2/+4`, `+4/+8`. L’attaque des bâtiments reste nulle. Leurs coûts viennent bien de leur propre table de rareté, mais leurs statistiques ne prétendent pas reproduire les cartes supérieures de Mighty Party. Le plafond reste 26 pour éviter d’inventer des statistiques aux niveaux 27–31.
+
+La comparaison est en Reborn 0. Renaissance, Soulbind, bonus de guilde, remises et restrictions de niveau par ligue Mighty Party ne sont pas implémentés. Les ligues, l’acquisition des cartes, le butin et les héros à 30 PV gardent les règles Sylve. Le Gardien mécanique suit désormais un plafond progressif de 1 à 26 selon sa ligue, toujours limité par les cartes du deck humain.
+
+## Résolution des capacités
+
+Le moteur partagé applique les mêmes règles en entraînement, solo persistant et duel. Les bâtiments peuvent être posés dans les trois colonnes et n’effectuent aucune attaque normale. Une unité de mêlée est bloquée par tout allié devant elle sur sa rangée ; la distance peut tirer derrière ses alliés.
+
+1. L’apparition applique les passifs et les capacités de déploiement. Les alliés Nature concernés réagissent à l’apparition ; une rune présente sur la case est consommée.
+2. Le camp actif attaque de l’avant vers l’arrière, rangée par rangée. Une double attaque recalcule sa cible après chaque frappe. Les épines et les autres dégâts de capacité sont résolus avant la suppression des morts et leurs effets de mort.
+3. Les bonus d’attaque d’un tour expirent après les attaques de leur propriétaire.
+4. Le camp suivant reçoit sa régénération et ses capacités de début de tour, puis sa main est complétée.
+
+Les compétences sans déclencheur explicite dans les fiches sont interprétées comme des effets de déploiement. Une capacité visant « les alliés » exclut son propre lanceur, sauf si elle dit explicitement « gagne ». Les bonus permanents s’additionnent. Les soins ne dépassent pas les PV maximum ; les gains de vitalité augmentent les PV actuels et maximum. L’attaque reste positive ou nulle.
+
+La géométrie est traduite explicitement : « line » devient **colonne** (même profondeur dans le camp), et « row » devient **rangée** (axe horizontal vers l’adversaire). La perforation affecte ainsi les unités de la colonne de la cible ; la cible initiale peut aussi recevoir ces dégâts si elle survit à la frappe.
+
+Le Blocage réduit les attaques physiques. Le Bouclier mental annule le premier événement de dégâts puis disparaît, y compris si le coup est réduit à zéro. Les Épines renvoient des dégâts de capacité quand l’unité est attaquée, même si elle meurt de cette frappe. Le Vampirisme ajoute ses dégâts après la frappe normale si la cible vit encore et soigne son porteur du montant effectivement drainé. Les attaques contre le héros déclenchent le soin de l’Artisan des racines.
+
+La Tisseuse crée une rune de vitalité sur une case alliée libre aléatoire ; elle augmente les PV de la prochaine unité qui y apparaît. La Capitaine invoque un **Éclaireur des braises** derrière elle, avec les statistiques propres de l’Archer invoquée (5/4 au premier niveau). La Sorcière invoque un **Rejeton des spores** devant elle (2/2 au premier niveau). Si la case requise est occupée ou hors du plateau, le renfort n’apparaît pas. Ces jetons ne rejoignent jamais le deck, la main, la collection ou la mémoire des cartes jouées par l’IA.
+
+## Interface et compatibilité
+
+Les fiches de l’atelier montrent la faction, le type, les capacités actives et verrouillées, leur niveau de déblocage et leurs changements au prochain niveau. Le bestiaire permet de consulter chaque commune du niveau 1 au niveau 26. Le filtre Bâtiment complète Mêlée et Distance. Le plateau affiche les runes et les protections ; les animations et le journal utilisent les événements de capacité et les définitions des jetons.
+
+Les champs de combat ajoutés sont facultatifs dans les validateurs Convex. Les parties et recherches déjà enregistrées conservent leurs instantanés de cartes ; les nouvelles parties résolvent les caractéristiques actuelles depuis la collection. Les identifiants existants et niveaux acquis sont préservés.
+
+## Illustrations et vérifications
+
+Onze illustrations originales ont été générées avec l’outil intégré ImageGen : les dix nouvelles cartes et le Rejeton des spores. L’Éclaireur réutilise le Renard des braises. Les WebP avec transparence sont dans `apps/web/public/art/characters/`, les prompts complets et fichiers sources dans [le manifeste](art-prompts-cards.json).
+
+Les tests couvrent toutes les statistiques et tous les paliers collectés, les coûts des quatre raretés, le plafond, les effets de combat, les jetons et les instantanés. Les tests serveur vérifient notamment le passage 10 → 11 et la persistance des jetons ; les tests d’interface vérifient les déblocages, le bestiaire et les étapes des animations.
+
+Contrôles visuels des composants réels : [amélioration sur ordinateur](cards-progression-desktop.jpg), [amélioration sur mobile](cards-progression-mobile.jpg), [bestiaire sur ordinateur](cards-bestiary-desktop.jpg), [bestiaire sur mobile](cards-bestiary-mobile.jpg). Dimensions : 1 330 × 1 314 et 390 × 844 px ; toutes les illustrations chargent et les fiches mobiles ne débordent pas horizontalement.

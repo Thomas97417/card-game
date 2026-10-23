@@ -57,12 +57,13 @@ export const upgrade = mutation({
       throw new ConvexError("Cette carte n’est pas encore débloquée.");
     if (entry.level >= MAX_CARD_LEVEL)
       throw new ConvexError("Cette carte a atteint le niveau maximal.");
-    const cost = upgradeCost(entry.level);
+    const current = rules(() => resolveCard(variantId, entry.level));
+    const cost = upgradeCost(entry.level, current.rarity);
     if (entry.copies < cost)
       throw new ConvexError(
         "Tu n’as pas assez d’exemplaires pour cette amélioration.",
       );
-    const goldCost = upgradeGoldCost(entry.level);
+    const goldCost = upgradeGoldCost(entry.level, current.rarity);
     const wallet = await playerWallet(ctx, userId);
     if (!wallet || wallet.gold < goldCost)
       throw new ConvexError(

@@ -173,14 +173,12 @@ describe("inspection pendant un duel", () => {
     setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Gardien de pierre, Corps à corps, puissance 2, 4 PV, bloquée.*voir les informations/,
+        name: /Gardien de pierre, Corps à corps, puissance 3, 4 PV, bloquée.*voir les informations/,
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
     expect(
-      dialog.getByText(
-        "Bloquée : une unité au corps à corps est devant elle sur cette ligne.",
-      ),
+      dialog.getByText("Bloquée : un allié est devant elle sur cette rangée."),
     ).toBeTruthy();
     expect(
       (
@@ -223,12 +221,12 @@ describe("inspection pendant un duel", () => {
     const { data, actions } = setup();
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 2, 4 PV, voir les informations",
+        name: "Gardien de pierre, Corps à corps, puissance 3, 4 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByLabelText("4 points de vie")).toBeTruthy();
-    expect(dialog.getByText("/ 9")).toBeTruthy();
+    expect(dialog.getByText("/ 8")).toBeTruthy();
     expect(dialog.getByText("Ligne 2 · Milieu")).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: "Retirer du terrain" }));
     expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn, {
@@ -248,7 +246,7 @@ describe("inspection pendant un duel", () => {
     const { actions } = setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 2, 7 PV, voir les informations",
+        name: "Gardien de pierre, Corps à corps, puissance 3, 7 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -280,7 +278,7 @@ describe("inspection pendant un duel", () => {
     setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Renard des braises, À distance, puissance 5, 1 PV, voir les informations",
+        name: "Renard des braises, À distance, puissance 4, 1 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -387,7 +385,7 @@ describe("inspection pendant un duel", () => {
     const { data, actions, rerender } = setup();
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 2, 4 PV, voir les informations",
+        name: "Gardien de pierre, Corps à corps, puissance 3, 4 PV, voir les informations",
       }),
     );
     await screen.findByRole("dialog");
