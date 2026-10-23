@@ -1,13 +1,7 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import {
-  ArrowRight,
-  Crown,
-  History,
-  LoaderCircle,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, History, LoaderCircle, Sparkles } from "lucide-react";
 import { RARITIES, RARITY_LABELS, resolveCard } from "@sylve/game";
 import {
   SUMMON_PACKS,
@@ -193,6 +187,7 @@ function PackChoice({
 }) {
   const premium = pack.id === "ancients";
   const discount = (1 - pack.tenPrice / (pack.price * 10)) * 100;
+  const guarantee = `${pack.guaranteedLegendaries} légendaire${pack.guaranteedLegendaries > 1 ? "s" : ""} garanti${pack.guaranteedLegendaries > 1 ? "s" : ""}`;
   const rarities = premium
     ? ["epic", "legendary", "epic"]
     : ["common", "rare", "legendary", "epic"];
@@ -201,10 +196,6 @@ function PackChoice({
       className={`summon-pack ${premium ? "summon-pack-premium" : ""}`}
       aria-labelledby={`pack-${pack.id}`}
     >
-      <div className="summon-pack-heading">
-        <span>{premium ? "L’appel des esprits" : "L’appel de la forêt"}</span>
-        <Sparkles size={15} />
-      </div>
       <div className="summon-pack-art" aria-hidden="true">
         <div className="summon-orbit" />
         {rarities.map((rarity, i) => (
@@ -238,17 +229,6 @@ function PackChoice({
           </span>
         ))}
       </div>
-      <div className="summon-guarantee">
-        <Crown size={19} />
-        <span>
-          Par lot de 10
-          <strong>
-            Au moins {pack.guaranteedLegendaries} légendaire
-            {pack.guaranteedLegendaries > 1 ? "s" : ""} garanti
-            {pack.guaranteedLegendaries > 1 ? "s" : ""}
-          </strong>
-        </span>
-      </div>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
@@ -261,6 +241,9 @@ function PackChoice({
               className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
               disabled={!ready || !!busy || diamonds == null || insufficient}
               aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} diamants`}
+              aria-describedby={
+                count === 10 ? `pack-${pack.id}-guarantee` : undefined
+              }
               title={
                 insufficient
                   ? `Il te manque ${(price - diamonds!).toLocaleString("fr-FR")} diamants.`
@@ -278,11 +261,7 @@ function PackChoice({
                 </span>
               )}
               <span className="summon-button-label">
-                {working ? (
-                  <LoaderCircle className="animate-spin" size={15} />
-                ) : (
-                  <Sparkles size={14} />
-                )}
+                {working && <LoaderCircle className="animate-spin" size={15} />}
                 {count === 1 ? "Invoquer ×1" : "Invoquer ×10"}
               </span>
               <span className="summon-button-price">
@@ -293,6 +272,14 @@ function PackChoice({
                 )}
                 <DiamondAmount amount={price} />
               </span>
+              {count === 10 && (
+                <span
+                  id={`pack-${pack.id}-guarantee`}
+                  className="summon-button-guarantee"
+                >
+                  {guarantee}
+                </span>
+              )}
             </button>
           );
         })}

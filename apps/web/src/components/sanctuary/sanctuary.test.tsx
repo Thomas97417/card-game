@@ -73,8 +73,12 @@ describe("le sanctuaire", () => {
     ).toBeTruthy();
     expect(screen.getByText("2 %")).toBeTruthy();
     expect(screen.getByText("20 %")).toBeTruthy();
-    expect(screen.getByText("Au moins 1 légendaire garanti")).toBeTruthy();
-    expect(screen.getByText("Au moins 2 légendaires garantis")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10)).getByText("1 légendaire garanti"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("anciens", 10)).getByText("2 légendaires garantis"),
+    ).toBeTruthy();
     expect(screen.getByText("−12,8 %")).toBeTruthy();
     expect(screen.getByText("−13,2 %")).toBeTruthy();
     expect(
