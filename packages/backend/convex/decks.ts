@@ -1,6 +1,7 @@
 import { DEFAULT_DECK, validateDeck } from "@sylve/game";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 import { currentDeck, requirePlayer, rules } from "./lib/game_service";
 import { ownedDeck } from "./lib/progression";
 
@@ -16,34 +17,39 @@ export const ensureStarter = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await requirePlayer(ctx);
-    const existing = await currentDeck(ctx, user.userId);
-    const initialized = await ctx.db
-      .query("collection")
-      .withIndex("by_owner_variant", (q) => q.eq("ownerId", user.userId))
-      .first();
-    if (!initialized) {
-      for (const variantId of DEFAULT_DECK)
-        await ctx.db.insert("collection", {
-          ownerId: user.userId,
-          variantId,
-          level: 1,
-          copies: 0,
-        });
-      if (existing)
-        await ctx.db.patch(existing._id, {
-          cardIds: [...DEFAULT_DECK],
-          updatedAt: Math.max(Date.now(), existing.updatedAt + 1),
-        });
-    }
-    if (existing) return existing._id;
-    return await ctx.db.insert("decks", {
-      ownerId: user.userId,
-      name: "Les gardiens de la Sylve",
-      cardIds: [...DEFAULT_DECK],
-      updatedAt: Date.now(),
-    });
+    return ensureStarterDeck(ctx, user.userId);
   },
 });
+
+/** Summoning must initialize the starting collection before granting the first new card. */
+export async function ensureStarterDeck(ctx: MutationCtx, ownerId: string) {
+  const existing = await currentDeck(ctx, ownerId);
+  const initialized = await ctx.db
+    .query("collection")
+    .withIndex("by_owner_variant", (q) => q.eq("ownerId", ownerId))
+    .first();
+  if (!initialized) {
+    for (const variantId of DEFAULT_DECK)
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId,
+        level: 1,
+        copies: 0,
+      });
+    if (existing)
+      await ctx.db.patch(existing._id, {
+        cardIds: [...DEFAULT_DECK],
+        updatedAt: Math.max(Date.now(), existing.updatedAt + 1),
+      });
+  }
+  if (existing) return existing._id;
+  return ctx.db.insert("decks", {
+    ownerId,
+    name: "Les gardiens de la Sylve",
+    cardIds: [...DEFAULT_DECK],
+    updatedAt: Date.now(),
+  });
+}
 export const save = mutation({
   args: {
     deckId: v.optional(v.id("decks")),

@@ -1,5 +1,11 @@
 import { v } from "convex/values";
 
+export const summonPackValidator = v.union(
+  v.literal("sylve"),
+  v.literal("ancients"),
+);
+export const summonCountValidator = v.union(v.literal(1), v.literal(10));
+
 export const rarityValidator = v.union(
   v.literal("common"),
   v.literal("rare"),

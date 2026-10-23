@@ -171,3 +171,15 @@ Les fiches d’amélioration reprennent une composition de fiche de jeu : une gr
 La fiche a été vérifiée dans un aperçu local avec des données de démonstration à 1440 × 900, 1280 × 720, 390 × 844 et 320 × 800 px : amélioration, mise à jour des exemplaires et de l’or, manque de ressources, niveau maximal, ouverture depuis le deck, fermeture par Échap et retour du focus. Aucune erreur de console ni débordement horizontal n’a été relevé. Les récompenses de coffre conservent leur thème `game` et les cartes révélées leur pleine opacité.
 
 Aperçus : [fiche ordinateur](ui-card-dialog-validation.jpg), [fiche mobile](ui-card-mobile-validation.jpg), [coffre ordinateur](ui-chest-dialog-validation.jpg), [coffre mobile](ui-chest-mobile-validation.jpg).
+
+## Sanctuaire et diamants
+
+`apps/web/public/art/sanctuary.webp` représente un temple forestier ouvert, enchâssé dans un arbre ancien, avec un autel de pierre et une fontaine d’invocation turquoise. L’image a été générée avec l’outil intégré **ImageGen**, puis encodée avec `cwebp` en WebP de 1672 × 941 px, qualité 88, environ 487 Ko. Le décor couvre toute la page `/sanctuary` ; le titre, les taux, les prix et les commandes sont des éléments HTML. Les éventails des packs réutilisent les dos de cartes illustrés existants.
+
+`apps/web/public/art/ui/diamonds.webp` est un groupe de trois diamants bleus créé séparément avec **ImageGen**, sur un fond réellement transparent. Le canal alpha du WebP final a été vérifié avec `webpinfo`. L’image mesure 384 × 384 px, qualité 90, environ 42 Ko. Elle accompagne le solde en haut des pages connectées hors combat et les prix des invocations, à côté des pièces d’or.
+
+Les deux prompts exacts, les chemins des PNG sources et les chemins finaux sont conservés dans [art-prompts-sanctuary.json](art-prompts-sanctuary.json). Les PNG originaux restent dans le dossier local de génération ; les deux images consommées par le jeu sont dans le dépôt. L’outil intégré a été utilisé pour les deux générations.
+
+Le parcours hub → sanctuaire a été vérifié sur le backend de développement et à 320 × 800 px. La page a aussi été contrôlée à 1280 × 720 et 390 × 844 px. Les révélations ont été testées dans un aperçu isolé avec des données de démonstration : dix cartes, minimum de deux légendaires pour le pack des anciens, débit du solde, désactivation des achats trop chers et ouverture du dialogue en haut de la liste sur mobile. Aucun diamant du compte connecté n’a été dépensé pour ces contrôles. Aucun débordement horizontal ni nouvelle erreur de console n’a été relevé après les derniers ajustements.
+
+Aperçus : [sanctuaire ordinateur](sanctuary-validation.jpg), [mobile](sanctuary-mobile-validation.jpg), [petit mobile](sanctuary-small-mobile-validation.jpg), [révélation ordinateur](sanctuary-reveal-validation.jpg), [révélation mobile](sanctuary-reveal-mobile-validation.jpg).

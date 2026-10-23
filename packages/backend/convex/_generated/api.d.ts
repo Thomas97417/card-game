@@ -21,6 +21,7 @@ import type * as lib_progression from "../lib/progression.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as matchmaking from "../matchmaking.js";
 import type * as privateData from "../privateData.js";
+import type * as sanctuary from "../sanctuary.js";
 import type * as sendEmails from "../sendEmails.js";
 
 import type {
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   "lib/validators": typeof lib_validators;
   matchmaking: typeof matchmaking;
   privateData: typeof privateData;
+  sanctuary: typeof sanctuary;
   sendEmails: typeof sendEmails;
 }>;
 

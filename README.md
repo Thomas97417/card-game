@@ -4,7 +4,7 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 ## Jouer
 
-Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, au compte, aux règles et au bestiaire. La carte se parcourt à la souris, au clavier et au tactile.
+Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, au compte, aux règles et au sanctuaire d’invocation. La carte se parcourt à la souris, au clavier et au tactile.
 
 ### Salon et trésors
 
@@ -22,6 +22,19 @@ Chaque victoire éligible attribue aussi un coffre de combat si une des deux pla
 L’ouverture révèle **deux récompenses : de l’or et un lot d’une seule carte de la rareté du coffre**. Le nombre d’exemplaires est doublé : 8–16 dans un commun, 24–40 dans un rare, 60–100 dans un épique et 150–220 dans un légendaire. Les montants d’or sont respectivement 40–80, 120–200, 300–500 et 750–1 100 pièces. Le contenu est tiré côté serveur à l’attribution, puis conservé et caché jusqu’à l’ouverture. Une ouverture répétée ne crédite jamais deux fois ses récompenses. Les anciens coffres encore fermés adoptent ces règles à leur première ouverture.
 
 Le solde d’or, initialement nul, apparaît en haut des pages connectées, hors combat (`/game/$gameId` et `/practice`). Une icône originale de pièces dorées accompagne le solde, le coût des améliorations et les récompenses.
+
+### Sanctuaire et diamants
+
+Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les diamants permettent d’invoquer des cartes. Leur icône originale apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 diamants de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source de diamants n’est prévue pour le moment.
+
+| Pack | Taux par invocation, hors garantie | Une invocation | Dix invocations (−10 %) | Garantie du lot de dix |
+|---|---|---:|---:|---|
+| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 100 diamants | 900 diamants | Au moins 1 légendaire |
+| Appel des anciens | Épique 80 %, légendaire 20 % | 300 diamants | 2 700 diamants | Au moins 2 légendaires |
+
+Une invocation donne un exemplaire d’une variante. Le premier la débloque ; les doublons alimentent sa réserve sans changer son niveau. Les lots effectuent dix tirages puis, au besoin, remplacent des résultats non légendaires choisis au hasard pour atteindre leur garantie. Les légendaires obtenus naturellement sont conservés. Les garanties sont propres à chaque achat groupé, sans cumul des achats unitaires.
+
+Le serveur vérifie les diamants, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
 
 ### Collection et deck
 
