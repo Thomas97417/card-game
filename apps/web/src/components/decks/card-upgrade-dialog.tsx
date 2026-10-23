@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useState } from "react";
 import {
   ArrowRight,
   ArrowUp,
@@ -6,7 +6,6 @@ import {
   Check,
   Crown,
   Plus,
-  Minus,
   Layers3,
 } from "lucide-react";
 import {
@@ -34,26 +33,21 @@ import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 export function CardUpgradeDialog({
   entry,
   inDeck,
-  canRemove,
   hasSpace,
   onClose,
   onUpgrade,
   onAdd,
-  onRemove,
   onMove,
 }: {
   entry: OwnedCard | undefined;
   inDeck: boolean;
-  canRemove: boolean;
   hasSpace: boolean;
   onClose: () => void;
   onUpgrade: (variantId: string) => Promise<unknown>;
   onAdd: () => void;
-  onRemove: () => void;
   onMove: () => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const helpId = useId();
   const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
@@ -125,7 +119,6 @@ export function CardUpgradeDialog({
 
             <div className="upgrade-main">
               <header className="upgrade-heading">
-                <span className="eyebrow">FICHE DE COMPAGNON</span>
                 <div className="upgrade-name-banner">
                   <DialogTitle>{card.name}</DialogTitle>
                 </div>
@@ -155,7 +148,15 @@ export function CardUpgradeDialog({
                     }
                   />
                   <span className="upgrade-copies">
-                    <Layers3 size={16} aria-hidden="true" />
+                    <img
+                      className="upgrade-copies-icon"
+                      src={`/art/ui/rarity-${card.rarity ?? "common"}.webp`}
+                      width={18}
+                      height={24}
+                      alt=""
+                      aria-hidden="true"
+                      draggable={false}
+                    />
                     <span>
                       {max
                         ? `Niveau ${level} / ${MAX_CARD_LEVEL}`
@@ -213,15 +214,6 @@ export function CardUpgradeDialog({
                     </div>
                   ))}
                 </dl>
-                <p className="upgrade-combat-note">
-                  <GameIcon kind={getCombatType(card)} size={26} />
-                  <span>
-                    <strong>{combatTypeLabel(card)}</strong>
-                    {getCombatType(card) === "melee"
-                      ? "Se déploie au milieu ou vers l’ennemi."
-                      : "Se déploie au milieu ou vers ton héros."}
-                  </span>
-                </p>
               </section>
 
               <div className="upgrade-evolution-action">
@@ -247,7 +239,6 @@ export function CardUpgradeDialog({
                   className="sylve-button upgrade-action"
                   disabled={busy || max || entry.copies < cost || !enoughGold}
                   aria-label={actionLabel}
-                  aria-describedby={max ? undefined : helpId}
                   onClick={() => void upgrade()}
                 >
                   <span className="upgrade-action-label">
@@ -256,28 +247,6 @@ export function CardUpgradeDialog({
                   </span>
                   {!max && <GoldAmount amount={goldCost} />}
                 </button>
-                {!max && (
-                  <>
-                    <p
-                      className="upgrade-gold-reserve"
-                      data-insufficient={!enoughGold}
-                    >
-                      {gold == null
-                        ? "Chargement du solde…"
-                        : `${gold.toLocaleString("fr-FR")} pièces d’or en réserve`}
-                    </p>
-                    <p id={helpId} className="upgrade-help">
-                      L’amélioration consomme {cost} exemplaires et {goldCost} pièces
-                      d’or.
-                      {entry.copies >= cost && gold != null && !enoughGold && (
-                        <span className="upgrade-shortage">
-                          Il te manque {(goldCost - gold).toLocaleString("fr-FR")}{" "}
-                          {goldCost - gold === 1 ? "pièce" : "pièces"} d’or.
-                        </span>
-                      )}
-                    </p>
-                  </>
-                )}
               </div>
             </div>
 
@@ -289,20 +258,10 @@ export function CardUpgradeDialog({
               </div>
               <div className="upgrade-deck-actions">
                 {inDeck ? (
-                  <>
-                    <button className="sylve-button secondary" onClick={onMove}>
-                      <ArrowRightLeft size={22} />
-                      Déplacer dans le deck
-                    </button>
-                    <button
-                      className="sylve-button secondary"
-                      disabled={!canRemove}
-                      onClick={onRemove}
-                    >
-                      <Minus size={22} />
-                      Retirer du deck
-                    </button>
-                  </>
+                  <button className="sylve-button secondary" onClick={onMove}>
+                    <ArrowRightLeft size={22} />
+                    Déplacer dans le deck
+                  </button>
                 ) : (
                   <button
                     className="sylve-button secondary"

@@ -4,7 +4,6 @@ import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   DECK_SIZE,
-  MIN_DECK_SIZE,
   MAX_CARD_LEVEL,
   RARITIES,
   RARITY_LABELS,
@@ -643,20 +642,11 @@ export function DeckWorkshop({
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
         inDeck={!!inspected && cards.includes(inspected)}
-        canRemove={cards.length > MIN_DECK_SIZE}
         hasSpace={cards.length < DECK_SIZE}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         onAdd={() => {
           if (inspected) replaceCard(inspected, cards.length);
-          setInspected(null);
-        }}
-        onRemove={() => {
-          if (!draft || !inspected || cards.length <= MIN_DECK_SIZE) return;
-          updateDraft({
-            ...draft,
-            cards: cards.filter((id) => id !== inspected),
-          });
           setInspected(null);
         }}
         onMove={() => {

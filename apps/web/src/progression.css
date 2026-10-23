@@ -271,10 +271,6 @@
   gap: 20px;
   padding-block: 6px 2px;
 }
-.upgrade-heading > .eyebrow {
-  display: block;
-  margin-bottom: 9px;
-}
 .upgrade-name-banner {
   position: relative;
   padding: 12px 16px;
@@ -359,6 +355,13 @@
   text-shadow: 0 1px 3px #102515;
   pointer-events: none;
 }
+.upgrade-copies-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px #10251b80);
+}
 .upgrade-next-level {
   position: absolute;
   top: 50%;
@@ -423,24 +426,6 @@
   color: #d3e8ae;
   font: 700 29px/1 Georgia, serif;
 }
-.upgrade-combat-note {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  color: #b6c6af;
-  font-size: 10px;
-  line-height: 1.6;
-}
-.upgrade-combat-note > .game-icon {
-  flex-shrink: 0;
-}
-.upgrade-combat-note strong {
-  display: block;
-  color: #ded2af;
-  font-size: 11px;
-  font-weight: 600;
-}
 .upgrade-evolution-action {
   margin-top: auto;
   padding-top: 4px;
@@ -498,27 +483,6 @@
 .upgrade-action .gold-icon {
   width: 36px;
   height: 36px;
-}
-.upgrade-gold-reserve {
-  margin-top: 9px;
-  color: var(--quiet);
-  text-align: center;
-  font-size: 10px;
-}
-.upgrade-gold-reserve[data-insufficient="true"],
-.upgrade-shortage {
-  color: #f0ad91;
-}
-.upgrade-shortage {
-  display: block;
-  margin-top: 3px;
-}
-.upgrade-help {
-  margin-top: 5px;
-  color: #adbea6;
-  font-size: 9px;
-  text-align: center;
-  line-height: 1.6;
 }
 .upgrade-deck-panel {
   display: flex;
@@ -877,11 +841,6 @@
     align-self: start;
     padding: 0;
   }
-  .upgrade-heading > .eyebrow {
-    font-size: 8px;
-    letter-spacing: 1px;
-    line-height: 1.6;
-  }
   .upgrade-name-banner {
     padding: 10px;
   }
@@ -915,8 +874,9 @@
     gap: 4px;
     font-size: 10px;
   }
-  .upgrade-copies > svg {
-    display: none;
+  .upgrade-copies-icon {
+    width: 15px;
+    height: 20px;
   }
   .upgrade-next-level {
     right: -16px;
@@ -940,9 +900,6 @@
   }
   .upgrade-stat-next {
     font-size: 27px;
-  }
-  .upgrade-combat-note {
-    margin-top: 10px;
   }
   .upgrade-evolution-action {
     padding-top: 0;

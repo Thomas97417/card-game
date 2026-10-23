@@ -274,31 +274,19 @@ describe("l’atelier et la collection", () => {
     expect(card(deckRow(), "Chevalier ronce")).toBeTruthy();
     expect(card(collection(), "Gardien de pierre")).toBeTruthy();
   });
-  it("grows a starter deck through an empty slot and never removes below four", async () => {
+  it("grows a starter deck through an empty slot and saves the added card", async () => {
     const { onSave } = setup(starter);
     expect(deckCards()).toHaveLength(4);
-    fireEvent.click(card(deckRow(), "Gardien de pierre"));
-    expect(
-      (
-        (await screen.findByRole("button", {
-          name: "Retirer du deck",
-        })) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     dragCard(
       card(collection(), "Renard des braises"),
       deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
     );
     expect(deckCards()).toHaveLength(5);
-    fireEvent.click(card(deckRow(), "Renard des braises"));
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Retirer du deck" }),
-    );
-    expect(deckCards()).toHaveLength(4);
     await waitFor(() =>
-      expect(onSave.mock.calls.at(-1)?.[0].cardIds).toEqual(DEFAULT_DECK),
+      expect(onSave.mock.calls.at(-1)?.[0].cardIds).toEqual([
+        ...DEFAULT_DECK,
+        "fox:common",
+      ]),
     );
   });
   it("keeps rarity variants independent, reuses art and upgrades the exact variant", async () => {
@@ -344,7 +332,6 @@ describe("l’atelier et la collection", () => {
       name: "Améliorer au niveau 2",
     });
     expect((action as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText("Il te manque 1 pièce d’or.")).toBeTruthy();
     fireEvent.click(action);
     expect(onUpgrade).not.toHaveBeenCalled();
   });
@@ -356,17 +343,10 @@ describe("l’atelier et la collection", () => {
     }));
     setup(starter, owned, 150);
     fireEvent.click(card(deckRow(), "Gardien de pierre"));
-    expect(
-      (
-        (await screen.findByRole("button", {
-          name: "Améliorer au niveau 4",
-        })) as HTMLButtonElement
-      ).disabled,
-    ).toBe(false);
-    expect(
-      screen.getByText(
-        "L’amélioration consomme 15 exemplaires et 150 pièces d’or.",
-      ),
-    ).toBeTruthy();
+    const action = await screen.findByRole("button", {
+      name: "Améliorer au niveau 4",
+    });
+    expect((action as HTMLButtonElement).disabled).toBe(false);
+    expect(within(action).getByText("150")).toBeTruthy();
   });
 });
