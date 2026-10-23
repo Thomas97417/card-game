@@ -79,8 +79,12 @@ describe("le sanctuaire", () => {
     expect(
       within(purchase("anciens", 10)).getByText("2 légendaires garantis"),
     ).toBeTruthy();
-    expect(screen.getByText("−12,8 %")).toBeTruthy();
-    expect(screen.getByText("−13,2 %")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10)).getByText("1 tirage gratuit"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("anciens", 10)).getByText("1 tirage gratuit"),
+    ).toBeTruthy();
     expect(
       screen
         .getByRole("link", { name: "Retour au refuge" })

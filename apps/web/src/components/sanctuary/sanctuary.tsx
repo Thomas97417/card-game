@@ -161,11 +161,6 @@ export function Sanctuary({
             {error}
           </p>
         )}
-        {!ready && !error && (
-          <p className="sanctuary-feedback" role="status">
-            Le sanctuaire s’éveille…
-          </p>
-        )}
       </div>
       <SummonRevealDialog result={result} onClose={() => setResult(null)} />
     </main>
@@ -186,7 +181,6 @@ function PackChoice({
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
   const premium = pack.id === "ancients";
-  const discount = (1 - pack.tenPrice / (pack.price * 10)) * 100;
   const guarantee = `${pack.guaranteedLegendaries} légendaire${pack.guaranteedLegendaries > 1 ? "s" : ""} garanti${pack.guaranteedLegendaries > 1 ? "s" : ""}`;
   const rarities = premium
     ? ["epic", "legendary", "epic"]
@@ -242,7 +236,9 @@ function PackChoice({
               disabled={!ready || !!busy || diamonds == null || insufficient}
               aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} diamants`}
               aria-describedby={
-                count === 10 ? `pack-${pack.id}-guarantee` : undefined
+                count === 10
+                  ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
+                  : undefined
               }
               title={
                 insufficient
@@ -252,12 +248,11 @@ function PackChoice({
               onClick={() => onInvoke(pack.id, count)}
             >
               {count === 10 && (
-                <span className="summon-discount">
-                  −
-                  {discount.toLocaleString("fr-FR", {
-                    maximumFractionDigits: 1,
-                  })}{" "}
-                  %
+                <span
+                  id={`pack-${pack.id}-offer`}
+                  className="summon-offer-ribbon"
+                >
+                  1 tirage gratuit
                 </span>
               )}
               <span className="summon-button-label">
@@ -290,9 +285,6 @@ function PackChoice({
           {(pack.price - diamonds).toLocaleString("fr-FR")} diamants.
         </p>
       )}
-      <p className="summon-rate-note">
-        Taux par invocation, hors garantie du lot de 10.
-      </p>
     </article>
   );
 }
