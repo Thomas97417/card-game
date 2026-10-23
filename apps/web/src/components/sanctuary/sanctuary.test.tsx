@@ -75,7 +75,8 @@ describe("le sanctuaire", () => {
     expect(screen.getByText("20 %")).toBeTruthy();
     expect(screen.getByText("Au moins 1 légendaire garanti")).toBeTruthy();
     expect(screen.getByText("Au moins 2 légendaires garantis")).toBeTruthy();
-    expect(screen.getAllByText("−10 %")).toHaveLength(2);
+    expect(screen.getByText("−12,8 %")).toBeTruthy();
+    expect(screen.getByText("−13,2 %")).toBeTruthy();
     expect(
       screen
         .getByRole("link", { name: "Retour au refuge" })
@@ -87,12 +88,12 @@ describe("le sanctuaire", () => {
   });
 
   it("blocks unaffordable purchases while allowing exactly affordable singles", () => {
-    setup({ diamonds: 100 });
+    setup({ diamonds: 149 });
     expect(purchase("Sylve", 1).disabled).toBe(false);
     expect(purchase("Sylve", 10).disabled).toBe(true);
     expect(purchase("anciens", 1).disabled).toBe(true);
     expect(purchase("anciens", 10).disabled).toBe(true);
-    expect(screen.getByText(/Il te manque 200 diamants/)).toBeTruthy();
+    expect(screen.getByText(/Il te manque 300 diamants/)).toBeTruthy();
   });
 
   it.each([undefined, null, 0])(
@@ -117,7 +118,7 @@ describe("le sanctuaire", () => {
           finish = resolve;
         }),
     );
-    setup({ onSummon });
+    setup({ onSummon, diamonds: 3_899 });
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("Sylve", 1));

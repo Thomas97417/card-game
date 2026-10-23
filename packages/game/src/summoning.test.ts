@@ -52,8 +52,10 @@ describe("invocations du sanctuaire", () => {
           entry.variantId.endsWith(":legendary"),
         ),
       ).toBe(true);
-      expect(summonPrice(pack.id, 1)).toBe(pack.price);
-      expect(summonPrice(pack.id, 10)).toBe(pack.price * 10 * 0.9);
+      expect(summonPrice(pack.id, 1)).toBe(pack.id === "sylve" ? 149 : 449);
+      expect(summonPrice(pack.id, 10)).toBe(
+        pack.id === "sylve" ? 1_299 : 3_899,
+      );
       expect(
         Object.values(pack.rates).reduce((sum, rate) => sum + rate, 0),
       ).toBe(100);

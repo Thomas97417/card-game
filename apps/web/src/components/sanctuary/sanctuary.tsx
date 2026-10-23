@@ -112,7 +112,10 @@ export function Sanctuary({
             draggable={false}
           />
         </Link>
-        <nav className="sanctuary-navigation" aria-label="Explorer le sanctuaire">
+        <nav
+          className="sanctuary-navigation"
+          aria-label="Explorer le sanctuaire"
+        >
           <BestiaryDialog />
           <Link to="/decks" className="sanctuary-text-button">
             Ma collection
@@ -189,6 +192,7 @@ function PackChoice({
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
   const premium = pack.id === "ancients";
+  const discount = (1 - pack.tenPrice / (pack.price * 10)) * 100;
   const rarities = premium
     ? ["epic", "legendary", "epic"]
     : ["common", "rare", "legendary", "epic"];
@@ -264,7 +268,15 @@ function PackChoice({
               }
               onClick={() => onInvoke(pack.id, count)}
             >
-              {count === 10 && <span className="summon-discount">−10 %</span>}
+              {count === 10 && (
+                <span className="summon-discount">
+                  −
+                  {discount.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 1,
+                  })}{" "}
+                  %
+                </span>
+              )}
               <span className="summon-button-label">
                 {working ? (
                   <LoaderCircle className="animate-spin" size={15} />

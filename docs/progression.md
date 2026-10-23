@@ -35,10 +35,10 @@ Les règles partagées sont dans `packages/game/src/summoning.ts`. Le portefeuil
 
 | Pack | Commune | Rare | Épique | Légendaire | Coût ×1 | Coût ×10 | Minimum de légendaires pour ×10 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Appel de la Sylve | 65 % | 25 % | 8 % | 2 % | 100 | 900 | 1 |
-| Appel des anciens | 0 % | 0 % | 80 % | 20 % | 300 | 2 700 | 2 |
+| Appel de la Sylve | 65 % | 25 % | 8 % | 2 % | 149 | 1 299 | 1 |
+| Appel des anciens | 0 % | 0 % | 80 % | 20 % | 449 | 3 899 | 2 |
 
-Les prix sont en diamants. Chaque invocation donne exactement un exemplaire d’une créature choisie uniformément dans le catalogue, avec la rareté tirée selon ce tableau. Les taux s’appliquent avant la garantie : pour un lot de dix, si le minimum n’est pas atteint, le serveur choisit sans remise des positions non légendaires et les remplace par des légendaires. Il n’enlève aucun légendaire naturel. Les dix cartes du lot premium sont toujours épiques ou légendaires. Les invocations unitaires ne cumulent aucune garantie.
+Les prix sont en diamants. Le pack des anciens coûte environ trois fois le prix standard pour ses cartes exclusivement épiques ou légendaires et sa garantie doublée. Les remises par dix sont calculées à partir des tarifs et affichées avec une décimale : 12,8 % pour la Sylve et 13,2 % pour les anciens. Chaque invocation donne exactement un exemplaire d’une créature choisie uniformément dans le catalogue, avec la rareté tirée selon ce tableau. Les taux s’appliquent avant la garantie : pour un lot de dix, si le minimum n’est pas atteint, le serveur choisit sans remise des positions non légendaires et les remplace par des légendaires. Il n’enlève aucun légendaire naturel. Les dix cartes du lot premium sont toujours épiques ou légendaires. Les invocations unitaires ne cumulent aucune garantie.
 
 Le premier exemplaire débloque la variante ; les suivants rejoignent sa réserve. Le niveau déjà acquis est conservé. Un identifiant d’achat est unique par propriétaire ; une nouvelle tentative du même achat renvoie le résultat conservé, sans débit ni crédit supplémentaires. Les achats distincts concurrents sont sérialisés par la transaction Convex pour éviter de dépenser un solde deux fois. Le prix, les taux, le minimum et le propriétaire sont déterminés par le serveur. Le dernier résultat reste consultable par son propriétaire après reconnexion.
 

@@ -113,8 +113,15 @@ describe("sanctuaire autoritaire", () => {
     "charges $tenPrice and grants $guaranteedLegendaries legendary cards for $id",
     async (pack) => {
       const t = setup();
-      const { client } = await player(t, "alice");
+      const { client, userId } = await player(t, "alice");
       await client.mutation(api.decks.ensureStarter, {});
+      await t.run((ctx) =>
+        ctx.db.insert("wallets", {
+          ownerId: userId,
+          gold: 0,
+          diamonds: 10_000,
+        }),
+      );
       vi.spyOn(Math, "random").mockReturnValue(0);
       const result = await client.mutation(api.sanctuary.summon, {
         packId: pack.id,
@@ -127,7 +134,7 @@ describe("sanctuaire autoritaire", () => {
         result.reveals.filter((item) => item.variantId.endsWith(":legendary")),
       ).toHaveLength(pack.guaranteedLegendaries);
       expect(await client.query(api.collection.diamonds, {})).toBe(
-        WELCOME_DIAMONDS - pack.tenPrice,
+        10_000 - pack.tenPrice,
       );
       const collection = await client.query(api.collection.list, {});
       const totalCopies = collection.reduce(
@@ -174,7 +181,7 @@ describe("sanctuaire autoritaire", () => {
       copies: 13,
     });
     expect(await client.query(api.collection.diamonds, {})).toBe(
-      WELCOME_DIAMONDS - 100,
+      WELCOME_DIAMONDS - 149,
     );
     expect(
       await t.run((ctx) => ctx.db.query("summons").collect()),
@@ -191,7 +198,13 @@ describe("sanctuaire autoritaire", () => {
     const t = setup();
     const alice = await player(t, "alice");
     const bob = await player(t, "bob");
-    await alice.client.mutation(api.sanctuary.ensureWallet, {});
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", {
+        ownerId: alice.userId,
+        gold: 0,
+        diamonds: 4_000,
+      }),
+    );
     const outcomes = await Promise.allSettled(
       [1, 2].map((id) =>
         alice.client.mutation(api.sanctuary.summon, {
@@ -204,7 +217,7 @@ describe("sanctuaire autoritaire", () => {
     expect(
       outcomes.filter((outcome) => outcome.status === "fulfilled"),
     ).toHaveLength(1);
-    expect(await alice.client.query(api.collection.diamonds, {})).toBe(300);
+    expect(await alice.client.query(api.collection.diamonds, {})).toBe(101);
     const before = await alice.client.query(api.collection.list, {});
     await expect(
       alice.client.mutation(api.sanctuary.summon, {
@@ -222,8 +235,8 @@ describe("sanctuaire autoritaire", () => {
       count: 1,
       requestId: requestId(1),
     });
-    expect(await bob.client.query(api.collection.diamonds, {})).toBe(2_900);
-    expect(await alice.client.query(api.collection.diamonds, {})).toBe(300);
+    expect(await bob.client.query(api.collection.diamonds, {})).toBe(2_851);
+    expect(await alice.client.query(api.collection.diamonds, {})).toBe(101);
   });
 
   it("rejects unknown packs, invalid quantities and invalid request identifiers without a debit", async () => {

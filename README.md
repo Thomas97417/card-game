@@ -27,10 +27,10 @@ Le solde d’or, initialement nul, apparaît en haut des pages connectées, hors
 
 Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les diamants permettent d’invoquer des cartes. Leur icône originale apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 diamants de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source de diamants n’est prévue pour le moment.
 
-| Pack | Taux par invocation, hors garantie | Une invocation | Dix invocations (−10 %) | Garantie du lot de dix |
+| Pack | Taux par invocation, hors garantie | Une invocation | Dix invocations | Garantie du lot de dix |
 |---|---|---:|---:|---|
-| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 100 diamants | 900 diamants | Au moins 1 légendaire |
-| Appel des anciens | Épique 80 %, légendaire 20 % | 300 diamants | 2 700 diamants | Au moins 2 légendaires |
+| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 149 diamants | 1 299 diamants (−12,8 %) | Au moins 1 légendaire |
+| Appel des anciens | Épique 80 %, légendaire 20 % | 449 diamants | 3 899 diamants (−13,2 %) | Au moins 2 légendaires |
 
 Une invocation donne un exemplaire d’une variante. Le premier la débloque ; les doublons alimentent sa réserve sans changer son niveau. Les lots effectuent dix tirages puis, au besoin, remplacent des résultats non légendaires choisis au hasard pour atteindre leur garantie. Les légendaires obtenus naturellement sont conservés. Les garanties sont propres à chaque achat groupé, sans cumul des achats unitaires.
 
@@ -76,6 +76,8 @@ bun run test:live
 Il crée deux comptes temporaires, vérifie une invitation, la synchronisation WebSocket, la reconnexion, l’abandon, le matchmaking et une partie jusqu’à la victoire. Il termine les activités des comptes et supprime leurs identifiants et sessions en sortie ; les parties de test terminées restent en base. L’option `bun scripts/verify-live.mjs --keep` conserve les comptes pour un contrôle navigateur, dans `.cache` ignoré par Git ; utiliser ensuite `bun scripts/verify-live.mjs --cleanup`.
 
 Pour utiliser ce worktree quand un autre serveur écoute déjà sur l’IPv6 de `localhost:3001`, lancer `bun run dev --host 127.0.0.1` depuis `apps/web`, puis ouvrir [http://127.0.0.1:3001](http://127.0.0.1:3001). Cette origine IPv4 est acceptée uniquement lorsque `SITE_URL` désigne le serveur HTTP local correspondant.
+
+Lorsque plusieurs worktrees partagent la même configuration Convex, une publication remplace les fonctions et le schéma du déploiement commun. Les évolutions du sanctuaire et des ligues doivent être intégrées ensemble avant publication ; des déploiements de développement séparés évitent ce conflit.
 
 Les [notes sur les illustrations](docs/art.md) indiquent l’origine du décor et le prompt utilisé.
 
