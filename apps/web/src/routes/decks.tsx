@@ -10,7 +10,7 @@ export const Route = createFileRoute("/decks")({
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
-    meta: [{ title: "L’atelier des gardiens — Sylve" }],
+    meta: [{ title: "Deck et collection — Sylve" }],
     links: [{ rel: "preload", as: "image", href: "/art/deck-workshop.webp" }],
   }),
   component: DecksPage,

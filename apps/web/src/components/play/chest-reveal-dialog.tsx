@@ -38,7 +38,11 @@ export function ChestRevealDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="chest-reveal-dialog">
+      <DialogContent
+        className="chest-reveal-dialog"
+        appearance="game"
+        data-rarity={reward?.rarity ?? "common"}
+      >
         {reward && (
           <>
             <div className="chest-reveal-heading">
@@ -78,6 +82,7 @@ export function ChestRevealDialog({
                   <div
                     key={item.variantId}
                     className="chest-reveal-item"
+                    data-rarity={card.rarity ?? "common"}
                     style={{
                       animationDelay: `${Math.min((index + 1) * 100, 650)}ms`,
                     }}

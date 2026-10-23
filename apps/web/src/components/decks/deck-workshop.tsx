@@ -4,7 +4,6 @@ import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   DECK_SIZE,
-  MIN_DECK_SIZE,
   MAX_CARD_LEVEL,
   RARITIES,
   RARITY_LABELS,
@@ -23,6 +22,7 @@ import {
   ArrowRightLeft,
   ChevronLeft,
   ChevronRight,
+  Check,
   Layers3,
   Leaf,
   ListFilter,
@@ -114,7 +114,7 @@ export function DeckWorkshop({
   const [filter, setFilter] = useState<CombatType | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [inspected, setInspected] = useState<string | null>(null);
-  const [rarityFilter, setRarityFilter] = useState<CardRarity | null>(null);
+  const [rarityFilters, setRarityFilters] = useState<CardRarity[]>([]);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
@@ -162,7 +162,8 @@ export function DeckWorkshop({
   const visible = available.filter(
     (card) =>
       (!filter || getCombatType(card) === filter) &&
-      (!rarityFilter || card.rarity === rarityFilter),
+      (rarityFilters.length === 0 ||
+        rarityFilters.includes(card.rarity ?? "common")),
   );
   const selectedCard = picked ? entries.get(picked)?.card : undefined;
 
@@ -325,6 +326,7 @@ export function DeckWorkshop({
   return (
     <main
       ref={root}
+      aria-label="Deck et collection"
       className={`deck-workshop ${drag ? "is-dragging" : ""}`}
       onPointerDownCapture={() => {
         suppressClick.current = false;
@@ -372,7 +374,6 @@ export function DeckWorkshop({
             draggable={false}
           />
         </Link>
-        <h1 className="workshop-title">L’atelier des gardiens</h1>
         <GoldBalance />
       </header>
 
@@ -448,27 +449,6 @@ export function DeckWorkshop({
                 <span>{ready ? `${collection!.length} / 48` : "—"}</span>
               </h2>
             </div>
-            <label className="workshop-rarity-filter">
-              <span className="sr-only">Filtrer par rareté</span>
-              <select
-                aria-label="Filtrer par rareté"
-                value={rarityFilter ?? "all"}
-                onChange={(event) =>
-                  setRarityFilter(
-                    event.target.value === "all"
-                      ? null
-                      : (event.target.value as CardRarity),
-                  )
-                }
-              >
-                <option value="all">Toutes les raretés</option>
-                {RARITIES.map((rarity) => (
-                  <option value={rarity} key={rarity}>
-                    {RARITY_LABELS[rarity]}
-                  </option>
-                ))}
-              </select>
-            </label>
             <div className="workshop-scroll-controls">
               <button
                 aria-label="Voir les cartes précédentes de la collection"
@@ -504,7 +484,7 @@ export function DeckWorkshop({
                   <button
                     onClick={() => {
                       setFilter(null);
-                      setRarityFilter(null);
+                      setRarityFilters([]);
                     }}
                   >
                     Voir toute la collection
@@ -540,11 +520,18 @@ export function DeckWorkshop({
             <button
               key={type ?? "all"}
               type="button"
-              className={filter === type ? "is-active" : ""}
-              aria-pressed={filter === type}
+              className={
+                filter === type && (type !== null || rarityFilters.length === 0)
+                  ? "is-active"
+                  : ""
+              }
+              aria-pressed={
+                filter === type && (type !== null || rarityFilters.length === 0)
+              }
               disabled={!ready}
               onClick={() => {
                 setFilter(filter === type ? null : type);
+                if (type === null) setRarityFilters([]);
                 setPicked(null);
                 setMessage(instructions);
               }}
@@ -557,6 +544,50 @@ export function DeckWorkshop({
               <span>{label}</span>
             </button>
           ))}
+          <div
+            className="workshop-rarity-filters"
+            role="group"
+            aria-label="Filtrer par rareté"
+          >
+            {RARITIES.map((rarity) => {
+              const active = rarityFilters.includes(rarity);
+              const label = RARITY_LABELS[rarity];
+              return (
+                <button
+                  key={rarity}
+                  type="button"
+                  className={`workshop-rarity-toggle ${active ? "is-active" : ""}`}
+                  data-rarity={rarity}
+                  data-tooltip={label}
+                  aria-label={label}
+                  aria-pressed={active}
+                  disabled={!ready}
+                  onClick={() => {
+                    setRarityFilters((current) =>
+                      current.includes(rarity)
+                        ? current.filter((value) => value !== rarity)
+                        : [...current, rarity],
+                    );
+                    setPicked(null);
+                    setMessage(instructions);
+                  }}
+                >
+                  <img
+                    src={`/art/ui/rarity-${rarity}.webp`}
+                    alt=""
+                    width={34}
+                    height={44}
+                    draggable={false}
+                  />
+                  {active && (
+                    <span className="workshop-rarity-check" aria-hidden="true">
+                      <Check size={10} strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <p
           id="workshop-instructions"
@@ -611,20 +642,11 @@ export function DeckWorkshop({
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
         inDeck={!!inspected && cards.includes(inspected)}
-        canRemove={cards.length > MIN_DECK_SIZE}
         hasSpace={cards.length < DECK_SIZE}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         onAdd={() => {
           if (inspected) replaceCard(inspected, cards.length);
-          setInspected(null);
-        }}
-        onRemove={() => {
-          if (!draft || !inspected || cards.length <= MIN_DECK_SIZE) return;
-          updateDraft({
-            ...draft,
-            cards: cards.filter((id) => id !== inspected),
-          });
           setInspected(null);
         }}
         onMove={() => {
