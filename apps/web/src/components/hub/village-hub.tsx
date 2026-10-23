@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  CATALOG,
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
@@ -26,12 +25,8 @@ import {
   ROWS,
   DEPTHS,
   TURN_MS,
-  combatTypeLabel,
-  getCombatType,
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { CreaturePortrait } from "@/components/game/creature-portrait";
-import { GameIcon } from "@/components/game/game-icon";
 import {
   Dialog,
   DialogContent,
@@ -43,10 +38,10 @@ import { cn } from "@/lib/utils";
 import UserMenu from "@/components/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
-import { GoldBalance } from "@/components/gold-balance";
+import { CurrencyBalances } from "@/components/currency-balances";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
-type ModalId = Exclude<PlaceId, "workshop" | "arena">;
+type ModalId = "home" | "archives";
 type Place = {
   id: PlaceId;
   name: string;
@@ -75,7 +70,7 @@ const PLACES: readonly Place[] = [
   {
     id: "sanctuary",
     name: "Le sanctuaire",
-    purpose: "Découvrir le bestiaire",
+    purpose: "Invoquer des compagnons",
     icon: Gem,
     area: { left: "69%", top: "9%", width: "22%", height: "36%" },
   },
@@ -155,14 +150,14 @@ export function VillageHub({
       <main className="relative isolate h-full overflow-hidden bg-[#182e25] font-sans text-[#f5f0dd]">
         <h1 className="sr-only">Le refuge des gardiens</h1>
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 bg-gradient-to-b from-[#112a22]/60 to-transparent px-4 pt-4 pb-16 sm:px-7 sm:pt-6">
+        <div className="hub-hud pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 bg-gradient-to-b from-[#112a22]/60 to-transparent px-4 pt-4 pb-16 sm:px-7 sm:pt-6">
           <div className="flex min-h-11 items-center gap-2 rounded-full border border-[#d1be85]/35 bg-[#1a3026]/75 px-4 text-[10px] font-medium tracking-[0.1em] text-[#fff6dd] shadow-lg backdrop-blur-sm">
             <MapPin size={14} className="shrink-0 text-[#e4c381]" />
             <span className="hidden sm:inline">La clairière des anciens</span>
             <span className="sm:hidden">Le refuge</span>
           </div>
-          <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-            <GoldBalance />
+          <div className="hub-actions pointer-events-auto flex shrink-0 items-center gap-2">
+            <CurrencyBalances />
             <ModeToggle overlay />
             <UserMenu overlay />
           </div>
@@ -229,11 +224,21 @@ export function VillageHub({
                     </Link>
                   );
                 }
-                if (place.id === "arena" || place.id === "workshop") {
+                if (
+                  place.id === "arena" ||
+                  place.id === "workshop" ||
+                  place.id === "sanctuary"
+                ) {
                   return (
                     <Link
                       key={place.id}
-                      to={place.id === "arena" ? "/play" : "/decks"}
+                      to={
+                        place.id === "arena"
+                          ? "/play"
+                          : place.id === "sanctuary"
+                            ? "/sanctuary"
+                            : "/decks"
+                      }
                       aria-label={label}
                       className={hotspotStyle}
                       style={place.area}
@@ -305,9 +310,7 @@ export function VillageHub({
         </div>
       </main>
 
-      <DialogContent
-        className={modal === "sanctuary" ? "max-w-3xl" : undefined}
-      >
+      <DialogContent>
         {modal === "home" && (
           <HomeContent
             playerName={playerName}
@@ -316,7 +319,6 @@ export function VillageHub({
           />
         )}
         {modal === "archives" && <ArchivesContent />}
-        {modal === "sanctuary" && <SanctuaryContent />}
       </DialogContent>
     </Dialog>
   );
@@ -472,82 +474,6 @@ function ArchivesContent() {
       </p>
       <Link to="/practice" className="sylve-button mt-6">
         Mettre en pratique <ArrowRight size={15} />
-      </Link>
-    </>
-  );
-}
-
-function SanctuaryContent() {
-  const [selectedId, setSelectedId] = useState(CATALOG[0]!.id);
-  const selected = CATALOG.find((card) => card.id === selectedId)!;
-  return (
-    <>
-      <ModalEyebrow icon={Gem}>Le sanctuaire</ModalEyebrow>
-      <DialogTitle>Des alliés, pas de simples cartes.</DialogTitle>
-      <DialogDescription>
-        Les {CATALOG.length} créatures de la Sylve existent chacune en quatre
-        raretés. Découvre leurs caractéristiques communes au niveau 1. Les
-        coffres débloquent de nouvelles variantes ; l’or et leurs exemplaires
-        permettent de les améliorer à l’atelier.
-      </DialogDescription>
-      <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {CATALOG.map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => setSelectedId(card.id)}
-              aria-pressed={card.id === selectedId}
-              aria-label={`Découvrir ${card.name}`}
-              className={cn(
-                "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
-                card.id === selectedId
-                  ? "border-[#8c9d70] bg-[#e8eddb]"
-                  : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
-              )}
-            >
-              <CreaturePortrait card={card} />
-              <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
-                {card.name}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          className="sticky top-0 z-10 order-first flex items-center gap-3 rounded-xl border border-[#d9dfc8] bg-[#ecf0e2] px-4 py-3 shadow-sm sm:static sm:order-last sm:flex-col sm:justify-center sm:gap-0 sm:py-5 sm:text-center sm:shadow-none"
-        >
-          <div className="w-16 shrink-0 sm:w-28">
-            <CreaturePortrait card={selected} />
-          </div>
-          <div>
-            <h3 className="font-serif text-xl leading-tight sm:mt-3">
-              {selected.name}
-            </h3>
-            <p className="mt-2 text-[11px] italic text-[#697664]">
-              {selected.title}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-[#4d614b]">
-              {combatTypeLabel(selected)}
-            </p>
-            <div className="mt-3 flex gap-5 text-sm font-semibold sm:mt-4 sm:justify-center">
-              <span className="flex items-center gap-1.5">
-                <GameIcon kind={getCombatType(selected)} size={22} />
-                <span className="sr-only">Attaque : </span>
-                {selected.attack}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <GameIcon kind="health" size={22} />
-                <span className="sr-only">Points de vie : </span>
-                {selected.health}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <Link to="/decks" className="sylve-button mt-6">
-        Composer mon alliance <ArrowRight size={15} />
       </Link>
     </>
   );

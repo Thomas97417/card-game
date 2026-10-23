@@ -8,13 +8,26 @@ import {
   rarityValidator,
   lootValidator,
   revealValidator,
+  summonPackValidator,
+  summonCountValidator,
 } from "./lib/validators";
 
 export default defineSchema({
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
+    diamonds: v.optional(v.number()),
   }).index("by_owner", ["ownerId"]),
+  summons: defineTable({
+    ownerId: v.string(),
+    requestId: v.string(),
+    packId: summonPackValidator,
+    count: summonCountValidator,
+    cost: v.number(),
+    reveals: v.array(revealValidator),
+  })
+    .index("by_owner_request", ["ownerId", "requestId"])
+    .index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),
     wins: v.number(),

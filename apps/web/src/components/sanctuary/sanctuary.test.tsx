@@ -1,0 +1,195 @@
+import type { ReactNode } from "react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { CATALOG } from "@sylve/game";
+import {
+  summonLoot,
+  summonPrice,
+  type SummonResult,
+} from "@sylve/game/summoning";
+import { Sanctuary, type SummonRequest } from "./sanctuary";
+import { GoldContext } from "@/components/gold-balance";
+import { DiamondContext } from "@/components/diamond-balance";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+function reward(request: SummonRequest): SummonResult {
+  return {
+    ...request,
+    cost: summonPrice(request.packId, request.count),
+    reveals: summonLoot(request.packId, request.count, () => 0).map(
+      (item, index) => ({
+        ...item,
+        isNew: index === 0,
+        level: 1,
+        copies: index,
+      }),
+    ),
+  };
+}
+function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
+  const onSummon = vi.fn(async (request: SummonRequest) => reward(request));
+  const props = { diamonds: 3_000, ready: true, onSummon, ...overrides };
+  const result = render(
+    <GoldContext.Provider value={500}>
+      <DiamondContext.Provider value={props.diamonds}>
+        <Sanctuary {...props} />
+      </DiamondContext.Provider>
+    </GoldContext.Provider>,
+  );
+  return { ...result, onSummon };
+}
+const purchase = (pack: "Sylve" | "anciens", count: 1 | 10) =>
+  screen.getByRole("button", {
+    name: new RegExp(
+      `^Invoquer ${count} fois — Appel ${pack === "Sylve" ? "de la Sylve" : "des anciens"},`,
+    ),
+  }) as HTMLButtonElement;
+
+describe("le sanctuaire", () => {
+  it("shows both balances, explicit rates and batch guarantees, and links to the hub and collection", () => {
+    setup();
+    expect(
+      screen
+        .getByRole("status", { name: "Solde de diamants" })
+        .querySelector("img")
+        ?.getAttribute("src"),
+    ).toBe("/art/ui/diamonds.webp");
+    expect(
+      screen.getByRole("status", { name: "Solde de pièces d’or" }),
+    ).toBeTruthy();
+    expect(screen.getByText("2 %")).toBeTruthy();
+    expect(screen.getByText("20 %")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10)).getByText("1 légendaire garanti"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("anciens", 10)).getByText("2 légendaires garantis"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10)).getByText("1 tirage gratuit"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("anciens", 10)).getByText("1 tirage gratuit"),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: "Retour au refuge" })
+        .getAttribute("href"),
+    ).toBe("/hub");
+    expect(
+      screen.getByRole("link", { name: "Ma collection" }).getAttribute("href"),
+    ).toBe("/decks");
+  });
+
+  it("blocks unaffordable purchases while allowing exactly affordable singles", () => {
+    setup({ diamonds: 149 });
+    expect(purchase("Sylve", 1).disabled).toBe(false);
+    expect(purchase("Sylve", 10).disabled).toBe(true);
+    expect(purchase("anciens", 1).disabled).toBe(true);
+    expect(purchase("anciens", 10).disabled).toBe(true);
+    expect(screen.getByText(/Il te manque 300 diamants/)).toBeTruthy();
+  });
+
+  it.each([undefined, null, 0])(
+    "does not purchase with a loading, absent or empty wallet (%s)",
+    (diamonds) => {
+      const { onSummon } = setup({ diamonds });
+      for (const button of screen.getAllByRole("button", {
+        name: /^Invoquer/,
+      })) {
+        expect((button as HTMLButtonElement).disabled).toBe(true);
+        fireEvent.click(button);
+      }
+      expect(onSummon).not.toHaveBeenCalled();
+    },
+  );
+
+  it("sends one batch purchase, locks every pack while waiting and reveals all ten cards", async () => {
+    let finish!: (result: SummonResult) => void;
+    const onSummon = vi.fn(
+      (_request: SummonRequest) =>
+        new Promise<SummonResult>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    setup({ onSummon, diamonds: 3_899 });
+    fireEvent.click(purchase("anciens", 10));
+    fireEvent.click(purchase("anciens", 10));
+    fireEvent.click(purchase("Sylve", 1));
+    expect(onSummon).toHaveBeenCalledOnce();
+    const request = onSummon.mock.calls[0]![0];
+    expect(request).toMatchObject({ packId: "ancients", count: 10 });
+    expect(request.requestId.length).toBeGreaterThan(15);
+    for (const button of screen.getAllByRole("button", { name: /^Invoquer/ }))
+      expect((button as HTMLButtonElement).disabled).toBe(true);
+    await act(async () => finish(reward(request)));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
+    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(2);
+    expect(within(dialog).getByText("Nouvelle carte")).toBeTruthy();
+    expect(within(dialog).getAllByText("+1 exemplaire")).toHaveLength(9);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Continuer à invoquer" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(purchase("anciens", 10).disabled).toBe(false);
+  });
+
+  it("reuses the request identifier after a failed response to prevent a second debit", async () => {
+    const onSummon = vi
+      .fn<(request: SummonRequest) => Promise<SummonResult>>()
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockImplementation(async (request) => reward(request));
+    setup({ onSummon });
+    fireEvent.click(purchase("Sylve", 1));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    fireEvent.click(purchase("Sylve", 1));
+    await screen.findByRole("dialog");
+    expect(onSummon).toHaveBeenCalledTimes(2);
+    expect(onSummon.mock.calls[0]![0]).toEqual(onSummon.mock.calls[1]![0]);
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("can revisit the saved last batch without purchasing it again", async () => {
+    const latest = reward({
+      packId: "sylve",
+      count: 10,
+      requestId: "saved-summon-request",
+    });
+    const { onSummon } = setup({ latest, diamonds: 0 });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
+    expect(onSummon).not.toHaveBeenCalled();
+  });
+
+  it("keeps the creature bestiary available from the new page", async () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: `Découvrir ${CATALOG[1]!.name}`,
+      }),
+    );
+    expect(
+      within(dialog).getByRole("heading", { name: CATALOG[1]!.name }),
+    ).toBeTruthy();
+  });
+});

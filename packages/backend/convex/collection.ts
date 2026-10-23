@@ -17,6 +17,14 @@ export const gold = query({
   },
 });
 
+export const diamonds = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    return (await playerWallet(ctx, userId))?.diamonds ?? 0;
+  },
+});
+
 export const list = query({
   args: {},
   handler: async (ctx) => {

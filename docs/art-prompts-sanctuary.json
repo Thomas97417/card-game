@@ -1,0 +1,21 @@
+{
+  "tool": "Built-in ImageGen",
+  "assets": [
+    {
+      "path": "apps/web/public/art/sanctuary.webp",
+      "width": 1672,
+      "height": 941,
+      "transparentBackground": false,
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a167e0-8383-7843-b121-cd3931185b5a/exec-a6dc23b5-e1f8-4c80-a3ba-261f52ff934c.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: wide 16:9 full-screen environment background for the sanctuary invocation page in Sylve, a hand-painted 2D woodland fantasy card game.\nPrimary request: the interior of an ancient forest sanctuary where guardian creatures are summoned. A circular open-air stone temple grown into a giant tree, elegant carved wooden archways entwined with roots, ivy and white woodland flowers, a softly glowing turquoise summoning pool and ancient engraved stone altar in the middle distance, delicate floating golden motes. Through the archways are misty emerald trees and a distant waterfall. Small warm lanterns and candles at the edges, an inviting sacred magical atmosphere.\nStyle/medium: polished painterly fantasy game environment, storybook realism, detailed natural wood and worn mossy stone, consistent with a cozy illustrated woodland deck workshop. Cinematic depth and beautiful hand-painted material textures.\nComposition/framing: wide landscape 16:9; symmetrical architectural frame and beautiful luminous central altar in the upper half. Broad calm darker stone floor in the lower half, visually uncluttered to leave room for two invocation choices drawn by the UI. No creatures or people. Environment artwork only.\nLighting/mood: diffused blue-green magical light, shafts of warm late-afternoon sun through the canopy, subtle amber lantern highlights, luminous but restful.\nConstraints: no UI, no cards, no floating panels, no borders, no text, no letters, no numbers, no logo, no watermark."
+    },
+    {
+      "path": "apps/web/public/art/ui/diamonds.webp",
+      "width": 384,
+      "height": 384,
+      "transparentBackground": true,
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a167e0-8383-7843-b121-cd3931185b5a/exec-4d05e556-25a5-4061-9fd9-faf6bf0e762d.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: one production currency icon for Sylve, a premium hand-painted 2D woodland fantasy card game.\nPrimary request: a compact cluster of three precious cyan-blue diamonds, one large brilliant faceted diamond in the foreground and two smaller gems tucked behind. Recognizable classic cut gemstone silhouette, luminous ice-blue and turquoise facets, delicate bright pale cyan highlights and deep teal edges.\nStyle/medium: polished painterly 2D storybook fantasy, tactile faceted crystal, fine dark contour, broad legible facets. Consistent with hand-painted golden coin icons over dark walnut and emerald forest game interfaces.\nComposition/framing: square canvas, single isolated compact group centered and filling 85 percent of the canvas, clear strong silhouette readable at 24 to 40 pixels, subtle three-quarter depth.\nConstraints: genuinely alpha-transparent background, preserve clean transparent space around gems, no ground plane, no backdrop, no frame, no UI panel, no letters, no text, no numbers, no logo, no watermark, no other objects. Deliver only the diamond currency icon."
+    }
+  ]
+}

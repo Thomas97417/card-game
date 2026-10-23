@@ -24,8 +24,10 @@ import gameCss from "../game.css?url";
 import workshopCss from "../deck-workshop.css?url";
 import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
+import sanctuaryCss from "../sanctuary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
+import { DiamondProvider } from "@/components/diamond-balance";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -59,6 +61,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: workshopCss },
       { rel: "stylesheet", href: progressionCss },
       { rel: "stylesheet", href: lobbyCss },
+      { rel: "stylesheet", href: sanctuaryCss },
     ],
   }),
 
@@ -80,15 +83,14 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
   const isImmersive = useRouterState({
-    select: (state) =>
-      state.matches.some(
-        (match) =>
-          match.routeId === "/hub" ||
-          match.routeId === "/decks" ||
-          match.routeId === "/play" ||
-          match.routeId === "/game/$gameId" ||
-          match.routeId === "/practice",
-      ),
+    select: (state) => {
+      const pathname = state.location.pathname.replace(/\/$/, "");
+      return (
+        ["/hub", "/decks", "/sanctuary", "/play", "/practice"].includes(
+          pathname,
+        ) || pathname.startsWith("/game/")
+      );
+    },
   });
   return (
     <ConvexBetterAuthProvider
@@ -108,25 +110,27 @@ function RootDocument() {
             storageKey="vite-ui-theme"
           >
             <GoldProvider>
-              <div
-                className={
-                  isImmersive
-                    ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                    : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                }
-              >
-                {!isImmersive && <Header />}
+              <DiamondProvider>
                 <div
                   className={
                     isImmersive
-                      ? "min-h-0 overflow-hidden"
-                      : "min-h-0 overflow-y-auto"
+                      ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                      : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                   }
                 >
-                  <Outlet />
+                  {!isImmersive && <Header />}
+                  <div
+                    className={
+                      isImmersive
+                        ? "min-h-0 overflow-hidden"
+                        : "min-h-0 overflow-y-auto"
+                    }
+                  >
+                    <Outlet />
+                  </div>
                 </div>
-              </div>
-              <Toaster richColors />
+                <Toaster richColors />
+              </DiamondProvider>
             </GoldProvider>
             <Scripts />
           </ThemeProvider>
