@@ -71,6 +71,7 @@
   padding-inline: clamp(20px, 3vw, 56px);
 }
 .workshop-header {
+  --workshop-status-height: 44px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -350,7 +351,9 @@
   height: 27px;
 }
 .workshop-deck-navigation {
+  position: relative;
   justify-content: flex-end;
+  margin: 0 8px 6px;
 }
 .workshop-collection {
   margin-top: 0;

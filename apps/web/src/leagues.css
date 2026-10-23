@@ -326,19 +326,33 @@
 .workshop-header .league-panel {
   margin-left: auto;
 }
+.workshop-header .league-panel.is-compact,
+.workshop-header .currency-balances .gold-balance,
+.workshop-header .currency-balances .diamond-balance {
+  height: var(--workshop-status-height);
+  min-height: var(--workshop-status-height);
+}
+.workshop-header .league-panel > .league-badge {
+  width: calc(var(--workshop-status-height) - 8px) !important;
+  height: calc(var(--workshop-status-height) - 8px) !important;
+}
+.workshop-header .league-panel.is-compact .league-panel-heading > strong {
+  font-size: 15px;
+}
+.workshop-header .league-panel .trophy-amount {
+  font-size: 11px;
+  line-height: 1;
+}
+.workshop-header .league-panel .trophy-icon {
+  width: 14px;
+  height: 14px;
+}
+.workshop-header .league-division {
+  font-size: 10px;
+}
 .workshop-header .league-panel + .currency-balances {
   margin-left: 0;
   flex-shrink: 0;
-}
-.workshop-deck-limit {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 0 8px 6px;
-  color: #e9d49c;
-  font-size: 11px;
 }
 .workshop-locked-slot {
   position: relative;
@@ -422,6 +436,7 @@
     font-size: 11px;
   }
   .workshop-header {
+    --workshop-status-height: 32px;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 10px;
@@ -449,22 +464,24 @@
   .workshop-header .league-panel {
     padding-right: 5px;
   }
-  .workshop-header .league-panel > .league-badge {
-    width: 44px !important;
-    height: 44px !important;
-  }
   .workshop-header .league-panel > svg {
     display: none;
   }
-  .workshop-header .league-panel-heading > strong {
-    font-size: 15px;
+  .workshop-header .league-panel.is-compact .league-panel-heading > strong {
+    font-size: 12px;
+  }
+  .workshop-header .league-panel.is-compact .league-panel-heading {
+    gap: 0;
+  }
+  .workshop-header .league-panel .trophy-amount {
+    font-size: 10px;
+  }
+  .workshop-header .league-panel .trophy-icon {
+    width: 12px;
+    height: 12px;
   }
   .workshop-header .league-division {
-    font-size: 10px;
-  }
-  .workshop-deck-limit {
-    gap: 8px;
-    font-size: 10px;
+    font-size: 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

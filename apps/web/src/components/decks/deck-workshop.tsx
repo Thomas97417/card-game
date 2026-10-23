@@ -393,26 +393,19 @@ export function DeckWorkshop({
           aria-label="Ton deck"
           aria-busy={!ready}
         >
-          <div className="workshop-deck-limit">
-            <span>
-              {league.nextSlot
-                ? `Prochain emplacement : ${leagueAt(league.nextSlot.trophies).label} · ${league.nextSlot.trophies} trophées`
-                : "Tous les emplacements sont débloqués"}
-            </span>
-            <div className="workshop-deck-navigation workshop-scroll-controls">
-              <button
-                aria-label="Voir les cartes précédentes du deck"
-                onClick={() => scrollRow(currentRow.current, -1)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                aria-label="Voir les cartes suivantes du deck"
-                onClick={() => scrollRow(currentRow.current, 1)}
-              >
-                <ChevronRight size={17} />
-              </button>
-            </div>
+          <div className="workshop-deck-navigation workshop-scroll-controls">
+            <button
+              aria-label="Voir les cartes précédentes du deck"
+              onClick={() => scrollRow(currentRow.current, -1)}
+            >
+              <ChevronLeft size={17} />
+            </button>
+            <button
+              aria-label="Voir les cartes suivantes du deck"
+              onClick={() => scrollRow(currentRow.current, 1)}
+            >
+              <ChevronRight size={17} />
+            </button>
           </div>
           <div
             className="workshop-card-row"
