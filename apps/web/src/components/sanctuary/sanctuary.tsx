@@ -4,7 +4,6 @@ import { ConvexError } from "convex/values";
 import {
   ArrowRight,
   Crown,
-  Gem,
   History,
   LoaderCircle,
   Sparkles,
@@ -12,7 +11,6 @@ import {
 import { RARITIES, RARITY_LABELS, resolveCard } from "@sylve/game";
 import {
   SUMMON_PACKS,
-  WELCOME_DIAMONDS,
   summonPack,
   type SummonCount,
   type SummonPack,
@@ -114,22 +112,31 @@ export function Sanctuary({
             draggable={false}
           />
         </Link>
-        <div className="sanctuary-location">
-          <Gem size={15} />
-          <span>Le sanctuaire</span>
+        <nav className="sanctuary-navigation" aria-label="Explorer le sanctuaire">
+          <BestiaryDialog />
+          <Link to="/decks" className="sanctuary-text-button">
+            Ma collection
+            <ArrowRight size={15} />
+          </Link>
+        </nav>
+        <div className="sanctuary-header-tools">
+          {previous && (
+            <button
+              type="button"
+              className="sanctuary-history-button"
+              aria-label="Dernière invocation"
+              title="Dernière invocation"
+              disabled={!!busy}
+              onClick={() => setResult(previous)}
+            >
+              <History size={17} />
+            </button>
+          )}
+          <CurrencyBalances />
         </div>
-        <CurrencyBalances />
       </header>
+      <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
-        <div className="sanctuary-intro">
-          <span className="sanctuary-eyebrow">
-            <span />
-            Le cercle des invocations
-            <span />
-          </span>
-          <h1>Éveille de nouveaux alliés.</h1>
-          <p>Offre tes diamants. Laisse la Sylve te répondre.</p>
-        </div>
         <section
           className="summon-packs"
           aria-label="Packs d’invocation"
@@ -162,31 +169,6 @@ export function Sanctuary({
             Le sanctuaire s’éveille…
           </p>
         )}
-        <footer className="sanctuary-footer">
-          <p>
-            <Gem size={13} />
-            {WELCOME_DIAMONDS.toLocaleString("fr-FR")} diamants de bienvenue,
-            offerts une seule fois.
-          </p>
-          <nav aria-label="Explorer le sanctuaire">
-            {previous && (
-              <button
-                type="button"
-                className="sanctuary-text-button"
-                disabled={!!busy}
-                onClick={() => setResult(previous)}
-              >
-                <History size={15} />
-                Dernière invocation
-              </button>
-            )}
-            <BestiaryDialog />
-            <Link to="/decks" className="sanctuary-text-button">
-              Ma collection
-              <ArrowRight size={15} />
-            </Link>
-          </nav>
-        </footer>
       </div>
       <SummonRevealDialog result={result} onClose={() => setResult(null)} />
     </main>

@@ -5,8 +5,7 @@
   min-width: 0;
 }
 .workshop-header > .currency-balances,
-.play-header > .currency-balances,
-.sanctuary-header > .currency-balances {
+.play-header > .currency-balances {
   margin-left: auto;
 }
 .diamond-icon {
@@ -86,27 +85,36 @@
   min-height: 92px;
   padding: 12px clamp(20px, 3.5vw, 64px);
 }
-.sanctuary-location {
+.sanctuary-header-tools {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: #f3dfaf;
-  font:
-    400 22px Georgia,
-    serif;
-  text-shadow: 0 2px 10px #071c18;
+  gap: 12px;
+  margin-left: auto;
+}
+.sanctuary-navigation {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.sanctuary-history-button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #b7ac7466;
+  border-radius: 50%;
+  background: #102d25cc;
+  color: #ead9b2;
 }
 .sanctuary-content {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 24px 20px;
-}
-.sanctuary-intro {
-  padding: 4px 0 clamp(18px, 3.5svh, 36px);
-  text-align: center;
-  text-shadow: 0 2px 16px #001c18;
+  padding: 16px 24px 32px;
 }
 .sanctuary-eyebrow {
   display: inline-flex;
@@ -119,32 +127,15 @@
   letter-spacing: 2px;
   text-transform: uppercase;
 }
-.sanctuary-eyebrow > span {
-  width: 35px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #ddc18a);
-}
-.sanctuary-eyebrow > span:last-child {
-  transform: rotate(180deg);
-}
-.sanctuary-intro h1 {
-  margin: 10px 0 8px;
-  font:
-    400 clamp(29px, 3.3vw, 46px)/1.15 Georgia,
-    serif;
-  letter-spacing: -1px;
-}
-.sanctuary-intro p {
-  color: #eee8d0;
-  font-size: 12px;
-}
 .summon-packs {
   display: grid;
+  flex: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: 28px;
+  width: 100%;
   max-width: 900px;
-  margin: 0 auto;
+  margin: auto;
 }
 .summon-pack {
   --pack-glow: #7fc6a0;
@@ -405,36 +396,17 @@
   border-color: #f0af8d88;
   color: #ffd0b0;
 }
-.sanctuary-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px 24px;
-  max-width: 900px;
-  margin: 20px auto 0;
-}
-.sanctuary-footer > p,
-.sanctuary-footer nav,
 .sanctuary-text-button {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-.sanctuary-footer > p {
-  color: #d2d3ba;
-  font-size: 9px;
-  text-shadow: 0 1px 8px #051c18;
-}
-.sanctuary-footer nav {
-  flex-wrap: wrap;
-  gap: 6px 20px;
 }
 .sanctuary-text-button {
   min-height: 44px;
   border-radius: 4px;
   color: #ead9b2;
   font-size: 11px;
+  text-shadow: 0 2px 8px #051c18;
   transition: color 160ms;
 }
 .sanctuary-text-button:hover {
@@ -510,12 +482,6 @@
     min-height: 78px;
     padding-block: 8px;
   }
-  .sanctuary-intro {
-    padding-bottom: 20px;
-  }
-  .sanctuary-intro h1 {
-    font-size: 36px;
-  }
   .summon-pack {
     padding-block: 15px 12px;
   }
@@ -535,15 +501,8 @@
   .summon-button {
     min-height: 70px;
   }
-  .sanctuary-footer {
-    margin-top: 10px;
-  }
 }
 @media (min-width: 900px) and (min-height: 850px) {
-  .sanctuary-intro {
-    padding-top: 18px;
-    padding-bottom: 60px;
-  }
   .summon-pack {
     padding-block: 24px 20px;
   }
@@ -565,7 +524,9 @@
     height: 30px;
   }
   .sanctuary-header {
-    gap: 12px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 12px;
     min-height: 80px;
     padding: 10px 16px;
   }
@@ -573,8 +534,15 @@
     width: 58px;
     height: 46px;
   }
-  .sanctuary-location {
-    display: none;
+  .sanctuary-header-tools {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 8px;
+  }
+  .sanctuary-navigation {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
   }
   .sanctuary-content {
     padding-inline: 16px;
@@ -628,13 +596,6 @@
   .hub-actions > :not(.currency-balances) {
     grid-row: 1;
   }
-  .sanctuary-intro {
-    padding: 12px 0 24px;
-  }
-  .sanctuary-intro h1 {
-    margin-block: 12px 10px;
-    font-size: clamp(27px, 7vw, 36px);
-  }
   .summon-packs {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
@@ -660,15 +621,6 @@
   }
   .summon-button-label {
     font-size: 12px;
-  }
-  .sanctuary-footer {
-    justify-content: center;
-    max-width: 380px;
-    margin-top: 24px;
-    padding-bottom: 12px;
-  }
-  .sanctuary-footer nav {
-    justify-content: center;
   }
   .summon-reveal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
