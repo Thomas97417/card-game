@@ -1,7 +1,16 @@
 import type { CardRarity } from "./index";
 
 export const TROPHIES_PER_WIN = 25;
+export const TROPHIES_PER_LOSS = 15;
 export const TROPHIES_PER_DIVISION = 200;
+
+export interface TrophyChange {
+  trophies: number;
+  trophiesTotal: number;
+  previousTrophies: number;
+  deckCapacity: number;
+  deckSlotsGained: number;
+}
 
 const TIERS = [
   { id: "iron", name: "Fer", chances: [65, 25, 8, 2] },
@@ -80,19 +89,24 @@ export function deckCapacity(trophies: number): number {
   );
 }
 
-export function leagueProgress(trophies: number) {
+export function leagueProgress(trophies: number, peakTrophies = trophies) {
   trophies = Number.isFinite(trophies) ? Math.max(0, Math.floor(trophies)) : 0;
+  peakTrophies = Number.isFinite(peakTrophies)
+    ? Math.max(trophies, Math.floor(peakTrophies))
+    : trophies;
   const current = leagueAt(trophies);
   const next = LEAGUES[current.index + 1] ?? null;
   return {
     trophies,
+    peakTrophies,
     current,
     next,
-    deckCapacity: deckCapacity(trophies),
+    deckCapacity: deckCapacity(peakTrophies),
     earned: next ? trophies - current.minTrophies : TROPHIES_PER_DIVISION,
     required: TROPHIES_PER_DIVISION,
     nextSlot:
-      DECK_SLOT_UNLOCKS.find((unlock) => trophies < unlock.trophies) ?? null,
+      DECK_SLOT_UNLOCKS.find((unlock) => peakTrophies < unlock.trophies) ??
+      null,
   };
 }
 

@@ -4,7 +4,7 @@ Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` 
 
 ## Ligues
 
-Tous les joueurs commencent en **Fer IV à 0 trophée**, y compris les comptes existants. Chaque victoire solo connectée ou en duel public donne **25 trophées**, même lorsque les deux places de coffre de combat sont occupées. Les défaites, abandons solo, défis amicaux et entraînements locaux ne changent pas ce total. Les trophées sont crédités dans la transaction de fin de partie, une seule fois par victoire ; aucun total envoyé par le client n’est accepté.
+Tous les joueurs commencent en **Fer IV à 0 trophée**, y compris les comptes existants. Chaque victoire solo connectée ou en duel public donne **25 trophées**, même lorsque les deux places de coffre de combat sont occupées. Chaque défaite, y compris un abandon, retire **15 trophées**, sans descendre sous zéro. Les défis amicaux et entraînements locaux ne changent pas ce total. Les gains et pertes des deux joueurs sont enregistrés dans la transaction de fin de partie, une seule fois par partie ; aucun total envoyé par le client n’est accepté. Le résultat indique le changement réel (par exemple −7 si le joueur n’avait plus que 7 trophées), le nouveau total et l’éventuelle rétrogradation.
 
 Une promotion arrive tous les **200 trophées** : Fer IV → Fer III (200) → Fer II (400) → Fer I (600) → Bronze IV (800), puis Argent, Or, Platine, Émeraude et Diamant, avec quatre divisions chacun. Maître I (5 600), Grand maître I (5 800) et Challenger I (6 000) terminent le parcours. Au sommet, les trophées continuent de s’accumuler. L’arène affiche la ligue, le total et la progression ; un clic sur l’écusson ouvre le parcours et ses récompenses. Le résultat du combat affiche les trophées gagnés et les éventuelles promotions.
 
@@ -17,7 +17,28 @@ Le deck commence avec **4 cartes maximum**, parmi 8 emplacements visibles. Les p
 | 7e carte | Argent IV | 1 600 |
 | 8e carte | Or IV | 2 400 |
 
-Le minimum reste de 4 cartes : un nouvel emplacement n’oblige pas à agrandir immédiatement son deck. La sauvegarde contrôle la capacité côté serveur. Les decks existants trop longs restent conservés en base et toutes les cartes restent dans la collection ; la consultation et les nouveaux combats prennent les premières cartes à hauteur de la capacité débloquée. Les parties et recherches déjà commencées conservent leur instantané.
+Le minimum reste de 4 cartes : un nouvel emplacement n’oblige pas à agrandir immédiatement son deck. Les emplacements gagnés restent **définitivement acquis**, même après une rétrogradation : le serveur conserve le record de trophées (`peakTrophies`) pour calculer la capacité du deck. Les anciennes lignes de progression utilisent leur total actuel comme record jusqu’au premier résultat avec les nouvelles règles. Les coffres et le Gardien mécanique suivent la ligue actuelle. La sauvegarde contrôle la capacité côté serveur. Les decks existants trop longs restent conservés en base et toutes les cartes restent dans la collection ; la consultation et les nouveaux combats prennent les premières cartes à hauteur de la capacité débloquée. Les parties et recherches déjà commencées conservent leur instantané.
+
+## Gardien mécanique
+
+Au début de Fer IV, le Gardien utilise les mêmes quatre créatures de départ, communes et de niveau 1. Oracle des brumes rejoint son choix en Fer III et Cerf couronné en Fer II ; Bronze ajoute Renard des braises, Chevalier ronce et Ours des cimes ; Argent donne accès à tout le catalogue. Son deck contient autant de cartes que celui du joueur, avec des créatures distinctes et un mélange de corps à corps et de distance.
+
+| Ligue | Niveau maximal | Rareté maximale |
+|---|---:|---|
+| Fer | 1 | Commune |
+| Bronze | 2 | Commune |
+| Argent | 3 | Rare |
+| Or | 4 | Rare |
+| Platine | 5 | Épique |
+| Émeraude | 6 | Épique |
+| Diamant | 7 | Légendaire |
+| Maître | 8 | Légendaire |
+| Grand maître | 9 | Légendaire |
+| Challenger | 10 | Légendaire |
+
+Ces plafonds ne dépassent pas les niveaux et raretés des cartes du deck humain correspondant. Un débutant n’affronte donc pas un deck entièrement amélioré ou légendaire parce qu’il a obtenu une seule carte très forte. Si une rétrogradation laisse au joueur plus de places que le choix de créatures normalement disponible dans sa ligue, le Gardien complète son deck avec les créatures à plus faible attaque, sans dupliquer une créature. Les nouvelles règles de composition s’appliquent aux nouveaux combats ; les combats en cours gardent leur deck initial.
+
+L’IA mémorise ses trois dernières cartes, conserve cette mémoire après une actualisation et partage la même logique entre le tour demandé par le navigateur et le tour de secours serveur. Elle évite de rejouer immédiatement la même carte lorsqu’une alternative sûre existe, pénalise les cartes récemment jouées et les copies déjà sur le terrain, puis varie entre les choix tactiques proches. Une victoire immédiate ou une défense indispensable contre une attaque visible mortelle reste prioritaire. Elle utilise uniquement les informations publiques et sa propre main. L’entraînement local emploie les mêmes principes avec une difficulté de début de jeu et une mémoire limitée à la session.
 
 ## Coffres et butin
 
@@ -54,6 +75,8 @@ Les anciens coffres encore fermés, y compris le coffre de trois victoires déj�
 
 Les tests du moteur couvrent les 48 identités, les statistiques, les bornes des tirages et des combats complets à quatre et huit cartes. Les tests Convex couvrent le parcours victoire → coffre → ouverture → déblocage → amélioration → nouveau combat, les ouvertures concurrentes, les délais parallèles, la saturation, les autorisations et le solo persistant. Les tests d’interface couvrent la composition du deck, la fiche d’amélioration, les filtres, le salon et la révélation des récompenses.
 
-Les tests de ligues couvrent tous les seuils et les distributions du butin, huit victoires jusqu’à Fer III, les trophées malgré les coffres pleins, l’absence de double crédit, les défaites et parties amicales, la limite du deck côté serveur, la conservation des anciens decks et des instantanés, ainsi que le butin conservé entre deux promotions. L’interface vérifie les chaînes, les conditions de déblocage, l’ajout de la cinquième carte, le parcours et la promotion. Les rendus ont été contrôlés à 1 440 × 900 et 390 × 844 px : [arène](leagues-lobby-validation.webp), [atelier](leagues-deck-validation.webp), [parcours](leagues-dialog-validation.webp), [arène mobile](leagues-lobby-mobile-validation.webp), [chaînes sur mobile](leagues-chains-mobile-validation.webp).
+Les tests de ligues couvrent tous les seuils et les distributions du butin, huit victoires jusqu’à Fer III, les trophées malgré les coffres pleins, l’absence de double crédit ou débit, les défaites naturelles, abandons et parties amicales, le plancher à zéro, les résultats publics des deux joueurs, la conservation des emplacements après rétrogradation, la limite du deck côté serveur, les anciens decks et les instantanés, ainsi que le butin conservé entre deux promotions. Les tests du Gardien couvrent les plafonds de toutes les ligues, les decks de débutants, les choix variés, les exceptions tactiques et la mémoire entre les tours du client et les tours de secours. L’interface vérifie les chaînes, les conditions de déblocage, l’ajout de la cinquième carte, le parcours, la promotion et les pertes affichées au joueur vaincu. Les rendus ont été contrôlés à 1 440 × 900 et 390 × 844 px : [arène](leagues-lobby-validation.webp), [atelier](leagues-deck-validation.webp), [parcours](leagues-dialog-validation.webp), [arène mobile](leagues-lobby-mobile-validation.webp), [chaînes sur mobile](leagues-chains-mobile-validation.webp).
+
+L’écran de défaite et de rétrogradation a aussi été contrôlé avec le composant réel et les styles de compilation : [ordinateur](trophy-loss-validation.webp), [mobile](trophy-loss-mobile-validation.webp).
 
 Le scénario `bun run test:live` dans le backend reste réservé à un déploiement `dev:` et utilise ses propres comptes temporaires.

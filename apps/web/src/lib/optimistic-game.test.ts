@@ -28,6 +28,7 @@ function setup(me = 0) {
     events: [],
     mode: "solo",
     reward: null,
+    trophyChange: null,
   };
   const card = game.players[me]!.deck[0]!;
   const args = {

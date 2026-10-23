@@ -14,6 +14,7 @@ import { type CardRarity } from "@sylve/game";
 import {
   leagueProgress,
   TROPHIES_PER_WIN,
+  TROPHIES_PER_LOSS,
   type LeagueProgress,
 } from "@sylve/game/leagues";
 import { LeaguePanel } from "@/components/leagues/league-progress";
@@ -136,7 +137,9 @@ export function PlayLobby({
             <Bot />
             <span>
               <strong>Combat solo</strong>
-              <small>Gardien mécanique · +{TROPHIES_PER_WIN} trophées</small>
+              <small>
+                À ta ligue · +{TROPHIES_PER_WIN} / −{TROPHIES_PER_LOSS} trophées
+              </small>
             </span>
             <Swords className="play-button-mark" />
           </button>
@@ -163,7 +166,8 @@ export function PlayLobby({
               <span>
                 <strong>Duel public</strong>
                 <small>
-                  Affronter un gardien · +{TROPHIES_PER_WIN} trophées
+                  Affronter un gardien · +{TROPHIES_PER_WIN} / −
+                  {TROPHIES_PER_LOSS} trophées
                 </small>
               </span>
               <span className="play-button-mark">→</span>

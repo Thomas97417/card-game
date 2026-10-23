@@ -5,6 +5,8 @@ import {
   DECK_SLOT_UNLOCKS,
   LEAGUES,
   TROPHIES_PER_WIN,
+  TROPHIES_PER_LOSS,
+  TROPHIES_PER_DIVISION,
   deckCapacity,
   leagueAt,
   type League,
@@ -126,8 +128,12 @@ export function LeaguePanel({
           <DialogTitle>La voie des gardiens</DialogTitle>
           <DialogDescription>
             Chaque victoire solo connectée ou en duel public rapporte{" "}
-            {TROPHIES_PER_WIN} trophées. Une promotion tous les 200 trophées.
-            Les défaites et défis amicaux ne changent pas tes trophées.
+            {TROPHIES_PER_WIN} trophées. Chaque défaite ou abandon retire{" "}
+            {TROPHIES_PER_LOSS} trophées, sans descendre sous zéro. Une
+            promotion tous les {TROPHIES_PER_DIVISION} trophées. Les défis
+            amicaux et l’entraînement local ne changent pas tes trophées. Les
+            emplacements de deck débloqués restent acquis après une
+            rétrogradation.
           </DialogDescription>
           <div className="league-current-summary">
             <LeagueBadge league={current} size={96} />
@@ -167,7 +173,7 @@ export function LeaguePanel({
           </section>
           <ol className="league-road" aria-label="Parcours des ligues">
             {LEAGUES.map((league) => {
-              const unlocked = trophies >= league.minTrophies;
+              const unlocked = progress.peakTrophies >= league.minTrophies;
               const active = current.id === league.id;
               const slot = DECK_SLOT_UNLOCKS.find(
                 (unlock) => unlock.trophies === league.minTrophies,
@@ -220,13 +226,15 @@ export function LeaguePanel({
   );
 }
 
-export function LeagueVictory({
+export function LeagueResult({
   reward,
 }: {
   reward: {
     trophies?: number;
     trophiesTotal?: number;
     previousTrophies?: number;
+    deckCapacity?: number;
+    deckSlotsGained?: number;
   };
 }) {
   if (reward.trophiesTotal === undefined || reward.trophies === undefined)
@@ -234,26 +242,48 @@ export function LeagueVictory({
   const current = leagueAt(reward.trophiesTotal);
   const previous = leagueAt(reward.previousTrophies ?? reward.trophiesTotal);
   const promoted = current.index > previous.index;
+  const demoted = current.index < previous.index;
+  const lost = reward.trophies < 0 || reward.trophies === 0;
+  const delta =
+    reward.trophies > 0
+      ? `+${reward.trophies}`
+      : reward.trophies < 0
+        ? `−${Math.abs(reward.trophies)}`
+        : "0";
   const gainedSlot =
-    deckCapacity(reward.trophiesTotal) >
-    deckCapacity(reward.previousTrophies ?? reward.trophiesTotal);
+    reward.deckSlotsGained !== undefined
+      ? reward.deckSlotsGained > 0
+      : deckCapacity(reward.trophiesTotal) >
+        deckCapacity(reward.previousTrophies ?? reward.trophiesTotal);
   return (
-    <div className={`duel-league-reward ${promoted ? "is-promotion" : ""}`}>
-      {promoted ? <LeagueBadge league={current} size={76} /> : <TrophyIcon />}
+    <div
+      className={`duel-league-reward ${promoted ? "is-promotion" : ""} ${lost ? "is-loss" : ""}`}
+    >
+      {promoted || demoted ? (
+        <LeagueBadge league={current} size={76} />
+      ) : (
+        <TrophyIcon />
+      )}
       <div>
         <strong>
           {promoted
             ? `Promotion : ${current.label} !`
-            : `+${reward.trophies} trophées`}
+            : demoted
+              ? `Rétrogradation : ${current.label}`
+              : reward.trophies === 0
+                ? "Aucun trophée perdu"
+                : `${delta} trophées`}
         </strong>
         <span>
-          {promoted ? `+${reward.trophies} trophées · ` : ""}
+          {promoted || demoted ? `${delta} trophées · ` : ""}
           {reward.trophiesTotal.toLocaleString("fr-FR")} trophées au total
         </span>
+        {reward.trophies === 0 && <small>Tu es déjà à zéro trophée.</small>}
+        {demoted && <small>Tes emplacements de deck restent débloqués.</small>}
         {gainedSlot && (
           <small>
             Nouvel emplacement débloqué : ton deck peut contenir{" "}
-            {deckCapacity(reward.trophiesTotal)} cartes !
+            {reward.deckCapacity ?? deckCapacity(reward.trophiesTotal)} cartes !
           </small>
         )}
       </div>

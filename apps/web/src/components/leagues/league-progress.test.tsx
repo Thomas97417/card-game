@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { leagueProgress } from "@sylve/game/leagues";
-import { LeaguePanel, LeagueVictory } from "./league-progress";
+import { LeaguePanel, LeagueResult } from "./league-progress";
 
 describe("le parcours des ligues", () => {
   it("shows the remaining trophies, all league thresholds and deck unlocks", async () => {
@@ -28,7 +28,7 @@ describe("le parcours des ligues", () => {
 
   it("shows a promotion and the newly unlocked slot after a threshold win", () => {
     render(
-      <LeagueVictory
+      <LeagueResult
         reward={{ trophies: 25, trophiesTotal: 200, previousTrophies: 175 }}
       />,
     );
@@ -44,6 +44,53 @@ describe("le parcours des ligues", () => {
         .querySelector("img")
         ?.getAttribute("src"),
     ).toBe("/art/leagues/iron.webp");
+  });
+
+  it("announces trophy loss and demotion without chaining earned deck slots", () => {
+    render(
+      <LeagueResult
+        reward={{
+          trophies: -15,
+          previousTrophies: 200,
+          trophiesTotal: 185,
+          deckCapacity: 5,
+          deckSlotsGained: 0,
+        }}
+      />,
+    );
+    expect(screen.getByText("Rétrogradation : Fer IV")).toBeTruthy();
+    expect(
+      screen.getByText(/−15 trophées · 185 trophées au total/),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Tes emplacements de deck restent débloqués."),
+    ).toBeTruthy();
+  });
+
+  it("does not announce a second slot unlock when recovering a previously reached league", () => {
+    render(
+      <LeagueResult
+        reward={{
+          trophies: 25,
+          previousTrophies: 185,
+          trophiesTotal: 210,
+          deckCapacity: 5,
+          deckSlotsGained: 0,
+        }}
+      />,
+    );
+    expect(screen.getByText("Promotion : Fer III !")).toBeTruthy();
+    expect(screen.queryByText(/Nouvel emplacement débloqué/)).toBeNull();
+  });
+
+  it("explains the zero trophy floor on defeat", () => {
+    render(
+      <LeagueResult
+        reward={{ trophies: 0, previousTrophies: 0, trophiesTotal: 0 }}
+      />,
+    );
+    expect(screen.getByText("Aucun trophée perdu")).toBeTruthy();
+    expect(screen.getByText("Tu es déjà à zéro trophée.")).toBeTruthy();
   });
 
   it("continues earning trophies in the final league without promising another promotion", () => {

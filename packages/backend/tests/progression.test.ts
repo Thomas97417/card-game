@@ -3,6 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_DECK,
+  CATALOG,
   MAX_CARD_LEVEL,
   RARITIES,
   getCombatType,
@@ -91,6 +92,134 @@ afterEach(() => {
 });
 
 describe("ligues et trophées autoritaires", () => {
+  it("debits natural solo defeats once, keeps earned slots through demotion and clamps losses to zero", async () => {
+    const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, 200);
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId: "fox:common",
+        level: 1,
+        copies: 0,
+      });
+    });
+    await alice.mutation(api.decks.save, {
+      deckId,
+      name: "Cinq gardiens",
+      cardIds: [...DEFAULT_DECK, "fox:common"],
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    await t.run(async (ctx) => {
+      const { state } = (await ctx.db.get(gameId))!;
+      state!.players[0]!.heroHp = 1;
+      state!.activePlayer = 1;
+      state!.turn = 2;
+      await ctx.db.patch(gameId, { state });
+    });
+    await alice.mutation(api.games.soloTurn, { gameId, expectedTurn: 2 });
+    expect(await alice.query(api.collection.league, {})).toMatchObject({
+      trophies: 185,
+      peakTrophies: 200,
+      current: { label: "Fer IV" },
+      deckCapacity: 5,
+    });
+    const result = await alice.query(api.games.get, { gameId });
+    expect(result).toMatchObject({
+      status: "finished",
+      winner: 1,
+      reward: null,
+      trophyChange: {
+        trophies: -15,
+        previousTrophies: 200,
+        trophiesTotal: 185,
+        deckCapacity: 5,
+        deckSlotsGained: 0,
+      },
+    });
+    expect((await alice.query(api.decks.list, {}))[0]!.cardIds).toHaveLength(5);
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(0);
+    expect((await alice.query(api.chests.list, {})).victoryChest.wins).toBe(0);
+    await t.mutation(internal.games.soloTurnFallback, {
+      gameId,
+      expectedTurn: 2,
+    });
+    await expect(
+      alice.mutation(api.games.surrender, { gameId }),
+    ).rejects.toThrow("terminée");
+    expect((await alice.query(api.collection.league, {})).trophies).toBe(185);
+    const recovered = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: recovered })).trophyChange,
+    ).toMatchObject({
+      trophies: 25,
+      trophiesTotal: 210,
+      deckCapacity: 5,
+      deckSlotsGained: 0,
+    });
+    await setTrophies(t, deckId, 7);
+    const surrender = await alice.mutation(api.games.createSolo, { deckId });
+    await alice.mutation(api.games.surrender, { gameId: surrender });
+    expect(
+      (await alice.query(api.games.get, { gameId: surrender })).trophyChange,
+    ).toMatchObject({ trophies: -7, trophiesTotal: 0 });
+    const atZero = await alice.mutation(api.games.createSolo, { deckId });
+    await alice.mutation(api.games.surrender, { gameId: atZero });
+    expect(
+      (await alice.query(api.games.get, { gameId: atZero })).trophyChange,
+    ).toMatchObject({ trophies: 0, trophiesTotal: 0 });
+    const progress = await t.run((ctx) =>
+      ctx.db.query("leagueProgress").collect(),
+    );
+    expect(progress).toHaveLength(1);
+    expect(progress[0]!.peakTrophies).toBe(210);
+  });
+
+  it("settles both public players atomically, exposes only personal trophy changes, and ignores friendly matches", async () => {
+    const { t, alice, deckId } = await fixture();
+    const bob = await player(t, "bob");
+    const bobDeck = await bob.mutation(api.decks.ensureStarter, {});
+    await setTrophies(t, deckId, 175);
+    await setTrophies(t, bobDeck, 205);
+    const room = await alice.mutation(api.games.createPrivate, { deckId });
+    await bob.mutation(api.games.joinPrivate, {
+      code: room.code,
+      deckId: bobDeck,
+    });
+    await bob.mutation(api.games.surrender, { gameId: room.gameId });
+    expect((await alice.query(api.collection.league, {})).trophies).toBe(175);
+    expect((await bob.query(api.collection.league, {})).trophies).toBe(205);
+    expect(
+      (await bob.query(api.games.get, { gameId: room.gameId })).trophyChange,
+    ).toBeNull();
+    await alice.mutation(api.matchmaking.enqueue, { deckId });
+    const match = await bob.mutation(api.matchmaking.enqueue, {
+      deckId: bobDeck,
+    });
+    const attempts = await Promise.allSettled([
+      bob.mutation(api.games.surrender, { gameId: match.gameId! }),
+      bob.mutation(api.games.surrender, { gameId: match.gameId! }),
+    ]);
+    expect(
+      attempts.filter((attempt) => attempt.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      (await alice.query(api.games.get, { gameId: match.gameId! }))
+        .trophyChange,
+    ).toMatchObject({ trophies: 25, trophiesTotal: 200 });
+    expect(
+      (await bob.query(api.games.get, { gameId: match.gameId! })).trophyChange,
+    ).toMatchObject({ trophies: -15, trophiesTotal: 190 });
+    expect(await bob.query(api.collection.league, {})).toMatchObject({
+      trophies: 190,
+      peakTrophies: 205,
+      deckCapacity: 5,
+      current: { label: "Fer IV" },
+    });
+    expect((await alice.query(api.chests.list, {})).chests).toHaveLength(1);
+    expect((await bob.query(api.chests.list, {})).chests).toHaveLength(0);
+  });
+
   it("promotes after eight wins even with full chest slots, rewards once, and enforces the new deck capacity", async () => {
     const { t, alice, deckId } = await fixture();
     await expect(t.query(api.collection.league, {})).rejects.toThrow(
@@ -244,6 +373,74 @@ describe("ligues et trophées autoritaires", () => {
       await alice.mutation(api.chests.open, { chestId: chest._id }),
     ).toEqual(opened);
     expect((await alice.query(api.collection.league, {})).trophies).toBe(2450);
+  });
+});
+
+describe("gardien adapté aux ligues", () => {
+  it("caps a strong player's bot at the current league and keeps that snapshot during a match", async () => {
+    const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, 2400);
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      const ids = CATALOG.slice(0, 8).map((card) => `${card.id}:legendary`);
+      for (const variantId of ids)
+        await ctx.db.insert("collection", {
+          ownerId,
+          variantId,
+          level: 10,
+          copies: 0,
+        });
+      await ctx.db.patch(deckId, { cardIds: ids });
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    const snapshot = await alice.query(api.games.get, { gameId });
+    expect(snapshot.players[1]!.deck).toHaveLength(8);
+    expect(
+      snapshot.players[1]!.deck.every(
+        (card) => card.rarity === "rare" && card.level === 4,
+      ),
+    ).toBe(true);
+    expect(
+      new Set(snapshot.players[1]!.deck.map((card) => card.baseId)).size,
+    ).toBe(8);
+    await setTrophies(t, deckId, 6000);
+    expect(
+      (await alice.query(api.games.get, { gameId })).players[1]!.deck,
+    ).toEqual(snapshot.players[1]!.deck);
+  });
+
+  it("remembers recent creatures across normal and scheduled turns without counting retried turns twice", async () => {
+    const { t, alice, deckId } = await fixture();
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    await t.run(async (ctx) => {
+      const { state } = (await ctx.db.get(gameId))!;
+      state!.players[0]!.heroHp = 1000;
+      await ctx.db.patch(gameId, { state });
+    });
+    let previous: string | undefined;
+    for (let i = 0; i < 5; i++) {
+      const human = await alice.query(api.games.get, { gameId });
+      await alice.mutation(api.games.endTurn, {
+        gameId,
+        expectedTurn: human.turn,
+      });
+      const expectedTurn = human.turn + 1;
+      if (i % 2)
+        await t.mutation(internal.games.soloTurnFallback, {
+          gameId,
+          expectedTurn,
+        });
+      else await alice.mutation(api.games.soloTurn, { gameId, expectedTurn });
+      const game = await t.run((ctx) => ctx.db.get(gameId));
+      const history = game!.soloRecentCards!;
+      expect(history).toHaveLength(Math.min(3, i + 1));
+      expect(history[history.length - 1]).not.toBe(previous);
+      previous = history[history.length - 1];
+      await alice.mutation(api.games.soloTurn, { gameId, expectedTurn });
+      expect(
+        (await t.run((ctx) => ctx.db.get(gameId)))!.soloRecentCards,
+      ).toEqual(history);
+    }
   });
 });
 
@@ -524,11 +721,7 @@ describe("victoires, coffres et améliorations", () => {
       next.players[1]!.deck.map(
         (card) => `${card.rarity}:${card.level}`,
       ).sort(),
-    ).toEqual(
-      next.players[0]!.deck.map(
-        (card) => `${card.rarity}:${card.level}`,
-      ).sort(),
-    );
+    ).toEqual(Array(5).fill("common:1"));
   });
   it("runs two parallel timers, loses the third combat chest even if chests are ready and reuses a released slot", async () => {
     const { t, alice, deckId } = await fixture();
@@ -617,7 +810,7 @@ describe("victoires, coffres et améliorations", () => {
     const solo = await alice.mutation(api.games.createSolo, { deckId });
     await alice.mutation(api.games.surrender, { gameId: solo });
     expect((await alice.query(api.chests.list, {})).chests).toHaveLength(1);
-    expect((await alice.query(api.collection.league, {})).trophies).toBe(25);
+    expect((await alice.query(api.collection.league, {})).trophies).toBe(10);
   });
   it("freezes queued card stats while later improvements affect future matches", async () => {
     const { t, alice, deckId } = await fixture();

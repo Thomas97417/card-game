@@ -315,6 +315,14 @@
   color: #c5e6aa;
   line-height: 1.5;
 }
+.duel-league-reward.is-loss {
+  border-color: #cd947a88;
+  background: #8c49381a;
+  color: #f0b298;
+}
+.duel-league-reward.is-loss small {
+  color: #dfc3aa;
+}
 .workshop-header .league-panel {
   margin-left: auto;
 }

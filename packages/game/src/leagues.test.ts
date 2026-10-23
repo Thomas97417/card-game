@@ -46,6 +46,21 @@ describe("league progression", () => {
     expect(deckCapacity(100_000)).toBe(8);
   });
 
+  it("keeps earned deck slots through demotion while current league and loot follow the trophy total", () => {
+    expect(leagueProgress(185, 200)).toMatchObject({
+      current: { label: "Fer IV", lootMultiplier: 1 },
+      peakTrophies: 200,
+      deckCapacity: 5,
+      nextSlot: { trophies: 800 },
+    });
+    expect(leagueProgress(0, 2400)).toMatchObject({
+      current: { label: "Fer IV" },
+      deckCapacity: 8,
+      nextSlot: null,
+    });
+    expect(leagueProgress(500, 100).peakTrophies).toBe(500);
+  });
+
   it("improves the distribution and loot at every promotion, preserving the rarity of each chest", () => {
     for (const league of LEAGUES) {
       expect(

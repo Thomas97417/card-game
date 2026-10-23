@@ -31,14 +31,13 @@ import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
-import {
-  LeagueVictory,
-  TrophyIcon,
-} from "@/components/leagues/league-progress";
+import { LeagueResult, TrophyIcon } from "@/components/leagues/league-progress";
+import type { TrophyChange } from "@sylve/game/leagues";
 
 export type DuelData = GameView & {
   events: GameEvent[];
   mode?: "solo" | "public" | "private";
+  trophyChange?: TrophyChange | null;
   reward?: {
     status: "awarded" | "lost";
     rarity?: CardRarity;
@@ -450,8 +449,9 @@ export function DuelScreen({
                 ? "Tes compagnons ont fait honneur à la forêt."
                 : "Chaque duel est une leçon. La forêt n’a pas dit son dernier mot."}
             </p>
-            {data.winner === data.me && data.reward && (
-              <LeagueVictory reward={data.reward} />
+            {(data.trophyChange ??
+              (data.winner === data.me ? data.reward : null)) && (
+              <LeagueResult reward={data.trophyChange ?? data.reward!} />
             )}
             {data.winner === data.me && data.reward && (
               <div className="duel-reward" role="status">

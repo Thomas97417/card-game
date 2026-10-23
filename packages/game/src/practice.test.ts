@@ -8,6 +8,9 @@ import {
   playerView,
   summon,
   validateDeck,
+  variantCard,
+  getCombatType,
+  RARITIES,
   type GameState,
 } from "./index";
 import {
@@ -16,7 +19,11 @@ import {
   PRACTICE_PLAYER_ID,
   chooseComputerMove,
   createPracticeGame,
+  computerDeckForLeague,
+  computerProfile,
+  COMPUTER_MEMORY_LENGTH,
 } from "./practice";
+import { LEAGUES } from "./leagues";
 
 const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 
@@ -48,6 +55,73 @@ function choose(state: GameState) {
 }
 
 describe("terrain d’entraînement", () => {
+  it("starts Iron IV with exactly the four starter creatures, common and level one", () => {
+    const human = STARTER_DECK.map((id) =>
+      variantCard(id.split(":")[0]!, "legendary", 10),
+    );
+    const computer = computerDeckForLeague(0, human, () => 0.25);
+    expect(computer.map((card) => card.id).sort()).toEqual(
+      [...STARTER_DECK].sort(),
+    );
+    expect(
+      computer.every((card) => card.level === 1 && card.rarity === "common"),
+    ).toBe(true);
+    expect(computer.reduce((sum, card) => sum + card.attack, 0)).toBe(8);
+  });
+
+  it("progressively unlocks creatures, rarities and levels by league, capped by the human deck's upgrades", () => {
+    for (const league of LEAGUES) {
+      const human = CATALOG.slice(0, 8).map((base) =>
+        variantCard(base.id, "legendary", 10),
+      );
+      const profile = computerProfile(league.minTrophies);
+      const computer = computerDeckForLeague(
+        league.minTrophies,
+        human,
+        () => 0.25,
+      );
+      expect(computer).toHaveLength(human.length);
+      expect(new Set(computer.map((card) => card.baseId)).size).toBe(
+        human.length,
+      );
+      expect(
+        computer.every(
+          (card) =>
+            card.level === profile.maxLevel &&
+            card.rarity === profile.maxRarity,
+        ),
+      ).toBe(true);
+      expect(computer.some((card) => getCombatType(card) === "melee")).toBe(
+        true,
+      );
+      expect(computer.some((card) => getCombatType(card) === "ranged")).toBe(
+        true,
+      );
+      const basic = computerDeckForLeague(
+        league.minTrophies,
+        validateDeck(STARTER_DECK),
+        () => 0.25,
+      );
+      expect(
+        basic.every((card) => card.level === 1 && card.rarity === "common"),
+      ).toBe(true);
+      if (league.index >= 8) expect(profile.baseIds).toContain("dragon");
+      else expect(profile.baseIds).not.toContain("dragon");
+    }
+    expect(RARITIES.indexOf(computerProfile(1600).maxRarity)).toBe(1);
+    expect(computerProfile(6000).maxLevel).toBe(10);
+  });
+
+  it("supports retained eight-slot decks after a demotion without bringing high-attack creatures into Iron IV", () => {
+    const human = CATALOG.slice(0, 8).map((base) =>
+      variantCard(base.id, "common"),
+    );
+    const computer = computerDeckForLeague(0, human, () => 0.25);
+    expect(computer).toHaveLength(8);
+    expect(computer.every((card) => card.attack <= 4 && card.level === 1)).toBe(
+      true,
+    );
+  });
   it("offers a four-card local starter and a matching computer deck", () => {
     const state = createPracticeGame(STARTER_DECK, 0, () => 0.25);
     expect(state.players.map((player) => player.cards.length)).toEqual([4, 4]);
@@ -109,6 +183,65 @@ describe("terrain d’entraînement", () => {
     state.players[0]!.board = [{ cardId: "fox", row: 2, depth: 0, hp: 3 }];
     expect(choose(state)!.row).toBe(2);
   });
+
+  it("avoids repeating its last creature whenever another safe creature is playable", () => {
+    const state = initial();
+    state.players[1]!.hand = ["fox", "wisp", "mushroom", "turtle"];
+    const move = chooseComputerMove(
+      playerView(state, PRACTICE_COMPUTER_ID),
+      () => 0.25,
+      ["fox"],
+    );
+    expect(move?.cardId).not.toBe("fox");
+    expect(state.players[1]!.hand).toContain(move!.cardId);
+  });
+
+  it("uses recent history to vary multiple choices and keeps tactical wins ahead of repetition avoidance", () => {
+    const state = initial();
+    state.players[1]!.hand = ["fox", "wisp", "mushroom", "turtle"];
+    const history: string[] = [];
+    const played = [];
+    for (let i = 0; i < 8; i++) {
+      const move = chooseComputerMove(
+        playerView(state, PRACTICE_COMPUTER_ID),
+        () => 0.25,
+        history,
+      )!;
+      expect(move.cardId).not.toBe(history.at(-1));
+      played.push(move.cardId);
+      history.push(move.cardId);
+      if (history.length > COMPUTER_MEMORY_LENGTH) history.shift();
+    }
+    expect(new Set(played).size).toBeGreaterThanOrEqual(3);
+    state.players[0]!.heroHp = 5;
+    const lethal = chooseComputerMove(
+      playerView(state, PRACTICE_COMPUTER_ID),
+      () => 0.25,
+      ["fox"],
+    );
+    expect(lethal?.cardId).toBe("fox");
+  });
+
+  it("repeats a creature when it is the only safe way to block lethal damage", () => {
+    const state = initial();
+    state.players[1]!.hand = ["dragon", "turtle"];
+    state.players[1]!.heroHp = 5;
+    const attacker = variantCard("fox", "common", 4);
+    state.players[0]!.cards = [attacker];
+    state.players[0]!.hand = [attacker.id];
+    state.players[0]!.board = [1, 2].map((depth) => ({
+      cardId: attacker.id,
+      row: 2,
+      depth,
+      hp: attacker.health,
+    }));
+    const move = chooseComputerMove(
+      playerView(state, PRACTICE_COMPUTER_ID),
+      () => 0.25,
+      ["turtle"],
+    );
+    expect(move).toMatchObject({ cardId: "turtle", row: 2 });
+  });
   it("does not summon a second time or play outside its turn or after the result", () => {
     const state = initial();
     const move = choose(state)!;
@@ -146,13 +279,17 @@ describe("terrain d’entraînement", () => {
       const decks = state.players.map((owner) =>
         owner.cards.map((card) => card.id).sort(),
       );
+      const histories: string[][] = [[], []];
       for (let turn = 0; turn < 200 && state.status === "active"; turn++) {
         const player = state.activePlayer;
         const move = chooseComputerMove(
           playerView(state, state.players[player]!.userId),
           random,
+          histories[player],
         );
-        if (move)
+        if (move) {
+          histories[player]!.push(move.cardId);
+          histories[player] = histories[player]!.slice(-COMPUTER_MEMORY_LENGTH);
           state = summon(
             state,
             player,
@@ -163,7 +300,7 @@ describe("terrain d’entraînement", () => {
             turn * 100,
             random,
           ).state;
-        else
+        } else
           state = endTurn(
             state,
             player,

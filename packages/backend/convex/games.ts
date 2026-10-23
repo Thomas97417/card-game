@@ -4,13 +4,11 @@ import {
   summon,
   withdraw,
   surrender as concede,
-  CATALOG,
   createGame,
-  shuffle,
-  variantCard,
 } from "@sylve/game";
 import {
   chooseComputerMove,
+  computerDeckForLeague,
   PRACTICE_COMPUTER_ID,
   PRACTICE_DEADLINE,
 } from "@sylve/game/practice";
@@ -30,6 +28,7 @@ import {
   setActivity,
   startMatch,
 } from "./lib/game_service";
+import { playerLeague } from "./lib/progression";
 
 export const activity = query({
   args: {},
@@ -157,6 +156,9 @@ export const get = query({
       ...view,
       mode: game.mode ?? "private",
       reward: game.reward?.ownerId === user.userId ? game.reward : null,
+      trophyChange:
+        game.trophyChanges?.find((change) => change.ownerId === user.userId) ??
+        null,
       events: events.reverse().map((entry) => entry.event),
     };
   },
@@ -258,16 +260,12 @@ export const createSolo = mutation({
     const user = await requirePlayer(ctx);
     await requireIdle(ctx, user.userId);
     const cards = await deckSnapshot(ctx, deckId, user.userId);
-    const used = new Set<string>();
-    const computerCards = cards.map((card) => {
-      const rarity = card.rarity ?? "common";
-      const base = shuffle(CATALOG, Math.random).find(
-        (base) => !used.has(`${base.id}:${rarity}`),
-      )!;
-      const variant = variantCard(base.id, rarity, card.level ?? 1);
-      used.add(variant.id);
-      return variant;
-    });
+    const league = await playerLeague(ctx, user.userId);
+    const computerCards = computerDeckForLeague(
+      league.trophies,
+      cards,
+      Math.random,
+    );
     const state = createGame(
       [
         { ...user, cards },
@@ -314,6 +312,7 @@ async function runSoloTurn(
   const move = chooseComputerMove(
     playerView(state, PRACTICE_COMPUTER_ID),
     Math.random,
+    game.soloRecentCards ?? [],
   );
   const transition = move
     ? summon(

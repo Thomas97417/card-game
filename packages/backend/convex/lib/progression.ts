@@ -1,5 +1,11 @@
 import { resolveCard, validateDeck, type GameState } from "@sylve/game";
-import { leagueProgress, TROPHIES_PER_WIN } from "@sylve/game/leagues";
+import {
+  deckCapacity,
+  leagueProgress,
+  TROPHIES_PER_WIN,
+  TROPHIES_PER_LOSS,
+  type TrophyChange,
+} from "@sylve/game/leagues";
 import {
   CHEST_RULES,
   CHEST_SLOTS,
@@ -28,7 +34,11 @@ export async function playerLeague(
   ctx: QueryCtx | MutationCtx,
   ownerId: string,
 ) {
-  return leagueProgress((await playerProgress(ctx, ownerId))?.trophies ?? 0);
+  const progress = await playerProgress(ctx, ownerId);
+  return leagueProgress(
+    progress?.trophies ?? 0,
+    progress?.peakTrophies ?? progress?.trophies ?? 0,
+  );
 }
 
 export async function playerWallet(
@@ -154,30 +164,61 @@ async function advanceVictoryChest(
   return wins;
 }
 
-/** Called in the same transaction as the victory: capacity and attribution cannot race. */
-export async function awardVictoryChest(
+/** Both players' trophies and the winner's chests settle atomically with the result. */
+export async function awardMatchRewards(
   ctx: MutationCtx,
   game: Doc<"games">,
   state: GameState,
 ) {
   if (
     game.reward ||
+    game.trophyChanges !== undefined ||
+    state.status !== "finished" ||
     state.winner === null ||
     (game.mode !== "solo" && game.mode !== "public")
   )
     return;
+  const changes: (TrophyChange & { ownerId: string })[] = [];
+  for (const [index, player] of state.players.entries()) {
+    if (game.mode === "solo" && player.userId !== game.hostId) continue;
+    const progress = await playerProgress(ctx, player.userId);
+    const previousTrophies = progress?.trophies ?? 0;
+    const previousPeak = Math.max(
+      progress?.peakTrophies ?? previousTrophies,
+      previousTrophies,
+    );
+    const trophiesTotal = Math.max(
+      0,
+      previousTrophies +
+        (index === state.winner ? TROPHIES_PER_WIN : -TROPHIES_PER_LOSS),
+    );
+    const peakTrophies = Math.max(previousPeak, trophiesTotal);
+    const fields = { trophies: trophiesTotal, peakTrophies };
+    if (progress) await ctx.db.patch(progress._id, fields);
+    else
+      await ctx.db.insert("leagueProgress", {
+        ownerId: player.userId,
+        ...fields,
+      });
+    changes.push({
+      ownerId: player.userId,
+      trophies: trophiesTotal - previousTrophies,
+      trophiesTotal,
+      previousTrophies,
+      deckCapacity: deckCapacity(peakTrophies),
+      deckSlotsGained: deckCapacity(peakTrophies) - deckCapacity(previousPeak),
+    });
+  }
+  await ctx.db.patch(game._id, { trophyChanges: changes });
   const ownerId = state.players[state.winner]!.userId;
-  if (game.mode === "solo" && ownerId !== game.hostId) return;
-  const progress = await playerProgress(ctx, ownerId);
-  const previousTrophies = progress?.trophies ?? 0;
-  const trophiesTotal = previousTrophies + TROPHIES_PER_WIN;
-  if (progress) await ctx.db.patch(progress._id, { trophies: trophiesTotal });
-  else
-    await ctx.db.insert("leagueProgress", { ownerId, trophies: trophiesTotal });
-  const trophyReward = {
-    trophies: TROPHIES_PER_WIN,
+  const trophyReward = changes.find((change) => change.ownerId === ownerId);
+  // A computer victory only debits the human; the computer has no progression record.
+  if (!trophyReward) return;
+  const { trophiesTotal } = trophyReward;
+  const winnerTrophies = {
+    trophies: trophyReward.trophies,
     trophiesTotal,
-    previousTrophies,
+    previousTrophies: trophyReward.previousTrophies,
   };
   const victoryWins = await advanceVictoryChest(ctx, ownerId, trophiesTotal);
   const unopened = await ctx.db
@@ -188,7 +229,7 @@ export async function awardVictoryChest(
     .collect();
   if (unopened.length >= CHEST_SLOTS) {
     await ctx.db.patch(game._id, {
-      reward: { ownerId, status: "lost", victoryWins, ...trophyReward },
+      reward: { ownerId, status: "lost", victoryWins, ...winnerTrophies },
     });
     return;
   }
@@ -215,7 +256,7 @@ export async function awardVictoryChest(
       chestId,
       rarity,
       victoryWins,
-      ...trophyReward,
+      ...winnerTrophies,
     },
   });
 }

@@ -14,6 +14,7 @@ import {
   PRACTICE_COMPUTER_ID,
   PRACTICE_DEADLINE,
   PRACTICE_PLAYER_ID,
+  COMPUTER_MEMORY_LENGTH,
   chooseComputerMove,
   createPracticeGame,
 } from "@sylve/game/practice";
@@ -58,6 +59,7 @@ function PracticeMatch({
   const [session, setSession] = useState({
     state: initial,
     events: [] as Transition["events"],
+    computerHistory: [] as string[],
   });
   const current = useRef(session);
   const [settledSequence, setSettledSequence] = useState(-1);
@@ -74,6 +76,15 @@ function PracticeMatch({
     const next = {
       state: transition.state,
       events: [...current.current.events, ...transition.events].slice(-80),
+      computerHistory: [
+        ...current.current.computerHistory,
+        ...transition.events
+          .filter(
+            (event) =>
+              event.type === "summon" && event.player === 1 && event.cardId,
+          )
+          .map((event) => event.cardId!),
+      ].slice(-COMPUTER_MEMORY_LENGTH),
     };
     current.current = next;
     setSession(next);
@@ -97,6 +108,7 @@ function PracticeMatch({
       const move = chooseComputerMove(
         playerView(state, PRACTICE_COMPUTER_ID),
         Math.random,
+        current.current.computerHistory,
       );
       commit(
         move

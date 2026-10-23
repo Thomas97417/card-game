@@ -14,6 +14,7 @@ export default defineSchema({
   leagueProgress: defineTable({
     ownerId: v.string(),
     trophies: v.number(),
+    peakTrophies: v.optional(v.number()),
   }).index("by_owner", ["ownerId"]),
   wallets: defineTable({
     ownerId: v.string(),
@@ -64,6 +65,19 @@ export default defineSchema({
     queueId: v.optional(v.id("matchmakingQueue")),
   }).index("by_user", ["userId"]),
   games: defineTable({
+    soloRecentCards: v.optional(v.array(v.string())),
+    trophyChanges: v.optional(
+      v.array(
+        v.object({
+          ownerId: v.string(),
+          trophies: v.number(),
+          trophiesTotal: v.number(),
+          previousTrophies: v.number(),
+          deckCapacity: v.number(),
+          deckSlotsGained: v.number(),
+        }),
+      ),
+    ),
     mode: v.optional(
       v.union(v.literal("solo"), v.literal("public"), v.literal("private")),
     ),

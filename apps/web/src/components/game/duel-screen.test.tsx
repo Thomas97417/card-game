@@ -79,6 +79,22 @@ async function openHandCard(data: DuelData) {
 }
 
 describe("inspection pendant un duel", () => {
+  it("shows the authoritative trophy loss to the defeated player without showing a chest reward", async () => {
+    const data = matchData();
+    data.status = "finished";
+    data.winner = 1;
+    data.trophyChange = {
+      trophies: -15,
+      previousTrophies: 100,
+      trophiesTotal: 85,
+      deckCapacity: 4,
+      deckSlotsGained: 0,
+    };
+    setup(data);
+    expect(await screen.findByText("−15 trophées")).toBeTruthy();
+    expect(screen.getByText("85 trophées au total")).toBeTruthy();
+    expect(screen.queryByText(/Coffre .* gagné/)).toBeNull();
+  });
   it("announces the result when the winning summon leaves hasSummoned set", async () => {
     const data = matchData();
     data.status = "finished";
