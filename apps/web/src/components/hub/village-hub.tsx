@@ -41,6 +41,7 @@ import UserMenu from "@/components/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { CurrencyBalances } from "@/components/currency-balances";
+import { AbilityLegend } from "@/components/game/ability-legend";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type ModalId = "home" | "archives";
@@ -480,6 +481,7 @@ function ArchivesContent() {
       <Link to="/practice" className="sylve-button mt-6">
         Mettre en pratique <ArrowRight size={15} />
       </Link>
+      <AbilityLegend />
     </>
   );
 }

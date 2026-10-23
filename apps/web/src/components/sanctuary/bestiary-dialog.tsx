@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { CardAbilities } from "@/components/game/card-abilities";
+import { CardAbilityIcons } from "@/components/game/ability-icons";
+import { AbilityLegend } from "@/components/game/ability-legend";
 
 export function BestiaryDialog() {
   return (
@@ -44,7 +46,7 @@ function BestiaryContent() {
       <span className="sanctuary-eyebrow">Le bestiaire</span>
       <DialogTitle>Des alliés, pas de simples cartes.</DialogTitle>
       <DialogDescription>
-        Les {CATALOG.length} créatures de la Sylve existent chacune en quatre
+        Les {CATALOG.length} cartes de la Sylve existent chacune en quatre
         raretés. Explore leurs caractéristiques communes du niveau 1 au niveau{" "}
         {MAX_CARD_LEVEL}. Les invocations et les coffres débloquent de nouvelles
         variantes ; l’or et leurs exemplaires permettent de les améliorer à
@@ -66,31 +68,37 @@ function BestiaryContent() {
       </label>
       <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {CATALOG.map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => setSelectedId(card.id)}
-              aria-pressed={card.id === selectedId}
-              aria-label={`Découvrir ${card.name}`}
-              className={cn(
-                "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
-                card.id === selectedId
-                  ? "border-[#8c9d70] bg-[#e8eddb]"
-                  : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
-              )}
-            >
-              <CreaturePortrait card={card} />
-              <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
-                {card.name}
-              </span>
-            </button>
-          ))}
+          {CATALOG.map((base) => variantCard(base.id, "common", level)).map(
+            (card) => (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => setSelectedId(card.baseId!)}
+                aria-pressed={card.baseId === selectedId}
+                aria-label={`Découvrir ${card.name}`}
+                className={cn(
+                  "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
+                  card.baseId === selectedId
+                    ? "border-[#8c9d70] bg-[#e8eddb]"
+                    : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
+                )}
+              >
+                <CreaturePortrait card={card} />
+                <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
+                  {card.name}
+                </span>
+                <CardAbilityIcons
+                  card={card}
+                  className="bestiary-card-abilities"
+                />
+              </button>
+            ),
+          )}
         </div>
         <div
           aria-live="polite"
           aria-atomic="true"
-          className="sticky top-0 z-10 order-first flex items-center gap-3 rounded-xl border border-[#d9dfc8] bg-[#ecf0e2] px-4 py-3 shadow-sm sm:static sm:order-last sm:flex-col sm:justify-center sm:gap-0 sm:py-5 sm:text-center sm:shadow-none"
+          className="sticky top-0 z-10 order-first flex items-center gap-3 rounded-xl border border-[#d9dfc8] bg-[#ecf0e2] px-4 py-3 shadow-sm sm:order-last sm:flex-col sm:self-start sm:gap-0 sm:py-5 sm:text-center sm:shadow-none"
         >
           <div className="w-16 shrink-0 sm:w-28">
             <CreaturePortrait card={selected} />
@@ -125,6 +133,7 @@ function BestiaryContent() {
       <Link to="/decks" className="sylve-button mt-6">
         Composer mon alliance <ArrowRight size={15} />
       </Link>
+      <AbilityLegend />
     </>
   );
 }

@@ -31,6 +31,7 @@ import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 import { CardAbilities } from "@/components/game/card-abilities";
+import { CardAbilityIcons } from "@/components/game/ability-icons";
 
 export function CardUpgradeDialog({
   entry,
@@ -102,6 +103,10 @@ export function CardUpgradeDialog({
               </div>
               <span className="upgrade-card-level">Niv. {level}</span>
               <CreaturePortrait card={card} />
+              <CardAbilityIcons
+                card={card}
+                className="upgrade-portrait-abilities"
+              />
               <div className="upgrade-portrait-caption">
                 <span
                   className="rarity-label"

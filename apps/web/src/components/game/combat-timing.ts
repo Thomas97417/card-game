@@ -2,6 +2,8 @@
 export const COMBAT_TIMING = {
   attack: 1000,
   impact: 260,
+  ability: 360,
+  abilityImpact: 180,
   death: 380,
   summon: 420,
   withdraw: 320,

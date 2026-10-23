@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Undo2 } from "lucide-react";
+import { useRef } from "react";
 import {
   HERO_HP,
   RARITY_LABELS,
@@ -21,6 +22,7 @@ import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
+import { UnitEffectIcons } from "./ability-icons";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
@@ -52,6 +54,7 @@ export function DuelDetailsDialog({
   onSelectCard: (cardId: string) => void;
   onWithdrawCard: (cardId: string, position: UnitPosition) => void;
 }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
   const own = inspection?.playerIndex === view.me;
   const inspectedCard = inspection?.type === "card" ? inspection.card : null;
@@ -92,6 +95,7 @@ export function DuelDetailsDialog({
         appearance="game"
         placement={own ? "left" : "right"}
         showBackdrop={false}
+        initialFocus={titleRef}
       >
         {inspection && player && (
           <>
@@ -123,7 +127,9 @@ export function DuelDetailsDialog({
                         ? "DANS TA MAIN"
                         : "FICHE DE CRÉATURE"}
                 </span>
-                <DialogTitle>{card.name}</DialogTitle>
+                <DialogTitle ref={titleRef} tabIndex={-1}>
+                  {card.name}
+                </DialogTitle>
                 <DialogDescription>{card.title}</DialogDescription>
                 <span
                   className="rarity-label"
@@ -197,6 +203,14 @@ export function DuelDetailsDialog({
                     )}
                   </div>
                 </div>
+                {unit && (
+                  <UnitEffectIcons
+                    unit={unit}
+                    cards={player.deck}
+                    blocked={blocked}
+                    detailed
+                  />
+                )}
                 <CardAbilities card={card} />
                 {inHand && source !== "board" && (
                   <div className="details-actions">
@@ -244,7 +258,9 @@ export function DuelDetailsDialog({
                 <span className="eyebrow">
                   {own ? "TON HÉROS" : "HÉROS ADVERSE"}
                 </span>
-                <DialogTitle>{player.name}</DialogTitle>
+                <DialogTitle ref={titleRef} tabIndex={-1}>
+                  {player.name}
+                </DialogTitle>
                 <DialogDescription>
                   Les caractéristiques du héros et les compagnons de son deck.
                 </DialogDescription>

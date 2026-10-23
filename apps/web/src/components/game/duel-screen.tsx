@@ -27,6 +27,8 @@ import {
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
+import { AbilityIcon, eventIconKind } from "./ability-icons";
+import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
@@ -425,23 +427,28 @@ export function DuelScreen({
             .reverse()
             .map((entry) => (
               <li key={entry.seq}>
-                {entry.type === "ability" ? (
-                  `${cardName(entry.cardId)} · ${entry.ability}${entry.amount ? ` (${entry.amount > 0 ? "+" : ""}${entry.amount})` : ""}`
-                ) : (
-                  <>
-                    {cardName(entry.cardId)} inflige {entry.damage} dégâts{" "}
-                    {entry.targetCardId
-                      ? `à ${cardName(entry.targetCardId)}`
-                      : "au héros adverse"}
-                    .
-                  </>
+                {eventIconKind(entry) && (
+                  <AbilityIcon kind={eventIconKind(entry)!} />
                 )}
+                <span>
+                  {entry.type === "ability" ? (
+                    `${cardName(entry.cardId)} · ${entry.ability}${entry.amount ? ` (${entry.amount > 0 ? "+" : ""}${entry.amount})` : ""}`
+                  ) : (
+                    <>
+                      {cardName(entry.cardId)} inflige {entry.damage} dégâts{" "}
+                      {entry.targetCardId
+                        ? `à ${cardName(entry.targetCardId)}`
+                        : "au héros adverse"}
+                      .
+                    </>
+                  )}
+                </span>
               </li>
             ))}
         </ol>
-        {!data.events.some((entry) => entry.type === "attack") && (
-          <p>Le combat n’a pas encore commencé.</p>
-        )}
+        {!data.events.some(
+          (entry) => entry.type === "attack" || entry.type === "ability",
+        ) && <p>Le combat n’a pas encore commencé.</p>}
         <form method="dialog">
           <button className="sylve-button secondary">Fermer</button>
         </form>
@@ -616,6 +623,7 @@ export function DuelScreen({
           invoquer » permet de continuer le combat.
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
+        <AbilityLegend />
         <form method="dialog">
           <button className="sylve-button">J’ai compris</button>
         </form>

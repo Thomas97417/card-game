@@ -44,7 +44,7 @@ export function useCombatPlayback(latest: View | undefined) {
             : entry.type === "summon"
               ? COMBAT_TIMING.summon
               : entry.type === "ability"
-                ? 180
+                ? COMBAT_TIMING.ability
                 : entry.type === "withdraw"
                   ? COMBAT_TIMING.withdraw
                   : 0;
@@ -54,7 +54,9 @@ export function useCombatPlayback(latest: View | undefined) {
           ? 0
           : entry.type === "attack"
             ? COMBAT_TIMING.impact
-            : duration);
+            : entry.type === "ability"
+              ? COMBAT_TIMING.abilityImpact
+              : duration);
       if (entry.type === "attack" || entry.type === "ability")
         effectsEnd = Math.max(effectsEnd, commitAt + COMBAT_TIMING.damage);
       timers.push(

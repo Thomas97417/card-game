@@ -30,6 +30,7 @@ import {
   X,
 } from "lucide-react";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { CardAbilityIcons } from "@/components/game/ability-icons";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
@@ -89,6 +90,7 @@ function CardArtwork({
         <CreaturePortrait card={card} />
       </span>
       <span className="card-level">Niv. {card.level ?? 1}</span>
+      <CardAbilityIcons card={card} className="workshop-card-abilities" />
       <span className="card-stats">
         <StatBadge
           kind="attack"

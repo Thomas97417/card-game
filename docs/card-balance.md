@@ -72,7 +72,7 @@ La Tisseuse crée une rune de vitalité sur une case alliée libre aléatoire ; 
 
 ## Interface et compatibilité
 
-Les fiches de l’atelier montrent la faction, le type, les capacités actives et verrouillées, leur niveau de déblocage et leurs changements au prochain niveau. Le bestiaire permet de consulter chaque commune du niveau 1 au niveau 26. Le filtre Bâtiment complète Mêlée et Distance. Le plateau affiche les runes et les protections ; les animations et le journal utilisent les événements de capacité et les définitions des jetons.
+Les fiches de l’atelier montrent la faction, le type, les capacités actives et verrouillées, leur niveau de déblocage et leurs changements au prochain niveau. Le bestiaire permet de consulter chaque commune du niveau 1 au niveau 26. Le filtre Bâtiment complète Mêlée et Distance. Les 16 icônes illustrées sont partagées entre les cartes, les fiches, les récompenses, le plateau, les animations et le journal. Le plateau distingue les capacités des unités de leurs états actuels et affiche les runes sur les cases. Les états cumulés sont détaillés dans les fiches ; une légende explique les symboles dans les règles et le bestiaire. Voir les [notes sur les illustrations et leurs aperçus](art.md#capacités-et-états--24-octobre-2026).
 
 Les champs de combat ajoutés sont facultatifs dans les validateurs Convex. Les parties et recherches déjà enregistrées conservent leurs instantanés de cartes ; les nouvelles parties résolvent les caractéristiques actuelles depuis la collection. Les identifiants existants et niveaux acquis sont préservés.
 

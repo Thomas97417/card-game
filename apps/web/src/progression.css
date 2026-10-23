@@ -970,25 +970,35 @@
   }
 }
 
-.upgrade-main .card-abilities h3 {
+.game-dialog .card-abilities h3 {
   margin: 0 0 8px;
   color: #e5d5ae;
 }
-.upgrade-main .card-abilities li {
+.upgrade-portrait-abilities {
+  position: absolute;
+  z-index: 4;
+  left: 14px;
+  top: 62px;
+  --ability-size: 30px;
+}
+.game-dialog .card-abilities li {
   background: #35513a;
   border-color: #81966b66;
   color: #f0edd8;
 }
-.upgrade-main .card-abilities li[data-locked="true"] {
+.game-dialog .card-abilities li[data-locked="true"] {
   background: #293e31;
   border-color: #81966b33;
   color: #c0c5ad;
 }
-.upgrade-main .ability-title > span {
+.game-dialog .card-abilities li p {
+  color: inherit;
+}
+.game-dialog .ability-title > span {
   background: #152e2477;
   color: #e6cc8e;
 }
-.upgrade-main .card-abilities .ability-next {
+.game-dialog .card-abilities .ability-next {
   color: #cce9a6;
   border-color: #9bb97b44;
 }

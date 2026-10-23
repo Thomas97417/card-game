@@ -1,5 +1,6 @@
 import { LockKeyhole, Sparkles } from "lucide-react";
 import type { CardDefinition } from "@sylve/game";
+import { AbilityIcon, abilityIconKind } from "./ability-icons";
 
 export function CardAbilities({
   card,
@@ -25,14 +26,13 @@ export function CardAbilities({
             <li key={ability.id} data-locked={!ability.active}>
               <div className="ability-title">
                 <strong>
-                  {ability.active ? (
-                    <Sparkles size={13} />
-                  ) : (
-                    <LockKeyhole size={13} />
-                  )}
+                  <AbilityIcon kind={abilityIconKind(ability)} size={32} />
                   {ability.name}
                 </strong>
                 <span>
+                  {!ability.active && (
+                    <LockKeyhole size={11} aria-hidden="true" />
+                  )}
                   {ability.active
                     ? `Active · niv. ${ability.unlockLevel}`
                     : `Niv. ${ability.unlockLevel}`}

@@ -15,6 +15,12 @@ import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
 import { COMBAT_TIMING } from "./combat-timing";
 import {
+  AbilityIcon,
+  CardAbilityIcons,
+  UnitEffectIcons,
+  eventIconKind,
+} from "./ability-icons";
+import {
   ARENA_CELLS,
   ARENA_CORNERS,
   ARENA_WIDTH,
@@ -166,7 +172,8 @@ export function DuelArena({
                     title={`Rune de vie : +${rune.health} PV`}
                     aria-label={`Rune de vie : +${rune.health} PV`}
                   >
-                    ✦ +{rune.health}
+                    <AbilityIcon kind="life-rune" />
+                    <strong>+{rune.health}</strong>
                   </span>
                 )}
                 {legal && (
@@ -202,48 +209,17 @@ export function DuelArena({
                       />
                     </div>
                     <span className="unit-name">{unit.card.name}</span>
-                    <span className="unit-statuses">
-                      {unit.shield && (
-                        <span
-                          title="Bouclier mental"
-                          aria-label="Bouclier mental"
-                        >
-                          ◈
-                        </span>
-                      )}
-                      {!!unit.block && (
-                        <span
-                          title={`Blocage ${unit.block}`}
-                          aria-label={`Blocage ${unit.block}`}
-                        >
-                          ▣ {unit.block}
-                        </span>
-                      )}
-                      {!!unit.spikes && (
-                        <span
-                          title={`Épines ${unit.spikes}`}
-                          aria-label={`Épines ${unit.spikes}`}
-                        >
-                          ✦ {unit.spikes}
-                        </span>
-                      )}
-                      {!!unit.regeneration && (
-                        <span
-                          title={`Régénération ${unit.regeneration}`}
-                          aria-label={`Régénération ${unit.regeneration}`}
-                        >
-                          ✚ {unit.regeneration}
-                        </span>
-                      )}
-                      {!!unit.vampirism && (
-                        <span
-                          title={`Vampirisme ${unit.vampirism}`}
-                          aria-label={`Vampirisme ${unit.vampirism}`}
-                        >
-                          ◆ {unit.vampirism}
-                        </span>
-                      )}
-                    </span>
+                    <CardAbilityIcons
+                      card={unit.card}
+                      className="unit-ability-icons"
+                      showLocked={false}
+                      onBoard
+                    />
+                    <UnitEffectIcons
+                      unit={unit}
+                      cards={player.deck}
+                      blocked={blocked}
+                    />
                   </div>
                 </button>
               )}
@@ -328,16 +304,24 @@ function CombatEffects({
     if (
       !event ||
       (event.type !== "attack" &&
-        (event.type !== "ability" || !event.amount || event.runes))
+        (event.type !== "ability" || event.runes) &&
+        (event.type !== "summon" || !event.ability))
     )
       return;
-    const timer = window.setTimeout(() => {
-      setHits((previous) =>
-        previous.some((hit) => hit.seq === event.seq)
-          ? previous
-          : [...previous, event],
-      );
-    }, COMBAT_TIMING.impact);
+    const timer = window.setTimeout(
+      () => {
+        setHits((previous) =>
+          previous.some((hit) => hit.seq === event.seq)
+            ? previous
+            : [...previous, event],
+        );
+      },
+      event.type === "ability"
+        ? COMBAT_TIMING.abilityImpact
+        : event.type === "summon"
+          ? 0
+          : COMBAT_TIMING.impact,
+    );
     return () => window.clearTimeout(timer);
   }, [event]);
   const removeHit = useCallback((sequence: number) => {
@@ -350,19 +334,19 @@ function CombatEffects({
       aria-relevant="additions"
     >
       {hits.map((hit) => {
-        const own = hit.targetPlayer === me;
+        const own = (hit.targetPlayer ?? hit.player) === me;
         const player = own ? mine : enemy;
         const target =
           player.deck.find((card) => card.id === hit.targetCardId) ??
-          player.board.find((u) => u.cardId === hit.targetCardId)?.card;
+          player.board.find((u) => u.cardId === hit.targetCardId)?.card ??
+          hit.unit?.definition;
+        const row =
+          hit.targetRow ?? (hit.type === "summon" ? hit.row : undefined);
+        const depth =
+          hit.targetDepth ?? (hit.type === "summon" ? hit.depth : undefined);
         const position =
-          hit.targetCardId &&
-          hit.targetRow !== undefined &&
-          hit.targetDepth !== undefined
-            ? groundCell(
-                hit.targetRow,
-                own ? DEPTHS - 1 - hit.targetDepth : DEPTHS + hit.targetDepth,
-              ).impact
+          row !== undefined && depth !== undefined
+            ? groundCell(row, own ? DEPTHS - 1 - depth : DEPTHS + depth).impact
             : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
         return (
           <DamageNumber
@@ -389,6 +373,11 @@ function DamageNumber({
   targetName: string;
   onComplete: (sequence: number) => void;
 }) {
+  const icon =
+    eventIconKind(hit) ??
+    (hit.type === "attack" && hit.damage === 0 && hit.unit?.block
+      ? "block"
+      : undefined);
   useEffect(() => {
     const timer = window.setTimeout(
       () => onComplete(hit.seq),
@@ -401,14 +390,21 @@ function DamageNumber({
       className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""}`}
       style={position}
       aria-label={
-        hit.type === "ability"
-          ? `${targetName} : ${hit.ability} ${hit.amount}`
+        hit.type === "ability" || hit.type === "summon"
+          ? `${targetName} : ${hit.ability}${hit.amount === undefined ? "" : ` ${hit.amount}`}`
           : `${targetName} subit ${hit.damage} dégâts`
       }
     >
-      {hit.type === "ability"
-        ? `${(hit.amount ?? 0) > 0 ? "+" : "−"}${Math.abs(hit.amount ?? 0)}`
-        : `−${hit.damage}`}
+      {icon && <AbilityIcon kind={icon} size={30} />}
+      {hit.type === "summon" ? (
+        <small className="effect-word">Renfort</small>
+      ) : icon === "mental-shield" && (hit.damage ?? hit.amount) === 0 ? (
+        <small className="effect-word">Protégée</small>
+      ) : hit.type === "ability" ? (
+        `${(hit.amount ?? 0) > 0 ? "+" : "−"}${Math.abs(hit.amount ?? 0)}`
+      ) : (
+        `−${hit.damage}`
+      )}
     </span>
   );
 }
