@@ -106,16 +106,6 @@ export function Sanctuary({
             draggable={false}
           />
         </Link>
-        <nav
-          className="sanctuary-navigation"
-          aria-label="Explorer le sanctuaire"
-        >
-          <BestiaryDialog />
-          <Link to="/decks" className="sanctuary-text-button">
-            Ma collection
-            <ArrowRight size={15} />
-          </Link>
-        </nav>
         <div className="sanctuary-header-tools">
           {previous && (
             <button
@@ -134,22 +124,34 @@ export function Sanctuary({
       </header>
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
-        <section
-          className="summon-packs"
-          aria-label="Packs d’invocation"
-          aria-busy={!!busy}
-        >
-          {SUMMON_PACKS.map((pack) => (
-            <PackChoice
-              key={pack.id}
-              pack={pack}
-              diamonds={diamonds}
-              ready={ready}
-              busy={busy}
-              onInvoke={invoke}
-            />
-          ))}
-        </section>
+        <div className="sanctuary-offers">
+          <section
+            className="summon-packs"
+            aria-label="Packs d’invocation"
+            aria-busy={!!busy}
+          >
+            {SUMMON_PACKS.map((pack) => (
+              <PackChoice
+                key={pack.id}
+                pack={pack}
+                diamonds={diamonds}
+                ready={ready}
+                busy={busy}
+                onInvoke={invoke}
+              />
+            ))}
+          </section>
+          <nav
+            className="sanctuary-navigation"
+            aria-label="Explorer le sanctuaire"
+          >
+            <BestiaryDialog />
+            <Link to="/decks" className="sanctuary-text-button">
+              Ma collection
+              <ArrowRight size={15} />
+            </Link>
+          </nav>
+        </div>
         {busy && (
           <p className="sanctuary-feedback" role="status">
             <LoaderCircle className="animate-spin" size={16} />
