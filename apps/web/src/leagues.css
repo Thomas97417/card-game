@@ -336,6 +336,11 @@
   width: calc(var(--workshop-status-height) - 8px) !important;
   height: calc(var(--workshop-status-height) - 8px) !important;
 }
+.workshop-header .league-panel.is-compact .league-panel-heading {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
 .workshop-header .league-panel.is-compact .league-panel-heading > strong {
   font-size: 15px;
 }
@@ -471,7 +476,7 @@
     font-size: 12px;
   }
   .workshop-header .league-panel.is-compact .league-panel-heading {
-    gap: 0;
+    gap: 5px;
   }
   .workshop-header .league-panel .trophy-amount {
     font-size: 10px;
