@@ -628,18 +628,6 @@
   .summon-reveal-card > strong {
     font-size: 11px;
   }
-  .play-header:has(.diamond-balance) {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .play-header:has(.diamond-balance) h1 {
-    flex: 1;
-  }
-  .play-header:has(.diamond-balance) > .currency-balances {
-    justify-content: flex-end;
-    width: 100%;
-    margin-top: -8px;
-  }
 }
 @media (max-width: 380px) {
   .currency-balances .gold-balance,

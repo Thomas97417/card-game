@@ -20,8 +20,6 @@ import type {
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import {
   ArrowRightLeft,
-  ChevronLeft,
-  ChevronRight,
   Check,
   Layers3,
   Leaf,
@@ -32,6 +30,7 @@ import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
+import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { CurrencyBalances } from "@/components/currency-balances";
 import {
   DECK_SLOT_UNLOCKS,
@@ -130,15 +129,21 @@ export function DeckWorkshop({
     card: CardDefinition;
     x: number;
     y: number;
+    width: number;
   } | null>(null);
   const root = useRef<HTMLElement>(null);
   const currentRow = useRef<HTMLDivElement>(null);
   const collectionRow = useRef<HTMLDivElement>(null);
+  const deckPan = useHorizontalDrag(true, { ignoreInteractiveElements: true });
+  const collectionPan = useHorizontalDrag(true, {
+    ignoreInteractiveElements: true,
+  });
   const suppressClick = useRef(false);
   const origin = useRef<{
     card: CardDefinition;
     x: number;
     y: number;
+    width: number;
     active: boolean;
     pointerId: number;
     target: HTMLButtonElement;
@@ -146,6 +151,34 @@ export function DeckWorkshop({
 
   const { status, initialize, enqueue, flush, hasPendingChanges } =
     useDeckAutosave(onSave);
+
+  useEffect(() => {
+    const rows = [currentRow.current, collectionRow.current];
+    const scrollHorizontally = (event: WheelEvent) => {
+      if (
+        event.ctrlKey ||
+        event.shiftKey ||
+        Math.abs(event.deltaX) >= Math.abs(event.deltaY)
+      )
+        return;
+      const row = event.currentTarget as HTMLDivElement;
+      if (row.scrollWidth <= row.clientWidth) return;
+      const unit =
+        event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? row.clientWidth
+            : 1;
+      row.scrollLeft += event.deltaY * unit;
+      event.preventDefault();
+    };
+    for (const row of rows)
+      row?.addEventListener("wheel", scrollHorizontally, { passive: false });
+    return () => {
+      for (const row of rows)
+        row?.removeEventListener("wheel", scrollHorizontally);
+    };
+  }, []);
 
   useEffect(() => {
     if (!deck || draft) return;
@@ -238,6 +271,7 @@ export function DeckWorkshop({
       card,
       x: event.clientX,
       y: event.clientY,
+      width: event.currentTarget.getBoundingClientRect().width,
       active: false,
       pointerId: event.pointerId,
       target: event.currentTarget,
@@ -256,7 +290,12 @@ export function DeckWorkshop({
     source.active = true;
     suppressClick.current = true;
     setPicked(null);
-    setDrag({ card: source.card, x: event.clientX, y: event.clientY });
+    setDrag({
+      card: source.card,
+      x: event.clientX,
+      y: event.clientY,
+      width: source.width,
+    });
     setHovered(slotAt(event.clientX, event.clientY));
     const row = currentRow.current;
     if (row) {
@@ -287,15 +326,6 @@ export function DeckWorkshop({
       return;
     }
     setInspected(card.id);
-  }
-
-  function scrollRow(row: HTMLDivElement | null, direction: number) {
-    row?.scrollBy({
-      left: direction * row.clientWidth * 0.7,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
   }
 
   function renderCard(card: CardDefinition, slot?: number) {
@@ -393,19 +423,9 @@ export function DeckWorkshop({
           aria-label="Ton deck"
           aria-busy={!ready}
         >
-          <div className="workshop-deck-limit">
-            <span>
-              {cards.length} / {league.deckCapacity} cartes ·{" "}
-              {league.current.label}
-            </span>
-            <span>
-              {league.nextSlot
-                ? `Prochain emplacement : ${leagueAt(league.nextSlot.trophies).label} · ${league.nextSlot.trophies} trophées`
-                : "Tous les emplacements sont débloqués"}
-            </span>
-          </div>
           <div
-            className="workshop-card-row"
+            {...deckPan.dragHandlers}
+            className={`workshop-card-row ${deckPan.isDragging ? "is-panning" : ""}`}
             ref={currentRow}
             tabIndex={0}
             role="region"
@@ -473,21 +493,6 @@ export function DeckWorkshop({
           </div>
         </section>
 
-        <div className="workshop-deck-navigation workshop-scroll-controls">
-          <button
-            aria-label="Voir les cartes précédentes du deck"
-            onClick={() => scrollRow(currentRow.current, -1)}
-          >
-            <ChevronLeft size={17} />
-          </button>
-          <button
-            aria-label="Voir les cartes suivantes du deck"
-            onClick={() => scrollRow(currentRow.current, 1)}
-          >
-            <ChevronRight size={17} />
-          </button>
-        </div>
-
         <section
           className="workshop-collection"
           aria-labelledby="collection-title"
@@ -499,23 +504,10 @@ export function DeckWorkshop({
                 <span>{ready ? `${collection!.length} / 48` : "—"}</span>
               </h2>
             </div>
-            <div className="workshop-scroll-controls">
-              <button
-                aria-label="Voir les cartes précédentes de la collection"
-                onClick={() => scrollRow(collectionRow.current, -1)}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                aria-label="Voir les cartes suivantes de la collection"
-                onClick={() => scrollRow(collectionRow.current, 1)}
-              >
-                <ChevronRight size={17} />
-              </button>
-            </div>
           </div>
           <div
-            className="workshop-card-row"
+            {...collectionPan.dragHandlers}
+            className={`workshop-card-row ${collectionPan.isDragging ? "is-panning" : ""}`}
             ref={collectionRow}
             tabIndex={0}
             role="region"
@@ -674,6 +666,7 @@ export function DeckWorkshop({
             {
               left: drag.x,
               top: drag.y,
+              width: drag.width,
               "--creature-color": drag.card.color,
             } as CSSProperties
           }

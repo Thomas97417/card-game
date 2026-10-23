@@ -3,7 +3,12 @@ import type { HTMLAttributes, PointerEvent } from "react";
 
 const DRAG_THRESHOLD = 6;
 
-export function useHorizontalDrag(enabled: boolean) {
+export function useHorizontalDrag(
+  enabled: boolean,
+  {
+    ignoreInteractiveElements = false,
+  }: { ignoreInteractiveElements?: boolean } = {},
+) {
   const [isDragging, setIsDragging] = useState(false);
   const drag = useRef<{
     pointerId: number;
@@ -28,9 +33,14 @@ export function useHorizontalDrag(enabled: boolean) {
     onPointerDown(event) {
       suppressClick.current = false;
       if (!enabled || event.pointerType !== "mouse" || event.button !== 0) return;
+      if (
+        ignoreInteractiveElements &&
+        (event.target as Element).closest("button, a, input, select, textarea")
+      )
+        return;
 
       // Capture on the original target so a simple click still reaches its
-      // building, while a drag can continue outside the map or browser viewport.
+      // control, while a drag can continue outside the scroll area or viewport.
       const captureTarget = event.target as Element;
       drag.current = {
         pointerId: event.pointerId,
