@@ -1064,4 +1064,3 @@ Commune · Chaos · À distance · disponible à la ligue 30 selon la fiche · �
 | 16 | Zombie 4/4 (niv. 2) | 2 |
 | 21 | Zombie 9/9 (niv. 3) | 8 |
 | 26 | Zombie 15/15 (niv. 4) | 14 |
-
