@@ -21,7 +21,6 @@ import {
   History,
   Layers,
   Leaf,
-  Trophy,
   RotateCcw,
   Bot,
 } from "lucide-react";
@@ -32,6 +31,10 @@ import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
+import {
+  LeagueVictory,
+  TrophyIcon,
+} from "@/components/leagues/league-progress";
 
 export type DuelData = GameView & {
   events: GameEvent[];
@@ -40,6 +43,9 @@ export type DuelData = GameView & {
     status: "awarded" | "lost";
     rarity?: CardRarity;
     victoryWins?: number;
+    trophies?: number;
+    trophiesTotal?: number;
+    previousTrophies?: number;
   } | null;
 };
 interface DuelScreenProps {
@@ -431,11 +437,7 @@ export function DuelScreen({
         <div className="result-overlay">
           <section className="result-card game-dialog" role="status">
             <div className="result-icon">
-              {data.winner === data.me ? (
-                <Trophy size={40} />
-              ) : (
-                <Leaf size={40} />
-              )}
+              {data.winner === data.me ? <TrophyIcon /> : <Leaf size={40} />}
             </div>
             <span className="eyebrow">LE CERCLE A TRANCHÉ</span>
             <h1>
@@ -448,6 +450,9 @@ export function DuelScreen({
                 ? "Tes compagnons ont fait honneur à la forêt."
                 : "Chaque duel est une leçon. La forêt n’a pas dit son dernier mot."}
             </p>
+            {data.winner === data.me && data.reward && (
+              <LeagueVictory reward={data.reward} />
+            )}
             {data.winner === data.me && data.reward && (
               <div className="duel-reward" role="status">
                 {data.reward.status === "awarded" && data.reward.rarity ? (

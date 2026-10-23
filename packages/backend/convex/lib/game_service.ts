@@ -11,7 +11,7 @@ import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { PRACTICE_DEADLINE } from "@sylve/game/practice";
-import { awardVictoryChest, ownedDeck } from "./progression";
+import { awardVictoryChest, ownedDeck, playerLeague } from "./progression";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -24,11 +24,13 @@ export async function currentDeck(ctx: QueryCtx | MutationCtx, userId: string) {
     .query("decks")
     .withIndex("by_owner", (q) => q.eq("ownerId", userId))
     .collect();
-  return (
-    decks.sort(
-      (a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime,
-    )[0] ?? null
-  );
+  const deck = decks.sort(
+    (a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime,
+  )[0];
+  if (!deck) return null;
+  const league = await playerLeague(ctx, userId);
+  // Preserve legacy records and owned cards; only unlocked slots enter a match.
+  return { ...deck, cardIds: deck.cardIds.slice(0, league.deckCapacity) };
 }
 export function rules<T>(fn: () => T): T {
   try {

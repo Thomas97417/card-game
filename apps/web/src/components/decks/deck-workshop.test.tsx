@@ -17,6 +17,7 @@ import {
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DeckWorkshop, type WorkshopDeck } from "./deck-workshop";
 import { GoldContext } from "@/components/gold-balance";
+import { leagueProgress } from "@sylve/game/leagues";
 
 vi.mock("@tanstack/react-router", () => ({
   useBlocker: vi.fn(),
@@ -45,12 +46,14 @@ function setup(
   deck = savedDeck,
   collection = fullCollection,
   gold: number | undefined = 500,
+  trophies = 2400,
 ) {
   const onSave = vi.fn().mockResolvedValue(deckId);
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
   const result = render(
     <GoldContext.Provider value={gold}>
       <DeckWorkshop
+        league={leagueProgress(trophies)}
         deck={deck}
         collection={collection}
         onSave={onSave}
@@ -109,6 +112,40 @@ function dragCard(
 }
 
 describe("l’atelier et la collection", () => {
+  it("chains four slots in Iron IV and prevents adding or dropping into them", async () => {
+    const { onSave } = setup(starter, fullCollection, 500, 0);
+    expect(deckCards()).toHaveLength(4);
+    const locked = deckRow().getAllByRole("img", {
+      name: /Emplacement .* verrouillé/,
+    });
+    expect(locked).toHaveLength(4);
+    expect(locked[0]!.getAttribute("aria-label")).toContain(
+      "Fer III à 200 trophées",
+    );
+    dragCard(card(collection(), "Renard des braises"), locked[0]!);
+    expect(deckCards()).toHaveLength(4);
+    expect(onSave).not.toHaveBeenCalled();
+    fireEvent.click(card(collection(), "Renard des braises"), { detail: 0 });
+    expect(
+      await screen.findByRole("button", { name: "Remplacer une carte" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Ajouter au deck" }),
+    ).toBeNull();
+  });
+
+  it("releases the fifth slot exactly at the Iron III promotion", async () => {
+    const { onSave } = setup(starter, fullCollection, 500, 200);
+    expect(
+      deckRow().getAllByRole("img", { name: /Emplacement .* verrouillé/ }),
+    ).toHaveLength(3);
+    dragCard(
+      card(collection(), "Renard des braises"),
+      deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
+    );
+    await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+    expect(onSave.mock.calls[0]![0].cardIds).toHaveLength(5);
+  });
   it("opens the saved deck, shows only owned reserve cards, and exposes rarity filters", () => {
     setup();
     expect(deckCards()).toHaveLength(8);
@@ -244,7 +281,9 @@ describe("l’atelier et la collection", () => {
     );
     expect(collection().getAllByRole("button")).toHaveLength(4);
     expect(
-      screen.getByRole("button", { name: "Toutes" }).getAttribute("aria-pressed"),
+      screen
+        .getByRole("button", { name: "Toutes" })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
     for (const name of ["Épique", "Légendaire"]) {
       expect(

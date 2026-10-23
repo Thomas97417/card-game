@@ -1,4 +1,5 @@
 import { resolveCard, validateDeck, type GameState } from "@sylve/game";
+import { leagueProgress, TROPHIES_PER_WIN } from "@sylve/game/leagues";
 import {
   CHEST_RULES,
   CHEST_SLOTS,
@@ -12,6 +13,23 @@ import {
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+
+export async function playerProgress(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+) {
+  return ctx.db
+    .query("leagueProgress")
+    .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+    .unique();
+}
+
+export async function playerLeague(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+) {
+  return leagueProgress((await playerProgress(ctx, ownerId))?.trophies ?? 0);
+}
 
 export async function playerWallet(
   ctx: QueryCtx | MutationCtx,
@@ -52,6 +70,11 @@ export async function ownedDeck(
   ids: string[],
 ) {
   validateDeck(ids);
+  const league = await playerLeague(ctx, ownerId);
+  if (ids.length > league.deckCapacity)
+    throw new ConvexError(
+      `Ta ligue ${league.current.label} autorise ${league.deckCapacity} cartes dans ton deck. Monte en ligue pour débloquer les emplacements suivants.`,
+    );
   return Promise.all(
     ids.map(async (id) => {
       const owned = await ownedCard(ctx, ownerId, id);
@@ -103,14 +126,22 @@ export async function grantLoot(
   return reveals;
 }
 
-async function advanceVictoryChest(ctx: MutationCtx, ownerId: string) {
+async function advanceVictoryChest(
+  ctx: MutationCtx,
+  ownerId: string,
+  trophies: number,
+) {
   const chest = await victoryChest(ctx, ownerId);
   if (chest && chest.wins >= VICTORY_CHEST_WINS) return VICTORY_CHEST_WINS;
   const wins = (chest?.wins ?? 0) + 1;
   const contents =
-    wins === VICTORY_CHEST_WINS ? chestLoot("common", Math.random) : [];
+    wins === VICTORY_CHEST_WINS
+      ? chestLoot("common", Math.random, trophies)
+      : [];
   const gold =
-    wins === VICTORY_CHEST_WINS ? chestGold("common", Math.random) : 0;
+    wins === VICTORY_CHEST_WINS
+      ? chestGold("common", Math.random, trophies)
+      : 0;
   if (chest) await ctx.db.patch(chest._id, { wins, contents, gold });
   else
     await ctx.db.insert("victoryChests", {
@@ -137,7 +168,18 @@ export async function awardVictoryChest(
     return;
   const ownerId = state.players[state.winner]!.userId;
   if (game.mode === "solo" && ownerId !== game.hostId) return;
-  const victoryWins = await advanceVictoryChest(ctx, ownerId);
+  const progress = await playerProgress(ctx, ownerId);
+  const previousTrophies = progress?.trophies ?? 0;
+  const trophiesTotal = previousTrophies + TROPHIES_PER_WIN;
+  if (progress) await ctx.db.patch(progress._id, { trophies: trophiesTotal });
+  else
+    await ctx.db.insert("leagueProgress", { ownerId, trophies: trophiesTotal });
+  const trophyReward = {
+    trophies: TROPHIES_PER_WIN,
+    trophiesTotal,
+    previousTrophies,
+  };
+  const victoryWins = await advanceVictoryChest(ctx, ownerId, trophiesTotal);
   const unopened = await ctx.db
     .query("chests")
     .withIndex("by_owner_status", (q) =>
@@ -146,11 +188,11 @@ export async function awardVictoryChest(
     .collect();
   if (unopened.length >= CHEST_SLOTS) {
     await ctx.db.patch(game._id, {
-      reward: { ownerId, status: "lost", victoryWins },
+      reward: { ownerId, status: "lost", victoryWins, ...trophyReward },
     });
     return;
   }
-  const rarity = rollChest(Math.random);
+  const rarity = rollChest(Math.random, trophiesTotal);
   const now = Date.now();
   const slot = Array.from({ length: CHEST_SLOTS }, (_, i) => i).find(
     (i) => !unopened.some((chest) => chest.slot === i),
@@ -163,10 +205,17 @@ export async function awardVictoryChest(
     status: "unopened",
     awardedAt: now,
     unlockAt: now + CHEST_RULES[rarity].durationMs,
-    contents: chestLoot(rarity, Math.random),
-    gold: chestGold(rarity, Math.random),
+    contents: chestLoot(rarity, Math.random, trophiesTotal),
+    gold: chestGold(rarity, Math.random, trophiesTotal),
   });
   await ctx.db.patch(game._id, {
-    reward: { ownerId, status: "awarded", chestId, rarity, victoryWins },
+    reward: {
+      ownerId,
+      status: "awarded",
+      chestId,
+      rarity,
+      victoryWins,
+      ...trophyReward,
+    },
   });
 }

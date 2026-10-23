@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./practice": "./src/practice.ts",
-    "./progression": "./src/progression.ts"
+    "./progression": "./src/progression.ts",
+    "./leagues": "./src/leagues.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

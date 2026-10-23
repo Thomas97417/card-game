@@ -11,6 +11,10 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  leagueProgress: defineTable({
+    ownerId: v.string(),
+    trophies: v.number(),
+  }).index("by_owner", ["ownerId"]),
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
@@ -70,6 +74,9 @@ export default defineSchema({
         chestId: v.optional(v.id("chests")),
         rarity: v.optional(rarityValidator),
         victoryWins: v.optional(v.number()),
+        trophies: v.optional(v.number()),
+        trophiesTotal: v.optional(v.number()),
+        previousTrophies: v.optional(v.number()),
       }),
     ),
     status: v.union(

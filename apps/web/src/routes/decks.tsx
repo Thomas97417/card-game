@@ -21,6 +21,7 @@ function DecksPage() {
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const save = useMutation(api.decks.save);
   const collection = useQuery(api.collection.list);
+  const league = useQuery(api.collection.league);
   const upgrade = useMutation(api.collection.upgrade);
   const [initialized, setInitialized] = useState(false);
 
@@ -38,7 +39,8 @@ function DecksPage() {
 
   return (
     <DeckWorkshop
-      deck={initialized ? decks?.[0] : undefined}
+      league={league}
+      deck={initialized && league ? decks?.[0] : undefined}
       collection={collection}
       onSave={save}
       onUpgrade={(variantId) => upgrade({ variantId })}

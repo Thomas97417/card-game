@@ -10,7 +10,13 @@ import {
   X,
   LoaderCircle,
 } from "lucide-react";
-import { DECK_SIZE, type CardRarity } from "@sylve/game";
+import { type CardRarity } from "@sylve/game";
+import {
+  leagueProgress,
+  TROPHIES_PER_WIN,
+  type LeagueProgress,
+} from "@sylve/game/leagues";
+import { LeaguePanel } from "@/components/leagues/league-progress";
 import {
   CHEST_LABELS,
   CHEST_SLOTS,
@@ -37,6 +43,7 @@ export function remainingTime(milliseconds: number) {
 
 export function PlayLobby({
   deckSize,
+  league = leagueProgress(0),
   chests,
   victoryChest = { wins: 0, requiredWins: VICTORY_CHEST_WINS, cycle: 0 },
   now,
@@ -53,6 +60,7 @@ export function PlayLobby({
   children,
 }: {
   deckSize: number;
+  league?: LeagueProgress;
   chests: LobbyChest[];
   victoryChest?: VictoryChestProgress;
   now: number;
@@ -111,13 +119,14 @@ export function PlayLobby({
             <strong>
               Mon deck{" "}
               <span>
-                {ready ? deckSize : "—"}/{DECK_SIZE}
+                {ready ? deckSize : "—"}/{league.deckCapacity}
               </span>
             </strong>
             <small>Renforcer mes compagnons</small>
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
+          {ready && <LeaguePanel progress={league} />}
           <button
             type="button"
             className="play-battle-button play-solo"
@@ -127,7 +136,7 @@ export function PlayLobby({
             <Bot />
             <span>
               <strong>Combat solo</strong>
-              <small>Défier le Gardien mécanique</small>
+              <small>Gardien mécanique · +{TROPHIES_PER_WIN} trophées</small>
             </span>
             <Swords className="play-button-mark" />
           </button>
@@ -153,7 +162,9 @@ export function PlayLobby({
               <Swords />
               <span>
                 <strong>Duel public</strong>
-                <small>Affronter un autre gardien</small>
+                <small>
+                  Affronter un gardien · +{TROPHIES_PER_WIN} trophées
+                </small>
               </span>
               <span className="play-button-mark">→</span>
             </button>
@@ -171,7 +182,8 @@ export function PlayLobby({
             <p className="play-reward-note is-full" role="status">
               <Hourglass size={15} />
               Emplacements pleins : le prochain coffre de combat sera perdu. Les
-              victoires comptent pour le coffre commun.
+              victoires rapportent des trophées et comptent pour le coffre
+              commun.
             </p>
           )}
         </section>
