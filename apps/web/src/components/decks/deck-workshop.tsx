@@ -395,14 +395,24 @@ export function DeckWorkshop({
         >
           <div className="workshop-deck-limit">
             <span>
-              {cards.length} / {league.deckCapacity} cartes ·{" "}
-              {league.current.label}
-            </span>
-            <span>
               {league.nextSlot
                 ? `Prochain emplacement : ${leagueAt(league.nextSlot.trophies).label} · ${league.nextSlot.trophies} trophées`
                 : "Tous les emplacements sont débloqués"}
             </span>
+            <div className="workshop-deck-navigation workshop-scroll-controls">
+              <button
+                aria-label="Voir les cartes précédentes du deck"
+                onClick={() => scrollRow(currentRow.current, -1)}
+              >
+                <ChevronLeft size={17} />
+              </button>
+              <button
+                aria-label="Voir les cartes suivantes du deck"
+                onClick={() => scrollRow(currentRow.current, 1)}
+              >
+                <ChevronRight size={17} />
+              </button>
+            </div>
           </div>
           <div
             className="workshop-card-row"
@@ -472,21 +482,6 @@ export function DeckWorkshop({
                 ))}
           </div>
         </section>
-
-        <div className="workshop-deck-navigation workshop-scroll-controls">
-          <button
-            aria-label="Voir les cartes précédentes du deck"
-            onClick={() => scrollRow(currentRow.current, -1)}
-          >
-            <ChevronLeft size={17} />
-          </button>
-          <button
-            aria-label="Voir les cartes suivantes du deck"
-            onClick={() => scrollRow(currentRow.current, 1)}
-          >
-            <ChevronRight size={17} />
-          </button>
-        </div>
 
         <section
           className="workshop-collection"

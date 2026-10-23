@@ -336,7 +336,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin: 0 8px 12px;
+  margin: 0 8px 6px;
   color: #e9d49c;
   font-size: 11px;
 }
@@ -463,9 +463,8 @@
     font-size: 10px;
   }
   .workshop-deck-limit {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 3px;
+    gap: 8px;
+    font-size: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

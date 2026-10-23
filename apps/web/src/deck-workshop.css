@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   background: #283c2e;
   color: var(--workshop-cream);
@@ -108,17 +109,25 @@
 .workshop-content {
   min-height: 0;
   flex: 1;
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin-top: calc(var(--workshop-content-top) - var(--workshop-header-height));
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #b7955266 transparent;
+  overflow: hidden;
   padding-bottom: 16px;
 }
 .workshop-current {
   position: relative;
-  padding: 18px 10px;
+  padding: 12px 10px;
   background: transparent;
   text-shadow: 0 1px 4px #20150dcc;
+}
+.workshop-current,
+.workshop-collection {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 }
 .workshop-current::before {
   content: "";
@@ -146,21 +155,30 @@
   border-color: #d7b777;
 }
 .workshop-card-row {
+  container-type: size;
   display: flex;
-  align-items: flex-start;
+  flex: 1;
+  align-items: center;
   gap: clamp(12px, 1vw, 16px);
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #d4b97955 transparent;
-  padding: 20px 26px 17px;
-  min-height: calc(var(--workshop-card-width) * 1.43 + 37px);
+  scrollbar-width: none;
+  padding: 16px 26px 12px;
+  min-height: 0;
+}
+.workshop-card-row::-webkit-scrollbar {
+  display: none;
 }
 .workshop-card-slot,
 .workshop-card-placeholder {
-  width: var(--workshop-card-width);
-  flex: 0 0 var(--workshop-card-width);
+  /* Fit each card's 0.7 aspect ratio into its row's available height. */
+  width: min(var(--workshop-card-width), 70cqh);
+  flex: 0 0 min(var(--workshop-card-width), 70cqh);
   min-width: 0;
+}
+.workshop-card-slot {
+  container-type: inline-size;
 }
 .workshop-current .workshop-card-row {
   justify-content: safe center;
@@ -322,7 +340,8 @@
   color: #d7b77744;
 }
 .workshop-scroll-controls {
-  display: none;
+  display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
 }
@@ -332,10 +351,9 @@
 }
 .workshop-deck-navigation {
   justify-content: flex-end;
-  margin-top: 10px;
 }
 .workshop-collection {
-  margin-top: clamp(18px, 2svh, 26px);
+  margin-top: 0;
 }
 .workshop-collection-heading {
   display: flex;
@@ -378,7 +396,8 @@
 }
 .workshop-empty {
   width: 100%;
-  min-height: calc(var(--workshop-card-width) * 1.3);
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -584,9 +603,6 @@
   .workshop-header {
     gap: 22px;
   }
-  .workshop-scroll-controls {
-    display: flex;
-  }
   .workshop-footer {
     flex-wrap: wrap;
     gap: 8px;
@@ -619,11 +635,11 @@
     height: 50px;
   }
   .workshop-card-row {
-    padding-inline: 18px;
+    padding: 16px 18px 12px;
     gap: 17px;
   }
-  .workshop-collection {
-    margin-top: 24px;
+  .workshop-current {
+    padding: 8px 6px;
   }
   .workshop-collection-heading > .workshop-scroll-controls {
     margin-left: auto;
@@ -691,7 +707,46 @@
     min-height: 70px;
     padding-block: 10px;
   }
-  .workshop-collection {
-    margin-top: 18px;
+}
+@media (max-height: 900px) {
+  .deck-workshop {
+    --workshop-content-top: var(--workshop-header-height);
+  }
+}
+@media (max-height: 600px) and (min-width: 650px) {
+  .workshop-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .workshop-current {
+    padding: 6px 8px;
+  }
+  .workshop-card-row,
+  .workshop-collection .workshop-card-row {
+    padding: 12px 14px 10px;
+  }
+}
+@container (max-width: 100px) {
+  .workshop-card .workshop-card-caption {
+    gap: 2px;
+    padding: 12px 4px 6px;
+  }
+  .workshop-card-name {
+    font-size: 10px;
+  }
+  .workshop-card-type,
+  .workshop-card .workshop-copies {
+    font-size: 7px;
+  }
+  .workshop-card-type svg {
+    width: 11px;
+    height: 11px;
+  }
+  .workshop-card .card-stats .stat-badge {
+    width: 28px;
+    height: 28px;
+  }
+  .workshop-card .card-stats .stat-badge strong {
+    font-size: 16px;
   }
 }
