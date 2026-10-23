@@ -32,7 +32,7 @@ import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
-import { GoldBalance } from "@/components/gold-balance";
+import { CurrencyBalances } from "@/components/currency-balances";
 import {
   DECK_SLOT_UNLOCKS,
   leagueAt,
@@ -384,7 +384,7 @@ export function DeckWorkshop({
           />
         </Link>
         <LeaguePanel progress={league} compact />
-        <GoldBalance />
+        <CurrencyBalances />
       </header>
 
       <div className="workshop-content">

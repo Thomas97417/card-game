@@ -6,7 +6,8 @@
     ".": "./src/index.ts",
     "./practice": "./src/practice.ts",
     "./progression": "./src/progression.ts",
-    "./leagues": "./src/leagues.ts"
+    "./leagues": "./src/leagues.ts",
+    "./summoning": "./src/summoning.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

@@ -326,8 +326,9 @@
 .workshop-header .league-panel {
   margin-left: auto;
 }
-.workshop-header .league-panel + .gold-balance {
+.workshop-header .league-panel + .currency-balances {
   margin-left: 0;
+  flex-shrink: 0;
 }
 .workshop-deck-limit {
   position: relative;
@@ -421,7 +422,29 @@
     font-size: 11px;
   }
   .workshop-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 10px;
+    padding-block: 12px;
+  }
+  .workshop-header .currency-balances {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .workshop-header .currency-balances .gold-balance,
+  .workshop-header .currency-balances .diamond-balance {
+    min-height: 32px;
+    padding: 2px 8px 2px 3px;
+    font-size: 11px;
+  }
+  .workshop-header .currency-balances .gold-amount,
+  .workshop-header .currency-balances .diamond-amount {
+    gap: 3px;
+  }
+  .workshop-header .currency-balances .gold-icon,
+  .workshop-header .currency-balances .diamond-icon {
+    width: 25px;
+    height: 25px;
   }
   .workshop-header .league-panel {
     padding-right: 5px;

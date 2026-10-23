@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SanctuaryRouteImport } from './routes/sanctuary'
 import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as HubRouteImport } from './routes/hub'
@@ -27,6 +28,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SanctuaryRoute = SanctuaryRouteImport.update({
+  id: '/sanctuary',
+  path: '/sanctuary',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PracticeRoute = PracticeRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
+  '/sanctuary': typeof SanctuaryRoute
   '/settings': typeof SettingsRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
+  '/sanctuary': typeof SanctuaryRoute
   '/settings': typeof SettingsRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/reset-password': typeof authResetPasswordRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
   '/practice': typeof PracticeRoute
+  '/sanctuary': typeof SanctuaryRoute
   '/settings': typeof SettingsRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/reset-password': typeof authResetPasswordRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/hub'
     | '/play'
     | '/practice'
+    | '/sanctuary'
     | '/settings'
     | '/forgot-password'
     | '/reset-password'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/hub'
     | '/play'
     | '/practice'
+    | '/sanctuary'
     | '/settings'
     | '/forgot-password'
     | '/reset-password'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/hub'
     | '/play'
     | '/practice'
+    | '/sanctuary'
     | '/settings'
     | '/(auth)/forgot-password'
     | '/(auth)/reset-password'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   HubRoute: typeof HubRoute
   PlayRoute: typeof PlayRoute
   PracticeRoute: typeof PracticeRoute
+  SanctuaryRoute: typeof SanctuaryRoute
   SettingsRoute: typeof SettingsRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authResetPasswordRoute: typeof authResetPasswordRoute
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sanctuary': {
+      id: '/sanctuary'
+      path: '/sanctuary'
+      fullPath: '/sanctuary'
+      preLoaderRoute: typeof SanctuaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/practice': {
@@ -322,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   HubRoute: HubRoute,
   PlayRoute: PlayRoute,
   PracticeRoute: PracticeRoute,
+  SanctuaryRoute: SanctuaryRoute,
   SettingsRoute: SettingsRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authResetPasswordRoute: authResetPasswordRoute,
