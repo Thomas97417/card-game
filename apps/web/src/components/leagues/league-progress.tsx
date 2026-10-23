@@ -64,9 +64,11 @@ export function LeagueBadge({
 export function LeaguePanel({
   progress,
   compact = false,
+  showNextUnlock = true,
 }: {
   progress: LeagueProgress;
   compact?: boolean;
+  showNextUnlock?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const { current, next, trophies, earned, required, nextSlot } = progress;
@@ -114,7 +116,7 @@ export function LeaguePanel({
         </span>
         <ChevronRight size={17} aria-hidden="true" />
       </button>
-      {!compact && (
+      {!compact && showNextUnlock && (
         <p className="league-next-unlock">
           <Layers3 size={13} />
           {nextSlot
