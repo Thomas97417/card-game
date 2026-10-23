@@ -81,6 +81,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
+function pointer(
+  target: HTMLElement,
+  type: string,
+  options: MouseEventInit & { pointerType?: string } = {},
+) {
+  const { pointerType = "mouse", ...mouseOptions } = options;
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+    buttons: type === "pointerup" ? 0 : 1,
+    ...mouseOptions,
+  });
+  Object.assign(event, { pointerType, pointerId: 1 });
+  fireEvent(target, event);
+}
 function dragCard(
   source: HTMLElement,
   target: HTMLElement | null,
@@ -90,21 +106,17 @@ function dragCard(
     configurable: true,
     value: vi.fn().mockReturnValue(target),
   });
-  fireEvent.pointerDown(source, {
-    button: 0,
-    pointerId: 1,
+  pointer(source, "pointerdown", {
     pointerType,
     clientX: 80,
     clientY: 450,
   });
-  fireEvent.pointerMove(source, {
-    pointerId: 1,
+  pointer(source, "pointermove", {
     pointerType,
     clientX: 100,
     clientY: 200,
   });
-  fireEvent.pointerUp(source, {
-    pointerId: 1,
+  pointer(source, "pointerup", {
     pointerType,
     clientX: 100,
     clientY: 200,
@@ -112,6 +124,54 @@ function dragCard(
 }
 
 describe("l’atelier et la collection", () => {
+  it.each(["Cartes du deck", "Cartes de la collection"])(
+    "scrolls %s horizontally with the wheel and leaves trackpad gestures and zoom native",
+    (label) => {
+      const { onSave } = setup();
+      const row = screen.getByRole("region", { name: label });
+      Object.defineProperties(row, {
+        scrollWidth: { value: 1200, configurable: true },
+        clientWidth: { value: 600, configurable: true },
+      });
+      row.scrollLeft = 100;
+      expect(fireEvent.wheel(row, { deltaY: 80 })).toBe(false);
+      expect(row.scrollLeft).toBe(180);
+      expect(fireEvent.wheel(row, { deltaY: -40 })).toBe(false);
+      expect(row.scrollLeft).toBe(140);
+      expect(fireEvent.wheel(row, { deltaX: 50 })).toBe(true);
+      expect(fireEvent.wheel(row, { deltaY: 80, ctrlKey: true })).toBe(true);
+      expect(fireEvent.wheel(row, { deltaY: 80, shiftKey: true })).toBe(true);
+      expect(row.scrollLeft).toBe(140);
+      expect(onSave).not.toHaveBeenCalled();
+
+      Object.defineProperty(row, "scrollWidth", { value: 600 });
+      expect(fireEvent.wheel(row, { deltaY: 80 })).toBe(true);
+      expect(row.scrollLeft).toBe(140);
+    },
+  );
+
+  it.each(["Cartes du deck", "Cartes de la collection"])(
+    "pans %s from its background and preserves the next card click",
+    async (label) => {
+      const { onSave } = setup();
+      const row = screen.getByRole("region", { name: label });
+      row.scrollLeft = 200;
+      pointer(row, "pointerdown", { clientX: 200 });
+      pointer(row, "pointermove", { clientX: 120 });
+      expect(row.scrollLeft).toBe(280);
+      pointer(row, "pointerup", { clientX: 120 });
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(deckCards()).toHaveLength(8);
+      expect(onSave).not.toHaveBeenCalled();
+
+      const guardian = card(deckRow(), "Gardien de pierre");
+      pointer(guardian, "pointerdown");
+      pointer(guardian, "pointerup");
+      fireEvent.click(guardian, { detail: 1 });
+      expect(await screen.findByRole("dialog")).toBeTruthy();
+    },
+  );
+
   it("chains four slots in Iron IV and prevents adding or dropping into them", async () => {
     const { onSave } = setup(starter, fullCollection, 500, 0);
     expect(deckCards()).toHaveLength(4);
@@ -184,6 +244,9 @@ describe("l’atelier et la collection", () => {
         card(deckRow(), "Chevalier ronce").getAttribute("aria-label"),
       ).toContain("carte 1 du deck");
       expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+      expect(
+        screen.getByRole("region", { name: "Cartes de la collection" }).scrollLeft,
+      ).toBe(0);
       await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
       expect(onSave.mock.calls[0]![0].cardIds).toEqual([
         "knight:common",

@@ -99,7 +99,6 @@ export function PlayLobby({
             draggable={false}
           />
         </Link>
-        <h1>L’arène des gardiens</h1>
         <CurrencyBalances />
       </header>
       <div className="play-main">
@@ -127,7 +126,7 @@ export function PlayLobby({
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
-          {ready && <LeaguePanel progress={league} />}
+          {ready && <LeaguePanel progress={league} showNextUnlock={false} />}
           <button
             type="button"
             className="play-battle-button play-solo"
@@ -195,12 +194,9 @@ export function PlayLobby({
       <section className="play-treasures" aria-label="Tes coffres">
         <div className="play-treasures-heading">
           <h2>Trésors de victoire</h2>
-          <span>
-            {CHEST_SLOTS + 1} ouverts · {LOCKED_CHEST_SLOTS} verrouillés
-            {chests.length > CHEST_SLOTS
-              ? ` · ${chests.length - CHEST_SLOTS} à récupérer ensuite`
-              : ""}
-          </span>
+          {chests.length > CHEST_SLOTS && (
+            <span>{chests.length - CHEST_SLOTS} à récupérer ensuite</span>
+          )}
         </div>
         <div className="play-chest-row">
           <button

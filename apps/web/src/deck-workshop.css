@@ -9,19 +9,16 @@
     var(--workshop-header-height),
     calc(var(--workshop-table-top) + 16px)
   );
-  --workshop-card-width: clamp(
-    112px,
-    min(
-      calc((min(100vw, 1640px) - clamp(40px, 6vw, 112px) - 196px) / 8),
-      calc((100svh - var(--workshop-content-top) - 260px) * 0.35)
-    ),
-    180px
-  );
+  --workshop-preferred-card-width: clamp(148px, 16vw, 240px);
+  --workshop-card-fit-width: var(--workshop-preferred-card-width);
+  --workshop-card-gap: clamp(12px, 1vw, 16px);
+  --workshop-content-chrome: 130px;
   position: relative;
   isolation: isolate;
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
   background: #283c2e;
   color: var(--workshop-cream);
@@ -70,6 +67,7 @@
   padding-inline: clamp(20px, 3vw, 56px);
 }
 .workshop-header {
+  --workshop-status-height: 44px;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -106,55 +104,69 @@
   transform: translateX(-2px) scale(0.96);
 }
 .workshop-content {
+  container-type: size;
+  /* Two rows of cards share the available height after their padding and title. */
+  --workshop-card-width: min(
+    var(--workshop-preferred-card-width),
+    var(--workshop-card-fit-width),
+    max(1px, calc((100cqh - var(--workshop-content-chrome)) * 0.35))
+  );
   min-height: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-top: calc(var(--workshop-content-top) - var(--workshop-header-height));
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #b7955266 transparent;
+  overflow: hidden;
   padding-bottom: 16px;
 }
 .workshop-current {
   position: relative;
-  padding: 18px 10px;
+  isolation: isolate;
+  overflow: hidden;
+  padding-inline: 16px;
   background: transparent;
   text-shadow: 0 1px 4px #20150dcc;
+}
+.workshop-current,
+.workshop-collection {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
 }
 .workshop-current::before {
   content: "";
   position: absolute;
+  z-index: 2;
   inset: 0;
   border: 28px solid transparent;
   border-image: url("/art/ui/deck-frame.webp") 120 stretch;
   pointer-events: none;
 }
-.workshop-scroll-controls button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  gap: 6px;
-  min-width: 36px;
-  height: 38px;
-  border: 1px solid #d7b77760;
-  background: #30271cc0;
-  color: #edd4a3;
-  border-radius: 5px;
-}
-.workshop-scroll-controls button:hover {
-  background: #685137cc;
-  border-color: #d7b777;
-}
 .workshop-card-row {
   display: flex;
-  align-items: flex-start;
-  gap: clamp(12px, 1vw, 16px);
+  flex: 0 0 auto;
+  height: calc(var(--workshop-card-width) / 0.7 + 36px);
+  align-items: center;
+  gap: var(--workshop-card-gap);
   overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #d4b97955 transparent;
-  padding: 20px 26px 17px;
-  min-height: calc(var(--workshop-card-width) * 1.43 + 37px);
+  scrollbar-width: none;
+  padding: 16px 8px 20px;
+  min-height: 0;
+  cursor: grab;
+  touch-action: pan-x;
+  user-select: none;
+}
+.workshop-card-row.is-panning,
+.workshop-card-row.is-panning * {
+  cursor: grabbing;
+}
+.workshop-card-row::-webkit-scrollbar {
+  display: none;
 }
 .workshop-card-slot,
 .workshop-card-placeholder {
@@ -162,7 +174,15 @@
   flex: 0 0 var(--workshop-card-width);
   min-width: 0;
 }
+.workshop-card-slot {
+  container-type: inline-size;
+}
+.workshop-card-slot > .workshop-card-placeholder {
+  width: 100%;
+}
 .workshop-current .workshop-card-row {
+  height: calc(var(--workshop-card-width) / 0.7 + 52px);
+  padding: 24px 10px 28px;
   justify-content: safe center;
 }
 .workshop-card {
@@ -328,30 +348,16 @@
   background: #d7b77709;
   color: #d7b77744;
 }
-.workshop-scroll-controls {
-  display: none;
-  align-items: center;
-  gap: 6px;
-}
-.workshop-scroll-controls button {
-  min-width: 30px;
-  height: 27px;
-}
-.workshop-deck-navigation {
-  justify-content: flex-end;
-  margin-top: 10px;
-}
 .workshop-collection {
-  margin-top: clamp(18px, 2svh, 26px);
+  margin-top: 0;
 }
 .workshop-collection-heading {
   display: flex;
   align-items: center;
   gap: 16px;
   padding-inline: 8px;
-}
-.workshop-collection-heading > .workshop-scroll-controls {
-  margin-left: auto;
+  height: 30px;
+  flex-shrink: 0;
 }
 .workshop-collection-heading h2 {
   display: flex;
@@ -377,15 +383,13 @@
     10px/1 "Avenir Next",
     sans-serif;
 }
-.workshop-collection .workshop-card-row {
-  padding: 22px 8px 16px;
-}
 .workshop-collection .workshop-card {
   border-color: #bba06e;
 }
 .workshop-empty {
   width: 100%;
-  min-height: calc(var(--workshop-card-width) * 1.3);
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -577,7 +581,6 @@
   position: fixed;
   pointer-events: none;
   z-index: 100;
-  width: var(--workshop-card-width);
   transform: translate(-50%, -50%) rotate(-5deg) scale(1.05);
   filter: drop-shadow(0 18px 18px #0009);
 }
@@ -587,12 +590,16 @@
     padding-inline: max(56px, calc((100% - 1528px) / 2));
   }
 }
+@media (min-width: 1100px) and (min-height: 601px) {
+  .workshop-content {
+    --workshop-card-fit-width: calc(
+      (100cqw - 54px - var(--workshop-card-gap) * 7) / 8
+    );
+  }
+}
 @media (max-width: 1100px) {
   .workshop-header {
     gap: 22px;
-  }
-  .workshop-scroll-controls {
-    display: flex;
   }
   .workshop-footer {
     flex-wrap: wrap;
@@ -610,7 +617,8 @@
 @media (max-width: 760px) {
   .deck-workshop {
     --workshop-header-height: 100px;
-    --workshop-card-width: clamp(124px, 24vw, 158px);
+    --workshop-content-chrome: 114px;
+    --workshop-card-gap: 17px;
   }
   .workshop-header,
   .workshop-content,
@@ -626,14 +634,15 @@
     height: 50px;
   }
   .workshop-card-row {
-    padding-inline: 18px;
-    gap: 17px;
+    height: calc(var(--workshop-card-width) / 0.7 + 32px);
+    padding: 16px 8px;
   }
-  .workshop-collection {
-    margin-top: 24px;
+  .workshop-current {
+    padding-inline: 12px;
   }
-  .workshop-collection-heading > .workshop-scroll-controls {
-    margin-left: auto;
+  .workshop-current .workshop-card-row {
+    height: calc(var(--workshop-card-width) / 0.7 + 40px);
+    padding: 20px 10px;
   }
   .workshop-collection-heading h2 {
     font-size: 23px;
@@ -663,8 +672,10 @@
     font-size: 9px;
     white-space: nowrap;
   }
-  .workshop-filters button svg {
+  .workshop-filters button svg,
+  .workshop-filters button .game-icon {
     width: 17px;
+    height: 17px;
   }
   .workshop-rarity-filters {
     justify-content: center;
@@ -698,7 +709,77 @@
     min-height: 70px;
     padding-block: 10px;
   }
-  .workshop-collection {
-    margin-top: 18px;
+}
+@media (max-height: 900px) {
+  .deck-workshop {
+    --workshop-content-top: var(--workshop-header-height);
+  }
+}
+@media (max-height: 600px) and (min-width: 650px) {
+  .workshop-content {
+    --workshop-card-width: min(
+      var(--workshop-preferred-card-width),
+      max(1px, calc((100cqh - 66px) * 0.7))
+    );
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    align-items: start;
+  }
+}
+@media (max-height: 650px) and (max-width: 760px) {
+  .deck-workshop {
+    --workshop-content-chrome: 106px;
+  }
+  .workshop-current .workshop-card-row {
+    height: calc(var(--workshop-card-width) / 0.7 + 32px);
+    padding: 16px 8px;
+  }
+  .workshop-footer {
+    min-height: 0;
+    gap: 0;
+    padding-block: 8px;
+  }
+  .workshop-filters .workshop-rarity-toggle {
+    height: 44px;
+  }
+  .workshop-rarity-toggle > img {
+    width: 24px;
+    height: 32px;
+  }
+  .workshop-instructions:not(.has-selection):not([role="alert"]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@container (max-width: 100px) {
+  .workshop-card .workshop-card-caption {
+    gap: 2px;
+    padding: 12px 4px 6px;
+  }
+  .workshop-card-name {
+    font-size: 10px;
+  }
+  .workshop-card-type,
+  .workshop-card .workshop-copies {
+    font-size: 7px;
+  }
+  .workshop-card-type svg {
+    width: 11px;
+    height: 11px;
+  }
+  .workshop-card .card-stats .stat-badge {
+    width: 28px;
+    height: 28px;
+  }
+  .workshop-card .card-stats .stat-badge strong {
+    font-size: 16px;
   }
 }

@@ -4,10 +4,12 @@ import { useHorizontalDrag } from "./use-horizontal-drag";
 
 afterEach(cleanup);
 
-function setup(enabled = true) {
+function setup(enabled = true, ignoreInteractiveElements = false) {
   const enter = vi.fn();
   function Map() {
-    const { isDragging, dragHandlers } = useHorizontalDrag(enabled);
+    const { isDragging, dragHandlers } = useHorizontalDrag(enabled, {
+      ignoreInteractiveElements,
+    });
     return (
       <div data-testid="map" data-dragging={isDragging} {...dragHandlers}>
         <button type="button" onClick={enter}>
@@ -61,6 +63,25 @@ function pointer(
 }
 
 describe("horizontal map dragging", () => {
+  it("can reserve controls for their own gestures while dragging the background", () => {
+    const { map, label, enter, capture } = setup(true, true);
+    pointer(label, "pointerdown");
+    pointer(label, "pointermove", { clientX: 100 });
+    pointer(label, "pointerup");
+    expect(map.scrollLeft).toBe(400);
+    expect(capture).not.toHaveBeenCalled();
+
+    pointer(map, "pointerdown");
+    pointer(map, "pointermove", { clientX: 100 });
+    pointer(map, "pointerup");
+    expect(map.scrollLeft).toBe(500);
+
+    pointer(label, "pointerdown");
+    pointer(label, "pointerup");
+    fireEvent.click(label, { detail: 1 });
+    expect(enter).toHaveBeenCalledOnce();
+  });
+
   it("follows the mouse in both directions and ends when released", () => {
     const { map, capture, release } = setup();
     pointer(map, "pointerdown");
