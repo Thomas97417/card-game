@@ -48,6 +48,53 @@ async function player(t: ReturnType<typeof setup>, name: string) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("sanctuaire autoritaire", () => {
+  it("keeps summoned cards behind league deck limits and preserves diamonds when settling a defeat", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const invocation = await client.mutation(api.sanctuary.summon, {
+      packId: "ancients",
+      count: 1,
+      requestId: requestId(1),
+    });
+    const variantId = invocation.reveals[0]!.variantId;
+    const deckId = await client.mutation(api.decks.ensureStarter, {});
+    expect((await client.query(api.collection.league, {})).trophies).toBe(0);
+    await expect(
+      client.mutation(api.decks.save, {
+        deckId,
+        name: "Cinq cartes",
+        cardIds: [...DEFAULT_DECK, variantId],
+      }),
+    ).rejects.toThrow("autorise 4 cartes");
+    await client.mutation(api.decks.save, {
+      deckId,
+      name: "Compagnon invoqué",
+      cardIds: [...DEFAULT_DECK.slice(0, 3), variantId],
+    });
+    await t.run((ctx) =>
+      ctx.db.insert("leagueProgress", { ownerId: userId, trophies: 25 }),
+    );
+    const gameId = await client.mutation(api.games.createSolo, { deckId });
+    const game = await client.query(api.games.get, { gameId });
+    expect(
+      game.players[1]!.deck.every(
+        (card) => card.rarity === "common" && card.level === 1,
+      ),
+    ).toBe(true);
+    await client.mutation(api.games.surrender, { gameId });
+    expect((await client.query(api.collection.league, {})).trophies).toBe(10);
+    expect(await client.query(api.collection.diamonds, {})).toBe(
+      WELCOME_DIAMONDS - invocation.cost,
+    );
+    expect(await client.query(api.sanctuary.latest, {})).toEqual(invocation);
+    expect(
+      (await client.query(api.collection.list, {})).some(
+        (entry) => entry.card.id === variantId,
+      ),
+    ).toBe(true);
+  });
+
   it("preserves the four starter cards when the first action is a direct invocation", async () => {
     const t = setup();
     const { client } = await player(t, "alice");

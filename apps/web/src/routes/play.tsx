@@ -40,6 +40,7 @@ function PlayPage() {
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
   const treasures = useQuery(api.chests.list);
+  const league = useQuery(api.collection.league);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const createSolo = useMutation(api.games.createSolo);
   const createPrivate = useMutation(api.games.createPrivate);
@@ -104,7 +105,7 @@ function PlayPage() {
   }, [treasures?.serverNow]);
   const deck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
-  const ready = initialized && !!deck && !!activity && !!treasures;
+  const ready = initialized && !!deck && !!activity && !!treasures && !!league;
   async function action(fn: () => Promise<unknown>) {
     setBusy(true);
     try {
@@ -133,6 +134,7 @@ function PlayPage() {
   };
   return (
     <PlayLobby
+      league={league}
       deckSize={deck?.cardIds.length ?? 0}
       chests={treasures?.chests ?? []}
       victoryChest={treasures?.victoryChest}
@@ -171,7 +173,7 @@ function PlayPage() {
           <DialogTitle>Un défi entre amis.</DialogTitle>
           <DialogDescription>
             Partage une invitation ou saisis le code de ton ami. Ces duels sont
-            amicaux et ne rapportent pas de coffre.
+            amicaux et ne rapportent ni coffre ni trophées.
           </DialogDescription>
           {activity?.status === "waiting" && activity.gameId ? (
             <div className="invitation-box">

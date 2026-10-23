@@ -7,7 +7,15 @@ import {
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer, rules } from "./lib/game_service";
-import { ownedCard, playerWallet } from "./lib/progression";
+import { ownedCard, playerWallet, playerLeague } from "./lib/progression";
+
+export const league = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    return playerLeague(ctx, userId);
+  },
+});
 
 export const gold = query({
   args: {},

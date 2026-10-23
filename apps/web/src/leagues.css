@@ -1,0 +1,475 @@
+.trophy-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.result-icon > .trophy-icon {
+  width: 48px;
+  height: 48px;
+}
+.trophy-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #f2d18c;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.league-badge {
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.league-badge > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px #0007);
+}
+.league-division {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  min-width: 30%;
+  padding: 1px 5px;
+  border: 1px solid #c8b27b;
+  border-radius: 3px;
+  background: linear-gradient(#302c26, #171c19);
+  color: #fff0bd;
+  font:
+    700 14px/1 Georgia,
+    serif;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+  box-shadow: 0 2px 4px #0008;
+}
+.league-panel {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 9px 14px 9px 8px;
+  border: 1px solid #cfb16c88;
+  border-radius: 9px;
+  background: linear-gradient(110deg, #152f26f2, #253c2de6);
+  box-shadow:
+    inset 0 0 0 3px #d4b46c0c,
+    0 5px 15px #0a171755;
+  color: #f5e8c7;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 150ms,
+    background 150ms;
+}
+.league-panel:hover {
+  border-color: #efcd82;
+  background: linear-gradient(110deg, #214337, #304936);
+}
+.league-panel:focus-visible {
+  outline: 2px solid #f1d494;
+  outline-offset: 4px;
+}
+.league-panel-content {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+.league-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.league-panel-heading > strong {
+  font:
+    400 22px/1.1 Georgia,
+    serif;
+}
+.league-panel-heading .trophy-amount {
+  font-size: 15px;
+}
+.league-progress-track {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #0a1c16;
+  box-shadow: inset 0 1px 2px #0008;
+}
+.league-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b78c43, #f0d48b);
+  transition: width 400ms;
+}
+.league-panel-next {
+  color: #dbd0aa;
+  font-size: 10px;
+}
+.league-next-unlock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 9px 0 19px;
+  color: #ecdbb0;
+  font-size: 11px;
+}
+.league-panel.is-compact {
+  width: auto;
+  max-width: 240px;
+  gap: 5px;
+  padding: 2px 10px 2px 3px;
+}
+.league-panel.is-compact .league-panel-heading {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+.league-panel.is-compact .league-panel-heading > strong {
+  font-size: 18px;
+}
+.league-panel.is-compact .trophy-amount {
+  font-size: 12px;
+}
+.league-panel.is-compact .trophy-icon {
+  width: 21px;
+  height: 21px;
+}
+.league-dialog.game-dialog {
+  width: min(850px, calc(100vw - 32px));
+  max-width: 850px;
+  color: #f4e7c5;
+}
+.league-dialog [data-slot="dialog-description"] {
+  color: #cfc6aa;
+}
+.league-current-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-block: 20px;
+}
+.league-current-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.league-current-summary strong {
+  font:
+    400 27px Georgia,
+    serif;
+}
+.league-current-summary small {
+  color: #c9c8a7;
+}
+.league-loot {
+  padding: 16px;
+  border: 1px solid #c3a35a55;
+  border-radius: 8px;
+  background: #122b2180;
+}
+.league-loot h3 {
+  font:
+    400 19px Georgia,
+    serif;
+}
+.league-loot p,
+.league-loot > small {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #cfc6aa;
+}
+.league-loot dl {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 14px;
+}
+.league-loot dl > div {
+  border-left: 2px solid #9da88a;
+  padding-left: 9px;
+}
+.league-loot dl > div[data-rarity="rare"] {
+  border-color: #80c4ef;
+}
+.league-loot dl > div[data-rarity="epic"] {
+  border-color: #d29bea;
+}
+.league-loot dl > div[data-rarity="legendary"] {
+  border-color: #eec471;
+}
+.league-loot dt {
+  font-size: 10px;
+  color: #d6cfb3;
+}
+.league-loot dd {
+  margin-top: 4px;
+  font-size: 18px;
+}
+.league-road {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+  padding: 0;
+  list-style: none;
+}
+.league-road li {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid #c7b37933;
+  border-radius: 8px;
+  padding: 10px 5px;
+  background: #0e211e66;
+  text-align: center;
+}
+.league-road li.is-unlocked {
+  border-color: #b8b78477;
+  background: #34523b55;
+}
+.league-road li.is-current {
+  border: 2px solid #e8c77d;
+  background: #6f5b2744;
+  box-shadow: 0 0 18px #e8c77d18;
+}
+.league-road strong {
+  font:
+    400 16px Georgia,
+    serif;
+}
+.league-road small {
+  min-height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #c9c2a6;
+  font-size: 10px;
+}
+.league-road .league-slot-reward {
+  color: #f1cf87;
+}
+.league-road-threshold {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #e6cea1;
+}
+.league-road-threshold .trophy-icon {
+  width: 19px;
+  height: 19px;
+}
+.league-road-state {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  color: #b7ba9d;
+}
+.league-road li.is-current .league-road-state {
+  color: #f1cf87;
+}
+.duel-league-reward {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 10px;
+  border: 1px solid #ccab6266;
+  border-radius: 8px;
+  background: #c6a14d15;
+  color: #edca7c;
+}
+.duel-league-reward > .trophy-icon {
+  width: 45px;
+  height: 45px;
+}
+.duel-league-reward > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.duel-league-reward span:not(.league-badge):not(.league-division) {
+  font-size: 12px;
+  color: #dacdab;
+}
+.duel-league-reward small {
+  font-size: 11px;
+  color: #c5e6aa;
+  line-height: 1.5;
+}
+.duel-league-reward.is-loss {
+  border-color: #cd947a88;
+  background: #8c49381a;
+  color: #f0b298;
+}
+.duel-league-reward.is-loss small {
+  color: #dfc3aa;
+}
+.workshop-header .league-panel {
+  margin-left: auto;
+}
+.workshop-header .league-panel + .currency-balances {
+  margin-left: 0;
+  flex-shrink: 0;
+}
+.workshop-deck-limit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 8px 12px;
+  color: #e9d49c;
+  font-size: 11px;
+}
+.workshop-locked-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-color: #8b8468 !important;
+  background: linear-gradient(145deg, #302c26e6, #14251ee6) !important;
+}
+.workshop-locked-slot > img {
+  position: absolute;
+  top: 3%;
+  left: 0;
+  width: 100%;
+  height: 74%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px #0008);
+}
+.workshop-locked-slot > span {
+  z-index: 1;
+  padding: 8px 4px;
+  color: #ecdbb2;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.6;
+}
+.workshop-locked-slot small {
+  display: block;
+  color: #c9bd9b;
+  font-size: 9px;
+}
+@media (max-width: 600px) {
+  .league-road {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .league-loot dl {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 13px;
+  }
+  .league-panel-heading > strong {
+    font-size: 20px;
+  }
+  .league-panel {
+    gap: 6px;
+  }
+  .play-battles .league-panel {
+    padding: 8px;
+  }
+  .play-battles .league-panel > .league-badge {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .play-battles .league-panel-heading {
+    gap: 6px;
+  }
+  .play-battles .league-panel-heading > strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 18px;
+  }
+  .play-battles .league-panel .trophy-icon {
+    width: 21px;
+    height: 21px;
+  }
+  .play-battles .league-panel .trophy-amount {
+    gap: 3px;
+    font-size: 12px;
+  }
+  .play-battles .league-panel-next {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+  .play-battles .league-division {
+    font-size: 11px;
+  }
+  .workshop-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-block: 12px;
+  }
+  .workshop-header .currency-balances {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .workshop-header .currency-balances .gold-balance,
+  .workshop-header .currency-balances .diamond-balance {
+    min-height: 32px;
+    padding: 2px 8px 2px 3px;
+    font-size: 11px;
+  }
+  .workshop-header .currency-balances .gold-amount,
+  .workshop-header .currency-balances .diamond-amount {
+    gap: 3px;
+  }
+  .workshop-header .currency-balances .gold-icon,
+  .workshop-header .currency-balances .diamond-icon {
+    width: 25px;
+    height: 25px;
+  }
+  .workshop-header .league-panel {
+    padding-right: 5px;
+  }
+  .workshop-header .league-panel > .league-badge {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .workshop-header .league-panel > svg {
+    display: none;
+  }
+  .workshop-header .league-panel-heading > strong {
+    font-size: 15px;
+  }
+  .workshop-header .league-division {
+    font-size: 10px;
+  }
+  .workshop-deck-limit {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-progress-track > span {
+    transition: none;
+  }
+}

@@ -10,8 +10,11 @@ import { authComponent } from "../auth";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
-import { PRACTICE_DEADLINE } from "@sylve/game/practice";
-import { awardVictoryChest, ownedDeck } from "./progression";
+import {
+  COMPUTER_MEMORY_LENGTH,
+  PRACTICE_DEADLINE,
+} from "@sylve/game/practice";
+import { awardMatchRewards, ownedDeck, playerLeague } from "./progression";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -24,11 +27,13 @@ export async function currentDeck(ctx: QueryCtx | MutationCtx, userId: string) {
     .query("decks")
     .withIndex("by_owner", (q) => q.eq("ownerId", userId))
     .collect();
-  return (
-    decks.sort(
-      (a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime,
-    )[0] ?? null
-  );
+  const deck = decks.sort(
+    (a, b) => b.updatedAt - a.updatedAt || b._creationTime - a._creationTime,
+  )[0];
+  if (!deck) return null;
+  const league = await playerLeague(ctx, userId);
+  // Preserve legacy records and owned cards; only unlocked slots enter a match.
+  return { ...deck, cardIds: deck.cardIds.slice(0, league.deckCapacity) };
 }
 export function rules<T>(fn: () => T): T {
   try {
@@ -128,7 +133,27 @@ export async function saveTransition(
   const game = await ctx.db.get(gameId);
   if (!game || game.status === "finished") return;
   if (game.mode === "solo") state.turnEndsAt = PRACTICE_DEADLINE;
-  await ctx.db.patch(gameId, { state, status: state.status });
+  const computerPlays =
+    game.mode === "solo"
+      ? events
+          .filter(
+            (event) =>
+              event.type === "summon" && event.player === 1 && event.cardId,
+          )
+          .map((event) => event.cardId!)
+      : [];
+  await ctx.db.patch(gameId, {
+    state,
+    status: state.status,
+    ...(computerPlays.length
+      ? {
+          soloRecentCards: [
+            ...(game.soloRecentCards ?? []),
+            ...computerPlays,
+          ].slice(-COMPUTER_MEMORY_LENGTH),
+        }
+      : {}),
+  });
   for (const event of events)
     await ctx.db.insert("gameEvents", { gameId, seq: event.seq, event });
   if (
@@ -150,7 +175,7 @@ export async function saveTransition(
       });
   }
   if (state.status === "finished") {
-    await awardVictoryChest(ctx, game, state);
+    await awardMatchRewards(ctx, game, state);
     for (const player of state.players) {
       const activity = await getActivity(ctx, player.userId);
       if (activity?.gameId === gameId)

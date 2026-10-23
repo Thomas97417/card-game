@@ -24,6 +24,7 @@ import gameCss from "../game.css?url";
 import workshopCss from "../deck-workshop.css?url";
 import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
+import leaguesCss from "../leagues.css?url";
 import sanctuaryCss from "../sanctuary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
@@ -61,6 +62,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: workshopCss },
       { rel: "stylesheet", href: progressionCss },
       { rel: "stylesheet", href: lobbyCss },
+      { rel: "stylesheet", href: leaguesCss },
       { rel: "stylesheet", href: sanctuaryCss },
     ],
   }),

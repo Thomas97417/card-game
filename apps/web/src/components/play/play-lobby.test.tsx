@@ -118,7 +118,7 @@ describe("le salon de combat", () => {
     fireEvent.click(bonus);
     expect(actions.onOpenVictoryChest).not.toHaveBeenCalled();
     expect(screen.getByRole("status").textContent).toContain(
-      "Les victoires comptent pour le coffre commun",
+      "Les victoires rapportent des trophées et comptent pour le coffre commun",
     );
   });
   it("locks competing actions while matchmaking and preserves cancellation", () => {

@@ -13,6 +13,11 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  leagueProgress: defineTable({
+    ownerId: v.string(),
+    trophies: v.number(),
+    peakTrophies: v.optional(v.number()),
+  }).index("by_owner", ["ownerId"]),
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
@@ -73,6 +78,19 @@ export default defineSchema({
     queueId: v.optional(v.id("matchmakingQueue")),
   }).index("by_user", ["userId"]),
   games: defineTable({
+    soloRecentCards: v.optional(v.array(v.string())),
+    trophyChanges: v.optional(
+      v.array(
+        v.object({
+          ownerId: v.string(),
+          trophies: v.number(),
+          trophiesTotal: v.number(),
+          previousTrophies: v.number(),
+          deckCapacity: v.number(),
+          deckSlotsGained: v.number(),
+        }),
+      ),
+    ),
     mode: v.optional(
       v.union(v.literal("solo"), v.literal("public"), v.literal("private")),
     ),
@@ -83,6 +101,9 @@ export default defineSchema({
         chestId: v.optional(v.id("chests")),
         rarity: v.optional(rarityValidator),
         victoryWins: v.optional(v.number()),
+        trophies: v.optional(v.number()),
+        trophiesTotal: v.optional(v.number()),
+        previousTrophies: v.optional(v.number()),
       }),
     ),
     status: v.union(

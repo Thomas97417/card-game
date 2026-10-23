@@ -1,5 +1,11 @@
 # Illustrations de Sylve
 
+## Trophées et ligues
+
+Onze nouveaux visuels originaux ont été créés avec **ImageGen intégré**, chacun par un appel distinct avec transparence : `apps/web/public/art/ui/trophy.webp` et les dix écussons `apps/web/public/art/leagues/{iron,bronze,silver,gold,platinum,emerald,diamond,master,grandmaster,challenger}.webp`. Les images ont été encodées en WebP de 384 × 384 px avec alpha conservé. Le trophée est utilisé dans l’arène et les résultats ; les écussons figurent dans l’arène, l’atelier, les promotions et le parcours des ligues. Les chiffres romains IV, III, II et I sont superposés en HTML par `LeagueBadge`, sur la plaque sombre de l’illustration. Les trois dernières ligues de prestige portent I.
+
+Le jeu complet des prompts finaux et les chemins des images sont conservés dans [art-prompts-leagues.json](art-prompts-leagues.json). Les PNG originaux sont conservés dans le répertoire local de génération. Aucun fallback CLI de génération n’a été utilisé.
+
 Les illustrations sont originales et ont été produites avec l’outil intégré **ImageGen**. La capture fournie sert de référence à la disposition du duel (terrain central, créatures sur les cases, main en dessous, valeurs dans des icônes).
 
 - `apps/web/public/art/forest-arena.png` : décor de la page d’accueil.

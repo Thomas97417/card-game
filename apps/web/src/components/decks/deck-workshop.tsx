@@ -33,6 +33,13 @@ import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { CurrencyBalances } from "@/components/currency-balances";
+import {
+  DECK_SLOT_UNLOCKS,
+  leagueAt,
+  leagueProgress,
+  type LeagueProgress,
+} from "@sylve/game/leagues";
+import { LeaguePanel } from "@/components/leagues/league-progress";
 
 export interface WorkshopDeck {
   _id: Id<"decks">;
@@ -47,6 +54,7 @@ interface Draft {
 }
 
 interface DeckWorkshopProps {
+  league?: LeagueProgress;
   deck: WorkshopDeck | undefined;
   collection: OwnedCard[] | undefined;
   onUpgrade: (variantId: string) => Promise<unknown>;
@@ -105,6 +113,7 @@ function CardArtwork({
 }
 
 export function DeckWorkshop({
+  league = leagueProgress(0),
   deck,
   collection,
   onSave,
@@ -186,7 +195,7 @@ export function DeckWorkshop({
   }
 
   function replaceCard(cardId: string, slot: number) {
-    if (!draft || slot < 0 || slot >= DECK_SIZE) return;
+    if (!draft || slot < 0 || slot >= league.deckCapacity) return;
     const replaced = entries.get(draft.cards[slot] ?? "")?.card;
     const incoming = entries.get(cardId)?.card;
     if (!incoming || incoming.id === replaced?.id) return;
@@ -374,6 +383,7 @@ export function DeckWorkshop({
             draggable={false}
           />
         </Link>
+        <LeaguePanel progress={league} compact />
         <CurrencyBalances />
       </header>
 
@@ -383,6 +393,17 @@ export function DeckWorkshop({
           aria-label="Ton deck"
           aria-busy={!ready}
         >
+          <div className="workshop-deck-limit">
+            <span>
+              {cards.length} / {league.deckCapacity} cartes ·{" "}
+              {league.current.label}
+            </span>
+            <span>
+              {league.nextSlot
+                ? `Prochain emplacement : ${leagueAt(league.nextSlot.trophies).label} · ${league.nextSlot.trophies} trophées`
+                : "Tous les emplacements sont débloqués"}
+            </span>
+          </div>
           <div
             className="workshop-card-row"
             ref={currentRow}
@@ -392,6 +413,35 @@ export function DeckWorkshop({
           >
             {ready
               ? Array.from({ length: DECK_SIZE }, (_, slot) => {
+                  if (slot >= league.deckCapacity) {
+                    const unlock = DECK_SLOT_UNLOCKS.find(
+                      (entry) => entry.slot === slot + 1,
+                    )!;
+                    return (
+                      <div
+                        key={`locked-${slot}`}
+                        className="workshop-card-slot"
+                      >
+                        <div
+                          className="workshop-card-placeholder workshop-locked-slot"
+                          role="img"
+                          aria-label={`Emplacement ${slot + 1} verrouillé, débloqué en ${leagueAt(unlock.trophies).label} à ${unlock.trophies} trophées`}
+                        >
+                          <img
+                            src="/art/ui/slot-chains.webp"
+                            alt=""
+                            width={512}
+                            height={512}
+                            draggable={false}
+                          />
+                          <span>
+                            {leagueAt(unlock.trophies).label}
+                            <small>{unlock.trophies} trophées</small>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
                   const card = entries.get(cards[slot] ?? "")?.card;
                   return card ? (
                     renderCard(card, slot)
@@ -642,7 +692,7 @@ export function DeckWorkshop({
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
         inDeck={!!inspected && cards.includes(inspected)}
-        hasSpace={cards.length < DECK_SIZE}
+        hasSpace={cards.length < league.deckCapacity}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         onAdd={() => {

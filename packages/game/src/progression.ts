@@ -1,4 +1,5 @@
 import { CATALOG, RARITIES, type CardRarity } from "./index";
+import { leagueAt } from "./leagues";
 
 /** Two combat-chest slots, one recurring victory chest and four locked slots. */
 export const CHEST_SLOTS = 2;
@@ -80,25 +81,35 @@ function weightedRarity(
   }
   return "legendary";
 }
-export function rollChest(random: () => number): CardRarity {
+export function rollChest(random: () => number, trophies = 0): CardRarity {
+  const league = leagueAt(trophies);
   return weightedRarity(
-    RARITIES.map((rarity) => CHEST_RULES[rarity].chance),
+    RARITIES.map((rarity) => league.chestChances[rarity]),
     random,
   );
 }
 export function chestLoot(
   rarity: CardRarity,
   random: () => number,
+  trophies = 0,
 ): LootStack[] {
   const rule = CHEST_RULES[rarity];
-  const total = rule.min + Math.floor(random() * (rule.max - rule.min + 1));
+  const multiplier = leagueAt(trophies).lootMultiplier;
+  const min = Math.floor(rule.min * multiplier);
+  const max = Math.floor(rule.max * multiplier);
+  const total = min + Math.floor(random() * (max - min + 1));
   const base = CATALOG[Math.floor(random() * CATALOG.length)]!;
   return [{ variantId: `${base.id}:${rarity}`, count: total }];
 }
 
-export function chestGold(rarity: CardRarity, random: () => number): number {
+export function chestGold(
+  rarity: CardRarity,
+  random: () => number,
+  trophies = 0,
+): number {
   const rule = CHEST_RULES[rarity];
-  return (
-    rule.minGold + Math.floor(random() * (rule.maxGold - rule.minGold + 1))
-  );
+  const multiplier = leagueAt(trophies).lootMultiplier;
+  const min = Math.floor(rule.minGold * multiplier);
+  const max = Math.floor(rule.maxGold * multiplier);
+  return min + Math.floor(random() * (max - min + 1));
 }
