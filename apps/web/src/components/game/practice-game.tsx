@@ -81,7 +81,10 @@ function PracticeMatch({
         ...transition.events
           .filter(
             (event) =>
-              event.type === "summon" && event.player === 1 && event.cardId,
+              event.type === "summon" &&
+              event.player === 1 &&
+              event.cardId &&
+              !event.unit?.definition,
           )
           .map((event) => event.cardId!),
       ].slice(-COMPUTER_MEMORY_LENGTH),

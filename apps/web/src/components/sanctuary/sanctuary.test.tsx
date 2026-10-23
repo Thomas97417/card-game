@@ -191,5 +191,15 @@ describe("le sanctuaire", () => {
     expect(
       within(dialog).getByRole("heading", { name: CATALOG[1]!.name }),
     ).toBeTruthy();
+    const levels = within(dialog).getByRole("combobox", {
+      name: /Niveau de la carte/,
+    });
+    expect(within(levels).getAllByRole("option")).toHaveLength(26);
+    expect(within(dialog).getByText("Niv. 6")).toBeTruthy();
+    fireEvent.change(levels, { target: { value: "6" } });
+    expect(within(dialog).getByText("Active · niv. 6")).toBeTruthy();
+    expect(within(dialog).getByText("Niv. 11")).toBeTruthy();
+    fireEvent.change(levels, { target: { value: "26" } });
+    expect(within(dialog).getByText("Active · niv. 11")).toBeTruthy();
   });
 });

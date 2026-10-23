@@ -8,6 +8,7 @@ import {
 import { Check } from "lucide-react";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
+import { CardAbilityIcons } from "./ability-icons";
 
 export function CreatureCard({
   card,
@@ -54,6 +55,7 @@ export function CreatureCard({
         <StatBadge kind="health" value={card.health} />
       </div>
       <span className="card-level">Niv. {card.level ?? 1}</span>
+      <CardAbilityIcons card={card} />
       {selected && (
         <span className="card-check">
           <Check size={13} />

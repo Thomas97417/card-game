@@ -301,6 +301,13 @@
   background: linear-gradient(transparent, #132a25e6 40%, #132a25fa);
   border-radius: 0 0 5px 5px;
 }
+.workshop-card-abilities {
+  position: absolute;
+  top: 36px;
+  left: 5px;
+  flex-direction: column;
+  --ability-size: clamp(18px, 1.7vw, 23px);
+}
 .workshop-card-name {
   font:
     600 clamp(11px, 1vw, 14px)/1.15 Georgia,

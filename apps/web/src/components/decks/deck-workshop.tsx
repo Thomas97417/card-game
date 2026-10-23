@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
+  CATALOG,
   DECK_SIZE,
   MAX_CARD_LEVEL,
   RARITIES,
@@ -27,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { CardAbilityIcons } from "@/components/game/ability-icons";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
@@ -79,7 +81,7 @@ function CardArtwork({
   card: CardDefinition;
   copies?: number;
 }) {
-  const ranged = getCombatType(card) === "ranged";
+  const type = getCombatType(card);
   return (
     <>
       <span className="workshop-card-art">
@@ -87,6 +89,7 @@ function CardArtwork({
         <CreaturePortrait card={card} />
       </span>
       <span className="card-level">Niv. {card.level ?? 1}</span>
+      <CardAbilityIcons card={card} className="workshop-card-abilities" />
       <span className="card-stats">
         <StatBadge
           kind="attack"
@@ -98,13 +101,13 @@ function CardArtwork({
       <span className="workshop-card-caption">
         <span className="workshop-card-name">{card.name}</span>
         <span className="workshop-card-type">
-          <GameIcon kind={ranged ? "ranged" : "melee"} size={15} />
-          {ranged ? "Distance" : "Corps à corps"}
+          <GameIcon kind={type} size={15} />
+          {combatTypeLabel(card)}
         </span>
         <span className="workshop-copies">
           {(card.level ?? 1) >= MAX_CARD_LEVEL
             ? `${copies} · MAX`
-            : `${copies} / ${upgradeCost(card.level ?? 1)}`}
+            : `${copies} / ${upgradeCost(card.level ?? 1, card.rarity)}`}
         </span>
       </span>
     </>
@@ -501,7 +504,11 @@ export function DeckWorkshop({
             <div>
               <h2 id="collection-title">
                 Ta collection{" "}
-                <span>{ready ? `${collection!.length} / 48` : "—"}</span>
+                <span>
+                  {ready
+                    ? `${collection!.length} / ${CATALOG.length * RARITIES.length}`
+                    : "—"}
+                </span>
               </h2>
             </div>
           </div>
@@ -557,6 +564,7 @@ export function DeckWorkshop({
               { type: null, label: "Toutes" },
               { type: "melee", label: "Corps à corps" },
               { type: "ranged", label: "À distance" },
+              { type: "building", label: "Bâtiments" },
             ] as const
           ).map(({ type, label }) => (
             <button

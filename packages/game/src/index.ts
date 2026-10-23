@@ -1,239 +1,20 @@
+export * from "./cards";
+import {
+  GameError,
+  resolveCard,
+  cloneCard,
+  getCombatType,
+  type CardDefinition,
+  type CardAbility,
+} from "./cards";
 export const DECK_SIZE = 8;
 export const MIN_DECK_SIZE = 4;
-export const MAX_CARD_LEVEL = 10;
 export const HAND_SIZE = 4;
 export const HERO_HP = 30;
 export const ROWS = 4;
 export const DEPTHS = 3;
 export const FRONT_DEPTHS = 2;
 export const TURN_MS = 60_000;
-
-export type CombatType = "melee" | "ranged";
-export type CardRarity = "common" | "rare" | "epic" | "legendary";
-export const RARITIES: readonly CardRarity[] = [
-  "common",
-  "rare",
-  "epic",
-  "legendary",
-];
-export const RARITY_LABELS: Record<CardRarity, string> = {
-  common: "Commune",
-  rare: "Rare",
-  epic: "Épique",
-  legendary: "Légendaire",
-};
-
-export interface CardDefinition {
-  id: string;
-  name: string;
-  title: string;
-  attack: number;
-  health: number;
-  color: string;
-  kind: string;
-  /** Older saved matches infer their combat type from the catalogue. */
-  combatType?: CombatType;
-  baseId?: string;
-  rarity?: CardRarity;
-  level?: number;
-}
-export interface OwnedCard {
-  card: CardDefinition;
-  copies: number;
-}
-
-export const CATALOG: readonly CardDefinition[] = [
-  {
-    id: "guardian",
-    name: "Gardien de pierre",
-    title: "Le silence des anciens",
-    attack: 2,
-    health: 9,
-    color: "#78958a",
-    kind: "golem",
-    combatType: "melee",
-  },
-  {
-    id: "fox",
-    name: "Renard des braises",
-    title: "Une étincelle suffit",
-    attack: 5,
-    health: 3,
-    color: "#d6844d",
-    kind: "fox",
-    combatType: "ranged",
-  },
-  {
-    id: "owl",
-    name: "Oracle des brumes",
-    title: "Les yeux de la forêt",
-    attack: 4,
-    health: 4,
-    color: "#8e86ad",
-    kind: "owl",
-    combatType: "ranged",
-  },
-  {
-    id: "stag",
-    name: "Cerf couronné",
-    title: "Souverain des clairières",
-    attack: 4,
-    health: 6,
-    color: "#c1a267",
-    kind: "stag",
-    combatType: "melee",
-  },
-  {
-    id: "mushroom",
-    name: "Sentinelle mousse",
-    title: "Petit, mais tenace",
-    attack: 2,
-    health: 8,
-    color: "#b4706b",
-    kind: "mushroom",
-    combatType: "ranged",
-  },
-  {
-    id: "dragon",
-    name: "Dragon d’ambre",
-    title: "Le souffle du soleil",
-    attack: 7,
-    health: 1,
-    color: "#dbab52",
-    kind: "dragon",
-    combatType: "ranged",
-  },
-  {
-    id: "turtle",
-    name: "Tortue millénaire",
-    title: "La patience est une arme",
-    attack: 1,
-    health: 12,
-    color: "#83a575",
-    kind: "turtle",
-    combatType: "melee",
-  },
-  {
-    id: "wisp",
-    name: "Esprit des sources",
-    title: "Un murmure dans l’eau",
-    attack: 3,
-    health: 5,
-    color: "#70b7b1",
-    kind: "wisp",
-    combatType: "ranged",
-  },
-  {
-    id: "wolf",
-    name: "Loup de lune",
-    title: "Quand la nuit s’éveille",
-    attack: 6,
-    health: 2,
-    color: "#9baec1",
-    kind: "wolf",
-    combatType: "melee",
-  },
-  {
-    id: "knight",
-    name: "Chevalier ronce",
-    title: "Fidèle jusqu’au dernier jour",
-    attack: 3,
-    health: 8,
-    color: "#769a7c",
-    kind: "knight",
-    combatType: "melee",
-  },
-  {
-    id: "serpent",
-    name: "Vipère de jade",
-    title: "L’éclair sous les feuilles",
-    attack: 5,
-    health: 4,
-    color: "#96af68",
-    kind: "serpent",
-    combatType: "ranged",
-  },
-  {
-    id: "bear",
-    name: "Ours des cimes",
-    title: "Le cœur de la montagne",
-    attack: 4,
-    health: 7,
-    color: "#b79780",
-    kind: "bear",
-    combatType: "melee",
-  },
-];
-export const DEFAULT_DECK = [
-  "guardian:common",
-  "turtle:common",
-  "mushroom:common",
-  "wisp:common",
-];
-
-export function variantCard(
-  baseId: string,
-  rarity: CardRarity,
-  level = 1,
-): CardDefinition {
-  const base = CATALOG.find((card) => card.id === baseId);
-  if (
-    !base ||
-    !RARITIES.includes(rarity) ||
-    !Number.isInteger(level) ||
-    level < 1 ||
-    level > MAX_CARD_LEVEL
-  )
-    throw new GameError("Cette variante de carte n’existe pas.");
-  const bonus = { common: 0, rare: 1, epic: 2, legendary: 4 }[rarity];
-  return {
-    ...base,
-    id: `${baseId}:${rarity}`,
-    baseId,
-    rarity,
-    level,
-    attack: base.attack + bonus + level - 1,
-    health: base.health + bonus * 2 + (level - 1) * 2,
-  };
-}
-
-/** Bare IDs remain readable in already-started games and local practice links. */
-export function resolveCard(id: string, level = 1): CardDefinition {
-  if (!id.includes(":")) {
-    const base = CATALOG.find((card) => card.id === id);
-    if (!base)
-      throw new GameError("Cette carte n’existe pas dans le catalogue.");
-    return { ...base };
-  }
-  const [baseId, rarity, extra] = id.split(":");
-  if (extra !== undefined)
-    throw new GameError("Cette variante de carte n’existe pas.");
-  return variantCard(baseId!, rarity as CardRarity, level);
-}
-
-export function upgradeCost(level: number) {
-  return level * 5;
-}
-
-/** Gold and duplicate costs both use the card's current level. */
-export function upgradeGoldCost(level: number) {
-  return level * 50;
-}
-export function baseCardId(card: CardDefinition) {
-  return card.baseId ?? card.id.split(":")[0]!;
-}
-
-export function getCombatType(card: CardDefinition): CombatType {
-  return (
-    card.combatType ??
-    CATALOG.find((entry) => entry.id === baseCardId(card))?.combatType ??
-    "melee"
-  );
-}
-
-export function combatTypeLabel(card: CardDefinition): string {
-  return getCombatType(card) === "melee" ? "Corps à corps" : "À distance";
-}
 
 /** Depth zero faces the enemy for both players; the last depth faces the hero. */
 export function isDeploymentDepth(
@@ -244,9 +25,10 @@ export function isDeploymentDepth(
     Number.isInteger(depth) &&
     depth >= 0 &&
     depth < DEPTHS &&
-    (getCombatType(card) === "melee"
-      ? depth < FRONT_DEPTHS
-      : depth >= DEPTHS - FRONT_DEPTHS)
+    (getCombatType(card) === "building" ||
+      (getCombatType(card) === "melee"
+        ? depth < FRONT_DEPTHS
+        : depth >= DEPTHS - FRONT_DEPTHS))
   );
 }
 
@@ -266,20 +48,12 @@ export function isMeleeBlocked(
   board: readonly Unit[],
   cards: readonly CardDefinition[],
 ): boolean {
-  const card = cards.find((entry) => entry.id === unit.cardId)!;
+  const card = unitCard(unit, cards);
   return (
     getCombatType(card) === "melee" &&
-    board.some(
-      (other) =>
-        other.row === unit.row &&
-        other.depth < unit.depth &&
-        getCombatType(cards.find((entry) => entry.id === other.cardId)!) ===
-          "melee",
-    )
+    board.some((other) => other.row === unit.row && other.depth < unit.depth)
   );
 }
-
-export class GameError extends Error {}
 
 export function validateDeck(ids: readonly string[]): CardDefinition[] {
   if (ids.length < MIN_DECK_SIZE || ids.length > DECK_SIZE)
@@ -296,6 +70,56 @@ export interface Unit {
   row: number;
   depth: number;
   hp: number;
+  /** Per-instance combat modifiers; optional for old saved matches. */
+  attack?: number;
+  maxHp?: number;
+  block?: number;
+  spikes?: number;
+  vampirism?: number;
+  regeneration?: number;
+  shield?: boolean;
+  temporaryAttack?: number;
+  /** Summoned tokens never enter the reusable deck or collection. */
+  definition?: CardDefinition;
+}
+export interface Rune {
+  row: number;
+  depth: number;
+  health: number;
+}
+export function unitCard(
+  unit: Unit,
+  cards: readonly CardDefinition[],
+): CardDefinition {
+  const card =
+    unit.definition ?? cards.find((entry) => entry.id === unit.cardId);
+  if (!card)
+    throw new GameError("La définition de cette unité est introuvable.");
+  return card;
+}
+export function unitMaxHp(unit: Unit, cards: readonly CardDefinition[]) {
+  return unit.maxHp ?? unitCard(unit, cards).health;
+}
+export function unitAttack(
+  unit: Unit,
+  owner: Pick<PlayerState, "cards" | "board">,
+) {
+  const card = unitCard(unit, owner.cards);
+  const synergy = (card.abilities ?? [])
+    .filter((a) => a.active && a.effect === "attack_per_ally")
+    .reduce(
+      (total, a) =>
+        total +
+        a.value *
+          owner.board.filter(
+            (other) =>
+              other !== unit &&
+              other.hp > 0 &&
+              unitCard(other, owner.cards).faction === "order",
+          ).length,
+      0,
+    );
+  return Math.max(0, (unit.attack ?? card.attack) + synergy);
 }
 export type UnitPosition = Pick<Unit, "row" | "depth">;
 export interface PlayerState {
@@ -309,6 +133,7 @@ export interface PlayerState {
   /** Kept empty for compatibility with saved games from the finite-deck rules. */
   discard: string[];
   board: Unit[];
+  runes?: Rune[];
 }
 export interface GameState {
   players: PlayerState[];
@@ -322,7 +147,14 @@ export interface GameState {
 }
 export interface GameEvent {
   seq: number;
-  type: "summon" | "withdraw" | "attack" | "death" | "turn" | "victory";
+  type:
+    | "summon"
+    | "withdraw"
+    | "attack"
+    | "death"
+    | "turn"
+    | "victory"
+    | "ability";
   player: number;
   cardId?: string;
   row?: number;
@@ -333,6 +165,10 @@ export interface GameEvent {
   targetDepth?: number;
   damage?: number;
   hp?: number;
+  ability?: string;
+  amount?: number;
+  unit?: Unit;
+  runes?: Rune[];
 }
 export interface Transition {
   state: GameState;
@@ -349,11 +185,15 @@ function cloneGame(input: GameState): GameState {
     ...input,
     players: input.players.map((player) => ({
       ...player,
-      cards: player.cards.map((card) => ({ ...card })),
+      cards: player.cards.map(cloneCard),
       hand: [...player.hand],
       drawPile: [...player.drawPile],
       discard: [...player.discard],
-      board: player.board.map((unit) => ({ ...unit })),
+      board: player.board.map((unit) => ({
+        ...unit,
+        ...(unit.definition ? { definition: cloneCard(unit.definition) } : {}),
+      })),
+      ...(player.runes ? { runes: player.runes.map((r) => ({ ...r })) } : {}),
     })),
   };
 }
@@ -394,7 +234,10 @@ export function createGame(
   const state: GameState = {
     players: players.map((player) => ({
       ...player,
-      cards: player.cards.map((c) => ({ ...c, combatType: getCombatType(c) })),
+      cards: player.cards.map((c) => ({
+        ...cloneCard(c),
+        combatType: getCombatType(c),
+      })),
       heroHp: HERO_HP,
       hand: [],
       drawPile: [],
@@ -466,7 +309,9 @@ export function summon(
         : "Une unité à distance doit être placée dans les deux colonnes vers ton héros.",
     );
   player.hand.splice(player.hand.indexOf(cardId), 1);
-  player.board.push({ cardId, row, depth, hp: card.health });
+  const unit: Unit = { cardId, row, depth, hp: card.health };
+  initializePassives(unit, card);
+  player.board.push(unit);
   refill(player, random);
   state.hasSummoned = true;
   const events: GameEvent[] = [];
@@ -476,7 +321,10 @@ export function summon(
     cardId,
     row,
     depth,
+    unit: { ...unit },
   });
+  applyAbilities(state, playerIndex, unit, "deploy", events, random);
+  appeared(state, playerIndex, unit, events, random);
   const resolved = endTurn(state, playerIndex, turn, now, random);
   return { state: resolved.state, events: [...events, ...resolved.events] };
 }
@@ -518,6 +366,448 @@ export function withdraw(
   return { state, events };
 }
 
+function activeAbilities(
+  unit: Unit,
+  owner: PlayerState,
+  trigger?: CardAbility["trigger"],
+) {
+  return (unitCard(unit, owner.cards).abilities ?? []).filter(
+    (a) => a.active && (!trigger || a.trigger === trigger),
+  );
+}
+function initializePassives(unit: Unit, card: CardDefinition) {
+  for (const a of card.abilities ?? []) {
+    if (!a.active || a.trigger !== "passive") continue;
+    if (a.effect === "shield") unit.shield = true;
+    if (
+      a.effect === "block" ||
+      a.effect === "spikes" ||
+      a.effect === "vampirism" ||
+      a.effect === "regeneration"
+    )
+      unit[a.effect] = a.value;
+  }
+}
+function snapshot(unit: Unit): Unit {
+  return {
+    ...unit,
+    ...(unit.definition ? { definition: cloneCard(unit.definition) } : {}),
+  };
+}
+function effectEvent(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  source: Unit,
+  ability: string,
+  targetPlayer: number,
+  target?: Unit,
+  amount = 0,
+) {
+  emit(state, events, {
+    type: "ability",
+    player,
+    cardId: source.cardId,
+    row: source.row,
+    depth: source.depth,
+    ability,
+    amount,
+    targetPlayer,
+    ...(target
+      ? {
+          targetCardId: target.cardId,
+          targetRow: target.row,
+          targetDepth: target.depth,
+          hp: target.hp,
+          unit: snapshot(target),
+        }
+      : { hp: state.players[targetPlayer]!.heroHp }),
+  });
+}
+function healUnit(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  source: Unit,
+  target: Unit,
+  amount: number,
+  label: string,
+) {
+  const owner = state.players[player]!;
+  const healed = Math.min(
+    amount,
+    Math.max(0, unitMaxHp(target, owner.cards) - target.hp),
+  );
+  if (target.hp <= 0 || healed <= 0) return;
+  target.hp += healed;
+  effectEvent(state, events, player, source, label, player, target, healed);
+}
+function pick<T>(items: T[], random: () => number): T[] {
+  return items.length
+    ? [items[Math.min(items.length - 1, Math.floor(random() * items.length))]!]
+    : [];
+}
+function targets(
+  state: GameState,
+  player: number,
+  source: Unit,
+  a: CardAbility,
+  random: () => number,
+): Unit[] {
+  const owner = state.players[player]!;
+  const allies = owner.board.filter((u) => u !== source && u.hp > 0);
+  const card = (u: Unit) => unitCard(u, owner.cards);
+  switch (a.target) {
+    case "self":
+      return source.hp > 0 ? [source] : [];
+    case "random_ally":
+      return pick(allies, random);
+    case "random_zombie":
+      return pick(
+        allies.filter((u) => card(u).kind === "zombie"),
+        random,
+      );
+    case "column_allies":
+      return allies.filter((u) => u.depth === source.depth);
+    case "row_allies":
+      return allies.filter((u) => u.row === source.row);
+    case "melee_allies":
+      return allies.filter((u) => getCombatType(card(u)) === "melee");
+    case "nature_allies":
+      return allies.filter((u) => card(u).faction === "nature");
+    case "order_allies":
+      return allies.filter((u) => card(u).faction === "order");
+    case "ally_buildings":
+      return allies.filter((u) => getCombatType(card(u)) === "building");
+    case "all_allies":
+      return allies;
+    case "all_enemies":
+      return state.players[1 - player]!.board.filter((u) => u.hp > 0);
+    default:
+      return [];
+  }
+}
+function tokenDefinition(
+  source: CardDefinition,
+  spec: NonNullable<CardAbility["summon"]>,
+): CardDefinition {
+  const archer = spec.kind === "archer";
+  const pierce = [
+    [5, 2],
+    [8, 4],
+    [11, 7],
+    [14, 13],
+    [17, 21],
+    [20, 32],
+    [23, 46],
+    [26, 64],
+  ]
+    .reverse()
+    .find(([level]) => spec.level >= level!);
+  return {
+    id: `token-${spec.kind}-${source.id}-${spec.level}`,
+    baseId: archer ? "fox" : "sporeling",
+    name: archer ? "Éclaireur des braises" : "Rejeton des spores",
+    title: "Renfort invoqué",
+    kind: archer ? "archer" : "zombie",
+    color: archer ? "#d6844d" : "#9f79a4",
+    attack: spec.attack,
+    health: spec.health,
+    level: spec.level,
+    rarity: "common",
+    faction: archer ? "order" : "chaos",
+    combatType: archer ? "ranged" : "melee",
+    abilities:
+      archer && pierce
+        ? [
+            {
+              id: "pierce",
+              name: "Perforation",
+              description: `Inflige ${pierce[1]} dégâts aux ennemis de la colonne de la cible.`,
+              unlockLevel: 5,
+              active: true,
+              effect: "pierce",
+              trigger: "passive",
+              target: "self",
+              value: pierce[1]!,
+            },
+          ]
+        : [],
+  };
+}
+function appeared(
+  state: GameState,
+  player: number,
+  unit: Unit,
+  events: GameEvent[],
+  random: () => number,
+) {
+  const owner = state.players[player]!;
+  if (unitCard(unit, owner.cards).faction === "nature") {
+    for (const ally of [...owner.board]) {
+      if (ally !== unit && ally.hp > 0)
+        applyAbilities(
+          state,
+          player,
+          ally,
+          "nature_ally_appears",
+          events,
+          random,
+        );
+    }
+  }
+  const rune = owner.runes?.find(
+    (r) => r.row === unit.row && r.depth === unit.depth,
+  );
+  if (rune) {
+    unit.maxHp = unitMaxHp(unit, owner.cards) + rune.health;
+    unit.hp += rune.health;
+    owner.runes = owner.runes!.filter((r) => r !== rune);
+    effectEvent(
+      state,
+      events,
+      player,
+      unit,
+      "Rune de vie",
+      player,
+      unit,
+      rune.health,
+    );
+    events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
+  }
+}
+function applyAbilities(
+  state: GameState,
+  player: number,
+  source: Unit,
+  trigger: CardAbility["trigger"],
+  events: GameEvent[],
+  random: () => number,
+) {
+  const owner = state.players[player]!;
+  for (const a of activeAbilities(source, owner, trigger)) {
+    if (a.effect === "summon" && a.summon) {
+      const depth = source.depth + (a.summon.kind === "archer" ? 1 : -1);
+      if (
+        depth < 0 ||
+        depth >= DEPTHS ||
+        owner.board.some((u) => u.row === source.row && u.depth === depth)
+      )
+        continue;
+      const definition = tokenDefinition(
+        unitCard(source, owner.cards),
+        a.summon,
+      );
+      const unit: Unit = {
+        cardId: definition.id,
+        row: source.row,
+        depth,
+        hp: definition.health,
+        definition,
+      };
+      initializePassives(unit, definition);
+      owner.board.push(unit);
+      emit(state, events, {
+        type: "summon",
+        player,
+        cardId: unit.cardId,
+        row: unit.row,
+        depth,
+        unit: snapshot(unit),
+        ability: a.name,
+      });
+      appeared(state, player, unit, events, random);
+      continue;
+    }
+    if (a.effect === "rune") {
+      const cells = Array.from({ length: ROWS * DEPTHS }, (_, i) => ({
+        row: Math.floor(i / DEPTHS),
+        depth: i % DEPTHS,
+      })).filter(
+        (cell) =>
+          !owner.board.some(
+            (u) => u.row === cell.row && u.depth === cell.depth,
+          ) &&
+          !owner.runes?.some(
+            (r) => r.row === cell.row && r.depth === cell.depth,
+          ),
+      );
+      const cell = pick(cells, random)[0];
+      if (cell) {
+        owner.runes = [...(owner.runes ?? []), { ...cell, health: a.value }];
+        effectEvent(
+          state,
+          events,
+          player,
+          source,
+          a.name,
+          player,
+          undefined,
+          a.value,
+        );
+        events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
+      }
+      continue;
+    }
+    if (a.target === "ally_hero" && a.effect === "heal") {
+      const healed = Math.max(0, Math.min(a.value, HERO_HP - owner.heroHp));
+      if (healed) {
+        owner.heroHp += healed;
+        effectEvent(
+          state,
+          events,
+          player,
+          source,
+          a.name,
+          player,
+          undefined,
+          healed,
+        );
+      }
+      continue;
+    }
+    const targetPlayer = a.target === "all_enemies" ? 1 - player : player;
+    const targetOwner = state.players[targetPlayer]!;
+    for (const target of targets(state, player, source, a, random)) {
+      if (a.effect === "heal") {
+        healUnit(state, events, player, source, target, a.value, a.name);
+        continue;
+      }
+      if (a.effect === "attack") {
+        target.attack = Math.max(
+          0,
+          (target.attack ?? unitCard(target, targetOwner.cards).attack) +
+            a.value,
+        );
+        if (a.temporary)
+          target.temporaryAttack = (target.temporaryAttack ?? 0) + a.value;
+      } else if (a.effect === "health") {
+        target.maxHp = unitMaxHp(target, targetOwner.cards) + a.value;
+        target.hp += a.value;
+      } else if (
+        a.effect === "block" ||
+        a.effect === "spikes" ||
+        a.effect === "vampirism" ||
+        a.effect === "regeneration"
+      ) {
+        target[a.effect] = (target[a.effect] ?? 0) + a.value;
+      } else continue;
+      effectEvent(
+        state,
+        events,
+        player,
+        source,
+        a.name,
+        targetPlayer,
+        target,
+        a.value,
+      );
+    }
+  }
+}
+function damageUnit(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  source: Unit,
+  targetPlayer: number,
+  target: Unit,
+  amount: number,
+  physical: boolean,
+  label?: string,
+) {
+  const shielded = target.shield === true;
+  if (shielded) target.shield = false;
+  const damage = shielded
+    ? 0
+    : Math.min(
+        target.hp,
+        Math.max(0, amount - (physical ? (target.block ?? 0) : 0)),
+      );
+  target.hp = Math.max(0, target.hp - damage);
+  if (physical) {
+    emit(state, events, {
+      type: "attack",
+      player,
+      cardId: source.cardId,
+      row: source.row,
+      depth: source.depth,
+      targetPlayer,
+      targetCardId: target.cardId,
+      targetRow: target.row,
+      targetDepth: target.depth,
+      damage,
+      hp: target.hp,
+      unit: snapshot(target),
+      ...(shielded ? { ability: "Bouclier mental" } : {}),
+    });
+  } else
+    effectEvent(
+      state,
+      events,
+      player,
+      source,
+      shielded ? "Bouclier mental" : label!,
+      targetPlayer,
+      target,
+      -damage,
+    );
+  return damage;
+}
+function removeDead(
+  state: GameState,
+  events: GameEvent[],
+  random: () => number,
+) {
+  for (const [player, owner] of state.players.entries()) {
+    for (const dead of [...owner.board].filter((u) => u.hp <= 0)) {
+      owner.board = owner.board.filter((u) => u !== dead);
+      emit(state, events, {
+        type: "death",
+        player,
+        cardId: dead.cardId,
+        row: dead.row,
+        depth: dead.depth,
+      });
+      applyAbilities(state, player, dead, "death", events, random);
+    }
+  }
+}
+function heroDamage(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  unit: Unit,
+  amount: number,
+  ability?: string,
+) {
+  const targetPlayer = 1 - player;
+  const defender = state.players[targetPlayer]!;
+  const damage = Math.min(defender.heroHp, Math.max(0, amount));
+  defender.heroHp -= damage;
+  emit(state, events, {
+    type: ability ? "ability" : "attack",
+    player,
+    cardId: unit.cardId,
+    row: unit.row,
+    depth: unit.depth,
+    targetPlayer,
+    damage,
+    amount: -damage,
+    hp: defender.heroHp,
+    ...(ability ? { ability } : {}),
+  });
+  return damage;
+}
+function victory(state: GameState, events: GameEvent[]) {
+  const loser = state.players.findIndex((p) => p.heroHp <= 0);
+  if (loser < 0) return false;
+  state.status = "finished";
+  state.winner = 1 - loser;
+  emit(state, events, { type: "victory", player: state.winner });
+  return true;
+}
+
 export function endTurn(
   input: GameState,
   playerIndex: number,
@@ -531,65 +821,167 @@ export function endTurn(
   const attacker = state.players[playerIndex]!;
   const opponentIndex = 1 - playerIndex;
   const defender = state.players[opponentIndex]!;
-  const attackers = [...attacker.board].sort(
-    (a, b) => a.row - b.row || a.depth - b.depth,
-  );
-  for (const unit of attackers) {
-    if (isMeleeBlocked(unit, attacker.board, attacker.cards)) continue;
-    const card = attacker.cards.find((entry) => entry.id === unit.cardId)!;
-    const target = defender.board
-      .filter((other) => other.row === unit.row)
-      .sort((a, b) => a.depth - b.depth)[0];
-    if (target) {
-      target.hp = Math.max(0, target.hp - card.attack);
-      emit(state, events, {
-        type: "attack",
-        player: playerIndex,
-        cardId: card.id,
-        row: unit.row,
-        depth: unit.depth,
-        targetPlayer: opponentIndex,
-        targetCardId: target.cardId,
-        targetRow: target.row,
-        targetDepth: target.depth,
-        damage: card.attack,
-        hp: target.hp,
-      });
-      if (target.hp === 0) {
-        defender.board = defender.board.filter((other) => other !== target);
-        defender.discard = [];
-        emit(state, events, {
-          type: "death",
-          player: opponentIndex,
-          cardId: target.cardId,
-          row: target.row,
-          depth: target.depth,
-        });
+  const ordered = (board: Unit[]) =>
+    [...board].sort((a, b) => a.row - b.row || a.depth - b.depth);
+  for (const unit of ordered(attacker.board)) {
+    if (unit.hp <= 0 || !attacker.board.includes(unit)) continue;
+    const card = unitCard(unit, attacker.cards);
+    if (
+      getCombatType(card) === "building" ||
+      isMeleeBlocked(unit, attacker.board, attacker.cards)
+    )
+      continue;
+    const passives = activeAbilities(unit, attacker, "passive");
+    const attacks =
+      1 +
+      passives
+        .filter((a) => a.effect === "extra_attack")
+        .reduce((n, a) => n + a.value, 0);
+    for (
+      let hit = 0;
+      hit < attacks && unit.hp > 0 && attacker.board.includes(unit);
+      hit++
+    ) {
+      const power = unitAttack(unit, attacker);
+      if (power <= 0) break;
+      const target = ordered(defender.board).find(
+        (other) => other.row === unit.row && other.hp > 0,
+      );
+      if (target) {
+        damageUnit(
+          state,
+          events,
+          playerIndex,
+          unit,
+          opponentIndex,
+          target,
+          power,
+          true,
+        );
+        for (const a of passives.filter((a) => a.effect === "pierce")) {
+          for (const pierced of ordered(defender.board).filter(
+            (other) => other.depth === target.depth && other.hp > 0,
+          ))
+            damageUnit(
+              state,
+              events,
+              playerIndex,
+              unit,
+              opponentIndex,
+              pierced,
+              a.value,
+              false,
+              a.name,
+            );
+        }
+        if ((unit.vampirism ?? 0) > 0 && target.hp > 0) {
+          const drained = damageUnit(
+            state,
+            events,
+            playerIndex,
+            unit,
+            opponentIndex,
+            target,
+            unit.vampirism!,
+            false,
+            "Vampirisme",
+          );
+          healUnit(
+            state,
+            events,
+            playerIndex,
+            unit,
+            unit,
+            drained,
+            "Vampirisme",
+          );
+        }
+        // Attacked effects resolve before deaths, including lethal counter-damage.
+        if ((target.spikes ?? 0) > 0 && unit.hp > 0)
+          damageUnit(
+            state,
+            events,
+            opponentIndex,
+            target,
+            playerIndex,
+            unit,
+            target.spikes!,
+            false,
+            "Épines",
+          );
+      } else {
+        heroDamage(state, events, playerIndex, unit, power);
+        for (const ally of ordered(attacker.board))
+          if (ally.hp > 0)
+            applyAbilities(
+              state,
+              playerIndex,
+              ally,
+              "enemy_hero_attacked",
+              events,
+              random,
+            );
+        if ((unit.vampirism ?? 0) > 0 && defender.heroHp > 0) {
+          const drained = heroDamage(
+            state,
+            events,
+            playerIndex,
+            unit,
+            unit.vampirism!,
+            "Vampirisme",
+          );
+          healUnit(
+            state,
+            events,
+            playerIndex,
+            unit,
+            unit,
+            drained,
+            "Vampirisme",
+          );
+        }
       }
-    } else {
-      defender.heroHp = Math.max(0, defender.heroHp - card.attack);
-      emit(state, events, {
-        type: "attack",
-        player: playerIndex,
-        cardId: card.id,
-        row: unit.row,
-        depth: unit.depth,
-        targetPlayer: opponentIndex,
-        damage: card.attack,
-        hp: defender.heroHp,
-      });
-      if (defender.heroHp === 0) {
-        state.status = "finished";
-        state.winner = playerIndex;
-        emit(state, events, { type: "victory", player: playerIndex });
-        return { state, events };
-      }
+      removeDead(state, events, random);
+      if (victory(state, events)) return { state, events };
     }
+  }
+  for (const unit of attacker.board) {
+    if (!unit.temporaryAttack) continue;
+    const amount = unit.temporaryAttack;
+    unit.attack = Math.max(
+      0,
+      (unit.attack ?? unitCard(unit, attacker.cards).attack) - amount,
+    );
+    delete unit.temporaryAttack;
+    effectEvent(
+      state,
+      events,
+      playerIndex,
+      unit,
+      "Fin du bonus temporaire",
+      playerIndex,
+      unit,
+      -amount,
+    );
   }
   state.activePlayer = opponentIndex;
   state.turn++;
   state.hasSummoned = false;
   state.turnEndsAt = now + TURN_MS;
+  for (const unit of ordered(defender.board)) {
+    if (unit.hp <= 0) continue;
+    if (unit.regeneration)
+      healUnit(
+        state,
+        events,
+        opponentIndex,
+        unit,
+        unit,
+        unit.regeneration,
+        "Régénération",
+      );
+    applyAbilities(state, opponentIndex, unit, "turn_start", events, random);
+  }
   refill(defender, random);
   emit(state, events, { type: "turn", player: opponentIndex });
   return { state, events };
@@ -622,9 +1014,14 @@ export function playerView(state: GameState, userId: string) {
       heroHp: player.heroHp,
       // Deck composition is public; hand contents and draw order stay private.
       deck: player.cards.map((card) => ({ ...card })),
+      runes: player.runes?.map((r) => ({ ...r })),
       board: player.board.map((unit) => ({
         ...unit,
-        card: player.cards.find((card) => card.id === unit.cardId)!,
+        card: {
+          ...cloneCard(unitCard(unit, player.cards)),
+          attack: unitAttack(unit, player),
+          health: unitMaxHp(unit, player.cards),
+        },
       })),
       hand:
         index === me

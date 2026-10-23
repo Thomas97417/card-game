@@ -11,6 +11,7 @@ import {
   validateDeck,
   variantCard,
   getCombatType,
+  unitAttack,
   type CardDefinition,
   type GameState,
   type GameView,
@@ -31,11 +32,14 @@ export function computerProfile(trophies: number) {
   if (index >= 2) baseIds.push("stag");
   if (index >= 4) baseIds.push("fox", "knight", "bear");
   if (index >= 8) baseIds.push("dragon", "wolf", "serpent");
+  if (index >= 10) baseIds.push("healer", "gnome", "idol");
+  if (index >= 12) baseIds.push("enchantress", "lynx", "bard");
+  if (index >= 16) baseIds.push("tree", "vampire", "captain", "witch");
   return {
     baseIds,
     maxLevel: Math.min(
       MAX_CARD_LEVEL,
-      index < 28 ? 1 + Math.floor(index / 4) : index - 20,
+      1 + Math.floor((index * (MAX_CARD_LEVEL - 1)) / 30),
     ),
     maxRarity: RARITIES[index < 8 ? 0 : index < 16 ? 1 : index < 24 ? 2 : 3]!,
   };
@@ -55,8 +59,18 @@ export function computerDeckForLeague(
   }
   const available = shuffle(pool, random);
   const maxRarity = RARITIES.indexOf(profile.maxRarity);
+  const withBuilding =
+    pool.some(
+      (card) =>
+        profile.baseIds.includes(card.id) && getCombatType(card) === "building",
+    ) && random() < 0.4;
   return humanCards.map((reference, index) => {
-    const type = index % 2 === 0 ? "melee" : "ranged";
+    const type =
+      withBuilding && index === humanCards.length - 1
+        ? "building"
+        : index % 2 === 0
+          ? "melee"
+          : "ranged";
     const position = available.findIndex(
       (card) => getCombatType(card) === type,
     );
@@ -119,20 +133,22 @@ function visibleState(view: GameView): GameState {
       hand: player.hand.map((card) => card.id),
       drawPile: [],
       discard: [],
-      board: player.board.map(({ cardId, row, depth, hp }) => ({
-        cardId,
-        row,
-        depth,
-        hp,
-      })),
+      board: player.board.map(({ card: _card, ...unit }) => ({ ...unit })),
+      ...(player.runes ? { runes: player.runes.map((r) => ({ ...r })) } : {}),
     })),
   };
 }
 
 function boardValue(player: PlayerState): number {
   return player.board.reduce((total, unit) => {
-    const card = player.cards.find((entry) => entry.id === unit.cardId)!;
-    return total + card.attack * 4 + unit.hp;
+    return (
+      total +
+      unitAttack(unit, player) * 4 +
+      unit.hp +
+      (unit.block ?? 0) * 2 +
+      (unit.spikes ?? 0) +
+      (unit.shield ? 5 : 0)
+    );
   }, 0);
 }
 

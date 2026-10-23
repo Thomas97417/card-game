@@ -27,6 +27,8 @@ import {
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
+import { AbilityIcon, eventIconKind } from "./ability-icons";
+import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
@@ -132,7 +134,13 @@ export function DuelScreen({
   const cardName = (id: string | undefined) =>
     display.players
       .flatMap((player) => player.deck)
-      .find((card) => card.id === id)?.name ?? "une créature";
+      .find((card) => card.id === id)?.name ??
+    display.players
+      .flatMap((player) => player.board)
+      .find((unit) => unit.cardId === id)?.card.name ??
+    data.events.find((e) => e.cardId === id && e.unit?.definition)?.unit
+      ?.definition?.name ??
+    "une créature";
   const selectedUnit =
     inspection?.type === "card" &&
     inspection.source === "board" &&
@@ -412,22 +420,35 @@ export function DuelScreen({
         <h2 id="history-title">Journal du duel</h2>
         <ol>
           {data.events
-            .filter((entry) => entry.type === "attack")
-            .slice(-8)
+            .filter(
+              (entry) => entry.type === "attack" || entry.type === "ability",
+            )
+            .slice(-12)
             .reverse()
             .map((entry) => (
               <li key={entry.seq}>
-                {cardName(entry.cardId)} inflige {entry.damage} dégâts{" "}
-                {entry.targetCardId
-                  ? `à ${cardName(entry.targetCardId)}`
-                  : "au héros adverse"}
-                .
+                {eventIconKind(entry) && (
+                  <AbilityIcon kind={eventIconKind(entry)!} />
+                )}
+                <span>
+                  {entry.type === "ability" ? (
+                    `${cardName(entry.cardId)} · ${entry.ability}${entry.amount ? ` (${entry.amount > 0 ? "+" : ""}${entry.amount})` : ""}`
+                  ) : (
+                    <>
+                      {cardName(entry.cardId)} inflige {entry.damage} dégâts{" "}
+                      {entry.targetCardId
+                        ? `à ${cardName(entry.targetCardId)}`
+                        : "au héros adverse"}
+                      .
+                    </>
+                  )}
+                </span>
               </li>
             ))}
         </ol>
-        {!data.events.some((entry) => entry.type === "attack") && (
-          <p>Le combat n’a pas encore commencé.</p>
-        )}
+        {!data.events.some(
+          (entry) => entry.type === "attack" || entry.type === "ability",
+        ) && <p>Le combat n’a pas encore commencé.</p>}
         <form method="dialog">
           <button className="sylve-button secondary">Fermer</button>
         </form>
@@ -573,19 +594,23 @@ export function DuelScreen({
         </p>
         <p>
           Ton camp compte trois colonnes et quatre lignes. La colonne du milieu
-          est accessible aux deux types d’unités. Les unités au corps à corps
-          peuvent aussi se placer dans la colonne vers l’ennemi ; celles à
-          distance dans la colonne vers ton héros. Une unité au corps à corps
-          derrière une autre unité au corps à corps sur la même ligne ne peut
-          pas agir. Les unités à distance peuvent attaquer depuis l’arrière.
+          est accessible aux unités de mêlée et à distance. Les unités au corps
+          à corps peuvent aussi se placer dans la colonne vers l’ennemi ; celles
+          à distance dans la colonne vers ton héros. Une unité au corps à corps
+          derrière un allié sur la même ligne ne peut pas agir. Les unités à
+          distance peuvent attaquer depuis l’arrière.
         </p>
         <p>
-          Pas de déplacement ni de riposte. Ton deck contient de {MIN_DECK_SIZE}{" "}
-          à {DECK_SIZE} cartes uniques. Chaque carte jouée est immédiatement
-          remplacée pour garder {HAND_SIZE} cartes en main. Le tirage peut
-          redonner la carte que tu viens de poser, même si elle est encore sur
-          le terrain. Une même carte ne peut pas être présente deux fois dans ta
-          main.{" "}
+          Les bâtiments occupent une case de n’importe quelle colonne et
+          n’attaquent pas. Les capacités actives sur la fiche de chaque carte
+          peuvent soigner, renforcer, protéger ou invoquer des renforts.
+        </p>
+        <p>
+          Pas de déplacement. Ton deck contient de {MIN_DECK_SIZE} à {DECK_SIZE}{" "}
+          cartes uniques. Chaque carte jouée est immédiatement remplacée pour
+          garder {HAND_SIZE} cartes en main. Le tirage peut redonner la carte
+          que tu viens de poser, même si elle est encore sur le terrain. Une
+          même carte ne peut pas être présente deux fois dans ta main.{" "}
           {practice
             ? "Prends tout le temps qu’il te faut pour réfléchir."
             : "Tu as 60 secondes pour agir."}
@@ -598,6 +623,7 @@ export function DuelScreen({
           invoquer » permet de continuer le combat.
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
+        <AbilityLegend />
         <form method="dialog">
           <button className="sylve-button">J’ai compris</button>
         </form>

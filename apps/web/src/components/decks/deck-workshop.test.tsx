@@ -213,7 +213,9 @@ describe("l’atelier et la collection", () => {
     expect(
       collection().queryByRole("button", { name: /^Loup de lune,/ }),
     ).toBeNull();
-    expect(collection().getAllByRole("button")).toHaveLength(4);
+    expect(collection().getAllByRole("button")).toHaveLength(
+      CATALOG.length - 8,
+    );
     expect(
       screen.queryByRole("button", { name: /Enregistrer|Créer|Supprimer/ }),
     ).toBeNull();
@@ -328,12 +330,14 @@ describe("l’atelier et la collection", () => {
         .getByRole("button", { name: "Corps à corps" })
         .getAttribute("aria-pressed"),
     ).toBe("false");
-    expect(collection().getAllByRole("button")).toHaveLength(9);
+    expect(collection().getAllByRole("button")).toHaveLength(
+      CATALOG.length - 8 + 5,
+    );
   });
   it("resets both filter groups from an empty result", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "À distance" }));
-    expect(collection().getAllByRole("button")).toHaveLength(2);
+    expect(collection().getAllByRole("button")).toHaveLength(5);
     fireEvent.click(screen.getByRole("button", { name: "Épique" }));
     fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
     expect(
@@ -342,7 +346,9 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Voir toute la collection" }),
     );
-    expect(collection().getAllByRole("button")).toHaveLength(4);
+    expect(collection().getAllByRole("button")).toHaveLength(
+      CATALOG.length - 8,
+    );
     expect(
       screen
         .getByRole("button", { name: "Toutes" })
@@ -392,7 +398,7 @@ describe("l’atelier et la collection", () => {
     );
   });
   it("keeps rarity variants independent, reuses art and upgrades the exact variant", async () => {
-    const rare = { card: variantCard("guardian", "rare"), copies: 5 };
+    const rare = { card: variantCard("guardian", "rare"), copies: 25 };
     const { onUpgrade } = setup(starter, [...fullCollection, rare]);
     const rareButton = collection().getByRole("button", {
       name: /Gardien de pierre,.*Rare, niveau 1/,
@@ -424,10 +430,10 @@ describe("l’atelier et la collection", () => {
         })) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(screen.getByText("0 / 5 exemplaires")).toBeTruthy();
+    expect(screen.getByText("0 / 25 exemplaires")).toBeTruthy();
   });
   it("disables an upgrade when copies are ready but gold is missing", async () => {
-    const owned = fullCollection.map((entry) => ({ ...entry, copies: 10 }));
+    const owned = fullCollection.map((entry) => ({ ...entry, copies: 25 }));
     const { onUpgrade } = setup(starter, owned, 49);
     fireEvent.click(card(deckRow(), "Gardien de pierre"));
     const action = await screen.findByRole("button", {
@@ -441,7 +447,7 @@ describe("l’atelier et la collection", () => {
     const owned = fullCollection.map((entry) => ({
       ...entry,
       card: variantCard(entry.card.baseId!, "common", 3),
-      copies: 20,
+      copies: 75,
     }));
     setup(starter, owned, 150);
     fireEvent.click(card(deckRow(), "Gardien de pierre"));
@@ -449,6 +455,37 @@ describe("l’atelier et la collection", () => {
       name: "Améliorer au niveau 4",
     });
     expect((action as HTMLButtonElement).disabled).toBe(false);
-    expect(within(action).getByText("150")).toBeTruthy();
+    expect(within(action).getByText("120")).toBeTruthy();
+  });
+  it("filters buildings and exposes their abilities", async () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Bâtiments" }));
+    expect(collection().getAllByRole("button")).toHaveLength(2);
+    fireEvent.click(card(collection(), "Totem de l’aurore"));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(
+      dialog.getByText(
+        "Au début du tour : accorde 3 ATQ à un allié aléatoire.",
+      ),
+    ).toBeTruthy();
+    expect(dialog.getByText("Active · niv. 1")).toBeTruthy();
+  });
+  it("previews an ability unlock at a level that does not add attack or HP", async () => {
+    const owned = [
+      { card: variantCard("guardian", "common", 2), copies: 50 },
+      ...fullCollection.filter((e) => e.card.baseId !== "guardian"),
+    ];
+    setup(starter, owned, 80);
+    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByText(/Niv. 3 : Débloquée/)).toBeTruthy();
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Améliorer au niveau 3",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    expect(dialog.getByText("Niv. 11")).toBeTruthy();
   });
 });

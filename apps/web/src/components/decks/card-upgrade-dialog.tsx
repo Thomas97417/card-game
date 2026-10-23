@@ -16,6 +16,7 @@ import {
   upgradeGoldCost,
   combatTypeLabel,
   getCombatType,
+  FACTION_LABELS,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -29,6 +30,8 @@ import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
+import { CardAbilities } from "@/components/game/card-abilities";
+import { CardAbilityIcons } from "@/components/game/ability-icons";
 
 export function CardUpgradeDialog({
   entry,
@@ -52,8 +55,8 @@ export function CardUpgradeDialog({
   const card = entry?.card;
   const level = card?.level ?? 1;
   const max = level >= MAX_CARD_LEVEL;
-  const cost = upgradeCost(level);
-  const goldCost = upgradeGoldCost(level);
+  const cost = upgradeCost(level, card?.rarity);
+  const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
   const next = card && !max ? resolveCard(card.id, level + 1) : null;
   const actionLabel = busy
@@ -100,6 +103,10 @@ export function CardUpgradeDialog({
               </div>
               <span className="upgrade-card-level">Niv. {level}</span>
               <CreaturePortrait card={card} />
+              <CardAbilityIcons
+                card={card}
+                className="upgrade-portrait-abilities"
+              />
               <div className="upgrade-portrait-caption">
                 <span
                   className="rarity-label"
@@ -113,6 +120,7 @@ export function CardUpgradeDialog({
                 <span className="upgrade-card-type">
                   <GameIcon kind={getCombatType(card)} size={18} />
                   {combatTypeLabel(card)}
+                  {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
                 </span>
               </div>
             </div>
@@ -187,10 +195,12 @@ export function CardUpgradeDialog({
                   </span>
                 </div>
                 <dl className="upgrade-stats">
-                  {([
-                    { kind: "attack", label: "Attaque" },
-                    { kind: "health", label: "Vie maximale" },
-                  ] as const).map(({ kind, label }) => (
+                  {(
+                    [
+                      { kind: "attack", label: "Attaque" },
+                      { kind: "health", label: "Vie maximale" },
+                    ] as const
+                  ).map(({ kind, label }) => (
                     <div className="upgrade-stat" key={kind}>
                       <dt>{label}</dt>
                       <dd>
@@ -215,6 +225,8 @@ export function CardUpgradeDialog({
                   ))}
                 </dl>
               </section>
+
+              <CardAbilities card={card} next={next} />
 
               <div className="upgrade-evolution-action">
                 <div className="upgrade-section-heading">
@@ -267,7 +279,11 @@ export function CardUpgradeDialog({
                     className="sylve-button secondary"
                     onClick={hasSpace ? onAdd : onMove}
                   >
-                    {hasSpace ? <Plus size={22} /> : <ArrowRightLeft size={22} />}
+                    {hasSpace ? (
+                      <Plus size={22} />
+                    ) : (
+                      <ArrowRightLeft size={22} />
+                    )}
                     {hasSpace ? "Ajouter au deck" : "Remplacer une carte"}
                   </button>
                 )}
