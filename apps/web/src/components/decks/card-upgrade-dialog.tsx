@@ -9,7 +9,7 @@ import {
   Layers3,
 } from "lucide-react";
 import {
-  MAX_CARD_LEVEL,
+  maxCardLevel,
   RARITY_LABELS,
   resolveCard,
   upgradeCost,
@@ -17,6 +17,7 @@ import {
   combatTypeLabel,
   getCombatType,
   FACTION_LABELS,
+  GENDER_LABELS,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -54,7 +55,8 @@ export function CardUpgradeDialog({
   const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
-  const max = level >= MAX_CARD_LEVEL;
+  const maximum = maxCardLevel(card?.rarity);
+  const max = level >= maximum;
   const cost = upgradeCost(level, card?.rarity);
   const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
@@ -121,6 +123,7 @@ export function CardUpgradeDialog({
                   <GameIcon kind={getCombatType(card)} size={18} />
                   {combatTypeLabel(card)}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </span>
               </div>
             </div>
@@ -167,7 +170,7 @@ export function CardUpgradeDialog({
                     />
                     <span>
                       {max
-                        ? `Niveau ${level} / ${MAX_CARD_LEVEL}`
+                        ? `Niveau ${level} / ${maximum}`
                         : `${entry.copies} / ${cost} exemplaires`}
                     </span>
                   </span>

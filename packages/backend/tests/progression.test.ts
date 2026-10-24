@@ -8,6 +8,8 @@ import {
   RARITIES,
   getCombatType,
   resolveCard,
+  upgradeCost,
+  upgradeGoldCost,
 } from "@sylve/game";
 import { CHEST_RULES, CHEST_SLOTS } from "@sylve/game/progression";
 import { PRACTICE_DEADLINE } from "@sylve/game/practice";
@@ -476,6 +478,91 @@ describe("collection autoritaire", () => {
         (e) => e.card.id === "guardian:common",
       )!.card.abilities,
     ).toEqual(result.card.abilities);
+  });
+  it.each(["rare", "epic"] as const)(
+    "upgrades %s cards to 31 and snapshots evolution metadata",
+    async (rarity) => {
+      const { t, alice, deckId } = await fixture();
+      const variantId = `guardian:${rarity}`;
+      const copies = upgradeCost(30, rarity);
+      const gold = upgradeGoldCost(30, rarity);
+      await t.run(async (ctx) => {
+        const { ownerId } = (await ctx.db.get(deckId))!;
+        await ctx.db.insert("collection", {
+          ownerId,
+          variantId,
+          level: 30,
+          copies,
+        });
+        await ctx.db.insert("wallets", { ownerId, gold });
+      });
+      const upgraded = await alice.mutation(api.collection.upgrade, {
+        variantId,
+      });
+      expect(upgraded).toMatchObject({
+        copies: 0,
+        gold: 0,
+        card: resolveCard(variantId, 31),
+      });
+      await expect(
+        alice.mutation(api.collection.upgrade, { variantId }),
+      ).rejects.toThrow("maximal");
+      await alice.mutation(api.decks.save, {
+        deckId,
+        name: "Évolutions",
+        cardIds: [variantId, ...DEFAULT_DECK.slice(1)],
+      });
+      const gameId = await alice.mutation(api.games.createSolo, { deckId });
+      const view = await alice.query(api.games.get, { gameId });
+      expect(view.players[0]!.deck.find((c) => c.id === variantId)).toEqual(
+        upgraded.card,
+      );
+    },
+  );
+  it("persists poison granted by an Epic end-of-turn skill", async () => {
+    const { t, alice, deckId } = await fixture();
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId: "mushroom:epic",
+        level: 1,
+        copies: 0,
+      });
+    });
+    await alice.mutation(api.decks.save, {
+      deckId,
+      name: "Poison",
+      cardIds: [
+        "mushroom:epic",
+        "guardian:common",
+        "turtle:common",
+        "wisp:common",
+      ],
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    await t.run(async (ctx) => {
+      const state = (await ctx.db.get(gameId))!.state!;
+      state.players[0]!.board.push({
+        cardId: "guardian:common",
+        row: 1,
+        depth: 0,
+        hp: 8,
+      });
+      await ctx.db.patch(gameId, { state });
+    });
+    await alice.mutation(api.games.playCard, {
+      gameId,
+      cardId: "mushroom:epic",
+      row: 0,
+      depth: 2,
+      expectedTurn: 1,
+    });
+    const view = await alice.query(api.games.get, { gameId });
+    expect(
+      view.players[0]!.board.find((u) => u.cardId === "guardian:common")!
+        .poison,
+    ).toBe(3);
   });
   it("persists summoned tokens and their events without adding cards to the player's deck", async () => {
     const { t, alice, deckId } = await fixture();

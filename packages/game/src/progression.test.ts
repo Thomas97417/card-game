@@ -3,7 +3,7 @@ import reference from "../../../docs/references/mighty-party/common-cards.json";
 import {
   CATALOG,
   DEFAULT_DECK,
-  MAX_CARD_LEVEL,
+  maxCardLevel,
   RARITIES,
   baseCardId,
   createGame,
@@ -28,7 +28,7 @@ function seeded(seed = 17) {
 describe("variantes et progression", () => {
   it("requires duplicates and gold for each successive level", () => {
     for (const rarity of RARITIES)
-      for (let level = 1; level < MAX_CARD_LEVEL; level++) {
+      for (let level = 1; level < maxCardLevel(rarity); level++) {
         const target = reference.economy.byRarity[rarity][level]!;
         expect(upgradeCost(level, rarity)).toBe(target.soulsToReach);
         expect(upgradeGoldCost(level, rarity)).toBe(target.goldToReach);
@@ -37,18 +37,14 @@ describe("variantes et progression", () => {
   it("defines 88 independent identities, preserving zero attack for buildings", () => {
     const ids = new Set<string>();
     for (const base of CATALOG) {
-      let attack = 0,
-        health = 0;
       for (const rarity of RARITIES) {
         const card = variantCard(base.id, rarity);
         ids.add(card.id);
         expect(baseCardId(card)).toBe(base.id);
         if (card.combatType === "building") expect(card.attack).toBe(0);
-        else expect(card.attack).toBeGreaterThan(attack);
-        expect(card.health).toBeGreaterThan(health);
-        attack = card.attack;
-        health = card.health;
-        const upgraded = resolveCard(card.id, MAX_CARD_LEVEL);
+        else expect(card.attack).toBeGreaterThan(0);
+        expect(card.health).toBeGreaterThan(0);
+        const upgraded = resolveCard(card.id, maxCardLevel(rarity));
         expect(upgraded.id).toBe(card.id);
         expect(upgraded.rarity).toBe(rarity);
         if (card.combatType === "building") expect(upgraded.attack).toBe(0);
@@ -59,7 +55,8 @@ describe("variantes et progression", () => {
     expect(ids.size).toBe(88);
     expect(() => resolveCard("fox:mythic")).toThrow();
     expect(() => resolveCard("fox:rare:2")).toThrow();
-    expect(() => resolveCard("fox:rare", 27)).toThrow();
+    expect(() => resolveCard("fox:rare", 32)).toThrow();
+    expect(() => resolveCard("fox:common", 27)).toThrow();
     expect(() => resolveCard("fox:rare", 1.5)).toThrow();
   });
   it("allows the same creature in distinct rarities but rejects a repeated variant", () => {
@@ -117,9 +114,11 @@ describe("variantes et progression", () => {
           expect(owner.cards.map((card) => card.id)).toEqual(ids);
           expect(owner.hand).toHaveLength(4);
           expect(new Set(owner.hand).size).toBe(4);
-          expect(owner.board.every((unit) => ids.includes(unit.cardId))).toBe(
-            true,
-          );
+          expect(
+            owner.board.every(
+              (unit) => ids.includes(unit.cardId) || !!unit.definition,
+            ),
+          ).toBe(true);
         }
       }
       expect(state.status).toBe("finished");

@@ -1,6 +1,11 @@
 import reference from "./data/mighty-party.json";
+import evolutions from "./data/mighty-party-evolutions.json";
+import evolutionNames from "./data/evolution-names.json";
 
 export const MAX_CARD_LEVEL = 26;
+export function maxCardLevel(rarity: CardRarity = "common") {
+  return rarity === "rare" || rarity === "epic" ? 31 : MAX_CARD_LEVEL;
+}
 export type CombatType = "melee" | "ranged" | "building";
 export type Faction = "order" | "nature" | "chaos";
 export type CardRarity = "common" | "rare" | "epic" | "legendary";
@@ -21,6 +26,11 @@ export const FACTION_LABELS: Record<Faction, string> = {
   nature: "Nature",
   chaos: "Chaos",
 };
+export const GENDER_LABELS = {
+  male: "Masculin",
+  female: "Féminin",
+  sexless: "Neutre",
+} as const;
 export type AbilityEffect =
   | "attack"
   | "health"
@@ -34,13 +44,31 @@ export type AbilityEffect =
   | "pierce"
   | "rune"
   | "summon"
-  | "attack_per_ally";
+  | "attack_per_ally"
+  | "health_per_ally"
+  | "heal_full"
+  | "damage"
+  | "poison"
+  | "steal_attack"
+  | "attack_rune";
 export type AbilityTrigger =
   | "deploy"
   | "turn_start"
   | "nature_ally_appears"
   | "death"
   | "enemy_hero_attacked"
+  | "ally_hero_attacked"
+  | "turn_end"
+  | "attack"
+  | "attacked"
+  | "ally_appears"
+  | "ally_death"
+  | "enemy_death"
+  | "ally_healed"
+  | "ally_block"
+  | "ally_spikes"
+  | "ally_vampirism"
+  | "before_enemy_ranged_attack"
   | "passive";
 export type AbilityTarget =
   | "self"
@@ -54,7 +82,24 @@ export type AbilityTarget =
   | "all_enemies"
   | "ally_hero"
   | "ally_buildings"
-  | "random_zombie";
+  | "random_zombie"
+  | "ranged_allies"
+  | "chaos_allies"
+  | "male_allies"
+  | "adjacent_allies"
+  | "nearby_allies"
+  | "adjacent_heroes"
+  | "nearby_heroes"
+  | "allies_with_block"
+  | "allies_with_vampirism"
+  | "random_wounded_ally"
+  | "event_ally"
+  | "attack_target"
+  | "enemy_hero"
+  | "ranged_enemies"
+  | "random_female_enemy"
+  | "all_heroes"
+  | "non_chaos_heroes";
 export interface CardAbility {
   id: string;
   name: string;
@@ -66,6 +111,8 @@ export interface CardAbility {
   target: AbilityTarget;
   value: number;
   temporary?: boolean;
+  count?: number;
+  scaleBy?: AbilityTarget;
   summon?: {
     kind: "archer" | "zombie";
     attack: number;
@@ -84,6 +131,8 @@ export interface CardDefinition {
   combatType?: CombatType;
   faction?: Faction;
   sourceHero?: string;
+  gender?: "male" | "female" | "sexless";
+  artId?: string;
   abilities?: CardAbility[];
   baseId?: string;
   rarity?: CardRarity;
@@ -350,6 +399,12 @@ const effectNames: Record<AbilityEffect, string> = {
   rune: "Rune de vie",
   summon: "Renfort",
   attack_per_ally: "Alliance de l’Ordre",
+  health_per_ally: "Vitalité de formation",
+  heal_full: "Soin intégral",
+  damage: "Dégâts magiques",
+  poison: "Poison",
+  steal_attack: "Vol d’attaque",
+  attack_rune: "Rune de puissance",
 };
 interface Progression {
   level: number;
@@ -358,17 +413,24 @@ interface Progression {
   health?: number;
   summonLevel?: number;
   summon?: string;
+  count?: number;
 }
 interface ReferenceCard {
   name: string;
   faction: string;
   combatType: string;
+  gender?: string;
   stats: number[][];
   skills: {
     id: string;
     descriptionFr: string;
     unlockLevel: number;
     progression: Progression[];
+    effect?: string;
+    trigger?: string;
+    target?: string;
+    count?: number;
+    scaleBy?: string;
   }[];
 }
 const data = reference as {
@@ -381,20 +443,36 @@ function build(
   rarity: CardRarity,
   level: number,
 ): CardDefinition {
-  const source = data.cards.find((c) => c.name === base.reference)!;
+  const evolved = rarity === "rare" || rarity === "epic";
+  const chain = evolutions.chains.find((c) => c.common === base.reference)!;
+  const source: ReferenceCard = evolved
+    ? evolutions.cards.find((c) => c.name === chain[rarity])!
+    : data.cards.find((c) => c.name === base.reference)!;
   const stats = source.stats[level - 1]!;
-  // Higher-rarity Sylve variants keep their established bonuses; the sourced common
-  // curves and skill milestones are shared. No invented levels 27–31 are extrapolated.
-  const bonus = { common: 0, rare: 1, epic: 2, legendary: 4 }[rarity];
+  // Legendary profiles remain the pre-existing Sylve adaptation until collected.
+  const bonus = rarity === "legendary" ? 4 : 0;
   const abilities = source.skills.map((skill, index): CardAbility => {
     const point =
       [...skill.progression].reverse().find((p) => p.level <= level) ??
       skill.progression[0]!;
-    const [effect, trigger, target, temporary] =
-      mechanics[base.reference]![index]!;
+    const [effect, trigger, target, temporary] = evolved
+      ? [
+          skill.effect as AbilityEffect,
+          skill.trigger as AbilityTrigger,
+          skill.target as AbilityTarget,
+          false,
+        ]
+      : mechanics[base.reference]![index]!;
     let description = skill.descriptionFr.replace(
       /\{(\w+)\}/g,
-      (_, key: string) => String(point[key as keyof Progression] ?? ""),
+      (_, key: string) =>
+        String(
+          key === "magnitude"
+            ? Math.abs(point.value ?? 0)
+            : key === "count"
+              ? (point.count ?? skill.count ?? 1)
+              : (point[key as keyof Progression] ?? ""),
+        ),
     );
     description = description
       .replace("Archer", "Éclaireur des braises")
@@ -406,6 +484,15 @@ function build(
     description = description
       .replace(/de sa ligne/g, "de sa colonne")
       .replace("de la ligne de la cible", "de la colonne de la cible");
+    description = description
+      .replace(
+        /(\d+) Éclaireur\(s\)/g,
+        (_, n: string) => `${n} Éclaireur${Number(n) > 1 ? "s" : ""}`,
+      )
+      .replace(
+        /(\d+) rune\(s\)/g,
+        (_, n: string) => `${n} rune${Number(n) > 1 ? "s" : ""}`,
+      );
     if (effect === "attack" && target === "all_enemies")
       description = `Réduit l’ATQ de tous les ennemis de ${Math.abs(point.value ?? 0)}.`;
     return {
@@ -413,7 +500,9 @@ function build(
       name:
         effect === "attack" && (point.value ?? 0) < 0
           ? "Affaiblissement"
-          : effectNames[effect],
+          : effect === "attack_per_ally" && target !== "order_allies"
+            ? "Puissance de formation"
+            : effectNames[effect],
       description,
       unlockLevel: skill.unlockLevel,
       active: level >= skill.unlockLevel,
@@ -421,6 +510,10 @@ function build(
       trigger,
       target,
       value: point.value ?? 1,
+      ...((point.count ?? skill.count)
+        ? { count: point.count ?? skill.count }
+        : {}),
+      ...(skill.scaleBy ? { scaleBy: skill.scaleBy as AbilityTarget } : {}),
       ...(temporary ? { temporary: true } : {}),
       ...(effect === "summon"
         ? {
@@ -440,13 +533,19 @@ function build(
   return {
     id: `${base.id}:${rarity}`,
     baseId: base.id,
-    name: base.name,
-    title: base.title,
+    name: evolved ? evolutionNames[base.id][rarity] : base.name,
+    title: evolved
+      ? `Évolution ${RARITY_LABELS[rarity].toLowerCase()} · ${base.name}`
+      : base.title,
     color: base.color,
     kind: base.kind,
     rarity,
     level,
-    sourceHero: base.reference,
+    sourceHero: source.name,
+    gender: (source.gender ??
+      evolutions.commonAttributes.find((c) => c.name === base.reference)
+        ?.gender) as CardDefinition["gender"],
+    ...(evolved ? { artId: `evolutions/${base.id}-${rarity}` } : {}),
     attack: stats[0]! + (source.combatType === "building" ? 0 : bonus),
     health: stats[1]! + bonus * 2,
     combatType: source.combatType as CombatType,
@@ -481,7 +580,7 @@ export function variantCard(
     !RARITIES.includes(rarity) ||
     !Number.isInteger(level) ||
     level < 1 ||
-    level > MAX_CARD_LEVEL
+    level > maxCardLevel(rarity)
   )
     throw new GameError("Cette variante de carte n’existe pas.");
   return build(base, rarity, level);
@@ -516,11 +615,13 @@ function cost(level: number, rarity: CardRarity, column: number) {
   if (
     !Number.isInteger(level) ||
     level < 1 ||
-    level > MAX_CARD_LEVEL ||
+    level > maxCardLevel(rarity) ||
     !RARITIES.includes(rarity)
   )
     throw new GameError("Ce niveau d’amélioration n’existe pas.");
-  return level === MAX_CARD_LEVEL ? 0 : data.costs[rarity][level]![column]!;
+  return level === maxCardLevel(rarity)
+    ? 0
+    : data.costs[rarity][level]![column]!;
 }
 export function upgradeCost(level: number, rarity: CardRarity = "common") {
   return cost(level, rarity, 0);

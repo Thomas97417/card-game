@@ -2,6 +2,8 @@
 
 Recherche effectuée le **23 octobre 2026**. Cette étude rassemble les données utilisées pour l’affinage des cartes de Sylve. L’[implémentation et ses adaptations](card-balance.md) sont documentées séparément ; les comparaisons avec l’ancien moteur ci-dessous décrivent son état avant cette adaptation.
 
+La recherche a été complétée le **24 octobre 2026** par les [44 évolutions Rare et Epic des 22 communes](references/mighty-party/evolution-cards.md). Les comparaisons et pistes ci-dessous conservent le contexte de l’étude commune initiale.
+
 ## Périmètre et fiabilité
 
 « Cartes de base » désigne ici les **22 héros de collection de rareté commune** recensés dans la [table Common](https://mightyparty.wiki.gg/wiki/Common). Cela inclut les unités de départ et celles débloquées plus tard. Les décors, les jetons invoqués et les chefs de guerre sont des catégories distinctes.

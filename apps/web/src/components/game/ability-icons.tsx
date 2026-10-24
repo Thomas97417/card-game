@@ -25,7 +25,8 @@ export type AbilityIconKind =
   | "order-alliance"
   | "weaken"
   | "blocked"
-  | "temporary";
+  | "temporary"
+  | "poison";
 
 const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   attack: "power",
@@ -41,6 +42,12 @@ const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   rune: "life-rune",
   summon: "reinforcement",
   attack_per_ally: "order-alliance",
+  health_per_ally: "vitality",
+  heal_full: "heal",
+  damage: "power",
+  poison: "poison",
+  steal_attack: "weaken",
+  attack_rune: "power",
 };
 
 export function abilityIconKind(
@@ -120,6 +127,7 @@ const storedPassives = new Set<AbilityEffect>([
   "spikes",
   "vampirism",
   "regeneration",
+  "poison",
 ]);
 
 export function CardAbilityIcons({
@@ -211,6 +219,27 @@ export function unitEffects(
       label: `Vampirisme ${unit.vampirism}`,
       value: unit.vampirism,
       description: `Draine jusqu’à ${unit.vampirism} PV après l’attaque et soigne son porteur.`,
+    });
+  if (unit.poison)
+    effects.push({
+      kind: "poison",
+      label: `Poison ${unit.poison}`,
+      value: unit.poison,
+      description: `Les attaques empoisonnent leur cible pour ${unit.poison} dégâts récurrents.`,
+    });
+  if (unit.poisoned)
+    effects.push({
+      kind: "poison",
+      label: `Empoisonné ${unit.poisoned}`,
+      value: unit.poisoned,
+      description: `Subit ${unit.poisoned} dégâts au début de son tour, avant la régénération.`,
+    });
+  if (unit.extraAttacks)
+    effects.push({
+      kind: "double-strike",
+      label: `Attaques supplémentaires ${unit.extraAttacks}`,
+      value: unit.extraAttacks,
+      description: `Effectue ${unit.extraAttacks} attaque(s) supplémentaire(s) à chaque assaut.`,
     });
   const attack = unit.card.attack - base.attack;
   if (attack > 0)
@@ -318,6 +347,14 @@ export function UnitEffectIcons({
 
 const eventIcons: Record<string, AbilityIconKind> = {
   Puissance: "power",
+  "Soin intégral": "heal",
+  "Dégâts magiques": "power",
+  Poison: "poison",
+  Empoisonnement: "poison",
+  "Vol d’attaque": "weaken",
+  "Rune de puissance": "power",
+  "Vitalité de formation": "vitality",
+  "Puissance de formation": "order-alliance",
   Vitalité: "vitality",
   Soin: "heal",
   Blocage: "block",

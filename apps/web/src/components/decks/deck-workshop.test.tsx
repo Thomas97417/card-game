@@ -245,7 +245,8 @@ describe("l’atelier et la collection", () => {
       ).toContain("carte 1 du deck");
       expect(card(collection(), "Gardien de pierre")).toBeTruthy();
       expect(
-        screen.getByRole("region", { name: "Cartes de la collection" }).scrollLeft,
+        screen.getByRole("region", { name: "Cartes de la collection" })
+          .scrollLeft,
       ).toBe(0);
       await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
       expect(onSave.mock.calls[0]![0].cardIds).toEqual([
@@ -305,10 +306,10 @@ describe("l’atelier et la collection", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
     expect(collection().getAllByRole("button")).toHaveLength(2);
-    expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+    expect(card(collection(), "Colosse du serment")).toBeTruthy();
     expect(card(collection(), "Loup de lune")).toBeTruthy();
     expect(
-      collection().queryByRole("button", { name: /^Renard des braises,/ }),
+      collection().queryByRole("button", { name: /^Renard des comètes,/ }),
     ).toBeNull();
     expect(deckCards()).toHaveLength(8);
 
@@ -320,7 +321,7 @@ describe("l’atelier et la collection", () => {
 
     fireEvent.click(legendary);
     expect(
-      collection().getByRole("button", { name: /Gardien de pierre,.*Rare,/ }),
+      collection().getByRole("button", { name: /Gardien des runes,.*Rare,/ }),
     ).toBeTruthy();
     fireEvent.click(epic);
     fireEvent.click(screen.getByRole("button", { name: "Toutes" }));
@@ -397,15 +398,15 @@ describe("l’atelier et la collection", () => {
       ]),
     );
   });
-  it("keeps rarity variants independent, reuses art and upgrades the exact variant", async () => {
+  it("keeps rarity variants independent, uses evolved art and upgrades the exact variant", async () => {
     const rare = { card: variantCard("guardian", "rare"), copies: 25 };
     const { onUpgrade } = setup(starter, [...fullCollection, rare]);
     const rareButton = collection().getByRole("button", {
-      name: /Gardien de pierre,.*Rare, niveau 1/,
+      name: /Gardien des runes,.*Rare, niveau 1/,
     });
     expect(rareButton.getAttribute("data-rarity")).toBe("rare");
     expect(rareButton.querySelector("img")?.getAttribute("src")).toBe(
-      "/art/characters/guardian.webp",
+      "/art/characters/evolutions/guardian-rare.webp",
     );
     fireEvent.click(rareButton);
     fireEvent.click(
@@ -418,7 +419,10 @@ describe("l’atelier et la collection", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(
       deckRow().getAllByRole("button", { name: /^Gardien de pierre,/ }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
+    expect(
+      deckRow().getByRole("button", { name: /^Gardien des runes,/ }),
+    ).toBeTruthy();
   });
   it("keeps improvement disabled when there are not enough copies", async () => {
     setup(starter);

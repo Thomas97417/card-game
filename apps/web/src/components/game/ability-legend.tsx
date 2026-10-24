@@ -38,7 +38,26 @@ const entries: [AbilityIconKind, string, string][] = [
     "Alliance de l’Ordre",
     "Renforce l’attaque grâce aux alliés Ordre.",
   ],
-  ["weaken", "Affaiblissement", "Réduit l’attaque."],
+  [
+    "weaken",
+    "Affaiblissement",
+    "Réduit l’attaque. Le vol d’attaque transfère la valeur effectivement retirée au lanceur.",
+  ],
+  [
+    "poison",
+    "Poison",
+    "Les attaques empoisonnent leur cible. Les doses se cumulent et infligent leurs dégâts au début du tour du porteur, avant sa régénération.",
+  ],
+  [
+    "vitality",
+    "Formation",
+    "Les bonus par allié suivent la formation : les voisins adjacents se touchent par un côté ; les unités autour incluent les diagonales.",
+  ],
+  [
+    "power",
+    "Rune de puissance",
+    "Renforce l’attaque de la prochaine unité qui apparaît sur cette case.",
+  ],
   [
     "blocked",
     "Attaque bloquée",
@@ -59,7 +78,7 @@ export function AbilityLegend() {
       </p>
       <dl>
         {entries.map(([kind, label, description]) => (
-          <div key={kind}>
+          <div key={label}>
             <AbilityIcon kind={kind} size={32} />
             <div>
               <dt>{label}</dt>

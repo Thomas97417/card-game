@@ -202,4 +202,36 @@ describe("le sanctuaire", () => {
     fireEvent.change(levels, { target: { value: "26" } });
     expect(within(dialog).getByText("Active · niv. 11")).toBeTruthy();
   });
+  it("explores Rare and Epic profiles through level 31 and clamps the level on returning to Common", async () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
+    const dialog = await screen.findByRole("dialog");
+    const rarity = within(dialog).getByRole("combobox", {
+      name: /Rareté de la carte/,
+    });
+    const level = within(dialog).getByRole("combobox", {
+      name: /Niveau de la carte/,
+    });
+    fireEvent.change(rarity, { target: { value: "rare" } });
+    expect(within(level).getAllByRole("option")).toHaveLength(31);
+    expect(
+      within(dialog).getByRole("heading", { name: "Gardien des runes" }),
+    ).toBeTruthy();
+    expect(
+      within(dialog)
+        .getAllByAltText("Gardien des runes")[0]!
+        .getAttribute("src"),
+    ).toBe("/art/characters/evolutions/guardian-rare.webp");
+    fireEvent.change(level, { target: { value: "31" } });
+    fireEvent.change(rarity, { target: { value: "epic" } });
+    expect(
+      within(dialog).getByRole("heading", { name: "Colosse du serment" }),
+    ).toBeTruthy();
+    expect((level as HTMLSelectElement).value).toBe("31");
+    fireEvent.change(rarity, { target: { value: "common" } });
+    expect((level as HTMLSelectElement).value).toBe("26");
+    expect(
+      within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
+    ).toBeTruthy();
+  });
 });
