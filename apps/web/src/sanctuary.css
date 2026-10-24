@@ -292,21 +292,6 @@
     0 0 24px #deb34a26,
     inset 0 0 0 4px #e9c56e14;
 }
-.summon-gold-bonus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 6px;
-  color: #efd38e;
-  font-size: 9px;
-  line-height: 1.5;
-  text-align: center;
-}
-.summon-gold-bonus .gold-icon {
-  width: 22px;
-  height: 22px;
-}
 .summon-pack-art {
   position: relative;
   display: flex;
@@ -391,14 +376,6 @@
   padding-left: 11px;
   color: #b9c9ad;
   font-size: 9px;
-}
-.summon-quantity-note {
-  max-width: 300px;
-  margin: 6px auto 12px;
-  color: #b6c6aa;
-  font-size: 9px;
-  line-height: 1.6;
-  text-align: center;
 }
 .summon-rates i {
   flex-shrink: 0;
@@ -597,11 +574,6 @@
   color: #e1cfaa;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-}
-.summon-reveal-help {
-  margin: 8px 0 0;
-  color: #b8c7b1;
-  font-size: 11px;
 }
 .summon-circle-stage {
   position: relative;
@@ -810,11 +782,6 @@
   color: #c5cfba;
   font-size: 11px;
 }
-.summon-repeat-badge {
-  color: #f1da9a;
-  font-size: 11px;
-  line-height: 1.4;
-}
 .summon-repeat-button {
   display: flex;
   flex-wrap: wrap;
@@ -1005,8 +972,7 @@
   .summon-circle-center {
     gap: 7px;
   }
-  .summon-flipped-counter,
-  .summon-repeat-badge {
+  .summon-flipped-counter {
     font-size: 9px;
   }
   .summon-repeat-button {

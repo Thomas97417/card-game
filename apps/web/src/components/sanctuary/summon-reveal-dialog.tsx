@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, LoaderCircle, RotateCw, Sparkles } from "lucide-react";
+import { ArrowRight, LoaderCircle, RotateCw } from "lucide-react";
 import {
   combatTypeLabel,
   RARITY_LABELS,
@@ -53,6 +53,7 @@ function roundRewards(result: SummonResult, round: number): Reward[] {
 
 export function SummonRevealDialog({
   result,
+  history = false,
   collection,
   emeralds,
   busy = false,
@@ -64,6 +65,7 @@ export function SummonRevealDialog({
   onRetry,
 }: {
   result: SummonResult | null;
+  history?: boolean;
   collection: OwnedCard[] | undefined;
   emeralds?: number | null;
   busy?: boolean;
@@ -93,13 +95,13 @@ export function SummonRevealDialog({
       })
     : undefined;
   const rewards = result ? roundRewards(result, round) : [];
-  const revealed = rewards.filter((_, index) =>
-    flipped.has(`${round}:${index}`),
-  ).length;
+  const revealed = history
+    ? rewards.length
+    : rewards.filter((_, index) => flipped.has(`${round}:${index}`)).length;
   const complete = revealed === rewards.length;
   const lastRound = result ? round === result.count - 1 : true;
   const offer = result
-    ? summonOffer(result.packId, result.count, !!result.repeatToken)
+    ? summonOffer(result.packId, result.count, !history && !!result.repeatToken)
     : null;
   const insufficient =
     emeralds == null || (offer != null && emeralds < offer.cost);
@@ -114,9 +116,11 @@ export function SummonRevealDialog({
   useEffect(() => {
     if (round > 0)
       popup.current
-        ?.querySelector<HTMLButtonElement>(".summon-card-back")
+        ?.querySelector<HTMLButtonElement>(
+          history ? ".summon-card-front button" : ".summon-card-back",
+        )
         ?.focus();
-  }, [round]);
+  }, [round, history]);
 
   function close() {
     setInspected(null);
@@ -147,7 +151,7 @@ export function SummonRevealDialog({
             <header className="summon-reveal-heading">
               <div>
                 <span className="summon-reveal-eyebrow">
-                  Le cercle des esprits
+                  {history ? "Dernière invocation" : "Le cercle des esprits"}
                 </span>
                 <DialogTitle>{summonPack(result.packId).name}</DialogTitle>
               </div>
@@ -155,9 +159,6 @@ export function SummonRevealDialog({
                 Invocation {round + 1} / {result.count}
               </span>
             </header>
-            <p className="summon-reveal-help">
-              Touche chaque carte pour découvrir ta récompense.
-            </p>
             <div className="summon-circle-stage">
               <div className="summon-circle-ring" aria-hidden="true" />
               <div
@@ -167,7 +168,7 @@ export function SummonRevealDialog({
                 key={round}
               >
                 {rewards.map((reward, index) => {
-                  const isFlipped = flipped.has(`${round}:${index}`);
+                  const isFlipped = history || flipped.has(`${round}:${index}`);
                   const angle =
                     ((-120 + (index * 360) / rewards.length) * Math.PI) / 180;
                   return (
@@ -185,23 +186,25 @@ export function SummonRevealDialog({
                       <div
                         className={`summon-flip ${isFlipped ? "is-revealed" : ""}`}
                       >
-                        <button
-                          type="button"
-                          className="summon-card-back"
-                          aria-label={`Révéler la carte ${index + 1}`}
-                          tabIndex={isFlipped ? -1 : 0}
-                          aria-hidden={isFlipped || undefined}
-                          disabled={isFlipped}
-                          onClick={() => flip(index)}
-                        >
-                          <img
-                            src="/art/ui/summon-card-back.webp"
-                            alt=""
-                            width={400}
-                            height={560}
-                            draggable={false}
-                          />
-                        </button>
+                        {!history && (
+                          <button
+                            type="button"
+                            className="summon-card-back"
+                            aria-label={`Révéler la carte ${index + 1}`}
+                            tabIndex={isFlipped ? -1 : 0}
+                            aria-hidden={isFlipped || undefined}
+                            disabled={isFlipped}
+                            onClick={() => flip(index)}
+                          >
+                            <img
+                              src="/art/ui/summon-card-back.webp"
+                              alt=""
+                              width={400}
+                              height={560}
+                              draggable={false}
+                            />
+                          </button>
+                        )}
                         {isFlipped && (
                           <div
                             className="summon-card-front"
@@ -303,16 +306,9 @@ export function SummonRevealDialog({
                 })}
               </div>
               <div className="summon-circle-center">
-                <Sparkles size={22} aria-hidden="true" />
                 <p className="summon-flipped-counter" role="status">
                   {revealed} / {rewards.length} cartes révélées
                 </p>
-                {offer.discountPercent > 0 && (
-                  <span className="summon-repeat-badge">
-                    −{offer.discountPercent} % au prochain{" "}
-                    {result.count === 10 ? "lot ×10" : "appel"}
-                  </span>
-                )}
                 <button
                   ref={center}
                   type="button"
@@ -325,7 +321,7 @@ export function SummonRevealDialog({
                   aria-label={
                     !lastRound
                       ? `Invocation suivante — ${round + 2} sur ${result.count}`
-                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes${offer.discountPercent ? `, remise de ${offer.discountPercent} %` : ""}`
+                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes`
                   }
                   onClick={() => {
                     if (!lastRound) {
@@ -362,7 +358,7 @@ export function SummonRevealDialog({
                       ? "La suite de ton lot t’attend"
                       : insufficient
                         ? "Émeraudes insuffisantes"
-                        : offer.discountPercent
+                        : offer.cost < offer.baseCost
                           ? "Remise perdue en quittant ce cercle"
                           : "Un nouvel appel ouvrira un nouveau cercle"}
                 </small>

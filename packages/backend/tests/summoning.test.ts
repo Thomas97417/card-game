@@ -564,7 +564,7 @@ describe("sanctuaire autoritaire", () => {
       vi.spyOn(Math, "random").mockReturnValue(0);
       const before = await client.query(api.sanctuary.offers, {});
       expect(before).toHaveLength(6);
-      expect(before.every((offer) => offer.discountPercent === 0)).toBe(true);
+      expect(before.every((offer) => offer.cost === offer.baseCost)).toBe(true);
       const request = { packId, count, requestId: requestId(1) };
       const first = await client.mutation(api.sanctuary.summon, request);
       expect(first.cost).toBe(summonOffer(packId, count).cost);
@@ -658,9 +658,9 @@ describe("sanctuaire autoritaire", () => {
       requestId: requestId(4),
       repeatToken: second.repeatToken,
     });
-    expect(third.cost).toBe(134);
+    expect(third.cost).toBe(139);
     expect(await client.query(api.collection.diamonds, {})).toBe(
-      WELCOME_DIAMONDS - 149 - 149 - 134,
+      WELCOME_DIAMONDS - 149 - 149 - 139,
     );
   });
 
@@ -706,7 +706,7 @@ describe("sanctuaire autoritaire", () => {
       requestId: requestId(3),
       repeatToken: first.repeatToken,
     });
-    expect(second.cost).toBe(134);
+    expect(second.cost).toBe(139);
   });
 
   it("allows only one distinct purchase to spend an active circle's discount", async () => {
@@ -738,7 +738,7 @@ describe("sanctuaire autoritaire", () => {
     expect(
       results.filter((result) => result.status === "fulfilled"),
     ).toHaveLength(1);
-    expect(await client.query(api.collection.diamonds, {})).toBe(866);
+    expect(await client.query(api.collection.diamonds, {})).toBe(861);
     expect(await client.query(api.collection.gold, {})).toBe(1000);
     expect(
       (await client.query(api.sanctuary.offers, {})).find(
@@ -760,7 +760,7 @@ describe("sanctuaire autoritaire", () => {
         .query("wallets")
         .withIndex("by_owner", (q) => q.eq("ownerId", userId))
         .unique())!;
-      await ctx.db.patch(wallet._id, { diamonds: 133 });
+      await ctx.db.patch(wallet._id, { diamonds: 138 });
       return wallet._id;
     });
     const request = {
@@ -772,10 +772,10 @@ describe("sanctuaire autoritaire", () => {
     await expect(
       client.mutation(api.sanctuary.summon, request),
     ).rejects.toThrow("pas assez d’émeraudes");
-    expect(await client.query(api.collection.diamonds, {})).toBe(133);
-    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 134 }));
+    expect(await client.query(api.collection.diamonds, {})).toBe(138);
+    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 139 }));
     expect((await client.mutation(api.sanctuary.summon, request)).cost).toBe(
-      134,
+      139,
     );
     expect(await client.query(api.collection.diamonds, {})).toBe(0);
   });

@@ -97,6 +97,7 @@ describe("invocations du sanctuaire", () => {
     expect(
       summonLoot("divine", 1, () => 0.5, 2000).map((item) => item.count),
     ).toEqual([30, 30, 30, 30, 30]);
+    expect(summonOffer("sylve", 1, true).cost).toBe(139);
     expect(summonPrice("divine", 1)).toBe(4499);
     expect(summonPrice("divine", 10)).toBe(39999);
     expect(summonPrice("divine", 1)).toBeGreaterThan(
@@ -136,7 +137,7 @@ describe("invocations du sanctuaire", () => {
   });
 
   it.each(SUMMON_PACKS)(
-    "discounts the next $id single or ten-pack by 10 percent without stacking",
+    "uses the configured repeat prices for $id without stacking",
     (pack) => {
       for (const count of [1, 10] as const) {
         const baseCost = summonPrice(pack.id, count);
@@ -145,14 +146,12 @@ describe("invocations du sanctuaire", () => {
           count,
           baseCost,
           cost: baseCost,
-          discountPercent: 0,
         });
         expect(summonOffer(pack.id, count, true)).toEqual({
           packId: pack.id,
           count,
           baseCost,
-          cost: Math.floor(baseCost * 0.9),
-          discountPercent: 10,
+          cost: count === 10 ? pack.repeatTenPrice : pack.repeatPrice,
         });
       }
     },

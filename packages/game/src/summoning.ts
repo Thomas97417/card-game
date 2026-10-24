@@ -7,7 +7,6 @@ export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients" | "divine";
 export type SummonCount = 1 | 10;
 export const HEROES_PER_SUMMON = 5;
-export const SUMMON_REPEAT_DISCOUNT = 10;
 
 export interface SummonPack {
   id: SummonPackId;
@@ -15,6 +14,8 @@ export interface SummonPack {
   description: string;
   price: number;
   tenPrice: number;
+  repeatPrice: number;
+  repeatTenPrice: number;
   guaranteedLegendaries: number;
   rates: Record<CardRarity, number>;
 }
@@ -27,6 +28,8 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq compagnons de toutes les raretés et une carte d’or en bonus.",
     price: 149,
     tenPrice: 1_299,
+    repeatPrice: 139,
+    repeatTenPrice: 1_169,
     guaranteedLegendaries: 1,
     rates: { common: 65, rare: 25, epic: 8, legendary: 2 },
   },
@@ -37,6 +40,8 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq compagnons épiques ou légendaires et une carte d’or en bonus.",
     price: 449,
     tenPrice: 3_899,
+    repeatPrice: 404,
+    repeatTenPrice: 3_509,
     guaranteedLegendaries: 2,
     rates: { common: 0, rare: 0, epic: 80, legendary: 20 },
   },
@@ -47,6 +52,8 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq légendaires, une carte d’or et une chance de doubler un compagnon.",
     price: 4_499,
     tenPrice: 39_999,
+    repeatPrice: 4_049,
+    repeatTenPrice: 35_999,
     guaranteedLegendaries: 50,
     rates: { common: 0, rare: 0, epic: 0, legendary: 100 },
   },
@@ -70,7 +77,6 @@ export interface SummonOffer {
   count: SummonCount;
   baseCost: number;
   cost: number;
-  discountPercent: number;
 }
 
 export function summonPack(id: SummonPackId): SummonPack {
@@ -93,13 +99,16 @@ export function summonOffer(
   repeat = false,
 ): SummonOffer {
   const baseCost = summonPrice(packId, count);
-  const discountPercent = repeat ? SUMMON_REPEAT_DISCOUNT : 0;
+  const pack = summonPack(packId);
   return {
     packId,
     count,
     baseCost,
-    cost: Math.floor((baseCost * (100 - discountPercent)) / 100),
-    discountPercent,
+    cost: repeat
+      ? count === 10
+        ? pack.repeatTenPrice
+        : pack.repeatPrice
+      : baseCost,
   };
 }
 

@@ -14,6 +14,7 @@ import {
   summonGoldRewards,
   summonLoot,
   summonPrice,
+  summonOffer,
   type SummonResult,
 } from "@sylve/game/summoning";
 import { Sanctuary, type SummonRequest } from "./sanctuary";
@@ -32,10 +33,8 @@ vi.mock("@tanstack/react-router", () => ({
 function reward(request: SummonRequest): SummonResult {
   return {
     ...request,
-    cost: Math.floor(
-      summonPrice(request.packId, request.count) *
-        (request.repeatToken ? 0.9 : 1),
-    ),
+    cost: summonOffer(request.packId, request.count, !!request.repeatToken)
+      .cost,
     repeatToken: `circle-${request.requestId}`,
     gold: summonGold(request.packId, request.count, () => 0),
     goldBySummon: summonGoldRewards(request.packId, request.count, () => 0),
@@ -206,7 +205,8 @@ describe("le sanctuaire", () => {
     expect(purchase("divinités", 10).getAttribute("aria-label")).toContain(
       "39999 émeraudes",
     );
-    expect(screen.getAllByText(/Carte d’or garantie : 500–1/)).toHaveLength(3);
+    expect(screen.queryByText(/Carte d’or garantie/)).toBeNull();
+    expect(screen.queryByText(/5 compagnons par invocation/)).toBeNull();
     expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
     expect(within(purchase("anciens", 10)).getByText("Offre ×10")).toBeTruthy();
     expect(
@@ -290,7 +290,7 @@ describe("le sanctuaire", () => {
     expect(legendary).toBe(2);
     expect(epic).toBe(48);
     const repeat = within(dialog).getByRole("button", {
-      name: "Réinvoquer ×10, 3509 émeraudes, remise de 10 %",
+      name: "Réinvoquer ×10, 3509 émeraudes",
     });
     fireEvent.click(repeat);
     fireEvent.click(repeat);
@@ -322,7 +322,7 @@ describe("le sanctuaire", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("can revisit the saved last batch without purchasing it again", async () => {
+  it("reopens every round of the saved batch already revealed without purchasing it again", async () => {
     const latest = reward({
       packId: "sylve",
       count: 10,
@@ -333,7 +333,34 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
+    expect(within(dialog).getByText("Dernière invocation")).toBeTruthy();
+    for (let round = 1; round <= 10; round++) {
+      expect(within(dialog).getByText(`Invocation ${round} / 10`)).toBeTruthy();
+      expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
+      expect(
+        within(dialog).queryByRole("button", { name: /^Révéler la carte/ }),
+      ).toBeNull();
+      expect(
+        within(dialog).getAllByRole("button", {
+          name: /voir les informations/,
+        }),
+      ).toHaveLength(5);
+      expect(
+        within(dialog).getByRole("img", {
+          name: "Carte d’or : 500 pièces d’or",
+        }),
+      ).toBeTruthy();
+      expect(within(dialog).getByRole("status").textContent).toBe(
+        "6 / 6 cartes révélées",
+      );
+      if (round < 10) {
+        const next = within(dialog).getByRole("button", {
+          name: /^Invocation suivante/,
+        }) as HTMLButtonElement;
+        expect(next.disabled).toBe(false);
+        fireEvent.click(next);
+      }
+    }
     expect(onSummon).not.toHaveBeenCalled();
   });
 
@@ -353,7 +380,6 @@ describe("le sanctuaire", () => {
         fireEvent.click(
           within(reveal).getByRole("button", { name: /^Invocation suivante/ }),
         );
-      turnAll(reveal);
       const card = resolveCard(latest.reveals[index]!.variantId);
       const trigger = within(reveal).getAllByRole("button", {
         name: new RegExp(`^${card.name},`),
@@ -396,7 +422,6 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const reveal = await screen.findByRole("dialog");
-    turnAll(reveal);
     fireEvent.click(
       within(reveal).getAllByRole("button", {
         name: /niveau 2, voir les informations/,
@@ -446,6 +471,12 @@ describe("le sanctuaire", () => {
     fireEvent.click(purchase("Sylve", 1));
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
+    expect(
+      within(dialog).queryByText(
+        "Touche chaque carte pour découvrir ta récompense.",
+      ),
+    ).toBeNull();
+    expect(dialog.querySelector(".lucide-sparkles")).toBeNull();
     expect(within(dialog).queryByText("Carte d’or")).toBeNull();
     expect(
       within(dialog).queryByRole("button", { name: /voir les informations/ }),
@@ -487,7 +518,6 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const history = await screen.findByRole("dialog");
-    turnAll(history);
     expect(
       within(history).getByRole("img", {
         name: "Carte d’or : 500 pièces d’or",
@@ -503,7 +533,7 @@ describe("le sanctuaire", () => {
     turnAll(dialog);
     fireEvent.click(
       within(dialog).getByRole("button", {
-        name: "Réinvoquer ×1, 134 émeraudes, remise de 10 %",
+        name: "Réinvoquer ×1, 139 émeraudes",
       }),
     );
     await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(2));
@@ -524,7 +554,7 @@ describe("le sanctuaire", () => {
 
   it("keeps shop prices at their base amounts even when old purchases exist", () => {
     setup({
-      emeralds: 134,
+      emeralds: 139,
       latest: reward({
         packId: "sylve",
         count: 1,
@@ -549,12 +579,12 @@ describe("le sanctuaire", () => {
     const { update } = setup({ emeralds: 149 });
     fireEvent.click(purchase("Sylve", 1));
     const dialog = await screen.findByRole("dialog");
-    update({ emeralds: 134 });
+    update({ emeralds: 139 });
     turnAll(dialog);
     expect(
       (
         within(dialog).getByRole("button", {
-          name: "Réinvoquer ×1, 134 émeraudes, remise de 10 %",
+          name: "Réinvoquer ×1, 139 émeraudes",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(false);
@@ -571,7 +601,8 @@ describe("le sanctuaire", () => {
       const { onCloseCircle, onSummon } = setup();
       fireEvent.click(purchase("Sylve", count));
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText(/−10 % au prochain/)).toBeTruthy();
+      expect(within(dialog).queryByText(/% au prochain/)).toBeNull();
+      expect(dialog.querySelector(".summon-repeat-badge")).toBeNull();
       fireEvent.click(
         within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
       );
@@ -591,7 +622,6 @@ describe("le sanctuaire", () => {
       const history = await screen.findByRole("dialog");
       expect(within(history).queryByText(/% au prochain/)).toBeNull();
       for (let round = 0; round < count; round++) {
-        turnAll(history);
         if (round < count - 1)
           fireEvent.click(
             within(history).getByRole("button", {
@@ -683,7 +713,6 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const dialog = await screen.findByRole("dialog");
-    turnAll(dialog);
     const repeat = within(dialog).getByRole("button", { name: /^Réinvoquer/ });
     expect((repeat as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(repeat);
@@ -713,7 +742,7 @@ describe("le sanctuaire", () => {
       .mockRejectedValueOnce(new Error("Response lost"))
       .mockImplementation(async (request) => ({
         ...reward(request),
-        cost: 134,
+        cost: 139,
       }));
     const { update } = setup({ onSummon });
     fireEvent.click(purchase("Sylve", 1));
@@ -753,7 +782,6 @@ describe("le sanctuaire", () => {
     const dialog = await screen.findByRole("dialog");
     let total = 0;
     for (let round = 0; round < 10; round++) {
-      turnAll(dialog);
       const card = within(dialog).getByRole("img", { name: /^Carte d’or :/ });
       total += Number(card.getAttribute("aria-label")!.match(/: (\d+) /)![1]);
       if (round < 9)

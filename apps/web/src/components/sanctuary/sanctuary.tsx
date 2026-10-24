@@ -14,16 +14,13 @@ import {
   SUMMON_PACKS,
   summonOffer,
   summonQuantity,
-  summonGoldQuantity,
   type SummonCount,
   type SummonPack,
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
 import { GameHeader } from "@/components/game-header";
-import { leagueAt } from "@sylve/game/leagues";
 import { EmeraldAmount } from "@/components/emerald-balance";
-import { GoldIcon } from "@/components/gold-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { BestiaryDialog } from "./bestiary-dialog";
@@ -66,6 +63,7 @@ export function Sanctuary({
     count: SummonCount;
   } | null>(null);
   const [result, setResult] = useState<SummonResult | null>(null);
+  const [viewingHistory, setViewingHistory] = useState(false);
   const [lastResult, setLastResult] = useState<SummonResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<number | null>(null);
@@ -91,6 +89,7 @@ export function Sanctuary({
   const closeResult = useCallback(() => {
     releaseCircle();
     setResult(null);
+    setViewingHistory(false);
     setError(null);
   }, [releaseCircle]);
   useEffect(() => {
@@ -141,6 +140,7 @@ export function Sanctuary({
       if (mounted.current) setLastResult(saved);
       if (mounted.current && epoch === circleEpoch.current) {
         activeCircle.current = reward.repeatToken ?? null;
+        setViewingHistory(false);
         setResult(reward);
       } else if (reward.repeatToken) {
         void closeCircle.current(reward.repeatToken).catch(() => undefined);
@@ -329,9 +329,10 @@ export function Sanctuary({
                 type="button"
                 className="sanctuary-text-button"
                 disabled={!!busy || busyKey !== null}
-                onClick={() =>
-                  setResult({ ...previous, repeatToken: undefined })
-                }
+                onClick={() => {
+                  setViewingHistory(true);
+                  setResult({ ...previous, repeatToken: undefined });
+                }}
               >
                 <History size={17} />
                 Dernière invocation
@@ -386,6 +387,7 @@ export function Sanctuary({
       <SummonRevealDialog
         key={result?.requestId ?? "closed"}
         result={result}
+        history={viewingHistory}
         collection={collection}
         emeralds={emeralds}
         ready={ready}
@@ -432,7 +434,6 @@ function PackChoice({
 }) {
   const premium = pack.id !== "sylve";
   const divine = pack.id === "divine";
-  const gold = summonGoldQuantity(peakTrophies);
   const guarantee = divine
     ? `${pack.guaranteedLegendaries} compagnons légendaires`
     : pack.guaranteedLegendaries === 1
@@ -488,20 +489,6 @@ function PackChoice({
           );
         })}
       </div>
-      <p className="summon-gold-bonus">
-        <GoldIcon />
-        <span>
-          Carte d’or garantie : {gold.min.toLocaleString("fr-FR")}–
-          {gold.max.toLocaleString("fr-FR")} or par invocation
-        </span>
-      </p>
-      <p className="summon-quantity-note">
-        5 compagnons par invocation · Exemplaires par compagnon selon ton record
-        : {leagueAt(peakTrophies).label}.
-        {divine
-          ? " 50 % de chance de doubler un compagnon par invocation."
-          : ` Au moins ${pack.guaranteedLegendaries} légendaire${pack.guaranteedLegendaries > 1 ? "s" : ""} parmi les 50 compagnons du lot ×10.`}
-      </p>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
