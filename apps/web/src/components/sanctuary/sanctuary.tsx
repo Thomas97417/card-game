@@ -25,7 +25,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { BestiaryDialog } from "./bestiary-dialog";
@@ -329,10 +328,6 @@ export function SummonRevealDialog({
         copies: inspectedReveal.copies,
       }
     : undefined;
-  const pack = result ? summonPack(result.packId) : null;
-  const legendaryCount =
-    result?.reveals.filter((item) => item.variantId.endsWith(":legendary"))
-      .length ?? 0;
 
   function close() {
     setInspected(null);
@@ -352,27 +347,29 @@ export function SummonRevealDialog({
         className="summon-reveal-dialog"
         appearance="game"
       >
-        {result && pack && (
+        {result && (
           <>
             <header className="summon-reveal-heading">
-              <span className="sanctuary-eyebrow">{pack.name}</span>
               <DialogTitle>
                 {result.count === 10
-                  ? "Ton cercle s’agrandit."
-                  : "Un esprit a répondu."}
+                  ? "Dernières invocations"
+                  : "Dernière invocation"}
               </DialogTitle>
-              <DialogDescription>
-                {result.count} carte{result.count > 1 ? "s" : ""} ajoutée
-                {result.count > 1 ? "s" : ""} à ta collection.{" "}
-                {legendaryCount > 0 &&
-                  `${legendaryCount} légendaire${legendaryCount > 1 ? "s" : ""} !`}{" "}
-                Les doublons rejoignent ta réserve d’exemplaires.
-              </DialogDescription>
+              <div className="summon-reveal-actions">
+                <DialogClose className="sanctuary-text-button">
+                  Continuer à invoquer
+                </DialogClose>
+                <Link to="/decks" className="sylve-button" onClick={close}>
+                  Voir ma collection
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
             </header>
             <div
               className="summon-reveal-grid"
               role="list"
               aria-label="Cartes invoquées"
+              data-count={result.count}
             >
               {result.reveals.map((item, index) => {
                 const entry = entries.get(item.variantId);
@@ -411,15 +408,6 @@ export function SummonRevealDialog({
                   </div>
                 );
               })}
-            </div>
-            <div className="summon-reveal-actions">
-              <DialogClose className="sanctuary-text-button">
-                Continuer à invoquer
-              </DialogClose>
-              <Link to="/decks" className="sylve-button" onClick={close}>
-                Voir ma collection
-                <ArrowRight size={16} />
-              </Link>
             </div>
           </>
         )}

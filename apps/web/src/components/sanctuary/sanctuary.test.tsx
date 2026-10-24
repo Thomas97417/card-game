@@ -146,6 +146,9 @@ describe("le sanctuaire", () => {
       expect((button as HTMLButtonElement).disabled).toBe(true);
     await act(async () => finish(reward(request)));
     const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: "Dernières invocations" }),
+    ).toBeTruthy();
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
     expect(within(dialog).getAllByText("Légendaire")).toHaveLength(2);
     expect(within(dialog).getByText("Nouvelle carte")).toBeTruthy();
