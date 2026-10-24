@@ -472,12 +472,6 @@
   right: -1px;
   border-right: 5px solid transparent;
 }
-.summon-insufficient {
-  margin-top: 10px;
-  color: #f6cea2;
-  font-size: 10px;
-  text-align: center;
-}
 .sanctuary-feedback,
 .sanctuary-error {
   display: flex;

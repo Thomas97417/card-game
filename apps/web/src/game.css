@@ -2149,12 +2149,15 @@ button:disabled {
   align-items: center;
   gap: 5px;
 }
-.ability-title > span {
+.ability-title > :is(span, .ability-next-trigger) {
   flex-shrink: 0;
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 9px;
   background: #ffffff80;
+}
+.ability-next-trigger {
+  cursor: pointer;
 }
 .card-abilities p {
   margin: 5px 0 0;
@@ -2166,26 +2169,6 @@ button:disabled {
   font-weight: 600;
   padding-top: 5px;
   border-top: 1px solid #b6c79e88;
-}
-.bestiary-level {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-  color: #52654b;
-  font-size: 12px;
-}
-.bestiary-level select {
-  padding: 5px 10px;
-  border: 1px solid #a9bb8e;
-  border-radius: 7px;
-  background: #fffdf4;
-  color: #304c37;
-}
-.bestiary-level > span {
-  font-size: 11px;
-  color: #7b8271;
 }
 .unit-statuses {
   position: absolute;
@@ -2436,7 +2419,7 @@ button:disabled {
 .unit-name {
   bottom: calc(100% + 3px);
 }
-.ability-title > span {
+.ability-title > :is(span, .ability-next-trigger) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2484,10 +2467,6 @@ button:disabled {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-}
-.bestiary-card-abilities {
-  margin-top: 5px;
-  --ability-size: 20px;
 }
 .effect-word {
   font-size: 12px;

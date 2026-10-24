@@ -986,9 +986,13 @@
 .game-dialog .card-abilities li p {
   color: inherit;
 }
-.game-dialog .ability-title > span {
+.game-dialog .ability-title > :is(span, .ability-next-trigger) {
   background: #152e2477;
   color: #e6cc8e;
+}
+.game-dialog .ability-next-trigger:hover,
+.game-dialog .ability-next-trigger[data-popup-open] {
+  background: #d4be8826;
 }
 .game-dialog .card-abilities .ability-next {
   color: #cce9a6;

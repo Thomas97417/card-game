@@ -38,6 +38,8 @@ Une invocation donne un exemplaire d’une variante. Le premier la débloque ; l
 
 Le serveur vérifie les émeraudes, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
 
+Le bestiaire s’ouvre dans une galerie avec recherche par nom (y compris les noms des évolutions), filtres de combat et choix de rareté. Cliquer sur une carte ouvre sa fiche dans la même fenêtre : caractéristiques, capacités, exploration des niveaux et quatre formes de la lignée. Les flèches parcourent les créatures filtrées ; le retour à la galerie retrouve la recherche et la position de départ. Les formes de rareté restent des variantes à collectionner séparément.
+
 Trois cartes de clés dorées permettent aussi de débloquer définitivement les emplacements de coffre 07, 08 et 09 : **Clé de la Sylve (500 émeraudes), Clé des anciens (1 000) et Clé souveraine (1 500)**. Chaque clé s’achète une seule fois, indépendamment des autres et des ligues. Les chaînes de ces trois places portent un cadenas doré serti d’émeraude et ouvrent directement la section des clés du sanctuaire. Le débit et le déblocage sont atomiques ; réessayer un achat ne le débite jamais deux fois.
 
 ### Collection et deck

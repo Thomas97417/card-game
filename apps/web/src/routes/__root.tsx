@@ -26,6 +26,7 @@ import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
 import leaguesCss from "../leagues.css?url";
 import sanctuaryCss from "../sanctuary.css?url";
+import bestiaryCss from "../bestiary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: lobbyCss },
       { rel: "stylesheet", href: leaguesCss },
       { rel: "stylesheet", href: sanctuaryCss },
+      { rel: "stylesheet", href: bestiaryCss },
       { rel: "stylesheet", href: playerHeaderCss },
       { rel: "stylesheet", href: settingsCss },
     ],

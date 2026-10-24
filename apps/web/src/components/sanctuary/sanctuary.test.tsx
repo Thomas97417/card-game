@@ -17,6 +17,7 @@ import {
 import { Sanctuary, type SummonRequest } from "./sanctuary";
 import { GoldContext } from "@/components/gold-balance";
 import { EmeraldContext } from "@/components/emerald-balance";
+import { selectOption } from "@/test-select";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
@@ -188,7 +189,7 @@ describe("le sanctuaire", () => {
     expect(purchase("Sylve", 10).disabled).toBe(true);
     expect(purchase("anciens", 1).disabled).toBe(true);
     expect(purchase("anciens", 10).disabled).toBe(true);
-    expect(screen.getByText(/Il te manque 300 émeraudes/)).toBeTruthy();
+    expect(screen.queryByText(/Émeraudes insuffisantes/)).toBeNull();
   });
 
   it.each([undefined, null, 0])(
@@ -375,29 +376,30 @@ describe("le sanctuaire", () => {
     expect(
       within(dialog).getByRole("heading", { name: CATALOG[1]!.name }),
     ).toBeTruthy();
-    const levels = within(dialog).getByRole("combobox", {
-      name: /Niveau de la carte/,
-    });
-    expect(within(levels).getAllByRole("option")).toHaveLength(26);
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(within(dialog).getByText("Niv. 6")).toBeTruthy();
-    fireEvent.change(levels, { target: { value: "6" } });
+    await selectOption("Niveau de la carte", "Niveau 6");
     expect(within(dialog).getByText("Active · niv. 6")).toBeTruthy();
     expect(within(dialog).getByText("Niv. 11")).toBeTruthy();
-    fireEvent.change(levels, { target: { value: "26" } });
+    await selectOption("Niveau de la carte", "Niveau 26");
     expect(within(dialog).getByText("Active · niv. 11")).toBeTruthy();
   });
   it("explores Rare and Epic profiles through level 31 and clamps the level on returning to Common", async () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
     const dialog = await screen.findByRole("dialog");
-    const rarity = within(dialog).getByRole("combobox", {
-      name: /Rareté de la carte/,
-    });
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Gardien de pierre",
+      }),
+    );
     const level = within(dialog).getByRole("combobox", {
       name: /Niveau de la carte/,
     });
-    fireEvent.change(rarity, { target: { value: "rare" } });
-    expect(within(level).getAllByRole("option")).toHaveLength(31);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme rare/ }),
+    );
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
     expect(
       within(dialog).getByRole("heading", { name: "Gardien des runes" }),
     ).toBeTruthy();
@@ -406,14 +408,18 @@ describe("le sanctuaire", () => {
         .getAllByAltText("Gardien des runes")[0]!
         .getAttribute("src"),
     ).toBe("/art/characters/evolutions/guardian-rare.webp");
-    fireEvent.change(level, { target: { value: "31" } });
-    fireEvent.change(rarity, { target: { value: "epic" } });
+    await selectOption("Niveau de la carte", "Niveau 31");
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme épique/ }),
+    );
     expect(
       within(dialog).getByRole("heading", { name: "Colosse du serment" }),
     ).toBeTruthy();
-    expect((level as HTMLSelectElement).value).toBe("31");
-    fireEvent.change(rarity, { target: { value: "common" } });
-    expect((level as HTMLSelectElement).value).toBe("26");
+    expect(level.textContent).toContain("Niveau 31");
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme commune/ }),
+    );
+    expect(level.textContent).toContain("Niveau 26");
     expect(
       within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
     ).toBeTruthy();
@@ -422,33 +428,41 @@ describe("le sanctuaire", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
     const dialog = await screen.findByRole("dialog");
-    const rarity = within(dialog).getByRole("combobox", {
-      name: /Rareté de la carte/,
-    });
-    const level = within(dialog).getByRole("combobox", {
-      name: /Niveau de la carte/,
-    });
-    fireEvent.change(rarity, { target: { value: "legendary" } });
-    expect(within(level).getAllByRole("option")).toHaveLength(31);
-    expect(
-      within(dialog).getByRole("heading", {
-        name: "Gardien du serment éternel",
-      }),
-    ).toBeTruthy();
-    fireEvent.change(level, { target: { value: "31" } });
-    fireEvent.click(
-      within(dialog).getByRole("button", {
-        name: "Découvrir Totem de l’aurore",
-      }),
-    );
-    expect((level as HTMLSelectElement).value).toBe("26");
-    expect(within(level).getAllByRole("option")).toHaveLength(26);
-    expect(within(dialog).getByText(/Création Sylve/)).toBeTruthy();
+    await selectOption("Rareté de la carte", "Légendaire");
     fireEvent.click(
       within(dialog).getByRole("button", {
         name: "Découvrir Gardien du serment éternel",
       }),
     );
-    expect(within(level).getAllByRole("option")).toHaveLength(31);
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
+    expect(
+      within(dialog).getByRole("heading", {
+        name: "Gardien du serment éternel",
+      }),
+    ).toBeTruthy();
+    await selectOption("Niveau de la carte", "Niveau 31");
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Totem de l’aurore",
+      }),
+    );
+    const buildingLevel = within(dialog).getByRole("combobox", {
+      name: "Niveau de la carte",
+    });
+    expect(buildingLevel.textContent).toContain("Niveau 26");
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
+    expect(within(dialog).getByText(/Création Sylve/)).toBeTruthy();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Gardien du serment éternel",
+      }),
+    );
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
   });
 });
