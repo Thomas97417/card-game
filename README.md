@@ -188,6 +188,10 @@ Ne pas copier tout le fichier du backend dans celui du frontend. Ajouter uniquem
 
 Ces services sont nécessaires pour utiliser les fonctionnalités correspondantes.
 
+### Achats d’émeraudes avec Polar
+
+Le sanctuaire propose cinq packs d’émeraudes en argent réel, de la bourse au trésor souverain. Les paiements ponctuels utilisent le composant Convex Polar, avec crédit après webhook signé et traitement des remboursements. La [configuration des achats](docs/emerald-purchases.md) détaille les cinq produits, les variables Convex et le webhook à brancher. Les offres restent indisponibles tant que Polar n’est pas configuré.
+
 ### Connexion Google et GitHub
 
 Créer les applications OAuth auprès des fournisseurs concernés, puis ajouter leurs identifiants dans les **variables du déploiement Convex** :

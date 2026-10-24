@@ -19,6 +19,7 @@ import {
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { WELCOME_DIAMONDS } from "@sylve/game/summoning";
 
 export async function playerProgress(
   ctx: QueryCtx | MutationCtx,
@@ -49,6 +50,22 @@ export async function playerWallet(
     .query("wallets")
     .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
     .unique();
+}
+
+/** An absent diamonds field is the legacy-wallet migration marker. Zero stays zero. */
+export async function ensureEmeraldWallet(ctx: MutationCtx, ownerId: string) {
+  const wallet = await playerWallet(ctx, ownerId);
+  if (wallet) {
+    if (wallet.diamonds !== undefined) return wallet;
+    await ctx.db.patch(wallet._id, { diamonds: WELCOME_DIAMONDS });
+    return { ...wallet, diamonds: WELCOME_DIAMONDS };
+  }
+  const id = await ctx.db.insert("wallets", {
+    ownerId,
+    gold: 0,
+    diamonds: WELCOME_DIAMONDS,
+  });
+  return (await ctx.db.get(id))!;
 }
 
 export async function playerChestSlots(

@@ -1,7 +1,19 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import { ArrowRight, Check, History, LoaderCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Gem,
+  History,
+  KeyRound,
+  LoaderCircle,
+  Sparkles,
+} from "lucide-react";
+import type {
+  EmeraldPackId,
+  EmeraldPackOffer,
+} from "@sylve/game/emerald-packs";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
 import {
   combatTypeLabel,
@@ -31,6 +43,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { BestiaryDialog } from "./bestiary-dialog";
+import { EmeraldPacks } from "./emerald-packs";
 
 export interface SummonRequest {
   packId: SummonPackId;
@@ -47,6 +60,9 @@ interface SanctuaryProps {
   onSummon: (request: SummonRequest) => Promise<SummonResult>;
   onUnlockChestSlot: (slot: number) => Promise<unknown>;
   onUpgrade: (variantId: string) => Promise<unknown>;
+  emeraldOffers?: EmeraldPackOffer[];
+  onBuyEmeralds?: (packId: EmeraldPackId) => Promise<void>;
+  paymentFeedback?: ReactNode;
 }
 
 export function Sanctuary({
@@ -58,6 +74,9 @@ export function Sanctuary({
   onSummon,
   onUnlockChestSlot,
   onUpgrade,
+  emeraldOffers,
+  onBuyEmeralds,
+  paymentFeedback,
 }: SanctuaryProps) {
   const [busy, setBusy] = useState<{
     packId: SummonPackId;
@@ -75,6 +94,14 @@ export function Sanctuary({
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
   useHorizontalWheel(offersRow);
   const previous = lastResult ?? latest;
+
+  function showOffers(id: string) {
+    offersRow.current?.querySelector(`#${id}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "start",
+    });
+  }
 
   async function invoke(packId: SummonPackId, count: SummonCount) {
     const pack = summonPack(packId);
@@ -153,16 +180,36 @@ export function Sanctuary({
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
+          <nav
+            className="sanctuary-categories"
+            aria-label="Offres du sanctuaire"
+          >
+            <button type="button" onClick={() => showOffers("summon-packs")}>
+              <Sparkles size={15} /> Invocations
+            </button>
+            <button type="button" onClick={() => showOffers("chest-keys")}>
+              <KeyRound size={15} /> Clés de coffre
+            </button>
+            <button
+              type="button"
+              className="sanctuary-emerald-link"
+              onClick={() => showOffers("emerald-packs")}
+            >
+              <Gem size={15} /> Émeraudes
+            </button>
+          </nav>
+          {paymentFeedback}
           <div
             ref={offersRow}
             className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}
             role="region"
-            aria-label="Invocations et clés, défilement horizontal"
+            aria-label="Invocations, clés et émeraudes, défilement horizontal"
             tabIndex={0}
             {...dragHandlers}
           >
             <section
               className="summon-packs"
+              id="summon-packs"
               aria-label="Packs d’invocation"
               aria-busy={!!busy}
             >
@@ -262,6 +309,11 @@ export function Sanctuary({
                 })}
               </div>
             </section>
+            <EmeraldPacks
+              offers={emeraldOffers}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyEmeralds}
+            />
           </div>
           <nav
             className="sanctuary-navigation"

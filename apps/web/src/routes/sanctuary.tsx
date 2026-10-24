@@ -1,13 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { Sanctuary } from "@/components/sanctuary/sanctuary";
 import { useEmeraldBalance } from "@/components/emerald-balance";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import { EmeraldPaymentFeedback } from "@/components/sanctuary/emerald-packs";
 
 export const Route = createFileRoute("/sanctuary")({
+  validateSearch: (search: Record<string, unknown>): { checkout?: string } => ({
+    checkout:
+      typeof search.checkout === "string" &&
+      /^[a-zA-Z0-9_-]{1,128}$/.test(search.checkout)
+        ? search.checkout
+        : undefined,
+  }),
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
@@ -18,6 +26,14 @@ export const Route = createFileRoute("/sanctuary")({
 });
 
 function SanctuaryPage() {
+  const { checkout } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const emeraldOffers = useQuery(api.payments.offers);
+  const createCheckout = useAction(api.payments.createCheckout);
+  const paymentStatus = useQuery(
+    api.payments.checkoutStatus,
+    checkout ? { checkoutId: checkout } : "skip",
+  );
   const emeralds = useEmeraldBalance();
   const latest = useQuery(api.sanctuary.latest);
   const summon = useMutation(api.sanctuary.summon);
@@ -48,6 +64,20 @@ function SanctuaryPage() {
       purchasedChestSlots={chestSlots?.purchasedSlots}
       onUnlockChestSlot={(slot) => unlockChestSlot({ slot })}
       onUpgrade={(variantId) => upgrade({ variantId })}
+      emeraldOffers={emeraldOffers}
+      onBuyEmeralds={async (packId) => {
+        const { url } = await createCheckout({ packId });
+        window.location.assign(url);
+      }}
+      paymentFeedback={
+        checkout ? (
+          <EmeraldPaymentFeedback
+            key={checkout}
+            status={paymentStatus}
+            onDismiss={() => void navigate({ search: {}, replace: true })}
+          />
+        ) : null
+      }
     />
   );
 }

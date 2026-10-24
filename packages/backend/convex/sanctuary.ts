@@ -1,32 +1,14 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
-import {
-  WELCOME_DIAMONDS,
-  summonLoot,
-  summonPrice,
-} from "@sylve/game/summoning";
+import { summonLoot, summonPrice } from "@sylve/game/summoning";
 import { mutation, query } from "./_generated/server";
-import type { MutationCtx } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
-import { grantLoot, playerWallet } from "./lib/progression";
+import {
+  grantLoot,
+  ensureEmeraldWallet as ensureDiamonds,
+} from "./lib/progression";
 import { summonCountValidator, summonPackValidator } from "./lib/validators";
-
-/** The optional field itself is the migration marker: a spent balance of zero stays zero. */
-async function ensureDiamonds(ctx: MutationCtx, ownerId: string) {
-  const wallet = await playerWallet(ctx, ownerId);
-  if (wallet) {
-    if (wallet.diamonds !== undefined) return wallet;
-    await ctx.db.patch(wallet._id, { diamonds: WELCOME_DIAMONDS });
-    return { ...wallet, diamonds: WELCOME_DIAMONDS };
-  }
-  const id = await ctx.db.insert("wallets", {
-    ownerId,
-    gold: 0,
-    diamonds: WELCOME_DIAMONDS,
-  });
-  return (await ctx.db.get(id))!;
-}
 
 export const ensureWallet = mutation({
   args: {},

@@ -232,6 +232,8 @@ Aperçus : [fiche ordinateur](ui-card-dialog-validation.jpg), [fiche mobile](ui-
 
 ## Sanctuaire et émeraudes
 
+Cinq trésors d’émeraudes complètent les offres du sanctuaire : bourse de cuir, petit coffret, grand coffre, trésor à deux coffres et trésor souverain à trois coffres. Ils ont été générés séparément avec **ImageGen intégré**, puis enregistrés avec transparence en WebP de 512 × 512 px dans `apps/web/public/art/treasures/` (environ 520 Kio au total). Le [manifeste des prompts](art-prompts-emerald-packs.json) conserve les cinq prompts et les PNG originaux. Les [notes sur les achats Polar](emerald-purchases.md) décrivent l’intégration et les aperçus contrôlés.
+
 `apps/web/public/art/sanctuary.webp` représente un temple forestier ouvert, enchâssé dans un arbre ancien, avec un autel de pierre et une fontaine d’invocation turquoise. L’image a été générée avec l’outil intégré **ImageGen**, puis encodée avec `cwebp` en WebP de 1672 × 941 px, qualité 88, environ 487 Ko. Le décor couvre toute la page `/sanctuary` ; le titre, les taux, les prix et les commandes sont des éléments HTML. Les éventails des packs réutilisent les dos de cartes illustrés existants.
 
 `apps/web/public/art/ui/emerald.webp` représente **une seule grosse émeraude verte**, taillée à pans coupés, créée avec **ImageGen intégré**, sur un fond réellement transparent. Elle remplace l’ancien groupe de trois diamants bleus. L’image finale mesure 384 × 384 px, qualité 90, avec son canal alpha conservé. Elle accompagne le solde en haut des pages connectées hors combat et les prix des invocations, à côté des pièces d’or. Les libellés accessibles, les messages de solde insuffisant et les accents du portefeuille utilisent aussi les émeraudes.
