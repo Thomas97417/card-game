@@ -296,12 +296,6 @@ function PackChoice({
           );
         })}
       </div>
-      {emeralds != null && emeralds < pack.price && (
-        <p className="summon-insufficient">
-          Émeraudes insuffisantes · Il te manque{" "}
-          {(pack.price - emeralds).toLocaleString("fr-FR")} émeraudes.
-        </p>
-      )}
     </article>
   );
 }

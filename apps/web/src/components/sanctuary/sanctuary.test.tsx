@@ -110,7 +110,7 @@ describe("le sanctuaire", () => {
     expect(purchase("Sylve", 10).disabled).toBe(true);
     expect(purchase("anciens", 1).disabled).toBe(true);
     expect(purchase("anciens", 10).disabled).toBe(true);
-    expect(screen.getByText(/Il te manque 300 émeraudes/)).toBeTruthy();
+    expect(screen.queryByText(/Émeraudes insuffisantes/)).toBeNull();
   });
 
   it.each([undefined, null, 0])(

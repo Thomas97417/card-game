@@ -216,20 +216,9 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
       ) : (
         <>
           <header className="bestiary-heading">
-            <span className="eyebrow">LES COMPAGNONS DE LA SYLVE</span>
-            <div className="bestiary-heading-title">
-              <DialogTitle ref={title} tabIndex={-1}>
-                Le bestiaire
-              </DialogTitle>
-              <span>
-                {CATALOG.length} lignées · {CATALOG.length * RARITIES.length}{" "}
-                formes
-              </span>
-            </div>
-            <DialogDescription>
-              Rencontre tes futurs alliés. Ouvre une carte pour découvrir ses
-              capacités et ses évolutions.
-            </DialogDescription>
+            <DialogTitle ref={title} tabIndex={-1}>
+              Le bestiaire
+            </DialogTitle>
           </header>
           <div className="bestiary-toolbar">
             <div className="bestiary-search">
@@ -308,12 +297,9 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
               ))}
             </div>
           </div>
-          <div className="bestiary-gallery-caption">
-            <span role="status">
-              {cards.length} {cards.length === 1 ? "créature" : "créatures"}
-            </span>
-            <span>Choisis une carte pour l’explorer</span>
-          </div>
+          <span className="sr-only" role="status">
+            {cards.length} {cards.length === 1 ? "créature" : "créatures"}
+          </span>
         </>
       )}
 
@@ -437,7 +423,6 @@ function BestiaryDetails({
         </div>
         <div className="bestiary-profile">
           <header className="bestiary-profile-heading">
-            <span className="eyebrow">CARNET DES COMPAGNONS</span>
             <DialogTitle ref={titleRef} tabIndex={-1}>
               {card.name}
             </DialogTitle>
@@ -487,7 +472,7 @@ function BestiaryDetails({
               </div>
             ))}
           </dl>
-          <CardAbilities card={card} next={next} />
+          <CardAbilities card={card} next={next} compactNext />
         </div>
       </div>
       <section

@@ -24,17 +24,6 @@
   flex-shrink: 0;
   padding: 26px 80px 22px 32px;
 }
-.bestiary-heading-title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 20px;
-  margin-top: 8px;
-}
-.bestiary-heading-title > span {
-  color: #c6bd9e;
-  font-size: 11px;
-}
 .bestiary-heading [data-slot="dialog-title"] {
   padding: 0;
   font-size: 34px;
@@ -121,19 +110,6 @@
   border-color: #d4be8855;
   background: #d4be881a;
   color: #ead7a4;
-}
-.bestiary-gallery-caption {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 5px 12px;
-  flex-shrink: 0;
-  padding: 16px 32px 0;
-  color: #aab9a2;
-  font-size: 10px;
-}
-.bestiary-gallery-caption [role="status"] {
-  color: #dfd2af;
 }
 .bestiary-scroll {
   flex: 1;
@@ -290,7 +266,7 @@
   min-width: 0;
 }
 .bestiary-profile-heading [data-slot="dialog-title"] {
-  margin-top: 9px;
+  margin-top: 0;
   padding: 0;
   font-size: 32px;
   outline: none;
@@ -611,14 +587,8 @@
   .bestiary-heading {
     padding: 20px 58px 18px 20px;
   }
-  .bestiary-heading-title {
-    gap: 8px;
-  }
   .bestiary-heading [data-slot="dialog-title"] {
     font-size: 29px;
-  }
-  .bestiary-heading [data-slot="dialog-description"] {
-    font-size: 11px;
   }
   .bestiary-toolbar {
     gap: 12px 10px;
@@ -644,12 +614,6 @@
     min-height: 44px;
     padding-inline: 8px;
     font-size: 10px;
-  }
-  .bestiary-gallery-caption {
-    padding: 14px 20px 0;
-  }
-  .bestiary-gallery-caption > span:last-child {
-    display: none;
   }
   .bestiary-scroll {
     padding: 24px 20px 20px;
@@ -702,9 +666,6 @@
     grid-column: 2;
     grid-row: 1;
   }
-  .bestiary-profile-heading > .eyebrow {
-    display: none;
-  }
   .bestiary-showcase {
     grid-column: 1;
     grid-row: 1;
@@ -738,7 +699,6 @@
     display: none;
   }
   .bestiary-profile-heading [data-slot="dialog-title"] {
-    margin-top: 0;
     font-size: 24px;
   }
   .bestiary-traits {
@@ -827,15 +787,6 @@
     font-size: 21px;
   }
 }
-@media (max-height: 650px) {
-  .bestiary-heading > .eyebrow,
-  .bestiary-heading [data-slot="dialog-description"] {
-    display: none;
-  }
-  .bestiary-heading-title {
-    margin-top: 0;
-  }
-}
 @media (max-height: 600px) and (min-width: 601px) {
   .game-dialog.bestiary-dialog[data-slot="dialog-content"] {
     height: calc(100svh - 16px);
@@ -854,9 +805,6 @@
   .bestiary-navigation {
     min-height: 64px;
     padding-block: 10px;
-  }
-  .bestiary-gallery-caption {
-    padding-top: 10px;
   }
   .bestiary-scroll {
     padding-block: 16px 8px;

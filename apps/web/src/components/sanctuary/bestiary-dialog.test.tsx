@@ -328,6 +328,50 @@ describe("Bestiary navigation", () => {
     ).toBeTruthy();
   });
 
+  it("opens the next ability level in a dismissible preview and clears it when changing level", async () => {
+    const dialog = await openBestiary();
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: `Découvrir ${variantCard("lynx", "common").name}`,
+      }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme épique/ }),
+    );
+    fireEvent.change(within(dialog).getByRole("slider"), {
+      target: { value: "20" },
+    });
+    const ability = variantCard("lynx", "epic", 21).abilities![0]!;
+    const trigger = within(dialog).getByRole("button", {
+      name: `Voir ${ability.name} au niveau 21`,
+    });
+    fireEvent.click(trigger);
+    const preview = await screen.findByRole("dialog", {
+      name: `${ability.name} · niveau 21`,
+    });
+    expect(within(preview).getByText(ability.description)).toBeTruthy();
+    fireEvent.keyDown(preview, { key: "Escape" });
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", {
+          name: `${ability.name} · niveau 21`,
+        }),
+      ).toBeNull(),
+    );
+    expect(screen.getByRole("dialog", { name: /Lynx des miroirs/ })).toBe(
+      dialog,
+    );
+    fireEvent.click(trigger);
+    await screen.findByRole("dialog", {
+      name: `${ability.name} · niveau 21`,
+    });
+    fireEvent.change(within(dialog).getByRole("slider"), {
+      target: { value: "21" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("dialog")).toHaveLength(1));
+    expect(within(dialog).getByText(ability.description)).toBeTruthy();
+  });
+
   it("closes with Escape, restores trigger focus and reopens on the gallery", async () => {
     const dialog = await openBestiary();
     fireEvent.click(
