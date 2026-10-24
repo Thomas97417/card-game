@@ -123,12 +123,15 @@ const unitValidator = v.object({
 const runeValidator = v.object({
   row: v.number(),
   depth: v.number(),
-  health: v.number(),
+  health: v.optional(v.number()),
+  attack: v.optional(v.number()),
+  activated: v.optional(v.boolean()),
 });
 const pentagramValidator = v.object({
   row: v.number(),
   depth: v.number(),
-  attack: v.number(),
+  attack: v.optional(v.number()),
+  health: v.optional(v.number()),
 });
 export const stateValidator = v.object({
   players: v.array(

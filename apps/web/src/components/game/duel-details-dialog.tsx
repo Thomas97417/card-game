@@ -8,6 +8,8 @@ import {
   isMeleeBlocked,
   legalPlacements,
   FACTION_LABELS,
+  fieldBonus,
+  fieldMarkName,
   type CardDefinition,
   type GameView,
   type UnitPosition,
@@ -92,6 +94,9 @@ export function DuelDetailsDialog({
           )
       : undefined;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
+  const bonus = fieldMark ? fieldBonus(fieldMark) : undefined;
+  const occupiedRune = unit && player?.runes?.find((mark) => mark.row === unit.row && mark.depth === unit.depth);
+  const occupiedPentagram = unit && player?.pentagrams?.find((mark) => mark.row === unit.row && mark.depth === unit.depth);
   const hasPlacement =
     !!card && !!player && legalPlacements(card, player.board).length > 0;
   const canChooseCell = canSummon && inHand && hasPlacement;
@@ -123,47 +128,48 @@ export function DuelDetailsDialog({
           <>
             {inspection.type === "field" ? (
               <>
-                <span className="eyebrow">SCEAU DU TERRAIN · USAGE UNIQUE</span>
+                <span className="eyebrow">
+                  SCEAU DU TERRAIN · {inspection.kind === "rune" ? "BONUS À L’ARRIVÉE" : "BONUS À CHAQUE TOUR"}
+                </span>
                 <DialogTitle ref={titleRef} tabIndex={-1}>
-                  {inspection.kind === "rune"
-                    ? "Rune de vie"
-                    : "Pentagramme de puissance"}
+                  {fieldMark ? fieldMarkName(inspection.kind, fieldMark) : "Sceau disparu"}
                 </DialogTitle>
                 <DialogDescription>
-                  {inspection.kind === "rune"
+                  {bonus?.stat === "health"
                     ? "La sève des anciens protège ce lieu."
                     : "Une force oubliée attend son prochain porteur."}
                 </DialogDescription>
-                {fieldMark ? (
+                {fieldMark && bonus ? (
                   <>
                     <div className="field-mark-preview">
                       <FieldMark
                         kind={inspection.kind}
-                        amount={
-                          "health" in fieldMark
-                            ? fieldMark.health
-                            : fieldMark.attack
-                        }
+                        stat={bonus.stat}
+                        amount={bonus.value}
+                        activated={"activated" in fieldMark && fieldMark.activated === true}
                       />
                     </div>
                     <p className="details-note">
-                      La prochaine unité invoquée ou apparue sur cette case
-                      gagne{" "}
+                      {inspection.kind === "rune"
+                        ? "L’unité qui apparaît sur cette case gagne immédiatement, une seule fois, "
+                        : "L’unité sur cette case gagne à chaque début de son tour "}
                       <strong>
-                        {"health" in fieldMark
-                          ? `+${fieldMark.health} PV actuels et maximum`
-                          : `+${fieldMark.attack} attaque`}
+                        {bonus.stat === "health"
+                          ? `+${bonus.value} PV actuels et maximum`
+                          : `+${bonus.value} attaque`}
                       </strong>.
-                      Le sceau disparaît après utilisation. Le bonus reste
-                      jusqu’à ce que l’unité quitte le terrain.
+                      {inspection.kind === "pentagram" && " Aucun bonus n’est accordé à la pose. Les gains se cumulent à chaque tour."}
                     </p>
                     <p className="details-note">
-                      Ce bonus s’applique après les capacités d’arrivée de
-                      l’unité. La case reste libre pour l’invocation.
+                      Le sceau reste lié à son porteur et disparaît à sa mort ou à son retrait.
+                      {inspection.kind === "rune"
+                        ? " La rune ne se réactive pas aux tours suivants."
+                        : " Les bonus précédemment gagnés restent acquis tant que le porteur reste en jeu."}
+                      {"activated" in fieldMark && fieldMark.activated === true && " Cette rune a déjà accordé son bonus."}
                     </p>
                   </>
                 ) : (
-                  <p className="details-note">Ce sceau a été utilisé.</p>
+                  <p className="details-note">Ce sceau a quitté le terrain avec son porteur.</p>
                 )}
               </>
             ) : card ? (
@@ -255,6 +261,21 @@ export function DuelDetailsDialog({
                         Ligne {unit.row + 1} ·{" "}
                         {["Avant", "Milieu", "Arrière"][unit.depth]}
                       </p>
+                    )}
+                    {unit && (occupiedRune || occupiedPentagram) && (
+                      <button
+                        type="button"
+                        className="text-link"
+                        onClick={() => onInspect({
+                          type: "field",
+                          kind: occupiedRune ? "rune" : "pentagram",
+                          playerIndex: inspection.playerIndex,
+                          position: { row: unit.row, depth: unit.depth },
+                        })}
+                      >
+                        {fieldMarkName(occupiedRune ? "rune" : "pentagram", (occupiedRune ?? occupiedPentagram)!)}
+                        {occupiedRune ? " · bonus déjà accordé" : " · bonus cumulatif au début du tour"}
+                      </button>
                     )}
                     <p className="details-note">
                       {neutral

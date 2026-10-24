@@ -76,6 +76,14 @@ function fieldData(): DuelData {
     { userId: "bob", name: "Bob", cards },
   ], Date.now(), () => 0.25);
   state.activePlayer = 0;
+  state.players[0]!.runes = [
+    { row: 0, depth: 1, health: 3 },
+    { row: 1, depth: 1, attack: 2 },
+  ];
+  state.players[0]!.pentagrams = [
+    { row: 2, depth: 1, attack: 2 },
+    { row: 3, depth: 1, health: 3 },
+  ];
   return { ...playerView(state, "alice"), events: [] };
 }
 
@@ -104,14 +112,25 @@ describe("éléments du terrain", () => {
 
   it.each([
     ["Rune de vie", "+3 PV actuels et maximum"],
+    ["Rune de puissance", "+2 attaque"],
+    ["Pentagramme de vie", "+3 PV actuels et maximum"],
     ["Pentagramme de puissance", "+2 attaque"],
-  ])("explains the single-use bonus of %s", async (name, bonus) => {
+  ])("explains the stat and activation timing of %s", async (name, bonus) => {
     setup(fieldData());
     fireEvent.click(await screen.findByRole("button", { name: new RegExp(`^Ton camp.*${name}`) }));
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByRole("heading", { name })).toBeTruthy();
     expect(dialog.getByText(bonus)).toBeTruthy();
-    expect(dialog.getByText(/Le sceau disparaît après utilisation/)).toBeTruthy();
+    expect(dialog.getByText(/disparaît à sa mort ou à son retrait/)).toBeTruthy();
+    if (name.startsWith("Rune")) {
+      expect(dialog.getByText(/immédiatement, une seule fois/)).toBeTruthy();
+    } else {
+      expect(dialog.getByText(/Aucun bonus n’est accordé à la pose/)).toBeTruthy();
+      expect(dialog.getByText(/Les gains se cumulent à chaque tour/)).toBeTruthy();
+    }
+    const kind = name.startsWith("Rune") ? "rune" : "pentagram";
+    const stat = name.endsWith("vie") ? "health" : "attack";
+    expect(document.querySelector(".field-mark-preview img")?.getAttribute("src")).toBe(`/art/field/${kind}-${stat}.webp`);
   });
 
   it("allows deployment on a pentagram while keeping an obstacle occupied", async () => {

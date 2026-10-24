@@ -5,6 +5,7 @@ import {
   createGame,
   playerView,
   summon,
+  endTurn,
   validateDeck,
   type GameEvent,
 } from "@sylve/game";
@@ -41,7 +42,7 @@ function summonViews() {
 }
 
 describe("réactivité du placement", () => {
-  it("consumes a pentagram at the ability impact and shows its attack bonus before combat", () => {
+  it("keeps a pentagram visible and applies its bonus at the start-of-turn ability impact", () => {
     vi.useFakeTimers();
     const state = createGame([
       { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
@@ -50,20 +51,48 @@ describe("réactivité du placement", () => {
     const owner = state.players[0]!;
     owner.pentagrams = [{ row: 0, depth: 0, attack: 2 }];
     const card = owner.cards[0]!;
+    owner.board = [{ cardId: card.id, row: 0, depth: 0, hp: card.health }];
+    state.activePlayer = 1;
     const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
-    const transition = summon(state, 0, card.id, 0, 0, 1, 1, () => 0.25);
+    const transition = endTurn(state, 1, 1, 1, () => 0.25);
     const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
     const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), { initialProps: { view: initial } });
     rerender({ view: confirmed });
-    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon + COMBAT_TIMING.abilityImpact - 1));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
     expect(result.current.display!.players[0]!.pentagrams).toHaveLength(1);
     expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack);
     act(() => vi.advanceTimersByTime(1));
-    expect(result.current.display!.players[0]!.pentagrams).toEqual([]);
+    expect(result.current.display!.players[0]!.pentagrams).toHaveLength(1);
     expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack + 2);
     expect(result.current.display!.players[1]!.heroHp).toBe(30);
     act(() => vi.runAllTimers());
     expect(result.current.display).toEqual(confirmed);
+  });
+  it.each(["rune", "pentagram"] as const)("removes a dead unit's %s at the death animation commit", (kind) => {
+    vi.useFakeTimers();
+    const state = createGame([
+      { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
+      { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+    ], 0, () => 0.25, { field: false });
+    const owner = state.players[0]!;
+    const card = owner.cards[0]!;
+    owner.board = [{ cardId: card.id, row: 0, depth: 0, hp: 1 }];
+    const mark = { row: 0, depth: 0, attack: 2 };
+    if (kind === "rune") owner.runes = [{ ...mark, activated: true }];
+    else owner.pentagrams = [mark];
+    state.players[1]!.board = [{ cardId: card.id, row: 0, depth: 0, hp: card.health, attack: 20 }];
+    state.activePlayer = 1;
+    const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
+    const transition = endTurn(state, 1, 1, 1, () => 0.25);
+    const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
+    const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), { initialProps: { view: initial } });
+    rerender({ view: confirmed });
+    const key = kind === "rune" ? "runes" : "pentagrams";
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.attack + COMBAT_TIMING.death - 1));
+    expect(result.current.display!.players[0]![key]).toHaveLength(1);
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.display!.players[0]![key]).toEqual([]);
+    expect(result.current.display!.players[0]!.board).toEqual([]);
   });
   it("renders a summon at the start of its animation and keeps damage at impact", () => {
     vi.useFakeTimers();

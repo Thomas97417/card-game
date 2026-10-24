@@ -14,6 +14,7 @@ import {
   variantCard,
   withdraw,
   type PlayerState,
+  fieldBonus,
 } from "./index";
 import { chooseComputerMove } from "./practice";
 
@@ -81,6 +82,7 @@ describe("terrain initial", () => {
     const layouts = new Set<string>();
     const quantities = [new Set<number>(), new Set<number>(), new Set<number>()];
     const advantages = new Set<number>();
+    const sealTypes = [new Set<string>(), new Set<string>()];
     const cards = validateDeck(DEFAULT_DECK);
     for (let seed = 1; seed <= 500; seed++) {
       const inputs = [{ userId: "a", name: "A", cards }, { userId: "b", name: "B", cards }];
@@ -103,9 +105,14 @@ describe("terrain initial", () => {
         expect(owner.board.length).toBeLessThanOrEqual(3);
         expect(owner.runes!.length).toBeLessThanOrEqual(2);
         expect(owner.pentagrams!.length).toBeLessThanOrEqual(2);
+        for (const mark of [...owner.runes!, ...owner.pentagrams!]) {
+          expect((mark.health !== undefined) !== (mark.attack !== undefined)).toBe(true);
+        }
         expect(new Set(owner.board.map((unit) => unit.row)).size).toBe(owner.board.length);
         expect(new Set(owner.board.map((unit) => unit.fieldObject)).size).toBe(owner.board.length);
         owner.board.forEach((unit) => kinds.add(unit.fieldObject!));
+        owner.runes!.forEach((mark) => sealTypes[0]!.add(fieldBonus(mark).stat));
+        owner.pentagrams!.forEach((mark) => sealTypes[1]!.add(fieldBonus(mark).stat));
         counts[index]!.forEach((count, kind) => quantities[kind]!.add(count));
         layouts.add(JSON.stringify(layout(owner)));
         for (const card of cards) expect(legalPlacements(card, owner.board).length).toBeGreaterThanOrEqual(5);
@@ -117,6 +124,7 @@ describe("terrain initial", () => {
     expect([...quantities[1]!].sort()).toEqual([0, 1, 2]);
     expect([...quantities[2]!].sort()).toEqual([0, 1, 2]);
     expect(advantages).toEqual(new Set([-1, 0, 1]));
+    expect(sealTypes).toEqual([new Set(["health", "attack"]), new Set(["health", "attack"])]);
   });
 
   it.each([0, 0.25, 0.5, 0.999])("always breaks exact mirrors with a constant random source of %s", (value) => {
@@ -137,9 +145,10 @@ describe("terrain initial", () => {
 
   it("publishes mark positions without sharing their mutable state", () => {
     const state = fresh(true);
+    const before = structuredClone(state.players[0]!.pentagrams![0]);
     const view = playerView(state, "a");
     view.players[0]!.pentagrams![0]!.attack = 88;
-    expect(state.players[0]!.pentagrams![0]!.attack).toBe(2);
+    expect(state.players[0]!.pentagrams![0]).toEqual(before);
     expect(view.players[1]!.hand).toEqual([]);
     expect(view.players[0]!.board.every((unit) => unit.card.kind === "field-building")).toBe(true);
   });
@@ -212,45 +221,118 @@ describe("sceaux du terrain", () => {
     expect(owner.runes).toHaveLength(1);
   });
 
-  it("consumes a life rune once, increases current and maximum HP and persists its event", () => {
+  it("activates a life rune once and binds it to the unit without repeating its bonus", () => {
     const state = fresh();
     state.players[0]!.runes = [{ row: 0, depth: 0, health: 3 }];
     const health = state.players[0]!.cards[0]!.health;
     const result = summon(state, 0, "guardian:common", 0, 0, 1, 1, random);
     expect(result.state.players[0]!.board[0]).toMatchObject({ hp: health + 3, maxHp: health + 3 });
-    expect(result.state.players[0]!.runes).toEqual([]);
-    expect(result.events.find((event) => event.ability === "Rune de vie")).toMatchObject({ runes: [], amount: 3 });
+    const activated = [{ row: 0, depth: 0, health: 3, activated: true }];
+    expect(result.state.players[0]!.runes).toEqual(activated);
+    expect(result.events.find((event) => event.ability === "Rune de vie")).toMatchObject({ runes: activated, amount: 3 });
     expect(state.players[0]!.runes).toHaveLength(1);
+    const next = endTurn(result.state, 1, 2, 2, random);
+    expect(next.state.players[0]!.board[0]!.hp).toBe(health + 3);
+    expect(next.events.some((event) => event.ability === "Rune de vie")).toBe(false);
   });
 
-  it("applies a pentagram before the first attack and preserves the bonus across turns", () => {
+  it("applies a power rune before the first attack, once only", () => {
     const state = fresh();
     const base = state.players[0]!.cards[0]!.attack;
-    state.players[0]!.pentagrams = [{ row: 0, depth: 0, attack: 2 }];
+    state.players[0]!.runes = [{ row: 0, depth: 0, attack: 2 }];
     const result = summon(state, 0, "guardian:common", 0, 0, 1, 1, random);
-    const effect = result.events.find((event) => event.ability === "Pentagramme de puissance")!;
-    expect(effect).toMatchObject({ pentagrams: [], amount: 2, unit: { attack: base + 2 } });
+    const effect = result.events.find((event) => event.ability === "Rune de puissance")!;
+    expect(effect).toMatchObject({ amount: 2, unit: { attack: base + 2 } });
     expect(effect.seq).toBeLessThan(result.events.find((event) => event.type === "attack")!.seq);
     expect(result.state.players[1]!.heroHp).toBe(30 - base - 2);
     const next = endTurn(result.state, 1, 2, 2, random).state;
     expect(unitAttack(next.players[0]!.board[0]!, next.players[0]!)).toBe(base + 2);
-    expect(next.players[0]!.pentagrams).toEqual([]);
-    expect(state.players[0]!.pentagrams).toHaveLength(1);
-    const removed = withdraw(next, 0, "guardian:common", 3, 3).state;
-    const again = summon(removed, 0, "guardian:common", 0, 0, 3, 3, random);
-    expect(unitAttack(again.state.players[0]!.board[0]!, again.state.players[0]!)).toBe(base);
+    expect(next.players[0]!.runes![0]!.activated).toBe(true);
   });
 
-  it("also grants a pentagram to a summoned reinforcement without altering its deck definition", () => {
+  it.each(["health", "attack"] as const)("stacks a %s pentagram only at its owner's start of turn", (stat) => {
+    const state = fresh();
+    const base = state.players[0]!.cards[0]!;
+    const mark = { row: 0, depth: 0, ...(stat === "health" ? { health: 3 } : { attack: 2 }) };
+    state.players[0]!.pentagrams = [mark];
+    const deployed = summon(state, 0, base.id, 0, 0, 1, 1, random);
+    expect(deployed.state.players[0]!.board[0]!.hp).toBe(base.health);
+    expect(unitAttack(deployed.state.players[0]!.board[0]!, deployed.state.players[0]!)).toBe(base.attack);
+    expect(deployed.events.some((event) => event.ability?.startsWith("Pentagramme"))).toBe(false);
+    // Damage is preserved when max HP grows: this is a stat gain, not a full heal.
+    deployed.state.players[0]!.board[0]!.hp -= 2;
+    const first = endTurn(deployed.state, 1, 2, 2, random);
+    expect(first.state.players[0]!.board[0]!.hp).toBe(base.health - 2 + (stat === "health" ? 3 : 0));
+    expect(playerView(first.state, "a").players[0]!.board[0]!.card.health).toBe(base.health + (stat === "health" ? 3 : 0));
+    expect(unitAttack(first.state.players[0]!.board[0]!, first.state.players[0]!)).toBe(base.attack + (stat === "attack" ? 2 : 0));
+    expect(first.events.filter((event) => event.ability?.startsWith("Pentagramme"))).toHaveLength(1);
+    expect(first.state.players[0]!.pentagrams).toEqual([mark]);
+    const other = endTurn(first.state, 0, 3, 3, random);
+    expect(other.events.some((event) => event.ability?.startsWith("Pentagramme"))).toBe(false);
+    const second = endTurn(other.state, 1, 4, 4, random);
+    expect(second.state.players[0]!.board[0]!.hp).toBe(base.health - 2 + (stat === "health" ? 6 : 0));
+    expect(unitAttack(second.state.players[0]!.board[0]!, second.state.players[0]!)).toBe(base.attack + (stat === "attack" ? 4 : 0));
+    expect(second.state.players[0]!.cards[0]).toEqual(base);
+  });
+
+  it.each(["rune", "pentagram"] as const)("removes only the dead unit's %s and never boosts its replacement", (kind) => {
+    const state = fresh();
+    const owner = state.players[0]!;
+    owner.board.push({ cardId: "guardian:common", row: 0, depth: 0, hp: 1 });
+    const occupied = { row: 0, depth: 0, attack: 2, ...(kind === "rune" ? { activated: true } : {}) };
+    const empty = { row: 2, depth: 1, health: 3 };
+    if (kind === "rune") owner.runes = [occupied, empty];
+    else owner.pentagrams = [occupied, empty];
+    state.players[1]!.board.push({ cardId: "guardian:common", row: 0, depth: 0, hp: 8, attack: 20 });
+    state.activePlayer = 1;
+    const before = structuredClone(state);
+    const result = endTurn(state, 1, 1, 1, random);
+    const key = kind === "rune" ? "runes" : "pentagrams";
+    expect(result.state.players[0]![key]).toEqual([empty]);
+    expect(result.events.find((event) => event.type === "death")![key]).toEqual([empty]);
+    expect(state).toEqual(before);
+    const replacement = summon(result.state, 0, "guardian:common", 0, 0, 2, 2, random);
+    expect(replacement.state.players[0]!.board[0]!.attack).toBeUndefined();
+    expect(replacement.events.some((event) => event.ability?.startsWith("Rune") || event.ability?.startsWith("Pentagramme"))).toBe(false);
+  });
+
+  it.each(["rune", "pentagram"] as const)("clears a %s on voluntary withdrawal and prevents farming its bonus", (kind) => {
+    const state = fresh();
+    const owner = state.players[0]!;
+    owner.board.push({ cardId: "guardian:common", row: 0, depth: 0, hp: 8, attack: 5 });
+    const mark = { row: 0, depth: 0, attack: 2 };
+    if (kind === "rune") owner.runes = [{ ...mark, activated: true }];
+    else owner.pentagrams = [mark];
+    const removed = withdraw(state, 0, "guardian:common", 1, 1);
+    const key = kind === "rune" ? "runes" : "pentagrams";
+    expect(removed.state.players[0]![key]).toEqual([]);
+    expect(removed.events[0]![key]).toEqual([]);
+    const again = summon(removed.state, 0, "guardian:common", 0, 0, 1, 1, random);
+    expect(unitAttack(again.state.players[0]!.board[0]!, again.state.players[0]!)).toBe(owner.cards[0]!.attack);
+  });
+
+  it("leaves an empty pentagram inactive across turns", () => {
+    const state = fresh();
+    state.players[1]!.pentagrams = [{ row: 0, depth: 0, health: 3 }];
+    const result = endTurn(state, 0, 1, 1, random);
+    expect(result.state.players[1]!.pentagrams).toEqual(state.players[1]!.pentagrams);
+    expect(result.events.some((event) => event.ability?.startsWith("Pentagramme"))).toBe(false);
+  });
+
+  it.each(["rune", "pentagram"] as const)("handles a reinforcement on a %s with the correct timing", (kind) => {
     const state = fresh();
     const witch = variantCard("witch", "common", 1);
     state.players[0]!.cards[0] = witch;
     state.players[0]!.hand[0] = witch.id;
-    state.players[0]!.pentagrams = [{ row: 0, depth: 1, attack: 2 }];
+    const mark = { row: 0, depth: 1, attack: 2 };
+    if (kind === "rune") state.players[0]!.runes = [mark];
+    else state.players[0]!.pentagrams = [mark];
     const result = summon(state, 0, witch.id, 0, 2, 1, 1, random);
     const token = result.state.players[0]!.board.find((unit) => unit.definition)!;
-    expect(token.attack).toBe(token.definition!.attack + 2);
-    expect(result.state.players[0]!.pentagrams).toEqual([]);
+    expect(unitAttack(token, result.state.players[0]!)).toBe(token.definition!.attack + (kind === "rune" ? 2 : 0));
+    const next = endTurn(result.state, 1, 2, 2, random).state;
+    const nextToken = next.players[0]!.board.find((unit) => unit.definition)!;
+    expect(unitAttack(nextToken, next.players[0]!)).toBe(token.definition!.attack + 2);
     expect(result.state.players[0]!.cards).toHaveLength(4);
     expect(result.state.players[0]!.cards.some((card) => card.id === token.cardId)).toBe(false);
   });

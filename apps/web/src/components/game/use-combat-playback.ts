@@ -113,6 +113,8 @@ export function useCombatPlayback(latest: View | undefined) {
               if (entry.type === "death" && index === entry.player)
                 return {
                   ...player,
+                  ...(entry.runes ? { runes: entry.runes } : {}),
+                  ...(entry.pentagrams ? { pentagrams: entry.pentagrams } : {}),
                   board: player.board.filter(
                     (unit) =>
                       !(

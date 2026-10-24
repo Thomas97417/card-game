@@ -10,7 +10,16 @@ Trois bâtiments neutres originaux ont été créés le 24 octobre 2026 avec **I
 
 Les images finales sont encodées en WebP sur un canevas transparent de 512 × 512 px, avec conservation de l’alpha généré et de leurs proportions. Les PNG originaux restent dans le répertoire local de génération. Les [prompts complets](art-prompts-field.json) conservent les sources et les chemins finaux ; aucun fallback CLI n’a été utilisé.
 
-Le style reprend les textures peintes, les contours fins, le vert mousse et l’ambre des compagnons de Sylve. Les bâtiments apparaissent directement dans l’arène et dans leur fiche. Les runes de vie vertes et les pentagrammes violets sont dessinés en SVG dans `FieldMark`, pour garder les symboles et leurs bonus lisibles sur toutes les tailles d’écran.
+Quatre sceaux originaux ont également été créés avec **ImageGen intégré**, par quatre appels distincts avec transparence. Les images finales mesurent 512 × 341 px, encodées en WebP avec leurs proportions et leur alpha conservés :
+
+- `apps/web/public/art/field/rune-health.webp` : disque de calcaire moussu, glyphe végétal vert.
+- `apps/web/public/art/field/rune-attack.webp` : disque de calcaire moussu, glyphe de puissance ambre.
+- `apps/web/public/art/field/pentagram-health.webp` : cercle de pierre et bronze, étoile entrelacée verte.
+- `apps/web/public/art/field/pentagram-attack.webp` : cercle de pierre et bronze, étoile entrelacée violette.
+
+Les [prompts complets des sceaux](art-prompts-seals.json) conservent les sources et les chemins intégrés. Le style reprend les textures peintes, les contours fins, le vert mousse et l’ambre des compagnons de Sylve. Les bâtiments et les sceaux apparaissent directement dans l’arène et dans leur fiche. `FieldMark` affiche ces images peintes, accompagnées du type de bonus, de sa valeur et de la mention « /tour » pour les pentagrammes. Une rune activée reste visible, avec une lueur atténuée, jusqu’au départ de son porteur.
+
+Les captures du jeu réel montrent la [fiche du pentagramme de vie](seals-painted-detail.png) et le [terrain avec un pentagramme occupé](seals-painted-board.png). La tortue reste à 15 PV lors de sa pose et passe à 18 PV au début de son tour suivant. Le badge du sceau reste lisible sous son porteur.
 
 La page [Field de Mighty Party](https://mightyparty.fandom.com/wiki/Field) sert de référence pour la présence de bâtiments, de runes et de pentagrammes au début du combat. Les illustrations et les effets chiffrés sont des adaptations originales pour Sylve ; ils ne reproduisent pas les statistiques de Mighty Party. Les règles retenues sont décrites dans [field.md](field.md).
 
@@ -226,7 +235,7 @@ Seize icônes originales ont été générées avec l’outil intégré **ImageG
 
 Les fichiers sont dans `apps/web/public/art/abilities/`, en **WebP de 192 × 192 px avec transparence**, pour environ **191 Kio au total**. Les originaux sont conservés. Les contours transparents sont normalisés avec une marge commune pour garder des tailles visuelles cohérentes. Les nombres et explications restent du texte HTML.
 
-`ability-icons.tsx` partage les images entre les cartes en main, les decks, les cartes de l’atelier, les récompenses de coffres et d’invocations, les fiches, le bestiaire, les effets animés et le journal. Sur le plateau, les capacités apparaissent au pied des unités ; les états reçus sont placés sur le côté avec leurs valeurs actuelles. Les runes utilisent leur illustration sur les cases libres. Un bouclier consommé disparaît : les états sont lus sur l’instance de combat et les passifs initiaux ne sont pas réaffichés à sa place.
+`ability-icons.tsx` partage les images entre les cartes en main, les decks, les cartes de l’atelier, les récompenses de coffres et d’invocations, les fiches, le bestiaire, les effets animés et le journal. Sur le plateau, les capacités apparaissent au pied des unités ; les états reçus sont placés sur le côté avec leurs valeurs actuelles. Les sceaux utilisent leurs quatre illustrations de terrain et restent visibles sous leur porteur. Un bouclier consommé disparaît : les états sont lus sur l’instance de combat et les passifs initiaux ne sont pas réaffichés à sa place.
 
 Les bonus d’attaque et de vie sont comparés aux valeurs de base de la variante ; les malus, bonus temporaires et unités de mêlée bloquées ont leur propre symbole. Quatre états restent visibles en combat ; un compteur et son infobulle donnent accès aux suivants, tous détaillés dans la fiche. Les capacités verrouillées sont grisées et portent un cadenas et leur niveau de déblocage. Le bestiaire met aussi à jour les icônes de ses vignettes lorsque le niveau change. Sa fiche reste visible pendant le défilement.
 

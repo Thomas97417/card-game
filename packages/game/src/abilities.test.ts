@@ -209,7 +209,7 @@ describe("ability resolution", () => {
     const result = endTurn(granted, 1, granted.turn, 0, random);
     expect(result.state.players[0]!.board[0]!.hp).toBe(8);
   });
-  it("places a life rune on an empty cell and consumes it on a later deployment", () => {
+  it("places a life rune on an empty cell and activates it once on a later deployment", () => {
     const state = deploy(
       fresh({ enchantress: 1 }),
       0,
@@ -219,7 +219,7 @@ describe("ability resolution", () => {
     ).state;
     expect(state.players[0]!.runes).toEqual([{ row: 0, depth: 0, health: 2 }]);
     const result = deploy(state, 0, "guardian", 0, 0);
-    expect(result.state.players[0]!.runes).toEqual([]);
+    expect(result.state.players[0]!.runes).toEqual([{ row: 0, depth: 0, health: 2, activated: true }]);
     expect(
       result.state.players[0]!.board.find(
         (u) => u.cardId === "guardian:common",

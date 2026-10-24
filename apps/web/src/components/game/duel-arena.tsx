@@ -5,6 +5,8 @@ import {
   ROWS,
   combatTypeLabel,
   getCombatType,
+  fieldBonus,
+  fieldMarkName,
   isDeploymentDepth,
   isMeleeBlocked,
   type GameEvent,
@@ -121,11 +123,11 @@ export function DuelArena({
             (p) => p.row === row && p.depth === depth,
           );
           const mark = rune ? "rune" : pentagram ? "pentagram" : null;
-          const markLabel = rune
-            ? `Rune de vie : +${rune.health} PV à la prochaine unité`
-            : pentagram
-              ? `Pentagramme de puissance : +${pentagram.attack} attaque à la prochaine unité`
-              : "";
+          const seal = rune ?? pentagram;
+          const bonus = seal ? fieldBonus(seal) : null;
+          const markLabel = mark && seal && bonus
+            ? `${fieldMarkName(mark, seal)} : +${bonus.value} ${bonus.stat === "health" ? "PV actuels et maximum" : "attaque"}, ${mark === "pentagram" ? "à chaque début de tour du porteur, sans bonus à la pose" : rune?.activated ? "bonus déjà accordé" : "immédiatement à l’arrivée"}`
+            : "";
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
           const legal =
@@ -185,18 +187,20 @@ export function DuelArena({
                   else if (mark) onInspectField(mark, playerIndex, row, depth);
                 }}
               >
-                {!unit && mark && (
-                  <FieldMark
-                    kind={mark}
-                    amount={rune?.health ?? pentagram!.attack}
-                  />
-                )}
                 {legal && (
                   <span className="placement-hint" aria-hidden="true">
                     <GameIcon kind={getCombatType(selectedCard!)} size={23} />
                   </span>
                 )}
               </button>
+              {mark && bonus && (
+                <FieldMark
+                  kind={mark}
+                  stat={bonus.stat}
+                  amount={bonus.value}
+                  activated={rune?.activated}
+                />
+              )}
               {unit && (
                 <button
                   type="button"

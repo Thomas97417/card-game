@@ -2121,29 +2121,29 @@ button:disabled {
 }
 .field-mark {
   position: absolute;
-  inset: 7% 12% 9%;
+  inset: 0 5% 5%;
   display: grid;
   place-items: center;
   color: #3e7d56;
-  background: radial-gradient(ellipse, #d8f4b887, #8fc68d30 52%, transparent 74%);
+  background: transparent;
   pointer-events: none;
 }
-.field-mark-pentagram {
+.field-mark-attack {
   color: #89549c;
-  background: radial-gradient(ellipse, #e0c3f37a, #b892c827 52%, transparent 74%);
 }
-.field-mark-sigil {
+.field-mark-art {
   width: 100%;
   height: 100%;
-  transform: scaleY(0.77);
-  overflow: visible;
-  filter: drop-shadow(0 0 3px #e8ffc1c4);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #61472545);
 }
-.field-mark-pentagram .field-mark-sigil {
-  filter: drop-shadow(0 0 3px #f0d6ffc4);
+.field-mark-spent .field-mark-art {
+  opacity: 0.52;
+  filter: saturate(0.6);
 }
 .field-mark-bonus {
   position: absolute;
+  z-index: 2;
   bottom: 0;
   display: flex;
   align-items: center;
@@ -2158,9 +2158,13 @@ button:disabled {
   line-height: 1;
   --ability-size: clamp(16px, 1.7vw, 25px);
 }
-.field-mark-pentagram .field-mark-bonus {
+.field-mark-attack .field-mark-bonus {
   background: #54365feb;
   border-color: #d7b4df;
+}
+.field-mark-bonus small {
+  font-size: 0.62em;
+  padding-left: 1px;
 }
 .marked-cell .placement-hint {
   position: absolute;

@@ -362,7 +362,49 @@ describe("terrain autoritaire", () => {
     expect(await active.query(api.games.get, { gameId })).toEqual(own);
   });
 
-  it("persists consumed marks, boosted unit stats and events for reconnecting players", async () => {
+  it.each([{ health: 3 }, { attack: 2 }])("persists a rune's one-time activation and bound lifetime: %o", async (bonus) => {
+    const { t, alice, bob, gameId } = await match({ field: false });
+    const rune = { row: 0, depth: 1, ...bonus };
+    const remainingRune = { row: 2, depth: 1, health: 3 };
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.runes = [rune, remainingRune];
+      await ctx.db.patch(gameId, { state });
+    });
+    const first = await alice.query(api.games.get, { gameId });
+    const active = first.activePlayer === 0 ? alice : bob;
+    const inactive = first.activePlayer === 0 ? bob : alice;
+    const own = await active.query(api.games.get, { gameId });
+    const card = own.players[own.me]!.hand[0]!;
+    await active.mutation(api.games.playCard, {
+      gameId, cardId: card.id, row: rune.row, depth: rune.depth, expectedTurn: 1,
+    });
+    const reconnected = await inactive.query(api.games.get, { gameId });
+    const grantedRunes = [{ ...rune, activated: true }, remainingRune];
+    expect(reconnected.players[own.me]!.runes).toEqual(grantedRunes);
+    expect(reconnected.players[own.me]!.board[0]).toMatchObject({
+      hp: card.health + (bonus.health ?? 0),
+      card: { health: card.health + (bonus.health ?? 0), attack: card.attack + (bonus.attack ?? 0) },
+    });
+    expect(reconnected.events.find((event) => event.ability?.startsWith("Rune de")))
+      .toMatchObject({ runes: grantedRunes });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 2 });
+    const nextTurn = await active.query(api.games.get, { gameId });
+    expect(nextTurn.players[own.me]!.runes).toEqual(grantedRunes);
+    expect(nextTurn.players[own.me]!.board[0]).toEqual(reconnected.players[own.me]!.board[0]);
+    expect(nextTurn.events.filter((event) => event.ability?.startsWith("Rune de")))
+      .toEqual(reconnected.events.filter((event) => event.ability?.startsWith("Rune de")));
+    await active.mutation(api.games.withdrawCard, {
+      gameId, cardId: card.id,
+      position: { row: rune.row, depth: rune.depth }, expectedTurn: 3,
+    });
+    const after = await inactive.query(api.games.get, { gameId });
+    expect(after.players[own.me]!.runes).toEqual([remainingRune]);
+    expect(after.players[own.me]!.deck.find((entry) => entry.id === card.id)).toEqual(card);
+  });
+
+  it("persists a pentagram across placement, cumulative turn bonuses and withdrawal", async () => {
     const { t, alice, bob, gameId } = await match({ field: false });
     const remainingPentagram = { row: 2, depth: 1, attack: 2 };
     await t.run(async (ctx) => {
@@ -386,13 +428,27 @@ describe("terrain autoritaire", () => {
     });
     const other = await inactive.query(api.games.get, { gameId });
     const boosted = other.players[view.me]!;
-    expect(boosted.pentagrams).toEqual([remainingPentagram]);
-    expect(boosted.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 2);
-    expect(other.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2, pentagrams: [remainingPentagram] });
+    expect(boosted.pentagrams).toEqual(owner.pentagrams);
+    expect(boosted.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack);
+    expect(other.events.some((event) => event.ability === "Pentagramme de puissance")).toBe(false);
     expect(other.players[view.me]!.hand).toEqual([]);
-    const reconnected = await active.query(api.games.get, { gameId });
-    expect(reconnected.players[view.me]!.pentagrams).toEqual([remainingPentagram]);
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 2 });
+    let reconnected = await active.query(api.games.get, { gameId });
+    expect(reconnected.players[view.me]!.pentagrams).toEqual(owner.pentagrams);
+    expect(reconnected.players[view.me]!.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 2);
+    expect(reconnected.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2 });
+    await active.mutation(api.games.endTurn, { gameId, expectedTurn: 3 });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 4 });
+    reconnected = await active.query(api.games.get, { gameId });
+    expect(reconnected.players[view.me]!.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 4);
     expect(reconnected.players[view.me]!.deck.find((entry) => entry.id === card.id)!.attack).toBe(card.attack);
+    await active.mutation(api.games.withdrawCard, {
+      gameId, cardId: card.id,
+      position: { row: pentagram.row, depth: pentagram.depth }, expectedTurn: 5,
+    });
+    const after = await inactive.query(api.games.get, { gameId });
+    expect(after.players[view.me]!.pentagrams).toEqual([remainingPentagram]);
+    expect(after.events.at(-1)).toMatchObject({ type: "withdraw", pentagrams: [remainingPentagram] });
   });
 });
 

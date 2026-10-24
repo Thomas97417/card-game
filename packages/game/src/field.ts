@@ -110,7 +110,7 @@ for (let buildings = 0; buildings <= 3; buildings++) {
 }
 
 // Sampling ordered pairs uniformly gives either player the same chances.
-// Permit one extra object of each kind and at most one extra consumable bonus.
+// Permit one extra object of each kind and at most one extra seal in total.
 const balancedPairs = countOptions.flatMap((first) =>
   countOptions
     .filter(
@@ -151,10 +151,16 @@ function createField(
   );
   return {
     board,
-    runes: cells.slice(0, counts.runes).map((cell) => ({ ...cell, health: 3 })),
+    runes: cells.slice(0, counts.runes).map((cell) => ({
+      ...cell,
+      ...(random() < 0.5 ? { health: 3 } : { attack: 2 }),
+    })),
     pentagrams: cells
       .slice(counts.runes, counts.runes + counts.pentagrams)
-      .map((cell) => ({ ...cell, attack: 2 })),
+      .map((cell) => ({
+        ...cell,
+        ...(random() < 0.5 ? { health: 3 } : { attack: 2 }),
+      })),
   };
 }
 

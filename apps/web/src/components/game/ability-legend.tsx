@@ -26,7 +26,7 @@ const entries: [AbilityIconKind, string, string][] = [
   [
     "life-rune",
     "Rune de vie",
-    "Renforce la prochaine unité qui apparaît sur cette case.",
+    "Augmente les PV dès l’arrivée sur la case, une seule fois.",
   ],
   [
     "reinforcement",
@@ -68,6 +68,12 @@ export function AbilityLegend() {
           </div>
         ))}
       </dl>
+      <p>
+        Sur le terrain, runes et pentagrammes peuvent renforcer la vie ou la
+        puissance. Les runes agissent immédiatement à l’arrivée ; les
+        pentagrammes ajoutent leur bonus à chaque début de tour du propriétaire,
+        sans gain à la pose. Le sceau disparaît avec son porteur.
+      </p>
     </details>
   );
 }
