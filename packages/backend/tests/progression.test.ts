@@ -498,15 +498,22 @@ describe("collection autoritaire", () => {
       });
     });
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    // Isolate reinforcement persistence from the randomized initial terrain.
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      for (const owner of state.players) {
+        owner.board = [];
+        owner.runes = [];
+        owner.pentagrams = [];
+      }
+      await ctx.db.patch(gameId, { state });
+    });
     const before = await alice.query(api.games.get, { gameId });
-    const tokenRow = [0, 1, 2, 3].find((row) =>
-      ![...before.players[0]!.board, ...before.players[0]!.runes!, ...before.players[0]!.pentagrams!]
-        .some((unit) => unit.row === row && unit.depth === 1),
-    )!;
     await alice.mutation(api.games.playCard, {
       gameId,
       cardId: "witch:common",
-      row: tokenRow,
+      row: 0,
       depth: 2,
       expectedTurn: before.turn,
     });

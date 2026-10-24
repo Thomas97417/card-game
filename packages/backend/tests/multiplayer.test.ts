@@ -3,6 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CATALOG,
+  createFieldBuilding,
   DEFAULT_DECK,
   getCombatType,
   validateDeck,
@@ -322,22 +323,30 @@ describe("invitations et synchronisation", () => {
   });
 });
 describe("terrain autoritaire", () => {
-  it("persists mirrored scenery and shows the same field to both players", async () => {
+  it("persists asymmetric scenery and shows both players the same authoritative fields", async () => {
     const { t, alice, bob, gameId } = await match();
     const a = await alice.query(api.games.get, { gameId });
     const b = await bob.query(api.games.get, { gameId });
-    expect(a.players[0]!.board).toEqual(a.players[1]!.board);
-    expect(a.players[0]!.board).toHaveLength(2);
-    expect(a.players[0]!.runes).toEqual(a.players[1]!.runes);
-    expect(a.players[0]!.pentagrams).toEqual(a.players[1]!.pentagrams);
-    expect(a.players.map((owner) => owner.board)).toEqual(b.players.map((owner) => owner.board));
+    const fields = (view: typeof a) => view.players.map(({ board, runes, pentagrams }) => ({ board, runes, pentagrams }));
+    expect(fields(a)[0]).not.toEqual(fields(a)[1]);
+    expect(fields(a)).toEqual(fields(b));
     const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
-    expect(stored.state!.players[0]!.pentagrams).toEqual(a.players[0]!.pentagrams);
+    for (const [index, owner] of a.players.entries()) {
+      expect(stored.state!.players[index]!.board).toEqual(owner.board.map(({ card: _card, ...unit }) => unit));
+      expect(stored.state!.players[index]!.runes).toEqual(owner.runes);
+      expect(stored.state!.players[index]!.pentagrams).toEqual(owner.pentagrams);
+    }
     expect(a.players.every((owner) => owner.deck.every((card) => card.kind !== "field-building"))).toBe(true);
   });
 
   it("rejects attempts to occupy or withdraw a neutral obstacle without changing the turn", async () => {
-    const { alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.board = [createFieldBuilding("spikes", 0, 0)];
+      await ctx.db.patch(gameId, { state });
+    });
     const view = await alice.query(api.games.get, { gameId });
     const active = view.activePlayer === 0 ? alice : bob;
     const owner = view.players[view.activePlayer]!;
@@ -354,7 +363,17 @@ describe("terrain autoritaire", () => {
   });
 
   it("persists consumed marks, boosted unit stats and events for reconnecting players", async () => {
-    const { alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
+    const remainingPentagram = { row: 2, depth: 1, attack: 2 };
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.pentagrams = [
+        { row: 0, depth: 1, attack: 2 },
+        remainingPentagram,
+      ];
+      await ctx.db.patch(gameId, { state });
+    });
     const first = await alice.query(api.games.get, { gameId });
     const active = first.activePlayer === 0 ? alice : bob;
     const inactive = first.activePlayer === 0 ? bob : alice;
@@ -367,12 +386,12 @@ describe("terrain autoritaire", () => {
     });
     const other = await inactive.query(api.games.get, { gameId });
     const boosted = other.players[view.me]!;
-    expect(boosted.pentagrams).toEqual([]);
+    expect(boosted.pentagrams).toEqual([remainingPentagram]);
     expect(boosted.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 2);
-    expect(other.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2, pentagrams: [] });
+    expect(other.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2, pentagrams: [remainingPentagram] });
     expect(other.players[view.me]!.hand).toEqual([]);
     const reconnected = await active.query(api.games.get, { gameId });
-    expect(reconnected.players[view.me]!.pentagrams).toEqual([]);
+    expect(reconnected.players[view.me]!.pentagrams).toEqual([remainingPentagram]);
     expect(reconnected.players[view.me]!.deck.find((entry) => entry.id === card.id)!.attack).toBe(card.attack);
   });
 });

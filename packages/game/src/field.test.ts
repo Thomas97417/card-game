@@ -13,6 +13,7 @@ import {
   validateDeck,
   variantCard,
   withdraw,
+  type PlayerState,
 } from "./index";
 import { chooseComputerMove } from "./practice";
 
@@ -33,51 +34,98 @@ function seeded(seed: number) {
   };
 }
 
+function layout(player: PlayerState) {
+  return Array.from({ length: 12 }, (_, index) => {
+    const row = Math.floor(index / 3);
+    const depth = index % 3;
+    return player.board.find((unit) => unit.row === row && unit.depth === depth)?.fieldObject
+      ?? (player.runes?.some((mark) => mark.row === row && mark.depth === depth) ? "rune" : null)
+      ?? (player.pentagrams?.some((mark) => mark.row === row && mark.depth === depth) ? "pentagram" : null);
+  });
+}
+
 describe("terrain initial", () => {
-  it("starts every new match with independent mirrored scenery and consumable marks", () => {
+  it("starts new matches with independent asymmetric fields and unchanged decks", () => {
     const cards = validateDeck(DEFAULT_DECK);
     const state = createGame([
       { userId: "a", name: "A", cards },
       { userId: "b", name: "B", cards },
     ], 0, random);
     const [a, b] = state.players;
-    expect(a!.board).toHaveLength(2);
-    expect(a!.runes).toHaveLength(1);
-    expect(a!.pentagrams).toHaveLength(1);
-    expect(a!.board).toEqual(b!.board);
-    expect(a!.runes).toEqual(b!.runes);
-    expect(a!.pentagrams).toEqual(b!.pentagrams);
-    expect(new Set([...a!.board, ...a!.runes!, ...a!.pentagrams!].map((cell) => `${cell.row}:${cell.depth}`)).size).toBe(4);
+    expect(layout(a!)).not.toEqual(layout(b!));
     for (const owner of state.players) {
       expect(owner.cards.map((card) => card.id)).toEqual(DEFAULT_DECK);
       expect(owner.hand).toHaveLength(4);
-      expect(legalPlacements(cards[0]!, owner.board).length).toBeGreaterThanOrEqual(6);
-      expect(legalPlacements(cards[3]!, owner.board).length).toBeGreaterThanOrEqual(6);
+      expect(legalPlacements(cards[0]!, owner.board).length).toBeGreaterThanOrEqual(5);
+      expect(legalPlacements(cards[3]!, owner.board).length).toBeGreaterThanOrEqual(5);
     }
+  });
+
+  it("keeps each side's scenery, marks and catalogue definitions independent", () => {
+    const cards = validateDeck(DEFAULT_DECK);
+    const state = createGame([
+      { userId: "a", name: "A", cards },
+      { userId: "b", name: "B", cards },
+    ], 0, () => 0.999);
+    const [a, b] = state.players;
+    const before = structuredClone(b);
     a!.board[0]!.definition!.health = 99;
     a!.runes![0]!.health = 99;
     a!.pentagrams![0]!.attack = 99;
-    expect(b!.board[0]!.definition!.health).not.toBe(99);
-    expect(b!.runes![0]!.health).toBe(3);
-    expect(b!.pentagrams![0]!.attack).toBe(2);
+    expect(b).toEqual(before);
     expect(Object.values(FIELD_BUILDINGS).every((card) => card.health < 99)).toBe(true);
   });
 
-  it("varies the layout and buildings reproducibly while preserving legal free cells", () => {
+  it("varies all three quantities and positions within balance limits across 500 seeds", () => {
     const kinds = new Set<string>();
     const layouts = new Set<string>();
+    const quantities = [new Set<number>(), new Set<number>(), new Set<number>()];
+    const advantages = new Set<number>();
     const cards = validateDeck(DEFAULT_DECK);
-    for (let seed = 1; seed <= 30; seed++) {
+    for (let seed = 1; seed <= 500; seed++) {
       const inputs = [{ userId: "a", name: "A", cards }, { userId: "b", name: "B", cards }];
       const state = createGame(inputs, 0, seeded(seed));
       expect(state).toEqual(createGame(inputs, 0, seeded(seed)));
-      const owner = state.players[0]!;
-      owner.board.forEach((unit) => kinds.add(unit.fieldObject!));
-      layouts.add(JSON.stringify(owner.board.map(({ row, depth, fieldObject }) => ({ row, depth, fieldObject }))));
-      for (const card of cards) expect(legalPlacements(card, owner.board).length).toBeGreaterThan(0);
+      const counts = state.players.map((owner) => [owner.board.length, owner.runes!.length, owner.pentagrams!.length]);
+      for (let kind = 0; kind < 3; kind++) {
+        expect(Math.abs(counts[0]![kind]! - counts[1]![kind]!)).toBeLessThanOrEqual(1);
+      }
+      const bonusDifference = counts[0]![1]! + counts[0]![2]! - counts[1]![1]! - counts[1]![2]!;
+      expect(Math.abs(bonusDifference)).toBeLessThanOrEqual(1);
+      advantages.add(Math.sign(bonusDifference));
+      expect(layout(state.players[0]!)).not.toEqual(layout(state.players[1]!));
+      for (const [index, owner] of state.players.entries()) {
+        const cells = [...owner.board, ...owner.runes!, ...owner.pentagrams!];
+        expect(cells.length).toBeGreaterThanOrEqual(2);
+        expect(cells.length).toBeLessThanOrEqual(6);
+        expect(new Set(cells.map((cell) => `${cell.row}:${cell.depth}`)).size).toBe(cells.length);
+        expect(cells.every((cell) => cell.row >= 0 && cell.row < 4 && cell.depth >= 0 && cell.depth < 3)).toBe(true);
+        expect(owner.board.length).toBeLessThanOrEqual(3);
+        expect(owner.runes!.length).toBeLessThanOrEqual(2);
+        expect(owner.pentagrams!.length).toBeLessThanOrEqual(2);
+        expect(new Set(owner.board.map((unit) => unit.row)).size).toBe(owner.board.length);
+        expect(new Set(owner.board.map((unit) => unit.fieldObject)).size).toBe(owner.board.length);
+        owner.board.forEach((unit) => kinds.add(unit.fieldObject!));
+        counts[index]!.forEach((count, kind) => quantities[kind]!.add(count));
+        layouts.add(JSON.stringify(layout(owner)));
+        for (const card of cards) expect(legalPlacements(card, owner.board).length).toBeGreaterThanOrEqual(5);
+      }
     }
     expect(kinds.size).toBe(3);
-    expect(layouts.size).toBeGreaterThan(5);
+    expect(layouts.size).toBeGreaterThan(100);
+    expect([...quantities[0]!].sort()).toEqual([0, 1, 2, 3]);
+    expect([...quantities[1]!].sort()).toEqual([0, 1, 2]);
+    expect([...quantities[2]!].sort()).toEqual([0, 1, 2]);
+    expect(advantages).toEqual(new Set([-1, 0, 1]));
+  });
+
+  it.each([0, 0.25, 0.5, 0.999])("always breaks exact mirrors with a constant random source of %s", (value) => {
+    const cards = validateDeck(DEFAULT_DECK);
+    const state = createGame([
+      { userId: "a", name: "A", cards },
+      { userId: "b", name: "B", cards },
+    ], 0, () => value);
+    expect(layout(state.players[0]!)).not.toEqual(layout(state.players[1]!));
   });
 
   it("keeps old empty snapshots playable and never populates them during a transition", () => {

@@ -1,5 +1,13 @@
 import { cloneCard, type CardDefinition } from "./cards";
-import { ROWS, shuffle, type PlayerState, type Unit } from "./index";
+import {
+  DEPTHS,
+  ROWS,
+  shuffle,
+  type Pentagram,
+  type PlayerState,
+  type Rune,
+  type Unit,
+} from "./index";
 
 export type FieldBuildingKind = "spikes" | "dark-tree" | "mossy-rock";
 
@@ -84,23 +92,94 @@ export function createFieldBuilding(
   };
 }
 
-/** Both sides receive independent copies of the same randomly arranged field. */
-export function populateField(players: PlayerState[], random: () => number) {
+interface FieldCounts {
+  buildings: number;
+  runes: number;
+  pentagrams: number;
+}
+
+const countOptions: FieldCounts[] = [];
+for (let buildings = 0; buildings <= 3; buildings++) {
+  for (let runes = 0; runes <= 2; runes++) {
+    for (let pentagrams = 0; pentagrams <= 2; pentagrams++) {
+      const total = buildings + runes + pentagrams;
+      if (total >= 2 && total <= 6)
+        countOptions.push({ buildings, runes, pentagrams });
+    }
+  }
+}
+
+// Sampling ordered pairs uniformly gives either player the same chances.
+// Permit one extra object of each kind and at most one extra consumable bonus.
+const balancedPairs = countOptions.flatMap((first) =>
+  countOptions
+    .filter(
+      (second) =>
+        Math.abs(first.buildings - second.buildings) <= 1 &&
+        Math.abs(first.runes - second.runes) <= 1 &&
+        Math.abs(first.pentagrams - second.pentagrams) <= 1 &&
+        Math.abs(
+          first.runes + first.pentagrams - second.runes - second.pentagrams,
+        ) <= 1,
+    )
+    .map((second) => [first, second] as const),
+);
+
+function createField(
+  counts: FieldCounts,
+  random: () => number,
+): { board: Unit[]; runes: Rune[]; pentagrams: Pentagram[] } {
   const rows = shuffle(Array.from({ length: ROWS }, (_, row) => row), random);
   const kinds = shuffle(
     Object.keys(FIELD_BUILDINGS) as FieldBuildingKind[],
     random,
   );
-  const board = [
-    createFieldBuilding(kinds[0]!, rows[0]!, 0),
-    createFieldBuilding(kinds[1]!, rows[2]!, 1),
-  ];
-  for (const player of players) {
-    player.board = board.map((unit) => ({
-      ...unit,
-      definition: cloneCard(unit.definition!),
-    }));
-    player.runes = [{ row: rows[1]!, depth: 1, health: 3 }];
-    player.pentagrams = [{ row: rows[3]!, depth: 1, attack: 2 }];
+  // One building per row preserves an unobstructed lane, even on dense fields.
+  const board = kinds.slice(0, counts.buildings).map((kind, index) =>
+    createFieldBuilding(kind, rows[index]!, Math.floor(random() * DEPTHS)),
+  );
+  const cells = shuffle(
+    Array.from({ length: ROWS * DEPTHS }, (_, index) => ({
+      row: Math.floor(index / DEPTHS),
+      depth: index % DEPTHS,
+    })).filter(
+      (cell) => !board.some(
+        (unit) => unit.row === cell.row && unit.depth === cell.depth,
+      ),
+    ),
+    random,
+  );
+  return {
+    board,
+    runes: cells.slice(0, counts.runes).map((cell) => ({ ...cell, health: 3 })),
+    pentagrams: cells
+      .slice(counts.runes, counts.runes + counts.pentagrams)
+      .map((cell) => ({ ...cell, attack: 2 })),
+  };
+}
+
+function fieldSignature(player: PlayerState) {
+  return [
+    ...player.board.map((unit) => `${unit.cardId}:${unit.row}:${unit.depth}`),
+    ...(player.runes ?? []).map((rune) => `rune:${rune.row}:${rune.depth}`),
+    ...(player.pentagrams ?? []).map((mark) => `pentagram:${mark.row}:${mark.depth}`),
+  ].sort().join("|");
+}
+
+/** Independent asymmetric fields with small, bounded differences in resources. */
+export function populateField(players: PlayerState[], random: () => number) {
+  const counts = balancedPairs[Math.floor(random() * balancedPairs.length)]!;
+  players.forEach((player, index) => {
+    Object.assign(player, createField(counts[index]!, random));
+  });
+  if (fieldSignature(players[0]!) === fieldSignature(players[1]!)) {
+    // A cyclic shift always breaks a mirror: no kind occupies all four rows.
+    // No rejection loop, so even a constant random source terminates.
+    const second = players[1]!;
+    for (const cell of [
+      ...second.board,
+      ...(second.runes ?? []),
+      ...(second.pentagrams ?? []),
+    ]) cell.row = (cell.row + 1) % ROWS;
   }
 }

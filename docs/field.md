@@ -1,8 +1,12 @@
 # Terrain initial de Sylve
 
-Les nouvelles parties solo, les duels publics, les défis amicaux et l’entraînement commencent avec un terrain tiré à leur création. Chaque camp reçoit **deux bâtiments neutres différents**, **une rune de vie +3 PV** et **un pentagramme de puissance +2 attaque**. Les trois bâtiments disponibles sont les pieux de ronces, l’arbre sombre et le rocher moussu.
+Les nouvelles parties solo, les duels publics, les défis amicaux et l’entraînement commencent avec des terrains tirés à leur création. Chaque camp reçoit **0 à 3 bâtiments neutres différents**, **0 à 2 runes de vie +3 PV** et **0 à 2 pentagrammes de puissance +2 attaque**, pour un total de **2 à 6 éléments**. Une catégorie peut être absente. Les trois bâtiments disponibles sont les pieux de ronces, l’arbre sombre et le rocher moussu.
 
-La disposition est symétrique par rapport à la frontière : mêmes types, mêmes lignes et mêmes profondeurs relatives pour les deux joueurs. Un bâtiment occupe une case d’avant, l’autre une case du milieu sur une autre ligne. La rune et le pentagramme occupent les deux lignes restantes au milieu, une colonne accessible à toutes les cartes. Cette disposition laisse au moins six placements de mêlée et sept placements à distance libres. Les définitions, PV et sceaux sont copiés indépendamment pour chaque côté. Le tirage utilise le générateur de la partie et devient immuable une fois enregistré côté serveur.
+Les profils de quantités sont tirés ensemble parmi les paires autorisées : l’écart est d’au plus **un bâtiment**, **une rune** et **un pentagramme**, et d’au plus **un sceau consommable au total**. La sélection uniforme des paires ordonnées donne les mêmes chances aux deux camps. Les quantités peuvent donc différer, et un côté peut recevoir un petit avantage. Le choix du premier joueur n’intervient pas dans ces limites.
+
+Les positions et types sont ensuite tirés indépendamment. Les bâtiments peuvent occuper les trois profondeurs, avec **un seul bâtiment par ligne**. Les sceaux occupent des cases libres tirées dans les trois colonnes, sans chevauchement : certains favorisent la mêlée, d’autres la distance. Chaque camp conserve au moins **cinq placements libres** pour chacun de ces types et une ligne sans bâtiment neutre. La valeur tactique exacte des positions varie volontairement ; les limites portent sur les quantités et la place disponible.
+
+Une disposition exactement en miroir est empêchée : si les deux tirages coïncident, toutes les lignes du second terrain sont décalées d’un cran de façon cyclique. Ce décalage conserve les quantités et les cases libres et fonctionne même avec un générateur aléatoire constant, sans boucle de nouveau tirage. Les définitions, PV et sceaux restent indépendants pour chaque camp. Le terrain est enregistré côté serveur à la création et reste identique après rechargement ou reconnexion.
 
 | Élément | Valeur initiale | Effet |
 | --- | --- | --- |

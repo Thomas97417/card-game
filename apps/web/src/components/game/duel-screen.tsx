@@ -611,9 +611,11 @@ export function DuelScreen({
           peuvent soigner, renforcer, protéger ou invoquer des renforts.
         </p>
         <p>
-          Au début du combat, les deux camps reçoivent le même terrain, avec
-          deux bâtiments neutres, une rune de vie (+3 PV) et un pentagramme de
-          puissance (+2 attaque). Les bâtiments bloquent leur case et doivent
+          Chaque partie tire un terrain différent pour chaque camp : de 0 à 3
+          bâtiments neutres, de 0 à 2 runes de vie (+3 PV) et de 0 à 2
+          pentagrammes de puissance (+2 attaque). Les quantités restent proches,
+          mais les positions et les petits avantages varient. Chaque camp garde
+          plusieurs cases libres pour invoquer. Les bâtiments bloquent leur case et doivent
           être détruits ; ils ne peuvent pas être retirés. Les sceaux sont
           consommés par la prochaine unité qui apparaît dessus, après ses
           capacités d’arrivée. Leur bonus dure tant que cette unité reste en jeu.

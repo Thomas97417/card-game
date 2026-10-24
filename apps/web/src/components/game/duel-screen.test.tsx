@@ -84,9 +84,15 @@ describe("éléments du terrain", () => {
     const data = fieldData();
     const { actions } = setup(data);
     const obstacle = data.players[0]!.board[0]!;
-    expect(document.querySelectorAll(".neutral-building")).toHaveLength(4);
-    expect(document.querySelectorAll(".field-mark-rune")).toHaveLength(2);
-    expect(document.querySelectorAll(".field-mark-pentagram")).toHaveLength(2);
+    expect(document.querySelectorAll(".neutral-building")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.board.length, 0),
+    );
+    expect(document.querySelectorAll(".field-mark-rune")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.runes!.length, 0),
+    );
+    expect(document.querySelectorAll(".field-mark-pentagram")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.pentagrams!.length, 0),
+    );
     expect(document.querySelector(`.neutral-building[data-field-object="${obstacle.fieldObject}"] img`)?.getAttribute("src")).toBe(`/art/field/${obstacle.fieldObject}.webp`);
     fireEvent.click(screen.getAllByRole("button", { name: `${obstacle.card.name}, bâtiment neutre, puissance 0, ${obstacle.hp} PV, voir les informations` })[0]!);
     const dialog = within(await screen.findByRole("dialog"));
