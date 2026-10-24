@@ -1,8 +1,14 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import { ArrowRight, History, LoaderCircle, Sparkles } from "lucide-react";
-import { RARITIES, RARITY_LABELS, resolveCard } from "@sylve/game";
+import { ArrowRight, History, LoaderCircle } from "lucide-react";
+import {
+  combatTypeLabel,
+  RARITIES,
+  RARITY_LABELS,
+  resolveCard,
+  type OwnedCard,
+} from "@sylve/game";
 import {
   SUMMON_PACKS,
   summonPack,
@@ -13,7 +19,8 @@ import {
 } from "@sylve/game/summoning";
 import { CurrencyBalances } from "@/components/currency-balances";
 import { DiamondAmount } from "@/components/diamond-balance";
-import { CreatureCard } from "@/components/game/creature-card";
+import { CardArtwork } from "@/components/decks/card-artwork";
+import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import {
   Dialog,
   DialogClose,
@@ -33,14 +40,18 @@ interface SanctuaryProps {
   diamonds: number | null | undefined;
   ready: boolean;
   latest?: SummonResult | null;
+  collection: OwnedCard[] | undefined;
   onSummon: (request: SummonRequest) => Promise<SummonResult>;
+  onUpgrade: (variantId: string) => Promise<unknown>;
 }
 
 export function Sanctuary({
   diamonds,
   ready,
   latest,
+  collection,
   onSummon,
+  onUpgrade,
 }: SanctuaryProps) {
   const [busy, setBusy] = useState<{
     packId: SummonPackId;
@@ -164,7 +175,12 @@ export function Sanctuary({
           </p>
         )}
       </div>
-      <SummonRevealDialog result={result} onClose={() => setResult(null)} />
+      <SummonRevealDialog
+        result={result}
+        collection={collection}
+        onClose={() => setResult(null)}
+        onUpgrade={onUpgrade}
+      />
     </main>
   );
 }
@@ -293,21 +309,41 @@ function PackChoice({
 
 export function SummonRevealDialog({
   result,
+  collection,
   onClose,
+  onUpgrade,
 }: {
   result: SummonResult | null;
+  collection: OwnedCard[] | undefined;
   onClose: () => void;
+  onUpgrade: (variantId: string) => Promise<unknown>;
 }) {
+  const [inspected, setInspected] = useState<string | null>(null);
   const popup = useRef<HTMLDivElement>(null);
+  const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
+  const reveals = new Map(result?.reveals.map((item) => [item.variantId, item]));
+  const inspectedReveal = inspected ? reveals.get(inspected) : undefined;
+  const inspectedEntry = inspectedReveal
+    ? entries.get(inspectedReveal.variantId) ?? {
+        card: resolveCard(inspectedReveal.variantId, inspectedReveal.level),
+        copies: inspectedReveal.copies,
+      }
+    : undefined;
   const pack = result ? summonPack(result.packId) : null;
   const legendaryCount =
     result?.reveals.filter((item) => item.variantId.endsWith(":legendary"))
       .length ?? 0;
+
+  function close() {
+    setInspected(null);
+    onClose();
+  }
+
   return (
     <Dialog
       open={!!result}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) close();
       }}
     >
       <DialogContent
@@ -318,29 +354,30 @@ export function SummonRevealDialog({
       >
         {result && pack && (
           <>
-            <span className="sanctuary-eyebrow">
-              <Sparkles size={14} />
-              {pack.name}
-            </span>
-            <DialogTitle>
-              {result.count === 10
-                ? "Ton cercle s’agrandit."
-                : "Un esprit a répondu."}
-            </DialogTitle>
-            <DialogDescription>
-              {result.count} carte{result.count > 1 ? "s" : ""} ajoutée
-              {result.count > 1 ? "s" : ""} à ta collection.{" "}
-              {legendaryCount > 0 &&
-                `${legendaryCount} légendaire${legendaryCount > 1 ? "s" : ""} !`}{" "}
-              Les doublons rejoignent ta réserve d’exemplaires.
-            </DialogDescription>
+            <header className="summon-reveal-heading">
+              <span className="sanctuary-eyebrow">{pack.name}</span>
+              <DialogTitle>
+                {result.count === 10
+                  ? "Ton cercle s’agrandit."
+                  : "Un esprit a répondu."}
+              </DialogTitle>
+              <DialogDescription>
+                {result.count} carte{result.count > 1 ? "s" : ""} ajoutée
+                {result.count > 1 ? "s" : ""} à ta collection.{" "}
+                {legendaryCount > 0 &&
+                  `${legendaryCount} légendaire${legendaryCount > 1 ? "s" : ""} !`}{" "}
+                Les doublons rejoignent ta réserve d’exemplaires.
+              </DialogDescription>
+            </header>
             <div
-              className={`summon-reveal-grid ${result.count === 1 ? "summon-reveal-single" : ""}`}
+              className="summon-reveal-grid"
               role="list"
               aria-label="Cartes invoquées"
             >
               {result.reveals.map((item, index) => {
-                const card = resolveCard(item.variantId, item.level);
+                const entry = entries.get(item.variantId);
+                const card =
+                  entry?.card ?? resolveCard(item.variantId, item.level);
                 return (
                   <div
                     className="summon-reveal-card"
@@ -349,20 +386,27 @@ export function SummonRevealDialog({
                     role="listitem"
                     style={{ animationDelay: `${Math.min(index * 65, 500)}ms` }}
                   >
-                    <CreatureCard card={card} disabled />
-                    <strong>{card.name}</strong>
+                    <button
+                      type="button"
+                      className="workshop-card"
+                      data-rarity={card.rarity}
+                      style={{ "--creature-color": card.color } as CSSProperties}
+                      aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations`}
+                      aria-haspopup="dialog"
+                      onClick={() => setInspected(item.variantId)}
+                    >
+                      <CardArtwork
+                        card={card}
+                        copies={
+                          entry?.copies ?? reveals.get(item.variantId)?.copies
+                        }
+                      />
+                    </button>
                     <span className="rarity-label" data-rarity={card.rarity}>
                       {RARITY_LABELS[card.rarity!]}
                     </span>
                     <small className={item.isNew ? "summon-new" : ""}>
-                      {item.isNew ? (
-                        <>
-                          <Sparkles size={10} />
-                          Nouvelle carte
-                        </>
-                      ) : (
-                        "+1 exemplaire"
-                      )}
+                      {item.isNew ? "Nouvelle carte" : "+1 exemplaire"}
                     </small>
                   </div>
                 );
@@ -372,7 +416,7 @@ export function SummonRevealDialog({
               <DialogClose className="sanctuary-text-button">
                 Continuer à invoquer
               </DialogClose>
-              <Link to="/decks" className="sylve-button" onClick={onClose}>
+              <Link to="/decks" className="sylve-button" onClick={close}>
                 Voir ma collection
                 <ArrowRight size={16} />
               </Link>
@@ -380,6 +424,11 @@ export function SummonRevealDialog({
           </>
         )}
       </DialogContent>
+      <CardUpgradeDialog
+        entry={inspectedEntry}
+        onClose={() => setInspected(null)}
+        onUpgrade={onUpgrade}
+      />
     </Dialog>
   );
 }

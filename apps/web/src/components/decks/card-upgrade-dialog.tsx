@@ -33,6 +33,20 @@ import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 import { CardAbilities } from "@/components/game/card-abilities";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
 
+type DeckActions =
+  | {
+      inDeck: boolean;
+      hasSpace: boolean;
+      onAdd: () => void;
+      onMove: () => void;
+    }
+  | {
+      inDeck?: never;
+      hasSpace?: never;
+      onAdd?: never;
+      onMove?: never;
+    };
+
 export function CardUpgradeDialog({
   entry,
   inDeck,
@@ -43,13 +57,9 @@ export function CardUpgradeDialog({
   onMove,
 }: {
   entry: OwnedCard | undefined;
-  inDeck: boolean;
-  hasSpace: boolean;
   onClose: () => void;
   onUpgrade: (variantId: string) => Promise<unknown>;
-  onAdd: () => void;
-  onMove: () => void;
-}) {
+} & DeckActions) {
   const [busy, setBusy] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
   const gold = useGoldBalance();
@@ -95,7 +105,7 @@ export function CardUpgradeDialog({
         data-rarity={card?.rarity ?? "common"}
       >
         {card && entry && (
-          <div className="upgrade-showcase">
+          <div className="upgrade-showcase" data-deck-actions={!!onMove}>
             <div className="upgrade-portrait">
               <div className="upgrade-portrait-stats">
                 <StatBadge
@@ -267,33 +277,35 @@ export function CardUpgradeDialog({
               </div>
             </div>
 
-            <aside className="upgrade-deck-panel" aria-label="Actions du deck">
-              <span className="eyebrow">TON DECK</span>
-              <div className="upgrade-deck-status" data-in-deck={inDeck}>
-                {inDeck ? <Check size={17} /> : <CollectionIcon size={17} />}
-                <span>{inDeck ? "Dans ton deck" : "Dans ta collection"}</span>
-              </div>
-              <div className="upgrade-deck-actions">
-                {inDeck ? (
-                  <button className="sylve-button secondary" onClick={onMove}>
-                    <ArrowRightLeft size={22} />
-                    Déplacer dans le deck
-                  </button>
-                ) : (
-                  <button
-                    className="sylve-button secondary"
-                    onClick={hasSpace ? onAdd : onMove}
-                  >
-                    {hasSpace ? (
-                      <Plus size={22} />
-                    ) : (
+            {onMove && (
+              <aside className="upgrade-deck-panel" aria-label="Actions du deck">
+                <span className="eyebrow">TON DECK</span>
+                <div className="upgrade-deck-status" data-in-deck={inDeck}>
+                  {inDeck ? <Check size={17} /> : <CollectionIcon size={17} />}
+                  <span>{inDeck ? "Dans ton deck" : "Dans ta collection"}</span>
+                </div>
+                <div className="upgrade-deck-actions">
+                  {inDeck ? (
+                    <button className="sylve-button secondary" onClick={onMove}>
                       <ArrowRightLeft size={22} />
-                    )}
-                    {hasSpace ? "Ajouter au deck" : "Remplacer une carte"}
-                  </button>
-                )}
-              </div>
-            </aside>
+                      Déplacer dans le deck
+                    </button>
+                  ) : (
+                    <button
+                      className="sylve-button secondary"
+                      onClick={hasSpace ? onAdd : onMove}
+                    >
+                      {hasSpace ? (
+                        <Plus size={22} />
+                      ) : (
+                        <ArrowRightLeft size={22} />
+                      )}
+                      {hasSpace ? "Ajouter au deck" : "Remplacer une carte"}
+                    </button>
+                  )}
+                </div>
+              </aside>
+            )}
           </div>
         )}
       </DialogContent>

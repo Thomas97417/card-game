@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CATALOG } from "@sylve/game";
+import { CATALOG, resolveCard, variantCard } from "@sylve/game";
 import {
   summonLoot,
   summonPrice,
@@ -42,7 +42,15 @@ function reward(request: SummonRequest): SummonResult {
 }
 function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const onSummon = vi.fn(async (request: SummonRequest) => reward(request));
-  const props = { diamonds: 3_000, ready: true, onSummon, ...overrides };
+  const onUpgrade = vi.fn().mockResolvedValue(undefined);
+  const props = {
+    diamonds: 3_000,
+    ready: true,
+    collection: undefined,
+    onSummon,
+    onUpgrade,
+    ...overrides,
+  };
   const result = render(
     <GoldContext.Provider value={500}>
       <DiamondContext.Provider value={props.diamonds}>
@@ -50,7 +58,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
       </DiamondContext.Provider>
     </GoldContext.Provider>,
   );
-  return { ...result, onSummon };
+  return { ...result, onSummon, onUpgrade };
 }
 const purchase = (pack: "Sylve" | "anciens", count: 1 | 10) =>
   screen.getByRole("button", {
@@ -177,6 +185,98 @@ describe("le sanctuaire", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
     expect(onSummon).not.toHaveBeenCalled();
+  });
+
+  it("opens each summoned variant and returns to the batch when its details are closed", async () => {
+    const latest = reward({
+      packId: "ancients",
+      count: 10,
+      requestId: "saved-summon-request",
+    });
+    const { onSummon } = setup({ latest });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    const reveal = await screen.findByRole("dialog");
+    const items = within(reveal).getAllByRole("listitem");
+
+    for (const index of [0, 9]) {
+      const card = resolveCard(latest.reveals[index]!.variantId);
+      const trigger = within(items[index]!).getByRole("button");
+      expect(trigger.getAttribute("aria-haspopup")).toBe("dialog");
+      fireEvent.click(trigger);
+      const details = await screen.findByRole("dialog", { name: card.name });
+      expect(within(details).getByText(card.title)).toBeTruthy();
+      expect(
+        within(details).getByRole("region", { name: "Caractéristiques" }),
+      ).toBeTruthy();
+      expect(
+        within(details).queryByRole("complementary", { name: "Actions du deck" }),
+      ).toBeNull();
+      fireEvent.click(
+        within(details).getByRole("button", { name: "Fermer la fenêtre" }),
+      );
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
+      );
+      expect(within(reveal).getAllByRole("listitem")).toHaveLength(10);
+    }
+    expect(onSummon).not.toHaveBeenCalled();
+  });
+
+  it("uses the current collection level and copies and upgrades the inspected variant", async () => {
+    const latest = reward({
+      packId: "sylve",
+      count: 1,
+      requestId: "saved-summon-request",
+    });
+    const card = variantCard(CATALOG[0]!.id, "common", 2);
+    const { onUpgrade } = setup({
+      latest,
+      collection: [{ card, copies: 50 }],
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    const reveal = await screen.findByRole("dialog");
+    fireEvent.click(
+      within(reveal).getByRole("button", {
+        name: /niveau 2, voir les informations/,
+      }),
+    );
+    const details = await screen.findByRole("dialog", { name: card.name });
+    expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
+    fireEvent.click(
+      within(details).getByRole("button", { name: "Améliorer au niveau 3" }),
+    );
+    await waitFor(() =>
+      expect(onUpgrade).toHaveBeenCalledExactlyOnceWith(card.id),
+    );
+  });
+
+  it("uses the final reserve for repeated cards while the collection loads", async () => {
+    setup();
+    fireEvent.click(purchase("Sylve", 10));
+    const reveal = await screen.findByRole("dialog");
+    const items = within(reveal).getAllByRole("listitem");
+    fireEvent.click(within(items[1]!).getByRole("button"));
+    const card = resolveCard(`${CATALOG[0]!.id}:common`);
+    const details = await screen.findByRole("dialog", { name: card.name });
+    expect(within(details).getByText("9 / 25 exemplaires")).toBeTruthy();
+    fireEvent.keyDown(details, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
+    );
+    expect(within(reveal).getAllByRole("listitem")).toHaveLength(10);
+    fireEvent.click(
+      within(reveal).getByRole("button", { name: "Fermer la fenêtre" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
   });
 
   it("keeps the creature bestiary available from the new page", async () => {
