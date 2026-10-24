@@ -589,26 +589,6 @@
   }
 }
 @media (max-width: 560px) {
-  .hub-hud {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 8px;
-  }
-  .hub-hud > :first-child {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .hub-actions {
-    display: contents;
-  }
-  .hub-actions > .currency-balances {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: end;
-  }
-  .hub-actions > :not(.currency-balances) {
-    grid-row: 1;
-  }
   .summon-packs {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;

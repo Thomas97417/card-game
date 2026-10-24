@@ -1,10 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Authenticated, Unauthenticated } from "convex/react";
 
-import UserMenu from "./user-menu";
-import { ModeToggle } from "./mode-toggle";
 import { Leaf, Map, Swords } from "lucide-react";
-import { CurrencyBalances } from "./currency-balances";
+import { PlayerHeader } from "./player-header";
 
 const linkStyles = "sylve-nav-link";
 
@@ -33,19 +31,10 @@ export default function Header() {
             <Link to="/decks" className={linkStyles}>
               Mon deck
             </Link>
-            <Authenticated>
-              <Link to="/settings" className={linkStyles}>
-                Paramètres
-              </Link>
-            </Authenticated>
           </nav>
         </div>
-        <div className="flex items-center gap-2">
-          <CurrencyBalances />
-          <ModeToggle />
-          <Authenticated>
-            <UserMenu />
-          </Authenticated>
+        <div className="header-account-actions">
+          <PlayerHeader />
           <Unauthenticated>
             <Link to="/sign-in" className="sylve-button secondary small-button">
               Connexion

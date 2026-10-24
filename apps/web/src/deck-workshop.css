@@ -67,7 +67,6 @@
   padding-inline: clamp(20px, 3vw, 56px);
 }
 .workshop-header {
-  --workshop-status-height: 44px;
   display: flex;
   flex-shrink: 0;
   align-items: center;

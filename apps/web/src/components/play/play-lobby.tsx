@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { PlayerHeader } from "@/components/player-header";
 import { Link } from "@tanstack/react-router";
 import {
   Bot,
@@ -17,7 +17,6 @@ import {
   TROPHIES_PER_LOSS,
   type LeagueProgress,
 } from "@sylve/game/leagues";
-import { LeaguePanel } from "@/components/leagues/league-progress";
 import {
   CHEST_LABELS,
   CHEST_SLOTS,
@@ -99,7 +98,7 @@ export function PlayLobby({
             draggable={false}
           />
         </Link>
-        <CurrencyBalances />
+        <PlayerHeader league={ready ? league : undefined} />
       </header>
       <div className="play-main">
         <Link
@@ -126,7 +125,6 @@ export function PlayLobby({
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
-          {ready && <LeaguePanel progress={league} showNextUnlock={false} />}
           <button
             type="button"
             className="play-battle-button play-solo"

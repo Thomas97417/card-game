@@ -17,7 +17,7 @@ import {
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { PlayerHeader } from "@/components/player-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
@@ -129,7 +129,7 @@ export function Sanctuary({
               <History size={17} />
             </button>
           )}
-          <CurrencyBalances />
+          <PlayerHeader />
         </div>
       </header>
       <h1 className="sr-only">Le sanctuaire</h1>

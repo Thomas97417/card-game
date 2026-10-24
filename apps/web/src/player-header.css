@@ -1,0 +1,387 @@
+.header-account-actions,
+.player-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.player-header-actions {
+  margin-left: auto;
+  pointer-events: auto;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+.player-header-actions .currency-balances {
+  flex-shrink: 0;
+}
+.player-league-loading {
+  display: grid;
+  place-items: center;
+  width: 190px;
+  height: 44px;
+  border: 1px solid #cfb16c66;
+  border-radius: 9px;
+  background: #193429e6;
+  color: #e6d3a4;
+}
+.league-panel.is-compact {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.league-panel-background {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.league-panel-background > span {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-right: 1px solid #ead28b66;
+  background: linear-gradient(105deg, #608b4559, #b4af5b50);
+  box-shadow: inset 0 1px #f8e7a612;
+  transition: width 400ms ease;
+}
+.league-panel-background > span::after {
+  position: absolute;
+  content: "";
+  inset: auto 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, #82ad61, #e6cb83);
+  box-shadow: 0 -2px 9px #dfc17140;
+}
+.player-header-actions .league-panel.is-compact {
+  min-width: 0;
+  min-height: 44px;
+  max-width: 270px;
+  gap: 7px;
+  padding: 3px 10px 3px 4px;
+  margin: 0;
+}
+.player-header-actions .league-badge {
+  width: 36px !important;
+  height: 36px !important;
+}
+.player-header-actions .league-division {
+  font-size: 10px;
+}
+.player-header-actions .league-panel.is-compact .league-panel-heading {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.player-header-actions .league-panel.is-compact .league-panel-heading > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+.player-header-actions .league-panel .trophy-amount {
+  gap: 3px;
+  font-size: 12px;
+}
+.player-header-actions .league-panel .trophy-icon {
+  width: 19px;
+  height: 19px;
+}
+.sylve-settings-trigger {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  outline: none;
+  filter: drop-shadow(0 3px 4px #07170e88);
+  transition: filter 160ms, transform 160ms;
+}
+.sylve-settings-trigger img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 220ms;
+}
+.sylve-settings-trigger:hover,
+.sylve-settings-trigger[data-popup-open] {
+  filter: drop-shadow(0 0 7px #f2ca7566);
+}
+.sylve-settings-trigger:hover img,
+.sylve-settings-trigger[data-popup-open] img {
+  transform: rotate(18deg);
+}
+.sylve-settings-trigger:active {
+  transform: scale(0.94);
+}
+.sylve-settings-trigger:focus-visible {
+  outline: 2px solid #f1d494;
+  outline-offset: 3px;
+}
+.sylve-user-menu[data-slot="dropdown-menu-content"] {
+  width: min(300px, calc(100vw - 24px));
+  padding: 7px;
+  border: 1px solid #bba16b;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2b4434, #172e24 65%, #12251d);
+  box-shadow: inset 0 0 0 3px #dfbd6b0d, 0 16px 40px #05140f80;
+  color: #f6e9c9;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  color-scheme: dark;
+  --muted: #34503a;
+  --foreground: #fff0cc;
+}
+.sylve-user-menu .sylve-user-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px 16px;
+  color: #f6e9c9;
+}
+.sylve-user-identity > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.sylve-user-identity strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 22px/1.2 Georgia, serif;
+}
+.sylve-user-emblem {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 48px;
+  border: 1px solid #bfa37088;
+  border-radius: 45% 45% 40% 40%;
+  background: linear-gradient(145deg, #4b5739, #233e2d);
+  color: #e9ce8b;
+  box-shadow: inset 0 0 0 3px #d4b46c0c;
+}
+.sylve-menu-eyebrow {
+  color: #c5b17c;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+}
+.sylve-user-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #b5c3ab;
+  font-size: 11px;
+}
+.sylve-user-menu [data-slot="dropdown-menu-separator"] {
+  height: 1px;
+  margin: 5px 9px;
+  background: linear-gradient(90deg, transparent, #c5aa6566, transparent);
+}
+.sylve-user-menu [data-slot="dropdown-menu-item"] {
+  min-height: 50px;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #f2e5c6;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sylve-user-menu [data-slot="dropdown-menu-item"]:is(:hover, :focus-visible, [data-highlighted]) {
+  border-color: #c5aa6544;
+  background: #d4c18412;
+  color: #fff2d4;
+}
+.sylve-menu-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #bba16b33;
+  border-radius: 6px;
+  background: #0b21184d;
+  color: #ddc288;
+}
+.sylve-user-menu small {
+  display: block;
+  margin-top: 2px;
+  color: #acbba1;
+  font-size: 10px;
+}
+.sylve-user-menu .sylve-menu-chevron {
+  margin-left: auto;
+  color: #bba16b;
+}
+.sylve-user-menu [data-variant="destructive"] {
+  color: #e7b09a;
+}
+.sylve-user-menu [data-variant="destructive"] .sylve-menu-icon {
+  border-color: #c7856a33;
+  color: #e7b09a;
+}
+.sylve-user-menu [data-variant="destructive"]:is(:hover, :focus-visible, [data-highlighted]) {
+  border-color: #c7856a44;
+  background: #9f4e3626;
+  color: #ffd1bd;
+}
+@media (max-width: 1100px) {
+  .header-inner:has(.league-panel, .player-league-loading) {
+    height: auto;
+    min-height: 76px;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding-block: 10px;
+  }
+  .header-inner:has(.league-panel, .player-league-loading) .header-brand-nav {
+    gap: 24px;
+  }
+  .header-inner:has(.league-panel, .player-league-loading) .sylve-nav {
+    height: 44px;
+  }
+  .header-account-actions {
+    margin-left: auto;
+  }
+}
+@media (max-width: 760px) {
+  .player-header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 44px;
+    align-items: center;
+    flex: 1;
+    gap: 6px;
+    max-width: 360px;
+  }
+  .player-header-actions .league-panel.is-compact,
+  .player-league-loading {
+    width: 100%;
+    max-width: none;
+    height: 64px;
+    padding: 4px;
+    gap: 3px;
+  }
+  .player-header-actions .league-badge {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  .player-header-actions .league-division {
+    font-size: 8px;
+  }
+  .player-header-actions .league-panel.is-compact .league-panel-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .player-header-actions .league-panel.is-compact .league-panel-heading > strong {
+    max-width: 100%;
+    font-size: 13px;
+  }
+  .player-header-actions .league-panel > svg {
+    display: none;
+  }
+  .player-header-actions .league-panel .trophy-amount {
+    font-size: 11px;
+  }
+  .player-header-actions .league-panel .trophy-icon {
+    width: 16px;
+    height: 16px;
+  }
+  .player-header-actions .currency-balances {
+    grid-column: 2;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .player-header-actions .gold-balance,
+  .player-header-actions .emerald-balance {
+    min-height: 30px;
+    padding: 2px 8px 2px 4px;
+    gap: 4px;
+    font-size: 11px;
+  }
+  .player-header-actions .gold-amount,
+  .player-header-actions .emerald-amount {
+    gap: 4px;
+  }
+  .player-header-actions .gold-icon,
+  .player-header-actions .emerald-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .sylve-settings-trigger {
+    grid-column: 3;
+    width: 44px;
+    height: 44px;
+    padding: 1px;
+  }
+  .workshop-header,
+  .play-header,
+  .hub-hud {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+  }
+  .workshop-header .workshop-back,
+  .play-header .workshop-back,
+  .sanctuary-header .workshop-back {
+    width: 46px;
+    height: 44px;
+  }
+  .hub-hud > :first-child {
+    min-width: 44px;
+    justify-content: center;
+    padding-inline: 8px;
+  }
+  .hub-hud > :first-child span {
+    display: none;
+  }
+  .sanctuary-header {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 4px 8px;
+    padding: 12px;
+  }
+  .sanctuary-header-tools {
+    display: contents;
+  }
+  .sanctuary-header-tools .player-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    margin-left: 0;
+  }
+  .sanctuary-header:has(.sanctuary-history-button) .player-header-actions {
+    grid-row: 1 / 3;
+  }
+  .sanctuary-history-button {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    width: 30px;
+    height: 30px;
+  }
+  .header-inner:has(.league-panel, .player-league-loading) .header-account-actions {
+    width: 100%;
+  }
+  .sylve-user-menu [data-slot="dropdown-menu-item"] {
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-panel-background > span,
+  .sylve-settings-trigger,
+  .sylve-settings-trigger img {
+    transition: none;
+  }
+}

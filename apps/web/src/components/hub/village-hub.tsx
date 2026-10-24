@@ -36,10 +36,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import UserMenu from "@/components/user-menu";
-import { ModeToggle } from "@/components/mode-toggle";
+import { PlayerHeader } from "@/components/player-header";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
-import { CurrencyBalances } from "@/components/currency-balances";
 import { AbilityLegend } from "@/components/game/ability-legend";
 import { CollectionIcon } from "@/components/game/game-icon";
 
@@ -153,18 +151,14 @@ export function VillageHub({
       <main className="relative isolate h-full overflow-hidden bg-[#182e25] font-sans text-[#f5f0dd]">
         <h1 className="sr-only">Le refuge des gardiens</h1>
 
-        <div className="hub-hud pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 bg-gradient-to-b from-[#112a22]/60 to-transparent px-4 pt-4 pb-16 sm:px-7 sm:pt-6">
+        <header className="hub-hud pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 bg-gradient-to-b from-[#112a22]/60 to-transparent px-4 pt-4 pb-16 sm:px-7 sm:pt-6">
           <div className="flex min-h-11 items-center gap-2 rounded-full border border-[#d1be85]/35 bg-[#1a3026]/75 px-4 text-[10px] font-medium tracking-[0.1em] text-[#fff6dd] shadow-lg backdrop-blur-sm">
             <MapPin size={14} className="shrink-0 text-[#e4c381]" />
             <span className="hidden sm:inline">La clairière des anciens</span>
             <span className="sm:hidden">Le refuge</span>
           </div>
-          <div className="hub-actions pointer-events-auto flex shrink-0 items-center gap-2">
-            <CurrencyBalances />
-            <ModeToggle overlay />
-            <UserMenu overlay />
-          </div>
-        </div>
+          <PlayerHeader />
+        </header>
 
         <div
           ref={mapScroll}

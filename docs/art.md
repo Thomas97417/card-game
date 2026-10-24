@@ -1,5 +1,13 @@
 # Illustrations de Sylve
 
+## En-tête et menu des paramètres
+
+L’icône `apps/web/public/art/ui/settings-gear.webp` a été créée avec **ImageGen intégré** : un engrenage de noyer sculpté, bordé de laiton doré, avec des incrustations de feuilles et un centre émeraude. Le WebP de 384 × 384 px conserve l’alpha généré et mesure environ 52 Ko. Le [prompt complet](art-prompts-settings.json) conserve aussi le chemin du PNG original.
+
+Elle ouvre le menu utilisateur, assorti aux panneaux vert forêt et aux bordures dorées du jeu. Le refuge, l’atelier, le salon, le sanctuaire et l’en-tête général partagent désormais la ligue, les deux monnaies et ce bouton. La progression dans la division remplit le fond du panneau de ligue ; le survol et le libellé accessible précisent les trophées restants. Les écrans de combat conservent leur interface. Le sélecteur de thème a été retiré.
+
+Le rendu de l’en-tête partagé est conservé sur [ordinateur](header-desktop-validation.webp) à 1280 × 720 px et sur [mobile](header-mobile-validation.webp) à 390 × 844 px. Le sanctuaire et les paramètres ont également été vérifiés à 320 px, ainsi que la navigation du menu au clavier.
+
 ## Éléments du terrain
 
 Trois bâtiments neutres originaux ont été créés le 24 octobre 2026 avec **ImageGen intégré**, par trois appels distincts avec transparence :

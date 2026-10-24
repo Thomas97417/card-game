@@ -28,14 +28,13 @@ import {
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { PlayerHeader } from "@/components/player-header";
 import {
   DECK_SLOT_UNLOCKS,
   leagueAt,
   leagueProgress,
   type LeagueProgress,
 } from "@sylve/game/leagues";
-import { LeaguePanel } from "@/components/leagues/league-progress";
 
 export interface WorkshopDeck {
   _id: Id<"decks">;
@@ -377,8 +376,7 @@ export function DeckWorkshop({
             draggable={false}
           />
         </Link>
-        <LeaguePanel progress={league} compact />
-        <CurrencyBalances />
+        <PlayerHeader league={ready ? league : undefined} />
       </header>
 
       <div className="workshop-content">

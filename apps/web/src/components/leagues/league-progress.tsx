@@ -73,14 +73,34 @@ export function LeaguePanel({
 }) {
   const [open, setOpen] = useState(false);
   const { current, next, trophies, earned, required, nextSlot } = progress;
+  const percentage = Math.min(100, Math.max(0, (earned / required) * 100));
+  const progressLabel = `Progression vers ${next?.label ?? "le sommet des ligues"}`;
+  const progressDescription = next
+    ? `${earned} sur ${required} trophées, ${next.minTrophies - trophies} trophées avant ${next.label}`
+    : "Ligue maximale atteinte";
   return (
     <>
       <button
         className={`league-panel ${compact ? "is-compact" : ""}`}
+        type="button"
         onClick={() => setOpen(true)}
         aria-label={`Ta ligue : ${current.label}, ${trophies} trophées. Voir les ligues et récompenses`}
         aria-haspopup="dialog"
+        title={progressDescription}
       >
+        {compact && (
+          <span
+            className="league-panel-background"
+            role="progressbar"
+            aria-label={progressLabel}
+            aria-valuemin={0}
+            aria-valuemax={required}
+            aria-valuenow={earned}
+            aria-valuetext={progressDescription}
+          >
+            <span style={{ width: `${percentage}%` }} />
+          </span>
+        )}
         <LeagueBadge league={current} size={compact ? 58 : 80} />
         <span className="league-panel-content">
           <span className="league-panel-heading">
@@ -95,17 +115,13 @@ export function LeaguePanel({
               <span
                 className="league-progress-track"
                 role="progressbar"
-                aria-label={`Progression vers ${next?.label ?? "le sommet des ligues"}`}
+                aria-label={progressLabel}
                 aria-valuemin={0}
                 aria-valuemax={required}
                 aria-valuenow={earned}
-                aria-valuetext={
-                  next
-                    ? `${next.minTrophies - trophies} trophées avant ${next.label}`
-                    : "Ligue maximale atteinte"
-                }
+                aria-valuetext={progressDescription}
               >
-                <span style={{ width: `${(earned / required) * 100}%` }} />
+                <span style={{ width: `${percentage}%` }} />
               </span>
               <span className="league-panel-next">
                 {next
