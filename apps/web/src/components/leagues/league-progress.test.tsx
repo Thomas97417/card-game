@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { leagueProgress } from "@sylve/game/leagues";
 import { LeaguePanel, LeagueResult } from "./league-progress";
@@ -13,7 +19,9 @@ describe("le parcours des ligues", () => {
     });
     expect(progress.getAttribute("aria-valuenow")).toBe("175");
     expect(progress.getAttribute("aria-valuemax")).toBe("200");
-    expect(progress.firstElementChild?.getAttribute("style")).toContain("87.5%");
+    expect(progress.firstElementChild?.getAttribute("style")).toContain(
+      "87.5%",
+    );
     rerender(<LeaguePanel progress={leagueProgress(400)} compact />);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
       "0",
@@ -50,6 +58,107 @@ describe("le parcours des ligues", () => {
         .getByRole("list", { name: "Parcours des ligues" })
         .querySelector('[aria-current="step"]')?.textContent,
     ).toContain("Fer IV");
+  });
+
+  it("previews a milestone's rewards and returns to the player's position", async () => {
+    render(<LeaguePanel progress={leagueProgress(175)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const details = within(
+      dialog.getByRole("region", {
+        name: "Détails du palier sélectionné",
+      }),
+    );
+    fireEvent.click(dialog.getByRole("button", { name: /^Or IV,/ }));
+    expect(details.getByRole("heading", { name: "Or IV" })).toBeTruthy();
+    expect(details.getByText("6 %")).toBeTruthy();
+    expect(details.getByText("Deck de 8 cartes")).toBeTruthy();
+    expect(
+      details.getByText(
+        /À débloquer :.*place dans le deck.*emplacement de coffre/,
+      ),
+    ).toBeTruthy();
+    expect(
+      dialog.getByRole("region", { name: "Ta progression" }).textContent,
+    ).toContain("Fer IV");
+
+    fireEvent.click(dialog.getByRole("button", { name: "Ma position" }));
+    expect(details.getByRole("heading", { name: "Fer IV" })).toBeTruthy();
+    expect(details.getByText("2 %")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Fer III 200" }));
+    expect(details.getByRole("heading", { name: "Fer III" })).toBeTruthy();
+
+    fireEvent.click(dialog.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByRole("button", { name: /Ta ligue : Fer IV/ }),
+      ),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const reopened = within(await screen.findByRole("dialog"));
+    expect(
+      within(
+        reopened.getByRole("region", {
+          name: "Détails du palier sélectionné",
+        }),
+      ).getByRole("heading", { name: "Fer IV" }),
+    ).toBeTruthy();
+  });
+
+  it("explores the entire timeline with the keyboard while retaining the current league", async () => {
+    render(<LeaguePanel progress={leagueProgress(175)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const road = dialog.getByRole("list", { name: "Parcours des ligues" });
+    const first = dialog.getByRole("button", { name: /^Fer IV,/ });
+    fireEvent.keyDown(first, { key: "ArrowRight" });
+    const second = dialog.getByRole("button", { name: /^Fer III,/ });
+    expect(second.getAttribute("aria-pressed")).toBe("true");
+    expect(document.activeElement).toBe(second);
+
+    fireEvent.keyDown(second, { key: "End" });
+    const last = dialog.getByRole("button", { name: /^Challenger I,/ });
+    expect(document.activeElement).toBe(last);
+    expect(
+      dialog
+        .getByRole("button", { name: "Palier suivant" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    fireEvent.keyDown(last, { key: "ArrowRight" });
+    expect(last.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.keyDown(last, { key: "Home" });
+    expect(document.activeElement).toBe(first);
+    expect(
+      dialog
+        .getByRole("button", { name: "Palier précédent" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    expect(road.querySelectorAll('button[tabindex="0"]').length).toBe(1);
+    expect(road.querySelector('[aria-current="step"]')?.textContent).toContain(
+      "Fer IV",
+    );
+  });
+
+  it("keeps reached milestones unlocked after a demotion and offers the next unearned reward", async () => {
+    render(<LeaguePanel progress={leagueProgress(185, 800)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(
+      dialog.getByRole("heading", { name: "Un deck de 7 cartes" }),
+    ).toBeTruthy();
+    expect(
+      dialog.getByRole("region", { name: "Ta progression" }).textContent,
+    ).toContain("Deck : 6 cartes max.");
+    fireEvent.click(dialog.getByRole("button", { name: /^Bronze IV,/ }));
+    const details = within(
+      dialog.getByRole("region", {
+        name: "Détails du palier sélectionné",
+      }),
+    );
+    expect(details.getByText("PALIER ATTEINT")).toBeTruthy();
+    expect(details.getByText(/Palier débloqué/)).toBeTruthy();
+    expect(details.queryByText(/À débloquer/)).toBeNull();
   });
 
   it("shows a promotion and the newly unlocked slot after a threshold win", () => {
