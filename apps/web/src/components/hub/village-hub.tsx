@@ -35,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { AbilityLegend } from "@/components/game/ability-legend";
 import { CollectionIcon } from "@/components/game/game-icon";
 
@@ -107,6 +108,7 @@ export function VillageHub({ activity }: VillageHubProps) {
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
   const { isDragging, dragHandlers } = useHorizontalDrag(isPannable);
+  useHorizontalWheel(mapScroll);
   const activeGame = activity?.status === "active" && activity.gameId;
   const hasActivity =
     !!activeGame || activity?.status === "waiting" || activity?.queued;
@@ -220,7 +222,7 @@ export function VillageHub({ activity }: VillageHubProps) {
                         place.id === "home"
                           ? "/settings"
                           : place.id === "arena"
-                            ? "/play"
+                            ? "/arena"
                             : place.id === "sanctuary"
                               ? "/sanctuary"
                               : "/decks"

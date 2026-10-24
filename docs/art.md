@@ -196,7 +196,7 @@ Constraints: actual alpha-transparent background, including inside the bow. No c
 
 ## Salon et coffres de progression
 
-Le salon `/play` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
+L’arène `/arena` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
 
 Les quatre sprites `apps/web/public/art/chests/{common,rare,epic,legendary}.webp` ont chacun été générés séparément avec ImageGen et une transparence demandée. Ils partagent une vue de trois quarts : bois et fer, métal bleu, cristaux violets puis or lumineux. Le canal alpha des quatre WebP a été vérifié avec `webpinfo`. Les coffres sont encodés à 512 × 512 px, qualité 90 ; le décor à 1672 × 941 px, qualité 88, avec `cwebp`. Aucun fallback CLI de génération n’a été utilisé.
 
@@ -291,3 +291,12 @@ Les invocations de l’Oracle du firmament et du Grand forgeron ont leurs propre
 Le [manifeste Legendary](art-prompts-legendary.json) contient les **26 prompts complets**, les PNG générés et chaque chemin final. Les illustrations sont originales et ne reprennent pas les images de Mighty Party. Planches de comparaison Epic → Legendary : [familles 1–10](legendary-art-1.jpg), [familles 11–20](legendary-art-2.jpg), [invocations et icônes](legendary-summons-and-icons.jpg).
 
 Les composants réels ont été contrôlés à **1 330 × 1 100** et **390 × 844 px** dans un aperçu local : les 20 nouveaux portraits chargent, les plafonds 31 et 26 suivent la famille, aucune erreur JavaScript ni aucun débordement horizontal n’est relevé. Le focus initial de la fiche d’amélioration est placé sur sa fenêtre pour qu’elle s’ouvre en haut sur mobile. Aperçus : [bestiaire ordinateur](legendary-bestiary-desktop.jpg), [bestiaire mobile](legendary-bestiary-mobile.jpg), [fiche ordinateur](legendary-upgrade-desktop.jpg), [fiche mobile](legendary-upgrade-mobile.jpg). Les [sources et règles Legendary](references/mighty-party/legendary-cards.md) détaillent les statistiques et compétences intégrées.
+
+
+## Emplacements de coffre et clés — 24 octobre 2026
+
+Quatre images originales ont été générées avec **ImageGen intégré**, un appel par image : les chaînes croisées et leur cadenas doré serti d’émeraude (`apps/web/public/art/ui/premium-slot-chains.webp`), puis les clés de la Sylve, des anciens et souveraine (`apps/web/public/art/keys/chest-key-{1,2,3}.webp`). Les trois clés possèdent des silhouettes distinctes, avec des feuilles de chêne et des incrustations vertes. Les chaînes de fer déjà présentes restent utilisées pour les déblocages de ligue.
+
+Les quatre fichiers sont en **WebP RGBA de 512 × 512 px**, pour environ **232 Kio au total**, avec alpha réel vérifié. Le [manifeste des quatre prompts](art-prompts-chest-keys.json) conserve les prompts complets et les PNG sources. Les fichiers référencés par le jeu sont tous dans le dépôt.
+
+Les composants réels ont été vérifiés à **1 440 × 900**, **390 × 844** et **320 × 700 px** dans un aperçu local avec des achats simulés. Le contrôle navigateur vérifie les neuf emplacements, la molette horizontale, la barre masquée, le glisser à la souris, l’absence d’ouverture après un glisser et le clic normal sur un coffre prêt. Les trois clés chargent ; l’achat simulé met à jour le solde et l’état acquis, sans erreur JavaScript ni débordement horizontal de la page. Aperçus : [coffres ordinateur](chest-slots-desktop.webp), [cadenas dorés ordinateur](chest-slots-premium-desktop.webp), [coffres mobile](chest-slots-mobile.webp), [cadenas dorés mobile](chest-slots-premium-mobile.webp), [clés ordinateur](chest-keys-desktop.webp), [achat de clé](chest-key-purchased-desktop.webp), [clés mobile](chest-keys-mobile.webp), [petit mobile](chest-keys-small-mobile.webp).

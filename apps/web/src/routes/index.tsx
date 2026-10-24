@@ -39,7 +39,7 @@ function HomePage() {
             territoire et fais basculer le destin d’un duel.
           </p>
           <div className="home-actions">
-            <Link to="/play" className="sylve-button">
+            <Link to="/arena" className="sylve-button">
               Entrer dans le cercle <ArrowRight size={17} />
             </Link>
             <Link to="/practice" className="text-link">
@@ -130,7 +130,7 @@ function HomePage() {
           Sylve.
         </span>
         <span>Un cercle. Deux gardiens. Une nouvelle histoire.</span>
-        <Link to="/play">
+        <Link to="/arena">
           À toi de jouer <ArrowRight size={14} />
         </Link>
       </footer>

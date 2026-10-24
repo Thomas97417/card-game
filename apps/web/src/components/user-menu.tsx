@@ -1,6 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { ChevronRight, Leaf, LogOut, Map, Settings, Swords } from "lucide-react";
+import {
+  ChevronRight,
+  Leaf,
+  LogOut,
+  Map,
+  Settings,
+  Swords,
+} from "lucide-react";
 import { CollectionIcon } from "@/components/game/game-icon";
 
 import {
@@ -72,7 +79,7 @@ export default function UserMenu() {
             </span>
             <ChevronRight className="sylve-menu-chevron" size={14} />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate({ to: "/play" })}>
+          <DropdownMenuItem onClick={() => navigate({ to: "/arena" })}>
             <span className="sylve-menu-icon">
               <Swords size={18} />
             </span>

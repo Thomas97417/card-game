@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, ChevronRight, LockKeyhole } from "lucide-react";
+import { Archive, Check, ChevronRight, LockKeyhole } from "lucide-react";
+import { CHEST_SLOT_UNLOCKS } from "@sylve/game/progression";
 import { RARITIES, RARITY_LABELS } from "@sylve/game";
 import { CollectionIcon } from "@/components/game/game-icon";
 import {
@@ -151,7 +152,7 @@ export function LeaguePanel({
             {TROPHIES_PER_LOSS} trophées, sans descendre sous zéro. Une
             promotion tous les {TROPHIES_PER_DIVISION} trophées. Les défis
             amicaux et l’entraînement local ne changent pas tes trophées. Les
-            emplacements de deck débloqués restent acquis après une
+            emplacements de deck et de coffre débloqués restent acquis après une
             rétrogradation.
           </DialogDescription>
           <div className="league-current-summary">
@@ -197,6 +198,9 @@ export function LeaguePanel({
               const slot = DECK_SLOT_UNLOCKS.find(
                 (unlock) => unlock.trophies === league.minTrophies,
               );
+              const chestSlot = CHEST_SLOT_UNLOCKS.find(
+                (unlock) => unlock.trophies === league.minTrophies,
+              );
               return (
                 <li
                   key={league.id}
@@ -220,6 +224,12 @@ export function LeaguePanel({
                       {league.lootMultiplier.toLocaleString("fr-FR", {
                         maximumFractionDigits: 2,
                       })}
+                    </small>
+                  )}
+                  {chestSlot && (
+                    <small className="league-slot-reward">
+                      <Archive size={12} />
+                      {chestSlot.slot + 1} emplacements de coffre
                     </small>
                   )}
                   <span className="league-road-state">

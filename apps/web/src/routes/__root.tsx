@@ -97,6 +97,7 @@ function RootDocument() {
           "/hub",
           "/decks",
           "/sanctuary",
+          "/arena",
           "/play",
           "/settings",
           "/practice",

@@ -8,7 +8,7 @@ import {
 } from "@sylve/game/leagues";
 import {
   CHEST_RULES,
-  CHEST_SLOTS,
+  unlockedChestSlots,
   VICTORY_CHEST_WINS,
   chestLoot,
   chestGold,
@@ -49,6 +49,24 @@ export async function playerWallet(
     .query("wallets")
     .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
     .unique();
+}
+
+export async function playerChestSlots(
+  ctx: QueryCtx | MutationCtx,
+  ownerId: string,
+) {
+  const [league, purchases] = await Promise.all([
+    playerLeague(ctx, ownerId),
+    ctx.db
+      .query("chestSlotUnlocks")
+      .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+      .collect(),
+  ]);
+  const purchasedSlots = purchases.map((purchase) => purchase.slot);
+  return {
+    purchasedSlots,
+    unlockedSlots: unlockedChestSlots(league.peakTrophies, purchasedSlots),
+  };
 }
 
 export async function grantGold(
@@ -227,7 +245,8 @@ export async function awardMatchRewards(
       q.eq("ownerId", ownerId).eq("status", "unopened"),
     )
     .collect();
-  if (unopened.length >= CHEST_SLOTS) {
+  const { unlockedSlots } = await playerChestSlots(ctx, ownerId);
+  if (unopened.length >= unlockedSlots.length) {
     await ctx.db.patch(game._id, {
       reward: { ownerId, status: "lost", victoryWins, ...winnerTrophies },
     });
@@ -235,7 +254,7 @@ export async function awardMatchRewards(
   }
   const rarity = rollChest(Math.random, trophiesTotal);
   const now = Date.now();
-  const slot = Array.from({ length: CHEST_SLOTS }, (_, i) => i).find(
+  const slot = unlockedSlots.find(
     (i) => !unopened.some((chest) => chest.slot === i),
   )!;
   const chestId: Id<"chests"> = await ctx.db.insert("chests", {

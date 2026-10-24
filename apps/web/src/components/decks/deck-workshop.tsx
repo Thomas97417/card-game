@@ -23,6 +23,7 @@ import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { GameHeader } from "@/components/game-header";
+import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import {
   DECK_SLOT_UNLOCKS,
   leagueAt,
@@ -89,6 +90,8 @@ export function DeckWorkshop({
   const collectionPan = useHorizontalDrag(true, {
     ignoreInteractiveElements: true,
   });
+  useHorizontalWheel(currentRow);
+  useHorizontalWheel(collectionRow);
   const suppressClick = useRef(false);
   const origin = useRef<{
     card: CardDefinition;
@@ -102,34 +105,6 @@ export function DeckWorkshop({
 
   const { status, initialize, enqueue, flush, hasPendingChanges } =
     useDeckAutosave(onSave);
-
-  useEffect(() => {
-    const rows = [currentRow.current, collectionRow.current];
-    const scrollHorizontally = (event: WheelEvent) => {
-      if (
-        event.ctrlKey ||
-        event.shiftKey ||
-        Math.abs(event.deltaX) >= Math.abs(event.deltaY)
-      )
-        return;
-      const row = event.currentTarget as HTMLDivElement;
-      if (row.scrollWidth <= row.clientWidth) return;
-      const unit =
-        event.deltaMode === 1
-          ? 16
-          : event.deltaMode === 2
-            ? row.clientWidth
-            : 1;
-      row.scrollLeft += event.deltaY * unit;
-      event.preventDefault();
-    };
-    for (const row of rows)
-      row?.addEventListener("wheel", scrollHorizontally, { passive: false });
-    return () => {
-      for (const row of rows)
-        row?.removeEventListener("wheel", scrollHorizontally);
-    };
-  }, []);
 
   useEffect(() => {
     if (!deck || draft) return;
@@ -244,6 +219,17 @@ export function DeckWorkshop({
       Math.hypot(event.clientX - source.x, event.clientY - source.y) < 7
     )
       return;
+    // Let horizontal touch gestures scroll the row; vertical gestures still
+    // move cards between the collection and the deck.
+    if (
+      !source.active &&
+      event.pointerType === "touch" &&
+      Math.abs(event.clientX - source.x) > Math.abs(event.clientY - source.y)
+    ) {
+      suppressClick.current = true;
+      cancelDrag();
+      return;
+    }
     source.active = true;
     suppressClick.current = true;
     setPicked(null);
@@ -476,7 +462,7 @@ export function DeckWorkshop({
                     Voir toute la collection
                   </button>
                 ) : (
-                  <Link to="/play" className="text-link">
+                  <Link to="/arena" className="text-link">
                     Rejoindre l’arène
                   </Link>
                 )}

@@ -148,7 +148,7 @@
   padding: 16px 8px 20px;
   min-height: 0;
   cursor: grab;
-  touch-action: pan-x;
+  touch-action: pan-x pinch-zoom;
   user-select: none;
 }
 .workshop-card-row.is-panning,
@@ -195,7 +195,7 @@
     0 5px 0 #111c17aa,
     0 9px 13px #10191077,
     inset 0 0 0 3px #eed4a166;
-  touch-action: none;
+  touch-action: pan-x pinch-zoom;
   user-select: none;
   transition:
     transform 160ms,

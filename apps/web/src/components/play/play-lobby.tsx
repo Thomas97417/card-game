@@ -1,5 +1,8 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { GameHeader } from "@/components/game-header";
+import { EmeraldAmount } from "@/components/emerald-balance";
+import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { Link } from "@tanstack/react-router";
 import {
   Bot,
@@ -13,14 +16,17 @@ import {
 import { type CardRarity } from "@sylve/game";
 import {
   leagueProgress,
+  leagueAt,
   TROPHIES_PER_WIN,
   TROPHIES_PER_LOSS,
   type LeagueProgress,
 } from "@sylve/game/leagues";
 import {
   CHEST_LABELS,
-  CHEST_SLOTS,
-  LOCKED_CHEST_SLOTS,
+  CHEST_SLOT_KEYS,
+  CHEST_SLOT_UNLOCKS,
+  TOTAL_CHEST_SLOTS,
+  unlockedChestSlots,
   VICTORY_CHEST_WINS,
   type VictoryChestProgress,
 } from "@sylve/game/progression";
@@ -45,6 +51,7 @@ export function PlayLobby({
   deckSize,
   league = leagueProgress(0),
   chests,
+  purchasedChestSlots = [],
   victoryChest = { wins: 0, requiredWins: VICTORY_CHEST_WINS, cycle: 0 },
   now,
   ready,
@@ -62,6 +69,7 @@ export function PlayLobby({
   deckSize: number;
   league?: LeagueProgress;
   chests: LobbyChest[];
+  purchasedChestSlots?: readonly number[];
   victoryChest?: VictoryChestProgress;
   now: number;
   ready: boolean;
@@ -76,8 +84,15 @@ export function PlayLobby({
   onOpenVictoryChest: () => void;
   children?: ReactNode;
 }) {
-  const full = chests.length >= CHEST_SLOTS;
+  const unlockedSlots = unlockedChestSlots(
+    league.peakTrophies,
+    purchasedChestSlots,
+  );
+  const full = chests.length >= unlockedSlots.length;
   const victoryReady = victoryChest.wins >= victoryChest.requiredWins;
+  const chestRow = useRef<HTMLDivElement>(null);
+  const { isDragging, dragHandlers } = useHorizontalDrag(true);
+  useHorizontalWheel(chestRow);
   return (
     <main className="play-lobby" aria-busy={!ready}>
       <img
@@ -181,11 +196,20 @@ export function PlayLobby({
       <section className="play-treasures" aria-label="Tes coffres">
         <div className="play-treasures-heading">
           <h2>Trésors de victoire</h2>
-          {chests.length > CHEST_SLOTS && (
-            <span>{chests.length - CHEST_SLOTS} à récupérer ensuite</span>
-          )}
+          <span>
+            {chests.length > unlockedSlots.length
+              ? `${chests.length - unlockedSlots.length} à récupérer ensuite`
+              : "← Faire défiler les coffres →"}
+          </span>
         </div>
-        <div className="play-chest-row">
+        <div
+          ref={chestRow}
+          className={`play-chest-row ${isDragging ? "is-dragging" : ""}`}
+          role="region"
+          aria-label="Emplacements de coffre, défilement horizontal"
+          tabIndex={0}
+          {...dragHandlers}
+        >
           <button
             type="button"
             className={`play-chest play-victory-chest ${victoryReady ? "is-ready" : ""}`}
@@ -231,7 +255,63 @@ export function PlayLobby({
               )}
             </span>
           </button>
-          {Array.from({ length: CHEST_SLOTS }, (_, slot) => {
+          {Array.from({ length: TOTAL_CHEST_SLOTS }, (_, slot) => {
+            const unlocked = unlockedSlots.includes(slot);
+            if (!unlocked) {
+              const key = CHEST_SLOT_KEYS.find((key) => key.slot === slot);
+              const milestone = CHEST_SLOT_UNLOCKS.find(
+                (unlock) => unlock.slot === slot,
+              );
+              const leagueLabel = milestone
+                ? leagueAt(milestone.trophies).label
+                : "";
+              const lockContent = (
+                <>
+                  <span className="play-chest-number">
+                    {String(slot + 2).padStart(2, "0")}
+                  </span>
+                  <img
+                    className="play-slot-chain"
+                    src={
+                      key
+                        ? "/art/ui/premium-slot-chains.webp"
+                        : "/art/ui/slot-chains.webp"
+                    }
+                    alt=""
+                    width={512}
+                    height={512}
+                    draggable={false}
+                  />
+                  <span className="play-chest-lock-caption">
+                    {key ? "Clé du sanctuaire" : "À débloquer en ligue"}
+                  </span>
+                  <span className="play-chest-action">
+                    {key ? <EmeraldAmount amount={key.price} /> : leagueLabel}
+                  </span>
+                </>
+              );
+              return key ? (
+                <Link
+                  key={slot}
+                  to="/sanctuary"
+                  hash="chest-keys"
+                  className="play-chest play-chest-locked play-chest-purchasable"
+                  aria-label={`Emplacement ${slot + 2} verrouillé, acheter ${key.name} au sanctuaire pour ${key.price} émeraudes`}
+                  draggable={false}
+                >
+                  {lockContent}
+                </Link>
+              ) : (
+                <div
+                  key={slot}
+                  className="play-chest play-chest-locked"
+                  role="img"
+                  aria-label={`Emplacement ${slot + 2} verrouillé par une chaîne, atteindre ${leagueLabel}, ${milestone?.trophies} trophées`}
+                >
+                  {lockContent}
+                </div>
+              );
+            }
             const chest = chests.find((chest) => chest.slot === slot);
             const remaining = chest ? chest.unlockAt - now : 0;
             return chest ? (
@@ -284,27 +364,6 @@ export function PlayLobby({
               </div>
             );
           })}
-          {Array.from({ length: LOCKED_CHEST_SLOTS }, (_, index) => (
-            <div
-              className="play-chest play-chest-locked"
-              key={`locked-${index}`}
-              role="img"
-              aria-label={`Emplacement ${CHEST_SLOTS + index + 2} verrouillé par une chaîne`}
-            >
-              <span className="play-chest-number">
-                0{CHEST_SLOTS + index + 2}
-              </span>
-              <img
-                className="play-slot-chain"
-                src="/art/ui/slot-chains.webp"
-                alt=""
-                width={512}
-                height={512}
-                draggable={false}
-              />
-              <span className="play-chest-action">Verrouillé</span>
-            </div>
-          ))}
         </div>
       </section>
       {children}

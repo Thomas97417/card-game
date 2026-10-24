@@ -23,6 +23,13 @@ export default defineSchema({
     gold: v.number(),
     diamonds: v.optional(v.number()),
   }).index("by_owner", ["ownerId"]),
+  chestSlotUnlocks: defineTable({
+    ownerId: v.string(),
+    slot: v.number(),
+    cost: v.number(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_owner_slot", ["ownerId", "slot"]),
   summons: defineTable({
     ownerId: v.string(),
     requestId: v.string(),
