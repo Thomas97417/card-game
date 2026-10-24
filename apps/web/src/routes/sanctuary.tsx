@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { Sanctuary } from "@/components/sanctuary/sanctuary";
-import { useDiamondBalance } from "@/components/diamond-balance";
+import { useEmeraldBalance } from "@/components/emerald-balance";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/sanctuary")({
 });
 
 function SanctuaryPage() {
-  const diamonds = useDiamondBalance();
+  const emeralds = useEmeraldBalance();
   const latest = useQuery(api.sanctuary.latest);
   const summon = useMutation(api.sanctuary.summon);
   const collection = useQuery(api.collection.list);
@@ -38,7 +38,7 @@ function SanctuaryPage() {
   }, [ensureStarter]);
   return (
     <Sanctuary
-      diamonds={diamonds}
+      emeralds={emeralds}
       ready={ready}
       latest={latest}
       collection={collection}

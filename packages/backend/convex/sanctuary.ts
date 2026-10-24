@@ -82,7 +82,7 @@ export const summon = mutation({
     const wallet = await ensureDiamonds(ctx, userId);
     if (wallet.diamonds! < cost)
       throw new ConvexError(
-        "Tu n’as pas assez de diamants pour cette invocation.",
+        "Tu n’as pas assez d’émeraudes pour cette invocation.",
       );
     await ensureStarterDeck(ctx, userId);
     const reveals = await grantLoot(

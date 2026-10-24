@@ -16,7 +16,7 @@ import {
 } from "@sylve/game/summoning";
 import { Sanctuary, type SummonRequest } from "./sanctuary";
 import { GoldContext } from "@/components/gold-balance";
-import { DiamondContext } from "@/components/diamond-balance";
+import { EmeraldContext } from "@/components/emerald-balance";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
@@ -44,7 +44,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const onSummon = vi.fn(async (request: SummonRequest) => reward(request));
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
   const props = {
-    diamonds: 3_000,
+    emeralds: 3_000,
     ready: true,
     collection: undefined,
     onSummon,
@@ -53,9 +53,9 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   };
   const result = render(
     <GoldContext.Provider value={500}>
-      <DiamondContext.Provider value={props.diamonds}>
+      <EmeraldContext.Provider value={props.emeralds}>
         <Sanctuary {...props} />
-      </DiamondContext.Provider>
+      </EmeraldContext.Provider>
     </GoldContext.Provider>,
   );
   return { ...result, onSummon, onUpgrade };
@@ -72,10 +72,10 @@ describe("le sanctuaire", () => {
     setup();
     expect(
       screen
-        .getByRole("status", { name: "Solde de diamants" })
+        .getByRole("status", { name: "Solde d’émeraudes" })
         .querySelector("img")
         ?.getAttribute("src"),
-    ).toBe("/art/ui/diamonds.webp");
+    ).toBe("/art/ui/emerald.webp");
     expect(
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();
@@ -104,18 +104,18 @@ describe("le sanctuaire", () => {
   });
 
   it("blocks unaffordable purchases while allowing exactly affordable singles", () => {
-    setup({ diamonds: 149 });
+    setup({ emeralds: 149 });
     expect(purchase("Sylve", 1).disabled).toBe(false);
     expect(purchase("Sylve", 10).disabled).toBe(true);
     expect(purchase("anciens", 1).disabled).toBe(true);
     expect(purchase("anciens", 10).disabled).toBe(true);
-    expect(screen.getByText(/Il te manque 300 diamants/)).toBeTruthy();
+    expect(screen.getByText(/Il te manque 300 émeraudes/)).toBeTruthy();
   });
 
   it.each([undefined, null, 0])(
     "does not purchase with a loading, absent or empty wallet (%s)",
-    (diamonds) => {
-      const { onSummon } = setup({ diamonds });
+    (emeralds) => {
+      const { onSummon } = setup({ emeralds });
       for (const button of screen.getAllByRole("button", {
         name: /^Invoquer/,
       })) {
@@ -134,7 +134,7 @@ describe("le sanctuaire", () => {
           finish = resolve;
         }),
     );
-    setup({ onSummon, diamonds: 3_899 });
+    setup({ onSummon, emeralds: 3_899 });
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("Sylve", 1));
@@ -181,7 +181,7 @@ describe("le sanctuaire", () => {
       count: 10,
       requestId: "saved-summon-request",
     });
-    const { onSummon } = setup({ latest, diamonds: 0 });
+    const { onSummon } = setup({ latest, emeralds: 0 });
     fireEvent.click(
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
