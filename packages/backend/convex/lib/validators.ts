@@ -3,6 +3,7 @@ import { v } from "convex/values";
 export const summonPackValidator = v.union(
   v.literal("sylve"),
   v.literal("ancients"),
+  v.literal("divine"),
 );
 export const summonCountValidator = v.union(v.literal(1), v.literal(10));
 

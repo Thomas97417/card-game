@@ -308,3 +308,11 @@ Le nouveau grand coffre rare possède une illustration distincte, assortie au bo
 L’arène affiche le prix d’ouverture immédiate sous le compte à rebours. La fenêtre permet d’ouvrir avec des émeraudes ou de continuer à attendre ; le prix diminue et devient gratuit à l’échéance. Les fiches de ligue détaillent les cinq catégories, leurs chances, les lots de cartes, l’or et le délai. Les invocations affichent la quantité par compagnon correspondant au record de ligue, puis le nombre réellement gagné sur chaque carte.
 
 Rendus vérifiés avec des données de démonstration : [ouverture sur ordinateur](chests-rush-desktop.webp), [mobile](chests-rush-mobile.webp), [petit mobile](chests-rush-small-mobile.webp), [sanctuaire](chests-summons-desktop.webp), [sanctuaire mobile](chests-summons-mobile.webp), [révélation ×10](chests-summons-reveal-desktop.webp) et [révélation sur petit mobile](chests-summons-reveal-small-mobile.webp).
+
+## Trois appels et carte d’or
+
+La Sylve retrouve ses taux de 65 % / 25 % / 8 % / 2 %, avec un éventail de quatre raretés et une mention de la carte d’or garantie. Les anciens reprennent leur éventail épique / légendaire et leurs taux de 80 % / 20 %. L’offre entièrement légendaire devient l’Appel des divinités, avec une bordure dorée renforcée et des prix de 4 499 / 39 999 émeraudes. Les trois offres se parcourent sur la même rangée horizontale, avant les clés.
+
+La carte d’or apparaît en plus des compagnons dans la révélation de la Sylve. Elle réutilise l’illustration des pièces et un cadre doré en CSS, avec le montant réellement crédité. La dernière invocation conserve cette récompense à la réouverture.
+
+Le [rendu de la carte d’or](summons-gold-bonus.webp) a été vérifié avec les composants réels à 1 280 × 720 dans un aperçu isolé : cinq compagnons et une carte d’or supplémentaire. Les trois offres et leurs taux ont également été contrôlés dans le sanctuaire ouvert.

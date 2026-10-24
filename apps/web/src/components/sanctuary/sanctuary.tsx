@@ -14,6 +14,7 @@ import {
   SUMMON_PACKS,
   summonPack,
   summonQuantity,
+  summonGoldQuantity,
   type SummonCount,
   type SummonPack,
   type SummonPackId,
@@ -22,6 +23,7 @@ import {
 import { GameHeader } from "@/components/game-header";
 import { leagueAt } from "@sylve/game/leagues";
 import { EmeraldAmount } from "@/components/emerald-balance";
+import { GoldIcon } from "@/components/gold-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
@@ -336,16 +338,22 @@ function PackChoice({
   busy: { packId: SummonPackId; count: SummonCount } | null;
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
-  const premium = pack.id === "ancients";
-  const guarantee = premium
+  const premium = pack.id !== "sylve";
+  const divine = pack.id === "divine";
+  const gold = summonGoldQuantity(peakTrophies);
+  const guarantee = divine
     ? `${pack.guaranteedLegendaries} compagnons légendaires`
-    : `${pack.guaranteedLegendaries} compagnon légendaire garanti`;
-  const rarities = premium
+    : pack.guaranteedLegendaries === 1
+      ? "1 compagnon légendaire garanti"
+      : `${pack.guaranteedLegendaries} compagnons légendaires garantis`;
+  const rarities = divine
     ? ["legendary", "legendary", "legendary"]
-    : ["rare", "legendary", "epic"];
+    : premium
+      ? ["epic", "legendary", "epic"]
+      : ["common", "rare", "legendary", "epic"];
   return (
     <article
-      className={`summon-pack ${premium ? "summon-pack-premium" : ""}`}
+      className={`summon-pack ${premium ? "summon-pack-premium" : ""} ${divine ? "summon-pack-divine" : ""}`}
       aria-labelledby={`pack-${pack.id}`}
     >
       <div className="summon-pack-art" aria-hidden="true">
@@ -388,12 +396,21 @@ function PackChoice({
           );
         })}
       </div>
+      {pack.id === "sylve" && (
+        <p className="summon-gold-bonus">
+          <GoldIcon />
+          <span>
+            Carte d’or garantie : {gold.min.toLocaleString("fr-FR")}–
+            {gold.max.toLocaleString("fr-FR")} or par invocation
+          </span>
+        </p>
+      )}
       <p className="summon-quantity-note">
         5 compagnons par invocation · Exemplaires par compagnon selon ton record
         : {leagueAt(peakTrophies).label}.
-        {premium
+        {divine
           ? " 50 % de chance de doubler un compagnon par invocation."
-          : " Taux moyens par compagnon ; une légendaire parmi les 50 compagnons du lot ×10."}
+          : ` Au moins ${pack.guaranteedLegendaries} légendaire${pack.guaranteedLegendaries > 1 ? "s" : ""} parmi les 50 compagnons du lot ×10.`}
       </p>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
@@ -522,6 +539,33 @@ export function SummonRevealDialog({
               aria-label="Cartes invoquées"
               data-count={result.count}
             >
+              {(result.gold ?? 0) > 0 && (
+                <div
+                  className="summon-reveal-card summon-gold-reward"
+                  role="listitem"
+                >
+                  <div
+                    className="summon-gold-card"
+                    role="img"
+                    aria-label={`Carte d’or : ${result.gold!.toLocaleString("fr-FR")} pièces d’or`}
+                  >
+                    <span className="summon-gold-eyebrow">
+                      Trésor de la Sylve
+                    </span>
+                    <GoldIcon />
+                    <strong>+{result.gold!.toLocaleString("fr-FR")}</strong>
+                    <span>Pièces d’or</span>
+                  </div>
+                  <span className="rarity-label" data-rarity="legendary">
+                    Carte d’or
+                  </span>
+                  <small>
+                    {result.count === 10
+                      ? "Or des 10 invocations crédité"
+                      : "Créditées sur ton solde"}
+                  </small>
+                </div>
+              )}
               {result.reveals.map((item, index) => {
                 const entry = entries.get(item.variantId);
                 const card =

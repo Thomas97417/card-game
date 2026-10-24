@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
-import { summonLoot, summonPrice } from "@sylve/game/summoning";
+import { summonGold, summonLoot, summonPrice } from "@sylve/game/summoning";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
@@ -56,7 +56,7 @@ export const latest = query({
       .first();
     if (!result) return null;
     const { requestId, packId, count, cost, reveals } = result;
-    return { requestId, packId, count, cost, reveals };
+    return { requestId, packId, count, cost, reveals, gold: result.gold ?? 0 };
   },
 });
 
@@ -85,6 +85,7 @@ export const summon = mutation({
         count,
         cost: previous.cost,
         reveals: previous.reveals,
+        gold: previous.gold ?? 0,
       };
     }
     const cost = summonPrice(packId, count);
@@ -100,8 +101,12 @@ export const summon = mutation({
       userId,
       summonLoot(packId, count, Math.random, league.peakTrophies),
     );
-    await ctx.db.patch(wallet._id, { diamonds: wallet.diamonds! - cost });
-    const result = { requestId, packId, count, cost, reveals };
+    const gold = summonGold(packId, count, Math.random, league.peakTrophies);
+    await ctx.db.patch(wallet._id, {
+      diamonds: wallet.diamonds! - cost,
+      gold: wallet.gold + gold,
+    });
+    const result = { requestId, packId, count, cost, reveals, gold };
     await ctx.db.insert("summons", { ownerId: userId, ...result });
     return result;
   },

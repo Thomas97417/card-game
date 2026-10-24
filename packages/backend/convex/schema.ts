@@ -37,6 +37,7 @@ export default defineSchema({
     count: summonCountValidator,
     cost: v.number(),
     reveals: v.array(revealValidator),
+    gold: v.optional(v.number()),
   })
     .index("by_owner_request", ["ownerId", "requestId"])
     .index("by_owner", ["ownerId"]),

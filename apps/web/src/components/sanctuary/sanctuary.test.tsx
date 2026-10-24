@@ -10,6 +10,7 @@ import {
 import { describe, expect, it, vi } from "vitest";
 import { CATALOG, resolveCard, variantCard } from "@sylve/game";
 import {
+  summonGold,
   summonLoot,
   summonPrice,
   type SummonResult,
@@ -31,6 +32,7 @@ function reward(request: SummonRequest): SummonResult {
   return {
     ...request,
     cost: summonPrice(request.packId, request.count),
+    gold: summonGold(request.packId, request.count, () => 0),
     reveals: summonLoot(request.packId, request.count, () => 0).map(
       (item, index) => ({
         ...item,
@@ -63,10 +65,10 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   );
   return { ...result, onSummon, onUpgrade, onUnlockChestSlot };
 }
-const purchase = (pack: "Sylve" | "anciens", count: 1 | 10) =>
+const purchase = (pack: "Sylve" | "anciens" | "divinités", count: 1 | 10) =>
   screen.getByRole("button", {
     name: new RegExp(
-      `^Invoquer ${count} fois — Appel ${pack === "Sylve" ? "de la Sylve" : "des anciens"},`,
+      `^Invoquer ${count} fois — Appel ${pack === "Sylve" ? "de la Sylve" : `des ${pack}`},`,
     ),
   }) as HTMLButtonElement;
 
@@ -165,8 +167,20 @@ describe("le sanctuaire", () => {
       within(purchase("Sylve", 10)).getByText("1 compagnon légendaire garanti"),
     ).toBeTruthy();
     expect(
-      within(purchase("anciens", 10)).getByText("50 compagnons légendaires"),
+      within(purchase("anciens", 10)).getByText(
+        "2 compagnons légendaires garantis",
+      ),
     ).toBeTruthy();
+    expect(
+      within(purchase("divinités", 10)).getByText("50 compagnons légendaires"),
+    ).toBeTruthy();
+    expect(purchase("divinités", 1).getAttribute("aria-label")).toContain(
+      "4499 émeraudes",
+    );
+    expect(purchase("divinités", 10).getAttribute("aria-label")).toContain(
+      "39999 émeraudes",
+    );
+    expect(screen.getByText(/Carte d’or garantie : 500–1/)).toBeTruthy();
     expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
     expect(within(purchase("anciens", 10)).getByText("Offre ×10")).toBeTruthy();
     expect(
@@ -226,11 +240,11 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("heading", { name: "Dernières invocations" }),
     ).toBeTruthy();
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(50);
-    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(50);
+    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(2);
     expect(
-      within(dialog).getByText(/Nouvelle carte · \+60 exemplaires/),
+      within(dialog).getByText(/Nouvelle carte · \+10 exemplaires/),
     ).toBeTruthy();
-    expect(within(dialog).getAllByText("+30 exemplaires")).toHaveLength(40);
+    expect(within(dialog).getAllByText("+20 exemplaires")).toHaveLength(48);
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Continuer à invoquer" }),
     );
@@ -264,7 +278,7 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getAllByRole("listitem")).toHaveLength(50);
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(51);
     expect(onSummon).not.toHaveBeenCalled();
   });
 
@@ -313,7 +327,7 @@ describe("le sanctuaire", () => {
       count: 1,
       requestId: "saved-summon-request",
     });
-    const card = variantCard(CATALOG[0]!.id, "rare", 2);
+    const card = variantCard(CATALOG[0]!.id, "common", 2);
     const { onUpgrade } = setup({
       latest,
       collection: [{ card, copies: 50 }],
@@ -342,15 +356,15 @@ describe("le sanctuaire", () => {
     fireEvent.click(purchase("Sylve", 10));
     const reveal = await screen.findByRole("dialog");
     const items = within(reveal).getAllByRole("listitem");
-    fireEvent.click(within(items[1]!).getByRole("button"));
-    const card = resolveCard(`${CATALOG[0]!.id}:rare`);
+    fireEvent.click(within(items[2]!).getByRole("button"));
+    const card = resolveCard(`${CATALOG[0]!.id}:common`);
     const details = await screen.findByRole("dialog", { name: card.name });
     expect(within(details).getByText("49 / 25 exemplaires")).toBeTruthy();
     fireEvent.keyDown(details, { key: "Escape" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
     );
-    expect(within(reveal).getAllByRole("listitem")).toHaveLength(50);
+    expect(within(reveal).getAllByRole("listitem")).toHaveLength(51);
     fireEvent.click(
       within(reveal).getByRole("button", { name: "Fermer la fenêtre" }),
     );
@@ -360,6 +374,62 @@ describe("le sanctuaire", () => {
     );
     expect(await screen.findByRole("dialog")).toBeTruthy();
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
+  });
+
+  it("reveals an extra gold card alongside all five Sylve companions and preserves it in history", async () => {
+    const { onSummon } = setup();
+    fireEvent.click(purchase("Sylve", 1));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
+    expect(
+      within(dialog).getByRole("img", { name: "Carte d’or : 500 pièces d’or" }),
+    ).toBeTruthy();
+    expect(
+      within(dialog).getAllByRole("button", { name: /voir les informations/ }),
+    ).toHaveLength(5);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Continuer à invoquer" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog")).getByRole("img", {
+        name: "Carte d’or : 500 pièces d’or",
+      }),
+    ).toBeTruthy();
+    expect(onSummon).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the all-legendary offer distinct and blocks its expensive price until affordable", async () => {
+    const { onSummon } = setup({ emeralds: 4499 });
+    expect(purchase("divinités", 1).disabled).toBe(false);
+    expect(purchase("divinités", 10).disabled).toBe(true);
+    fireEvent.click(purchase("divinités", 1));
+    const dialog = await screen.findByRole("dialog");
+    expect(onSummon).toHaveBeenCalledWith(
+      expect.objectContaining({ packId: "divine", count: 1 }),
+    );
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(5);
+    expect(within(dialog).queryByText("Carte d’or")).toBeNull();
+  });
+
+  it("can display historical results without a gold card", async () => {
+    const latest = reward({
+      packId: "sylve",
+      count: 1,
+      requestId: "legacy-summon-result",
+    });
+    delete latest.gold;
+    setup({ latest });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(dialog).queryByText("Carte d’or")).toBeNull();
   });
 
   it("keeps the creature bestiary available from the new page", async () => {

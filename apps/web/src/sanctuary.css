@@ -142,7 +142,8 @@
 .summon-packs {
   display: grid;
   flex: none;
-  grid-template-columns: repeat(2, var(--sanctuary-pack-width));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--sanctuary-pack-width);
   align-items: stretch;
   gap: var(--sanctuary-offer-gap);
 }
@@ -280,6 +281,31 @@
   --pack-glow: #e9bc7c;
   border-color: #d6ac66b3;
   background: linear-gradient(155deg, #413c35ed, #292b2cf0 57%, #26291ff5);
+}
+.summon-pack-divine {
+  --pack-glow: #ffd77b;
+  border-color: #f2d18b;
+  background:
+    radial-gradient(ellipse at 50% 10%, #b7883626, transparent 70%),
+    linear-gradient(155deg, #45331fed, #25241af2);
+  box-shadow:
+    0 0 24px #deb34a26,
+    inset 0 0 0 4px #e9c56e14;
+}
+.summon-gold-bonus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #efd38e;
+  font-size: 9px;
+  line-height: 1.5;
+  text-align: center;
+}
+.summon-gold-bonus .gold-icon {
+  width: 22px;
+  height: 22px;
 }
 .summon-pack-art {
   position: relative;
@@ -584,6 +610,42 @@
 .summon-reveal-card .workshop-card {
   cursor: pointer;
   touch-action: manipulation;
+}
+.summon-gold-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  padding: 18px 10px;
+  border: 2px solid #d8b65d;
+  border-radius: 8px;
+  color: #ffe6a5;
+  background:
+    radial-gradient(ellipse at 50% 35%, #86672d99, transparent 70%),
+    linear-gradient(155deg, #3d4026, #182b22);
+  box-shadow:
+    inset 0 0 0 3px #d8b65d33,
+    0 5px 12px #0005;
+}
+.summon-gold-eyebrow {
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.summon-gold-card .gold-icon {
+  width: 65%;
+  height: auto;
+  object-fit: contain;
+}
+.summon-gold-card strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.summon-gold-card > span:last-child {
+  font-size: 11px;
 }
 .summon-reveal-card > .rarity-label {
   margin: 0;

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CATALOG, resolveCard } from "./index";
 import {
   SUMMON_PACKS,
+  summonGold,
+  summonGoldQuantity,
   summonLoot,
   summonPrice,
   summonQuantity,
@@ -9,17 +11,23 @@ import {
 
 describe("invocations du sanctuaire", () => {
   it.each([
-    [0, "rare", 30],
-    [0.819999, "rare", 30],
-    [0.82, "epic", 20],
-    [0.979999, "epic", 20],
-    [0.98, "legendary", 10],
-    [0.999999, "legendary", 10],
+    ["sylve", 0, "common", 20],
+    ["sylve", 0.649999, "common", 20],
+    ["sylve", 0.65, "rare", 30],
+    ["sylve", 0.899999, "rare", 30],
+    ["sylve", 0.9, "epic", 20],
+    ["sylve", 0.979999, "epic", 20],
+    ["sylve", 0.98, "legendary", 10],
+    ["sylve", 0.999999, "legendary", 10],
+    ["ancients", 0, "epic", 20],
+    ["ancients", 0.799999, "epic", 20],
+    ["ancients", 0.8, "legendary", 10],
+    ["ancients", 0.999999, "legendary", 10],
   ] as const)(
-    "uses Demigods boundary %s and league 30 quantities",
-    (roll, rarity, count) => {
+    "restores %s boundary %s with league quantities",
+    (packId, roll, rarity, count) => {
       let call = 0;
-      const loot = summonLoot("sylve", 1, () => (call++ === 0 ? roll : 0));
+      const loot = summonLoot(packId, 1, () => (call++ === 0 ? roll : 0));
       expect(loot).toHaveLength(5);
       expect(loot[0]).toEqual({
         variantId: `${CATALOG[0]!.id}:${rarity}`,
@@ -28,41 +36,54 @@ describe("invocations du sanctuaire", () => {
     },
   );
 
-  it("guarantees four rares in advanced single summons, with the fifth using 10/80/10 rates", () => {
-    for (const [roll, rarity] of [
-      [0, "rare"],
-      [0.1, "epic"],
-      [0.9, "legendary"],
-    ] as const) {
-      const loot = summonLoot("sylve", 1, () => roll, 2000);
+  it("keeps the restored rarity rates in every league", () => {
+    for (const trophies of [0, 2000, 6000]) {
       expect(
-        loot
-          .slice(0, 4)
-          .every(
-            (item) => item.variantId.endsWith(":rare") && item.count === 75,
-          ),
+        summonLoot("sylve", 1, () => 0, trophies).every((item) =>
+          item.variantId.endsWith(":common"),
+        ),
       ).toBe(true);
-      expect(loot[4]!.variantId).toMatch(new RegExp(`:${rarity}$`));
+      expect(
+        summonLoot("ancients", 1, () => 0, trophies).every((item) =>
+          item.variantId.endsWith(":epic"),
+        ),
+      ).toBe(true);
+      for (const pack of ["sylve", "ancients"] as const) {
+        expect(
+          summonLoot(pack, 1, () => 0.99999, trophies).every((item) =>
+            item.variantId.endsWith(":legendary"),
+          ),
+        ).toBe(true);
+      }
     }
   });
 
-  it("grants exactly one legendary among fifty for Demigods x10, using the legendary quantity", () => {
-    for (const roll of [0, 0.5, 0.999999]) {
-      const loot = summonLoot("sylve", 10, () => roll, 5800);
+  it.each(SUMMON_PACKS)(
+    "guarantees $guaranteedLegendaries legendaries for $id x10 using the correct quantities",
+    (pack) => {
+      const loot = summonLoot(pack.id, 10, () => 0, 5800);
       expect(loot).toHaveLength(50);
-      const legendary = loot.filter((item) =>
+      const legendaries = loot.filter((item) =>
         item.variantId.endsWith(":legendary"),
       );
-      expect(legendary).toHaveLength(1);
-      expect(legendary[0]!.count).toBe(1000);
+      expect(legendaries).toHaveLength(pack.guaranteedLegendaries);
       expect(
-        loot.every((item) => /:(rare|epic|legendary)$/.test(item.variantId)),
+        legendaries.every(
+          (item) =>
+            item.count === 1000 ||
+            (pack.id === "divine" && item.count === 2000),
+        ),
       ).toBe(true);
-    }
-  });
+      expect(
+        summonLoot(pack.id, 10, () => 0.999999, 5800).every((item) =>
+          item.variantId.endsWith(":legendary"),
+        ),
+      ).toBe(true);
+    },
+  );
 
-  it("uses Gods of War quantities and doubles at most one hero in each group of five", () => {
-    const doubled = summonLoot("ancients", 10, () => 0, 6000);
+  it("moves the all-legendary pack and its double bonus to the much more expensive divine offer", () => {
+    const doubled = summonLoot("divine", 10, () => 0, 6000);
     expect(doubled).toHaveLength(50);
     expect(doubled.every((item) => item.variantId.endsWith(":legendary"))).toBe(
       true,
@@ -72,9 +93,18 @@ describe("invocations du sanctuaire", () => {
         2000, 1000, 1000, 1000, 1000,
       ]);
     expect(
-      summonLoot("ancients", 1, () => 0.5, 2000).map((item) => item.count),
+      summonLoot("divine", 1, () => 0.5, 2000).map((item) => item.count),
     ).toEqual([30, 30, 30, 30, 30]);
-    expect(summonQuantity("sylve", "rare", 0)).toEqual({ min: 30, max: 40 });
+    expect(summonPrice("divine", 1)).toBe(4499);
+    expect(summonPrice("divine", 10)).toBe(39999);
+    expect(summonPrice("divine", 1)).toBeGreaterThan(
+      summonPrice("ancients", 1) * 9,
+    );
+    expect(summonQuantity("sylve", "common", 0)).toEqual({ min: 20, max: 23 });
+    expect(summonQuantity("sylve", "common", 6000)).toEqual({
+      min: 1800,
+      max: 1800,
+    });
     expect(summonQuantity("sylve", "rare", 6000)).toEqual({
       min: 1400,
       max: 1400,
@@ -83,20 +113,37 @@ describe("invocations du sanctuaire", () => {
       min: 35,
       max: 35,
     });
-    expect(() => summonQuantity("sylve", "common")).toThrow();
+    expect(() => summonQuantity("ancients", "common")).toThrow();
   });
 
-  it("keeps prices and balanced rates, and can select every creature", () => {
-    for (const pack of SUMMON_PACKS) {
-      expect(summonPrice(pack.id, 1)).toBe(pack.id === "sylve" ? 149 : 449);
-      expect(summonPrice(pack.id, 10)).toBe(pack.id === "sylve" ? 1299 : 3899);
-      expect(Object.values(pack.rates).reduce((a, b) => a + b, 0)).toBe(100);
+  it("adds gold to the Sylve without consuming any of the companion slots and scales it with peak league", () => {
+    expect(summonGoldQuantity(0)).toEqual({ min: 500, max: 1000 });
+    expect(summonGoldQuantity(6000)).toEqual({ min: 2000, max: 4000 });
+    expect(summonGold("sylve", 1, () => 0)).toBe(500);
+    expect(summonGold("sylve", 1, () => 0.999999)).toBe(1000);
+    expect(summonGold("sylve", 10, () => 0)).toBe(5000);
+    expect(summonGold("sylve", 10, () => 0.999999, 6000)).toBe(40000);
+    for (const pack of ["ancients", "divine"] as const)
+      expect(summonGold(pack, 10, () => 0.999999, 6000)).toBe(0);
+    expect(summonLoot("sylve", 1, () => 0)).toHaveLength(5);
+    expect(summonLoot("sylve", 10, () => 0)).toHaveLength(50);
+  });
+
+  it("retains the original prices and can select every creature", () => {
+    for (const [id, price, tenPrice] of [
+      ["sylve", 149, 1299],
+      ["ancients", 449, 3899],
+    ] as const) {
+      expect(summonPrice(id, 1)).toBe(price);
+      expect(summonPrice(id, 10)).toBe(tenPrice);
     }
+    for (const pack of SUMMON_PACKS)
+      expect(Object.values(pack.rates).reduce((a, b) => a + b, 0)).toBe(100);
     for (const [index, base] of CATALOG.entries()) {
       const values = [0, 0, (index + 0.5) / CATALOG.length];
       expect(
         summonLoot("sylve", 1, () => values.shift() ?? 0)[0]!.variantId,
-      ).toBe(`${base.id}:rare`);
+      ).toBe(`${base.id}:common`);
     }
     let seed = 42;
     const random = () =>

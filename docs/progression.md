@@ -90,16 +90,19 @@ Les anciens coffres encore fermés, y compris le coffre de trois victoires déj�
 
 Les règles partagées sont dans `packages/game/src/summoning.ts`. Le portefeuille conserve le champ historique `diamonds`, affiché en émeraudes. L’initialisation accorde 3 000 émeraudes une seule fois ; un solde dépensé, même nul, n’est jamais réinitialisé.
 
-L’Appel de la Sylve correspond aux « Demigods » ; l’Appel des anciens aux « Gods of War ». Les quantités suivent la **meilleure ligue atteinte**, même après rétrogradation. Les tarifs Sylve existants sont conservés. Chaque invocation donne **cinq compagnons**, chacun avec le lot d’exemplaires de sa rareté et de la ligue du joueur ; un lot ×10 donne donc cinquante compagnons.
+Les deux offres d’origine retrouvent leurs anciens taux et tarifs. Chaque invocation conserve **cinq compagnons**, chacun avec le lot d’exemplaires de sa rareté selon la **meilleure ligue atteinte** ; un lot ×10 donne cinquante compagnons. Les communes suivent la colonne commune des « Mercenaries », les rares, épiques et légendaires de la Sylve et des anciens les tables « Demigods ». L’Appel des divinités reprend les quantités « Gods of War » de l’offre auparavant nommée Appel des anciens.
 
-| Pack              | Rare | Épique | Légendaire | Coût ×1 | Coût ×10 |
-| ----------------- | ---: | -----: | ---------: | ------: | -------: |
-| Appel de la Sylve | 82 % |   16 % |        2 % |     149 |    1 299 |
-| Appel des anciens |  0 % |    0 % |      100 % |     449 |    3 899 |
+| Pack | Commune | Rare | Épique | Légendaire | Coût ×1 | Coût ×10 | Garantie ×10 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Appel de la Sylve | 65 % | 25 % | 8 % | 2 % | 149 | 1 299 | Au moins 1 légendaire |
+| Appel des anciens | 0 % | 0 % | 80 % | 20 % | 449 | 3 899 | Au moins 2 légendaires |
+| Appel des divinités | 0 % | 0 % | 0 % | 100 % | 4 499 | 39 999 | 50 légendaires |
 
-Les mécaniques de cinq compagnons sont détaillées dans [Shop — Mighty Party](https://mightyparty.wiki.gg/wiki/Shop). Pour la Sylve, avant un record d’Argent II, les cinq raretés unitaires suivent les taux du tableau. À partir d’Argent II, quatre compagnons sont rares et le cinquième suit 10 % rare / 80 % épique / 10 % légendaire. Un lot ×10 donne exactement un légendaire parmi cinquante compagnons ; les 49 autres sont rares ou épiques dans le rapport 41:8. Les lots de légendaires utilisent leur propre quantité et ne conservent pas celle d’une autre rareté. Les anciens donnent cinq légendaires ; chaque invocation a 50 % de chance de doubler la quantité d’un seul des cinq compagnons.
+Les taux s’appliquent à chaque compagnon dans toutes les ligues. La garantie d’un lot ×10 remplace uniquement le nombre de positions non légendaires nécessaire pour atteindre le minimum ; les légendaires déjà tirés sont conservés. Une position promue reçoit bien la quantité d’exemplaires légendaires de la ligue. L’Appel des divinités garde 50 % de chance, par invocation, de doubler les exemplaires d’un seul de ses cinq compagnons.
 
-Par exemple, avec un record d’Argent IV (ligue 22), la Sylve donne 40–50 rares, 25–27 épiques ou 14–15 légendaires par compagnon ; avec un record de Challenger (GM), elle donne respectivement 1 400, 1 200 et 1 000 exemplaires. Les anciens donnent 30 exemplaires légendaires par compagnon au début, et 1 000 en Challenger, avant l’éventuel doublement. L’interface montre les quantités correspondant au record ainsi que les quantités effectivement obtenues.
+L’Appel de la Sylve accorde également une **carte d’or garantie**, en plus des cinq compagnons. Elle donne 500–1 000 pièces au départ ; chaque palier de record ajoute 50 au minimum et 100 au maximum, jusqu’à 2 000–4 000 en Challenger. Le lot ×10 additionne dix récompenses d’or et les présente sur une seule carte de bonus. L’or rejoint le portefeuille dans la même transaction que le débit des émeraudes et les cartes. Un réessai ne recrédite pas l’or ; les invocations historiques sans champ d’or continuent de restituer leur résultat avec un bonus nul.
+
+Les quantités restent liées au record après rétrogradation. Par exemple, les communes de la Sylve donnent 20–23 exemplaires en Fer IV et 1 800 en Challenger. Les anciens donnent 20–21 exemplaires épiques ou 10–11 légendaires par compagnon en Fer IV, puis 1 200 ou 1 000 en Challenger. Les divinités donnent 30 exemplaires légendaires par compagnon au départ et 1 000 en Challenger, avant l’éventuel doublement.
 
 Le premier exemplaire débloque la variante ; les suivants rejoignent sa réserve. Le niveau déjà acquis est conservé. Un identifiant d’achat est unique par propriétaire ; une nouvelle tentative du même achat renvoie le résultat conservé, sans débit ni crédit supplémentaires. Les achats distincts concurrents sont sérialisés par la transaction Convex pour éviter de dépenser un solde deux fois. Le prix, les taux, les quantités, la meilleure ligue et le propriétaire sont déterminés par le serveur. Le dernier résultat reste consultable par son propriétaire après reconnexion.
 

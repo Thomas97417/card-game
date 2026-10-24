@@ -9,6 +9,7 @@ export type RewardTableId =
   | "epic"
   | "legendary"
   | "wins"
+  | "mercenaries"
   | "demigods"
   | "gods";
 
