@@ -105,45 +105,56 @@
   flex: none;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 0;
   width: 100%;
   margin: auto;
+}
+.sanctuary-offer-row {
+  --sanctuary-pack-width: clamp(340px, calc((100vw - 76px) / 2), 436px);
+  --sanctuary-key-width: 280px;
+  --sanctuary-offer-gap: 28px;
+  display: flex;
+  flex: none;
+  align-items: stretch;
+  justify-content: safe center;
+  gap: var(--sanctuary-offer-gap);
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 8px 24px;
+  cursor: grab;
+  user-select: none;
+}
+.sanctuary-offer-row::-webkit-scrollbar {
+  display: none;
+}
+.sanctuary-offer-row.is-dragging,
+.sanctuary-offer-row.is-dragging * {
+  cursor: grabbing;
+}
+.sanctuary-offer-row:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: -2px;
 }
 .summon-packs {
   display: grid;
   flex: none;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, var(--sanctuary-pack-width));
   align-items: stretch;
-  gap: 28px;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
+  gap: var(--sanctuary-offer-gap);
 }
 .sanctuary-chest-keys {
-  width: 100%;
-  max-width: 900px;
-  margin-top: 22px;
+  display: flex;
+  flex: none;
   scroll-margin-block: 16px;
-}
-.sanctuary-keys-heading {
-  margin-bottom: 18px;
-  text-align: center;
-}
-.sanctuary-keys-heading h2 {
-  color: #f3dba5;
-  font:
-    400 27px/1.2 Georgia,
-    serif;
-}
-.sanctuary-keys-heading p {
-  margin-top: 6px;
-  color: #d1d9be;
-  font-size: 11px;
 }
 .sanctuary-key-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, var(--sanctuary-key-width));
+  gap: var(--sanctuary-offer-gap);
 }
 .sanctuary-key-card {
   position: relative;
@@ -169,15 +180,16 @@
   text-transform: uppercase;
 }
 .sanctuary-key-art {
-  width: 136px;
-  height: 118px;
+  width: 200px;
+  height: clamp(180px, 24svh, 240px);
+  margin-block: auto;
   object-fit: contain;
   filter: drop-shadow(0 6px 8px #061e1680);
 }
 .sanctuary-key-copy {
   text-align: center;
 }
-.sanctuary-key-copy h3 {
+.sanctuary-key-copy h2 {
   color: #f7e6b8;
   font:
     400 21px/1.25 Georgia,
@@ -623,16 +635,13 @@
   }
 }
 @media (max-width: 760px) {
-  .sanctuary-key-grid {
-    gap: 12px;
+  .sanctuary-offer-row {
+    --sanctuary-pack-width: min(380px, calc(100vw - 48px));
+    --sanctuary-key-width: min(280px, calc(100vw - 48px));
+    --sanctuary-offer-gap: 16px;
   }
   .sanctuary-key-card {
     padding-inline: 12px;
-  }
-  .sanctuary-key-button {
-    flex-wrap: wrap;
-    justify-content: center;
-    padding-inline: 6px;
   }
   .currency-balances {
     gap: 5px;
@@ -651,9 +660,6 @@
   }
   .sanctuary-content {
     padding-inline: 16px;
-  }
-  .summon-packs {
-    gap: 16px;
   }
   .summon-pack {
     padding-inline: 18px;
@@ -675,49 +681,6 @@
   }
 }
 @media (max-width: 560px) {
-  .sanctuary-chest-keys {
-    max-width: 380px;
-  }
-  .sanctuary-key-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
-  .sanctuary-key-card {
-    display: grid;
-    grid-template-columns: 84px minmax(0, 1fr);
-    gap: 0 8px;
-    padding: 16px;
-    border-radius: 12px;
-  }
-  .sanctuary-key-tag {
-    grid-column: 2;
-    justify-self: end;
-  }
-  .sanctuary-key-art {
-    grid-row: 1 / 4;
-    width: 84px;
-    height: 114px;
-  }
-  .sanctuary-key-copy {
-    grid-column: 2;
-    text-align: left;
-  }
-  .sanctuary-key-copy h3 {
-    margin-top: 5px;
-    font-size: 20px;
-  }
-  .sanctuary-key-copy p {
-    margin-bottom: 11px;
-  }
-  .sanctuary-key-button {
-    grid-column: 2;
-    justify-content: space-between;
-  }
-  .summon-packs {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-    max-width: 380px;
-  }
   .summon-pack {
     padding: 20px 22px 16px;
   }
