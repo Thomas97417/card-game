@@ -37,6 +37,14 @@ import { GameIcon } from "@/components/game/game-icon";
 import { CardAbilities } from "@/components/game/card-abilities";
 import { AbilityLegend } from "@/components/game/ability-legend";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -50,6 +58,23 @@ const COMBAT_FILTERS = [
   ["ranged", "Distance"],
   ["building", "Bâtiments"],
 ] as const;
+
+const RARITY_ITEMS = RARITIES.map((value) => ({
+  value,
+  label: RARITY_LABELS[value],
+}));
+const RARITY_COLORS: Record<CardRarity, string> = {
+  common: "bg-[#b5c4a8]",
+  rare: "bg-[#9fcbef]",
+  epic: "bg-[#d3b3ea]",
+  legendary: "bg-[#e3c57e]",
+};
+const SELECT_TRIGGER =
+  "min-h-11 rounded-[7px] border-[#c5b38347] bg-[#0d241b66] px-3 text-xs text-[#f4ecd6] hover:border-[#d4be8888] hover:bg-[#19372b] focus-visible:border-[#d4be88] focus-visible:ring-[#d4be88]/25 dark:bg-[#0d241b66] dark:hover:bg-[#19372b] [&_svg]:text-[#c6bd9e]";
+const SELECT_CONTENT =
+  "max-h-[min(20rem,var(--available-height))] rounded-lg border border-[#c5b38366] bg-[#18372b] p-1 text-[#f4ecd6] shadow-xl ring-0 [font-family:'Avenir_Next',Avenir,'Segoe_UI',sans-serif] [color-scheme:dark] [&_[data-slot=select-scroll-up-button]]:bg-[#18372b] [&_[data-slot=select-scroll-down-button]]:bg-[#18372b]";
+const SELECT_ITEM =
+  "min-h-10 cursor-pointer rounded-md px-3 text-xs text-[#f4ecd6] focus:bg-[#d4be881a] focus:text-[#f4ecd6] not-data-[variant=destructive]:focus:**:text-[#f4ecd6] data-highlighted:bg-[#d4be881a] data-highlighted:text-[#f4ecd6]";
 
 function searchText(value: string) {
   return value
@@ -136,8 +161,10 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
 
   function selectRarity(next: CardRarity) {
     setRarity(next);
+    setLevel((current) =>
+      Math.min(current, maxCardLevel(next, selectedId ?? undefined)),
+    );
     if (selectedId) {
-      setLevel((current) => Math.min(current, maxCardLevel(next, selectedId)));
       if (next === rarity) {
         if (scroll.current) scroll.current.scrollTop = 0;
         title.current?.focus({ preventScroll: true });
@@ -224,22 +251,46 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
                 </button>
               )}
             </div>
-            <label className="bestiary-rarity-select">
-              <span>Rareté</span>
-              <select
+            <Select
+              items={RARITY_ITEMS}
+              value={rarity}
+              onValueChange={(value) => value && selectRarity(value)}
+            >
+              <SelectTrigger
                 aria-label="Rareté de la carte"
-                value={rarity}
-                onChange={(event) =>
-                  selectRarity(event.target.value as CardRarity)
-                }
+                className={cn(SELECT_TRIGGER, "bestiary-rarity-select")}
+              >
+                <span className="hidden text-[11px] text-[#c1c9b1] sm:inline">
+                  Rareté
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    RARITY_COLORS[rarity],
+                  )}
+                />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent
+                align="start"
+                alignItemWithTrigger={false}
+                className={SELECT_CONTENT}
               >
                 {RARITIES.map((value) => (
-                  <option key={value} value={value}>
+                  <SelectItem key={value} value={value} className={SELECT_ITEM}>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "size-1.5 shrink-0 rounded-full",
+                        RARITY_COLORS[value],
+                      )}
+                    />
                     {RARITY_LABELS[value]}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
-            </label>
+              </SelectContent>
+            </Select>
             <div
               className="bestiary-filters"
               role="group"
@@ -271,6 +322,14 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
         className="bestiary-scroll"
         key={selected ? "detail" : "gallery"}
       >
+        {!selected && (
+          <BestiaryLevelExplorer
+            level={level}
+            maximum={maxCardLevel(rarity)}
+            onLevelChange={setLevel}
+            gallery
+          />
+        )}
         {selected ? (
           <BestiaryDetails
             card={selected}
@@ -402,56 +461,11 @@ function BestiaryDetails({
               Voir ses évolutions <ArrowDown size={14} />
             </button>
           </header>
-          <section
-            className="bestiary-level-explorer"
-            aria-label="Explorer les niveaux"
-          >
-            <div className="bestiary-section-heading">
-              <h3>Explorer les niveaux</h3>
-              <span>
-                {level === maximum
-                  ? "Niveau maximal"
-                  : `Aperçu · 1 à ${maximum}`}
-              </span>
-            </div>
-            <div className="bestiary-level-controls">
-              <button
-                type="button"
-                aria-label="Niveau précédent"
-                disabled={level === 1}
-                onClick={() => onLevelChange(level - 1)}
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <select
-                aria-label="Niveau de la carte"
-                value={level}
-                onChange={(event) => onLevelChange(Number(event.target.value))}
-              >
-                {Array.from({ length: maximum }, (_, index) => (
-                  <option key={index + 1} value={index + 1}>
-                    Niveau {index + 1}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                aria-label="Niveau suivant"
-                disabled={level === maximum}
-                onClick={() => onLevelChange(level + 1)}
-              >
-                <ChevronRight size={18} />
-              </button>
-              <input
-                type="range"
-                aria-label="Parcourir les niveaux"
-                min={1}
-                max={maximum}
-                value={level}
-                onChange={(event) => onLevelChange(Number(event.target.value))}
-              />
-            </div>
-          </section>
+          <BestiaryLevelExplorer
+            level={level}
+            maximum={maximum}
+            onLevelChange={onLevelChange}
+          />
           <dl className="bestiary-stats" aria-label="Caractéristiques">
             {(["attack", "health"] as const).map((stat) => (
               <div key={stat}>
@@ -533,5 +547,92 @@ function BestiaryDetails({
         </div>
       </section>
     </>
+  );
+}
+
+function BestiaryLevelExplorer({
+  level,
+  maximum,
+  onLevelChange,
+  gallery = false,
+}: {
+  level: number;
+  maximum: number;
+  onLevelChange: (level: number) => void;
+  gallery?: boolean;
+}) {
+  const levels = Array.from({ length: maximum }, (_, index) => ({
+    value: index + 1,
+    label: `Niveau ${index + 1}`,
+  }));
+  return (
+    <section
+      className={cn(
+        "bestiary-level-explorer",
+        gallery && "bestiary-gallery-levels",
+      )}
+      aria-label="Explorer les niveaux"
+    >
+      <div className="bestiary-section-heading">
+        <h3>{gallery ? "Niveau d’aperçu" : "Explorer les niveaux"}</h3>
+        <span>
+          {gallery
+            ? `Toutes les cartes · 1 à ${maximum}`
+            : level === maximum
+              ? "Niveau maximal"
+              : `Aperçu · 1 à ${maximum}`}
+        </span>
+      </div>
+      <div className="bestiary-level-controls">
+        <button
+          type="button"
+          aria-label="Niveau précédent"
+          disabled={level === 1}
+          onClick={() => onLevelChange(level - 1)}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <Select
+          items={levels}
+          value={level}
+          onValueChange={(value) => value !== null && onLevelChange(value)}
+        >
+          <SelectTrigger
+            aria-label="Niveau de la carte"
+            className={cn(SELECT_TRIGGER, "bestiary-level-select min-w-28")}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent
+            align="start"
+            alignItemWithTrigger={false}
+            className={SELECT_CONTENT}
+          >
+            {levels.map(({ value, label }) => (
+              <SelectItem key={value} value={value} className={SELECT_ITEM}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <button
+          type="button"
+          aria-label="Niveau suivant"
+          disabled={level === maximum}
+          onClick={() => onLevelChange(level + 1)}
+        >
+          <ChevronRight size={18} />
+        </button>
+        <input
+          type="range"
+          aria-label="Parcourir les niveaux"
+          aria-valuetext={`Niveau ${level} sur ${maximum}`}
+          min={1}
+          max={maximum}
+          value={level}
+          onChange={(event) => onLevelChange(Number(event.target.value))}
+        />
+      </div>
+    </section>
   );
 }

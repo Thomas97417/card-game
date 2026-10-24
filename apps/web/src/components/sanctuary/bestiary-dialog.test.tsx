@@ -9,6 +9,7 @@ import {
 import { describe, expect, it, vi } from "vitest";
 import { CATALOG, getCombatType, variantCard } from "@sylve/game";
 import { BestiaryDialog } from "./bestiary-dialog";
+import { selectOption } from "@/test-select";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
@@ -25,6 +26,78 @@ async function openBestiary() {
 }
 
 describe("Bestiary navigation", () => {
+  it("shares the preview level between gallery sliders, card details and the shadcn select", async () => {
+    const dialog = await openBestiary();
+    const gallerySlider = within(dialog).getByRole("slider");
+    fireEvent.change(gallerySlider, { target: { value: "8" } });
+    expect(within(dialog).getAllByText("Niv. 8")).toHaveLength(CATALOG.length);
+    expect(
+      within(dialog).getByRole("combobox", { name: "Niveau de la carte" })
+        .textContent,
+    ).toContain("Niveau 8");
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: `Découvrir ${CATALOG[0]!.name}`,
+      }),
+    );
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "8",
+    );
+    await selectOption("Niveau de la carte", "Niveau 11");
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "11",
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
+    );
+    expect(within(dialog).getAllByText("Niv. 11")).toHaveLength(CATALOG.length);
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "11",
+    );
+    await selectOption("Niveau de la carte", "Niveau 3");
+    expect(within(dialog).getAllByText("Niv. 3")).toHaveLength(CATALOG.length);
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "3",
+    );
+  });
+
+  it("clamps gallery levels when changing rarity and closes the level menu with Escape without closing the bestiary", async () => {
+    const dialog = await openBestiary();
+    await selectOption("Rareté de la carte", "Légendaire");
+    await selectOption("Niveau de la carte", "Niveau 31");
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "31",
+    );
+    expect(
+      within(
+        within(dialog).getByRole("button", {
+          name: "Découvrir Totem de l’aurore",
+        }),
+      ).getByText("Niv. 26"),
+    ).toBeTruthy();
+    await selectOption("Rareté de la carte", "Commune");
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "26",
+    );
+    expect(within(dialog).getAllByText("Niv. 26")).toHaveLength(CATALOG.length);
+    const trigger = within(dialog).getByRole("combobox", {
+      name: "Niveau de la carte",
+    });
+    fireEvent.click(trigger);
+    const listbox = await screen.findByRole("listbox");
+    expect(within(listbox).getAllByRole("option")).toHaveLength(26);
+    expect(
+      within(listbox).queryByRole("option", { name: "Niveau 31" }),
+    ).toBeNull();
+    fireEvent.keyDown(
+      within(listbox).getByRole("option", { name: "Niveau 26" }),
+      { key: "Escape" },
+    );
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+    expect(screen.getByRole("dialog", { name: "Le bestiaire" })).toBe(dialog);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("jumps to the evolution section and can reopen the current form's information", async () => {
     const dialog = await openBestiary();
     fireEvent.click(
@@ -140,12 +213,9 @@ describe("Bestiary navigation", () => {
       (within(dialog).getByRole("searchbox") as HTMLInputElement).value,
     ).toBe(query);
     expect(
-      (
-        within(dialog).getByRole("combobox", {
-          name: "Rareté de la carte",
-        }) as HTMLSelectElement
-      ).value,
-    ).toBe("legendary");
+      within(dialog).getByRole("combobox", { name: "Rareté de la carte" })
+        .textContent,
+    ).toContain("Légendaire");
     expect(
       within(dialog).getByRole("button", {
         name: `Découvrir ${legendaryName}`,
@@ -211,10 +281,7 @@ describe("Bestiary navigation", () => {
 
   it("updates level previews and clamps a legendary creature to a building's cap during navigation", async () => {
     const dialog = await openBestiary();
-    fireEvent.change(
-      within(dialog).getByRole("combobox", { name: "Rareté de la carte" }),
-      { target: { value: "legendary" } },
-    );
+    await selectOption("Rareté de la carte", "Légendaire");
     const buildingIndex = CATALOG.findIndex((card) => card.id === "idol");
     fireEvent.click(
       within(dialog).getByRole("button", {
@@ -223,12 +290,12 @@ describe("Bestiary navigation", () => {
     );
     const levels = within(dialog).getByRole("combobox", {
       name: "Niveau de la carte",
-    }) as HTMLSelectElement;
+    });
     fireEvent.change(
       within(dialog).getByRole("slider", { name: "Parcourir les niveaux" }),
       { target: { value: "31" } },
     );
-    expect(levels.value).toBe("31");
+    expect(levels.textContent).toContain("Niveau 31");
     expect(
       (
         within(dialog).getByRole("button", {
@@ -239,8 +306,8 @@ describe("Bestiary navigation", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Créature suivante" }),
     );
-    expect(levels.value).toBe("26");
-    expect(within(levels).getAllByRole("option")).toHaveLength(26);
+    expect(levels.textContent).toContain("Niveau 26");
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(
       within(dialog).getByRole("heading", {
         name: variantCard("idol", "legendary").name,
@@ -253,7 +320,7 @@ describe("Bestiary navigation", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Niveau précédent" }),
     );
-    expect(levels.value).toBe("25");
+    expect(levels.textContent).toContain("Niveau 25");
     expect(
       within(healthStat).getByText(
         `+${variantCard("idol", "legendary", 26).health - variantCard("idol", "legendary", 25).health} au niv. 26`,
