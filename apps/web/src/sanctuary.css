@@ -260,8 +260,16 @@
   opacity: 1;
   background: #183622;
 }
-.sanctuary-key-success {
+.sanctuary-feedback.sanctuary-key-success {
+  position: absolute;
+  z-index: 10;
+  inset-inline: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 0 auto;
   flex-wrap: wrap;
+  box-shadow: 0 8px 28px #051c1580;
 }
 .sanctuary-key-success a {
   display: inline-flex;
