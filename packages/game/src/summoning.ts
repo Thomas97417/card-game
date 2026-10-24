@@ -15,7 +15,7 @@ export interface SummonPack {
   description: string;
   price: number;
   tenPrice: number;
-  repeatPrice: number;
+  repeatPrices: readonly number[];
   repeatTenPrice: number;
   guaranteedLegendaries: number;
   rates: Record<CardRarity, number>;
@@ -29,7 +29,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq compagnons de toutes les raretés et une carte d’or en bonus.",
     price: 149,
     tenPrice: 1_299,
-    repeatPrice: 139,
+    repeatPrices: [139, 129],
     repeatTenPrice: 1_169,
     guaranteedLegendaries: 1,
     rates: { common: 65, rare: 25, epic: 8, legendary: 2 },
@@ -41,7 +41,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq compagnons épiques ou légendaires et une carte d’or en bonus.",
     price: 449,
     tenPrice: 3_899,
-    repeatPrice: 404,
+    repeatPrices: [404],
     repeatTenPrice: 3_509,
     guaranteedLegendaries: 2,
     rates: { common: 0, rare: 0, epic: 80, legendary: 20 },
@@ -53,7 +53,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
       "Cinq légendaires, une carte d’or et une chance de doubler un compagnon.",
     price: 4_499,
     tenPrice: 39_999,
-    repeatPrice: 4_049,
+    repeatPrices: [4_049],
     repeatTenPrice: 35_999,
     guaranteedLegendaries: 50,
     rates: { common: 0, rare: 0, epic: 0, legendary: 100 },
@@ -162,9 +162,13 @@ export function summonOffer(
   packId: SummonPackId,
   count: SummonCount,
   repeat = false,
+  previousCost?: number,
 ): SummonOffer {
   const baseCost = summonPrice(packId, count);
   const pack = summonPack(packId);
+  const step = pack.repeatPrices.indexOf(previousCost ?? baseCost) + 1;
+  const repeatPrice =
+    pack.repeatPrices[Math.min(step, pack.repeatPrices.length - 1)]!;
   return {
     packId,
     count,
@@ -172,7 +176,7 @@ export function summonOffer(
     cost: repeat
       ? count === 10
         ? pack.repeatTenPrice
-        : pack.repeatPrice
+        : repeatPrice
       : baseCost,
   };
 }

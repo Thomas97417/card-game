@@ -236,6 +236,7 @@ export const summon = mutation({
           : {}),
       };
     }
+    let previousCost: number | undefined;
     if (repeatToken !== undefined) {
       const sourceId = ctx.db.normalizeId("summons", repeatToken);
       const source = sourceId ? await ctx.db.get(sourceId) : null;
@@ -250,8 +251,14 @@ export const summon = mutation({
         throw new ConvexError(
           "Cette remise n’est plus disponible. Relance un appel depuis le sanctuaire.",
         );
+      previousCost = source.cost;
     }
-    const { cost } = summonOffer(packId, count, repeatToken !== undefined);
+    const { cost } = summonOffer(
+      packId,
+      count,
+      repeatToken !== undefined,
+      previousCost,
+    );
     const wallet = await ensureEmeralds(ctx, userId);
     if (wallet.diamonds! < cost)
       throw new ConvexError(

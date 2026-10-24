@@ -87,7 +87,12 @@ export function SummonRevealDialog({
   const complete = revealed === rewards.length;
   const lastRound = result ? round === result.count - 1 : true;
   const offer = result
-    ? summonOffer(result.packId, result.count, !history && !!result.repeatToken)
+    ? summonOffer(
+        result.packId,
+        result.count,
+        !history && !!result.repeatToken,
+        result.cost,
+      )
     : null;
   const insufficient =
     emeralds == null || (offer != null && emeralds < offer.cost);

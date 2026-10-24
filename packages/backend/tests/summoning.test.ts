@@ -559,7 +559,7 @@ describe("sanctuaire autoritaire", () => {
         ctx.db.insert("wallets", {
           ownerId: userId,
           gold: 0,
-          diamonds: 200000,
+          diamonds: 300000,
         }),
       );
       vi.spyOn(Math, "random").mockReturnValue(0);
@@ -599,19 +599,42 @@ describe("sanctuaire autoritaire", () => {
           requestId: requestId(3),
         }),
       ).rejects.toThrow("remise n’est plus disponible");
+      const thirdRequest = {
+        ...request,
+        requestId: requestId(5),
+        repeatToken: second.repeatToken,
+      };
+      const third = await client.mutation(api.sanctuary.summon, thirdRequest);
+      const fourth = await client.mutation(api.sanctuary.summon, {
+        ...request,
+        requestId: requestId(6),
+        repeatToken: third.repeatToken,
+      });
+      const cappedCost = packId === "sylve" && count === 1 ? 129 : second.cost;
+      expect(third.cost).toBe(cappedCost);
+      expect(fourth.cost).toBe(cappedCost);
+      expect(await client.mutation(api.sanctuary.summon, thirdRequest)).toEqual(
+        history(third),
+      );
       expect(await client.query(api.collection.diamonds, {})).toBe(
-        200000 - first.cost - second.cost,
+        300000 - first.cost - second.cost - third.cost - fourth.cost,
       );
       expect(await client.query(api.sanctuary.offers, {})).toEqual(before);
       // Buying from the shop always uses its base price, even with an open circle.
-      const third = await client.mutation(api.sanctuary.summon, {
+      const fresh = await client.mutation(api.sanctuary.summon, {
         ...request,
         requestId: requestId(4),
       });
-      expect(third.cost).toBe(first.cost);
+      expect(fresh.cost).toBe(first.cost);
       expect(await client.query(api.sanctuary.latest, {})).toEqual(
-        history(third),
+        history(fresh),
       );
+      const freshRepeat = await client.mutation(api.sanctuary.summon, {
+        ...request,
+        requestId: requestId(7),
+        repeatToken: fresh.repeatToken,
+      });
+      expect(freshRepeat.cost).toBe(second.cost);
     },
   );
 
@@ -775,9 +798,25 @@ describe("sanctuaire autoritaire", () => {
     ).rejects.toThrow("pas assez d’émeraudes");
     expect(await client.query(api.collection.diamonds, {})).toBe(138);
     await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 139 }));
-    expect((await client.mutation(api.sanctuary.summon, request)).cost).toBe(
-      139,
+    const second = await client.mutation(api.sanctuary.summon, request);
+    expect(second.cost).toBe(139);
+    expect(await client.query(api.collection.diamonds, {})).toBe(0);
+    const next = {
+      ...request,
+      requestId: requestId(3),
+      repeatToken: second.repeatToken,
+    };
+    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 128 }));
+    await expect(client.mutation(api.sanctuary.summon, next)).rejects.toThrow(
+      "pas assez d’émeraudes",
     );
+    expect(await client.query(api.collection.diamonds, {})).toBe(128);
+    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 129 }));
+    const third = await client.mutation(api.sanctuary.summon, next);
+    expect(third.cost).toBe(129);
+    const gold = await client.query(api.collection.gold, {});
+    expect(await client.mutation(api.sanctuary.summon, next)).toEqual(third);
+    expect(await client.query(api.collection.gold, {})).toBe(gold);
     expect(await client.query(api.collection.diamonds, {})).toBe(0);
   });
 

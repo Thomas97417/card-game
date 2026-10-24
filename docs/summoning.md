@@ -14,17 +14,17 @@ Une fois le tirage entièrement révélé, « Dernière invocation » affiche di
 
 ## Remise de réinvocation
 
-Le tarif réduit de réinvocation s’applique uniquement au bouton central du cercle ouvert après un achat, pour le même appel et le même format. Le prix de la Sylve ×1 est de 139 émeraudes et aucune mention de pourcentage n’est affichée. Fermer le cercle, quitter la page ou la recharger annule la remise. Rouvrir l’historique ne la réactive pas. Chaque réinvocation effectuée dans le cercle ouvre le tirage suivant avec sa propre remise, sans cumul.
+Le tarif réduit de réinvocation s’applique uniquement au bouton central du cercle ouvert après un achat, pour le même appel et le même format. Pour la Sylve ×1, l’achat initial coûte 149 émeraudes, la première réinvocation 139, puis toutes les suivantes 129 tant que le joueur reste dans le cercle. Le prix ne descend jamais sous 129 et aucune mention de pourcentage n’est affichée. Fermer le cercle, quitter la page ou la recharger annule la remise et le prochain achat repart à 149. Rouvrir l’historique ou reprendre un tirage ne réactive pas cette remise.
 
 Les offres du sanctuaire conservent toujours leurs prix de base. Le tarif groupé du ×10 reste permanent et indépendant de cette remise temporaire.
 
 | Appel | Sanctuaire ×1 | Bouton central ×1 | Sanctuaire ×10 | Bouton central ×10 |
 | --- | ---: | ---: | ---: | ---: |
-| Sylve | 149 | 139 | 1 299 | 1 169 |
+| Sylve | 149 | 139, puis 129 | 1 299 | 1 169 |
 | Anciens | 449 | 404 | 3 899 | 3 509 |
 | Divinités | 4 499 | 4 049 | 39 999 | 35 999 |
 
-Les prix en émeraudes sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Le serveur valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
+Les prix en émeraudes sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. Les tarifs des autres appels et des lots ×10 restent fixes. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
 
 ## Illustration et validation
 

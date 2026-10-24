@@ -137,7 +137,7 @@ describe("invocations du sanctuaire", () => {
   });
 
   it.each(SUMMON_PACKS)(
-    "uses the configured repeat prices for $id without stacking",
+    "uses the configured repeat prices for $id and caps successive repeats",
     (pack) => {
       for (const count of [1, 10] as const) {
         const baseCost = summonPrice(pack.id, count);
@@ -151,8 +151,23 @@ describe("invocations du sanctuaire", () => {
           packId: pack.id,
           count,
           baseCost,
-          cost: count === 10 ? pack.repeatTenPrice : pack.repeatPrice,
+          cost: count === 10 ? pack.repeatTenPrice : pack.repeatPrices[0],
         });
+        let previousCost = baseCost;
+        const expected =
+          pack.id === "sylve" && count === 1
+            ? [139, 129, 129, 129]
+            : Array(4).fill(
+                count === 10 ? pack.repeatTenPrice : pack.repeatPrices[0],
+              );
+        for (const cost of expected) {
+          const offer = summonOffer(pack.id, count, true, previousCost);
+          expect(offer.cost).toBe(cost);
+          previousCost = offer.cost;
+        }
+        expect(summonOffer(pack.id, count, false, previousCost).cost).toBe(
+          baseCost,
+        );
       }
     },
   );

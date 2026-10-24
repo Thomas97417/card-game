@@ -152,7 +152,14 @@ export function Sanctuary({
     count: SummonCount,
     repeatToken?: string,
   ) {
-    const { cost } = summonOffer(packId, count, !!repeatToken);
+    const { cost } = summonOffer(
+      packId,
+      count,
+      !!repeatToken,
+      repeatToken && result?.repeatToken === repeatToken
+        ? result.cost
+        : undefined,
+    );
     const retry =
       pending.current?.packId === packId &&
       pending.current.count === count &&
