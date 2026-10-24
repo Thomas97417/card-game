@@ -24,6 +24,7 @@ function SanctuaryPage() {
   const chestSlots = useQuery(api.chests.list);
   const unlockChestSlot = useMutation(api.sanctuary.unlockChestSlot);
   const collection = useQuery(api.collection.list);
+  const league = useQuery(api.collection.league);
   const upgrade = useMutation(api.collection.upgrade);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const [ready, setReady] = useState(false);
@@ -41,7 +42,8 @@ function SanctuaryPage() {
   return (
     <Sanctuary
       emeralds={emeralds}
-      ready={ready && !!chestSlots}
+      ready={ready && !!chestSlots && !!league}
+      peakTrophies={league?.peakTrophies}
       latest={latest}
       collection={collection}
       onSummon={summon}

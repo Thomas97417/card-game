@@ -12,6 +12,10 @@ export const rarityValidator = v.union(
   v.literal("epic"),
   v.literal("legendary"),
 );
+export const chestTypeValidator = v.union(
+  rarityValidator,
+  v.literal("bigRare"),
+);
 export const lootValidator = v.object({
   variantId: v.string(),
   count: v.number(),

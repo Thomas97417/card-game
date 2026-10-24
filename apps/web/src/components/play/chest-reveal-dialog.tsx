@@ -6,9 +6,12 @@ import {
   resolveCard,
   upgradeCost,
   upgradeGoldCost,
-  type CardRarity,
 } from "@sylve/game";
-import { CHEST_LABELS, type LootReveal } from "@sylve/game/progression";
+import {
+  chestName,
+  type ChestType,
+  type LootReveal,
+} from "@sylve/game/progression";
 import { CreatureCard } from "@/components/game/creature-card";
 import { GoldIcon, useGoldBalance } from "@/components/gold-balance";
 import {
@@ -19,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 
 export interface ChestReveal {
-  rarity: CardRarity;
+  rarity: ChestType;
   reveals: LootReveal[];
   gold: number;
 }
@@ -41,7 +44,9 @@ export function ChestRevealDialog({
       <DialogContent
         className="chest-reveal-dialog"
         appearance="game"
-        data-rarity={reward?.rarity ?? "common"}
+        data-rarity={
+          reward?.rarity === "bigRare" ? "rare" : (reward?.rarity ?? "common")
+        }
       >
         {reward && (
           <>
@@ -53,8 +58,13 @@ export function ChestRevealDialog({
                 height={120}
               />
               <div>
-                <span className="rarity-label" data-rarity={reward.rarity}>
-                  Coffre {CHEST_LABELS[reward.rarity].toLowerCase()}
+                <span
+                  className="rarity-label"
+                  data-rarity={
+                    reward.rarity === "bigRare" ? "rare" : reward.rarity
+                  }
+                >
+                  {chestName(reward.rarity)}
                 </span>
                 <DialogTitle>Le trésor est à toi.</DialogTitle>
                 <DialogDescription>

@@ -184,7 +184,7 @@ describe("sanctuaire autoritaire", () => {
       DEFAULT_DECK,
     );
     const collection = await client.query(api.collection.list, {});
-    expect(collection).toHaveLength(5);
+    expect(collection.length).toBeGreaterThanOrEqual(5);
     for (const id of DEFAULT_DECK)
       expect(collection.some((entry) => entry.card.id === id)).toBe(true);
   });
@@ -252,7 +252,7 @@ describe("sanctuaire autoritaire", () => {
         requestId: requestId(1),
       });
       expect(result.cost).toBe(pack.tenPrice);
-      expect(result.reveals).toHaveLength(10);
+      expect(result.reveals).toHaveLength(50);
       expect(
         result.reveals.filter((item) => item.variantId.endsWith(":legendary")),
       ).toHaveLength(pack.guaranteedLegendaries);
@@ -264,7 +264,9 @@ describe("sanctuaire autoritaire", () => {
         (sum, entry) => sum + entry.copies + 1,
         0,
       );
-      expect(totalCopies).toBe(14);
+      expect(totalCopies).toBe(
+        4 + result.reveals.reduce((sum, item) => sum + item.count, 0),
+      );
       for (const item of result.reveals)
         expect(
           collection.some((entry) => entry.card.id === item.variantId),
@@ -277,15 +279,14 @@ describe("sanctuaire autoritaire", () => {
     const t = setup();
     const { client, userId } = await player(t, "alice");
     await client.mutation(api.decks.ensureStarter, {});
-    await t.run(async (ctx) => {
-      const card = (await ctx.db
-        .query("collection")
-        .withIndex("by_owner_variant", (q) =>
-          q.eq("ownerId", userId).eq("variantId", "guardian:common"),
-        )
-        .unique())!;
-      await ctx.db.patch(card._id, { level: 4, copies: 12 });
-    });
+    await t.run((ctx) =>
+      ctx.db.insert("collection", {
+        ownerId: userId,
+        variantId: "guardian:rare",
+        level: 4,
+        copies: 12,
+      }),
+    );
     vi.spyOn(Math, "random").mockReturnValue(0);
     const request = {
       packId: "sylve" as const,
@@ -298,10 +299,10 @@ describe("sanctuaire autoritaire", () => {
     ]);
     expect(results[0]).toEqual(results[1]);
     expect(results[0]!.reveals[0]).toMatchObject({
-      variantId: "guardian:common",
+      variantId: "guardian:rare",
       isNew: false,
       level: 4,
-      copies: 13,
+      copies: 42,
     });
     expect(await client.query(api.collection.diamonds, {})).toBe(
       WELCOME_DIAMONDS - 149,
@@ -315,6 +316,37 @@ describe("sanctuaire autoritaire", () => {
     await expect(
       client.mutation(api.sanctuary.summon, { ...request, packId: "ancients" }),
     ).rejects.toThrow("autre pack");
+  });
+
+  it("uses peak league quantities after demotion and freezes the retried result after promotion", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    const progressId = await t.run((ctx) =>
+      ctx.db.insert("leagueProgress", {
+        ownerId: userId,
+        trophies: 0,
+        peakTrophies: 2400,
+      }),
+    );
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const request = {
+      packId: "ancients" as const,
+      count: 1 as const,
+      requestId: requestId(1),
+    };
+    const result = await client.mutation(api.sanctuary.summon, request);
+    expect(result.reveals.map((item) => item.count)).toEqual([
+      70, 35, 35, 35, 35,
+    ]);
+    await t.run((ctx) =>
+      ctx.db.patch(progressId, { trophies: 6000, peakTrophies: 6000 }),
+    );
+    expect(await client.mutation(api.sanctuary.summon, request)).toEqual(
+      result,
+    );
+    expect(await client.query(api.collection.diamonds, {})).toBe(
+      WELCOME_DIAMONDS - 449,
+    );
   });
 
   it("serializes separate purchases without overspending and keeps another player's wallet private", async () => {

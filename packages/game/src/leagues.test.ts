@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { RARITIES } from "./index";
 import {
   DECK_SLOT_UNLOCKS,
   LEAGUES,
@@ -7,7 +6,7 @@ import {
   leagueAt,
   leagueProgress,
 } from "./leagues";
-import { CHEST_RULES, chestGold, chestLoot, rollChest } from "./progression";
+import { CHEST_TYPES, chestPool, rollChest } from "./progression";
 
 describe("league progression", () => {
   it("starts at Iron IV, promotes on exact thresholds and ends at Challenger", () => {
@@ -48,7 +47,7 @@ describe("league progression", () => {
 
   it("keeps earned deck slots through demotion while current league and loot follow the trophy total", () => {
     expect(leagueProgress(185, 200)).toMatchObject({
-      current: { label: "Fer IV", lootMultiplier: 1 },
+      current: { label: "Fer IV" },
       peakTrophies: 200,
       deckCapacity: 5,
       nextSlot: { trophies: 800 },
@@ -61,39 +60,43 @@ describe("league progression", () => {
     expect(leagueProgress(500, 100).peakTrophies).toBe(500);
   });
 
-  it("improves the distribution and loot at every promotion, preserving the rarity of each chest", () => {
+  it("uses the three documented chest pools and excludes unavailable rarities", () => {
+    expect(chestPool(0)).toEqual({
+      common: 109,
+      rare: 28,
+      bigRare: 9,
+      epic: 0,
+      legendary: 0,
+    });
+    expect(chestPool(2000)).toEqual({
+      common: 0,
+      rare: 56,
+      bigRare: 10,
+      epic: 3,
+      legendary: 0,
+    });
+    expect(chestPool(2200)).toEqual({
+      common: 0,
+      rare: 56,
+      bigRare: 10,
+      epic: 3,
+      legendary: 1,
+    });
     for (const league of LEAGUES) {
       expect(
         Object.values(league.chestChances).reduce((a, b) => a + b, 0),
       ).toBeCloseTo(100);
-      const previous = LEAGUES[Math.max(0, league.index - 1)]!;
-      expect(league.chestChances.common).toBeLessThanOrEqual(
-        previous.chestChances.common,
-      );
-      expect(league.chestChances.legendary).toBeGreaterThanOrEqual(
-        previous.chestChances.legendary,
-      );
-      expect(league.lootMultiplier).toBeGreaterThanOrEqual(
-        previous.lootMultiplier,
-      );
       let boundary = 0;
-      for (const rarity of RARITIES) {
+      for (const type of CHEST_TYPES) {
+        if (league.chestChances[type] === 0) continue;
         expect(
           rollChest(() => (boundary + 0.001) / 100, league.minTrophies),
-        ).toBe(rarity);
-        boundary += league.chestChances[rarity];
-        expect(chestLoot(rarity, () => 0, league.minTrophies)[0]).toMatchObject(
-          {
-            variantId: `guardian:${rarity}`,
-            count: Math.floor(CHEST_RULES[rarity].min * league.lootMultiplier),
-          },
-        );
-        expect(chestGold(rarity, () => 0.999999, league.minTrophies)).toBe(
-          Math.floor(CHEST_RULES[rarity].maxGold * league.lootMultiplier),
-        );
+        ).toBe(type);
+        boundary += league.chestChances[type];
       }
     }
-    expect(rollChest(() => 0.95, 0)).toBe("epic");
-    expect(rollChest(() => 0.95, 2400)).toBe("legendary");
+    expect(rollChest(() => 0.95, 0)).toBe("bigRare");
+    expect(rollChest(() => 0.9999, 2000)).toBe("epic");
+    expect(rollChest(() => 0.9999, 2200)).toBe("legendary");
   });
 });

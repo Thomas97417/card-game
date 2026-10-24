@@ -264,6 +264,8 @@
 .summon-pack {
   --pack-glow: #7fc6a0;
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   padding: 20px 26px 14px;
   border: 1px solid #b8a46c9c;
@@ -327,7 +329,7 @@
   margin: 10px 0 6px;
   color: #fff0d1;
   font:
-    400 clamp(23px, 2.4vw, 29px)/1.15 Georgia,
+    400 clamp(23px, 2.4vw, 29px) / 1.15 Georgia,
     serif;
   letter-spacing: -0.4px;
 }
@@ -351,11 +353,26 @@
 }
 .summon-rates > span {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   color: #d4dfd0;
   font-size: 10px;
   white-space: nowrap;
+}
+.summon-rates small {
+  flex-basis: 100%;
+  padding-left: 11px;
+  color: #b9c9ad;
+  font-size: 9px;
+}
+.summon-quantity-note {
+  max-width: 300px;
+  margin: 6px auto 12px;
+  color: #b6c6aa;
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: center;
 }
 .summon-rates i {
   flex-shrink: 0;
@@ -376,7 +393,7 @@
   grid-template-columns: 1fr 1.18fr;
   align-items: stretch;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: auto;
 }
 .summon-button {
   position: relative;

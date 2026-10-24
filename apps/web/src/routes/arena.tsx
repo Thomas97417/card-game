@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { ArrowRight, Check, Copy, Plus } from "lucide-react";
@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PlayLobby, type LobbyChest } from "@/components/play/play-lobby";
+import { ChestUnlockDialog } from "@/components/play/chest-unlock-dialog";
+import { useEmeraldBalance } from "@/components/emerald-balance";
 import {
   ChestRevealDialog,
   type ChestReveal,
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/arena")({
 });
 
 function ArenaPage() {
+  const emeralds = useEmeraldBalance();
   const navigate = useNavigate();
   const { invite } = Route.useSearch();
   const decks = useQuery(api.decks.list);
@@ -57,6 +60,8 @@ function ArenaPage() {
   const [copied, setCopied] = useState(false);
   const [privateOpen, setPrivateOpen] = useState(!!invite);
   const [reward, setReward] = useState<ChestReveal | null>(null);
+  const [selectedChest, setSelectedChest] = useState<LobbyChest | null>(null);
+  const actionLock = useRef(false);
   const [now, setNow] = useState(0);
   useEffect(() => {
     let mounted = true;
@@ -107,12 +112,15 @@ function ArenaPage() {
   const locked = busy || !!activity?.gameId || !!activity?.queued;
   const ready = initialized && !!deck && !!activity && !!treasures && !!league;
   async function action(fn: () => Promise<unknown>) {
+    if (actionLock.current) return;
+    actionLock.current = true;
     setBusy(true);
     try {
       await fn();
     } catch (error) {
       showGameError(error);
     } finally {
+      actionLock.current = false;
       setBusy(false);
     }
   }
@@ -128,6 +136,10 @@ function ArenaPage() {
     }
   }
   const open = (chest: LobbyChest) => {
+    if (chest.unlockAt > now) {
+      setSelectedChest(chest);
+      return;
+    }
     void action(async () => {
       setReward(await openChest({ chestId: chest._id as Id<"chests"> }));
     });
@@ -257,6 +269,25 @@ function ArenaPage() {
         </DialogContent>
       </Dialog>
       <ChestRevealDialog reward={reward} onClose={() => setReward(null)} />
+      <ChestUnlockDialog
+        chest={selectedChest}
+        now={now}
+        emeralds={emeralds}
+        busy={busy}
+        onClose={() => setSelectedChest(null)}
+        onOpen={(maxEmeralds) => {
+          if (selectedChest)
+            void action(async () => {
+              setReward(
+                await openChest({
+                  chestId: selectedChest._id as Id<"chests">,
+                  maxEmeralds,
+                }),
+              );
+              setSelectedChest(null);
+            });
+        }}
+      />
     </PlayLobby>
   );
 }

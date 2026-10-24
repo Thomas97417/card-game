@@ -1,9 +1,12 @@
 import { CATALOG, RARITIES, type CardRarity } from "./index";
 import type { LootReveal, LootStack } from "./progression";
+import { leagueAt } from "./leagues";
+import { rewardRow, rollReward } from "./reward-tables";
 
 export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients";
 export type SummonCount = 1 | 10;
+export const HEROES_PER_SUMMON = 5;
 
 export interface SummonPack {
   id: SummonPackId;
@@ -19,20 +22,22 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
   {
     id: "sylve",
     name: "Appel de la Sylve",
-    description: "La forêt recèle des alliés de toutes les raretés.",
+    description:
+      "Cinq compagnons rares, épiques ou légendaires répondent à ton appel.",
     price: 149,
     tenPrice: 1_299,
     guaranteedLegendaries: 1,
-    rates: { common: 65, rare: 25, epic: 8, legendary: 2 },
+    rates: { common: 0, rare: 82, epic: 16, legendary: 2 },
   },
   {
     id: "ancients",
     name: "Appel des anciens",
-    description: "Les esprits les plus précieux répondent à ton appel.",
+    description:
+      "Cinq légendaires, avec une chance de doubler les exemplaires d’un compagnon.",
     price: 449,
     tenPrice: 3_899,
-    guaranteedLegendaries: 2,
-    rates: { common: 0, rare: 0, epic: 80, legendary: 20 },
+    guaranteedLegendaries: 50,
+    rates: { common: 0, rare: 0, epic: 0, legendary: 100 },
   },
 ];
 
@@ -57,40 +62,71 @@ export function summonPrice(id: SummonPackId, count: SummonCount): number {
   return count === 10 ? pack.tenPrice : pack.price;
 }
 
-/** Base rates apply to singles; ten-packs upgrade random non-legendary slots if needed. */
+export function summonQuantity(
+  id: SummonPackId,
+  rarity: CardRarity,
+  peakTrophies = 0,
+) {
+  const column = id === "ancients" ? 0 : RARITIES.indexOf(rarity) - 1;
+  const row = rewardRow(id === "ancients" ? "gods" : "demigods", peakTrophies);
+  const range = row[column];
+  if (!range || summonPack(id).rates[rarity] === 0)
+    throw new Error("Rareté absente de cette invocation.");
+  return { min: range[0]!, max: range[1] ?? range[0]! };
+}
+
+/** Five heroes per summon; Demigods x10 contains exactly one legendary among 50. */
 export function summonLoot(
   id: SummonPackId,
   count: SummonCount,
   random: () => number,
+  peakTrophies = 0,
 ): LootStack[] {
   summonPrice(id, count);
   const pack = summonPack(id);
-  const rollVariant = (rarity: CardRarity) =>
-    `${CATALOG[Math.floor(random() * CATALOG.length)]!.id}:${rarity}`;
-  const loot = Array.from({ length: count }, () => {
+  const rollRarity = (): CardRarity => {
     let roll = random() * 100;
-    let selected: CardRarity = "legendary";
     for (const rarity of RARITIES) {
       roll -= pack.rates[rarity];
-      if (roll < 0) {
-        selected = rarity;
-        break;
-      }
+      if (roll < 0) return rarity;
     }
-    return { variantId: rollVariant(selected), count: 1 };
+    return "legendary";
+  };
+  const total = count * HEROES_PER_SUMMON;
+  const legendarySlot =
+    id === "sylve" && count === 10 ? Math.floor(random() * total) : -1;
+  const doubles =
+    id === "ancients"
+      ? Array.from({ length: count }, () =>
+          random() < 0.5 ? Math.floor(random() * HEROES_PER_SUMMON) : -1,
+        )
+      : [];
+  return Array.from({ length: total }, (_, index) => {
+    let rarity: CardRarity;
+    if (id === "ancients") rarity = "legendary";
+    else if (count === 10)
+      rarity =
+        index === legendarySlot
+          ? "legendary"
+          : random() < 41 / 49
+            ? "rare"
+            : "epic";
+    else if (leagueAt(peakTrophies).index >= 10) {
+      // Four guaranteed rare heroes and a fifth with 10/80/10 rates.
+      const roll = index === 4 ? random() : 0;
+      rarity =
+        index < 4 || roll < 0.1 ? "rare" : roll < 0.9 ? "epic" : "legendary";
+    } else rarity = rollRarity();
+    const range = summonQuantity(id, rarity, peakTrophies);
+    const copies = rollReward([range.min, range.max], random);
+    return {
+      variantId: `${CATALOG[Math.floor(random() * CATALOG.length)]!.id}:${rarity}`,
+      count:
+        copies *
+        (doubles[Math.floor(index / HEROES_PER_SUMMON)] ===
+        index % HEROES_PER_SUMMON
+          ? 2
+          : 1),
+    };
   });
-  if (count === 10) {
-    const candidates = loot.flatMap((entry, index) =>
-      entry.variantId.endsWith(":legendary") ? [] : [index],
-    );
-    const missing = pack.guaranteedLegendaries - (count - candidates.length);
-    for (let i = 0; i < missing; i++) {
-      const [slot] = candidates.splice(
-        Math.floor(random() * candidates.length),
-        1,
-      );
-      loot[slot!] = { variantId: rollVariant("legendary"), count: 1 };
-    }
-  }
-  return loot;
 }

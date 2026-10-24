@@ -13,12 +13,14 @@ import {
 import {
   SUMMON_PACKS,
   summonPack,
+  summonQuantity,
   type SummonCount,
   type SummonPack,
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
 import { GameHeader } from "@/components/game-header";
+import { leagueAt } from "@sylve/game/leagues";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
@@ -41,6 +43,7 @@ export interface SummonRequest {
 interface SanctuaryProps {
   emeralds: number | null | undefined;
   ready: boolean;
+  peakTrophies?: number;
   latest?: SummonResult | null;
   collection: OwnedCard[] | undefined;
   purchasedChestSlots?: readonly number[];
@@ -52,6 +55,7 @@ interface SanctuaryProps {
 export function Sanctuary({
   emeralds,
   ready,
+  peakTrophies = 0,
   latest,
   collection,
   purchasedChestSlots = [],
@@ -170,6 +174,7 @@ export function Sanctuary({
                 <PackChoice
                   key={pack.id}
                   pack={pack}
+                  peakTrophies={peakTrophies}
                   emeralds={emeralds}
                   ready={ready && busyKey === null}
                   busy={busy}
@@ -318,22 +323,26 @@ export function Sanctuary({
 
 function PackChoice({
   pack,
+  peakTrophies,
   emeralds,
   ready,
   busy,
   onInvoke,
 }: {
   pack: SummonPack;
+  peakTrophies: number;
   emeralds: number | null | undefined;
   ready: boolean;
   busy: { packId: SummonPackId; count: SummonCount } | null;
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
   const premium = pack.id === "ancients";
-  const guarantee = `${pack.guaranteedLegendaries} légendaire${pack.guaranteedLegendaries > 1 ? "s" : ""} garanti${pack.guaranteedLegendaries > 1 ? "s" : ""}`;
+  const guarantee = premium
+    ? `${pack.guaranteedLegendaries} compagnons légendaires`
+    : `${pack.guaranteedLegendaries} compagnon légendaire garanti`;
   const rarities = premium
-    ? ["epic", "legendary", "epic"]
-    : ["common", "rare", "legendary", "epic"];
+    ? ["legendary", "legendary", "legendary"]
+    : ["rare", "legendary", "epic"];
   return (
     <article
       className={`summon-pack ${premium ? "summon-pack-premium" : ""}`}
@@ -364,14 +373,28 @@ function PackChoice({
         <p>{pack.description}</p>
       </div>
       <div className="summon-rates" aria-label={`Taux de ${pack.name}`}>
-        {RARITIES.filter((rarity) => pack.rates[rarity] > 0).map((rarity) => (
-          <span key={rarity} data-rarity={rarity}>
-            <i aria-hidden="true" />
-            {RARITY_LABELS[rarity]}
-            <strong>{pack.rates[rarity]} %</strong>
-          </span>
-        ))}
+        {RARITIES.filter((rarity) => pack.rates[rarity] > 0).map((rarity) => {
+          const quantity = summonQuantity(pack.id, rarity, peakTrophies);
+          return (
+            <span key={rarity} data-rarity={rarity}>
+              <i aria-hidden="true" />
+              {RARITY_LABELS[rarity]}
+              <strong>{pack.rates[rarity]} %</strong>
+              <small>
+                ×{quantity.min}
+                {quantity.max !== quantity.min ? `–${quantity.max}` : ""}
+              </small>
+            </span>
+          );
+        })}
       </div>
+      <p className="summon-quantity-note">
+        5 compagnons par invocation · Exemplaires par compagnon selon ton record
+        : {leagueAt(peakTrophies).label}.
+        {premium
+          ? " 50 % de chance de doubler un compagnon par invocation."
+          : " Taux moyens par compagnon ; une légendaire parmi les 50 compagnons du lot ×10."}
+      </p>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
@@ -401,7 +424,7 @@ function PackChoice({
                   id={`pack-${pack.id}-offer`}
                   className="summon-offer-ribbon"
                 >
-                  1 tirage gratuit
+                  Offre ×10
                 </span>
               )}
               <span className="summon-button-label">
@@ -533,7 +556,8 @@ export function SummonRevealDialog({
                       {RARITY_LABELS[card.rarity!]}
                     </span>
                     <small className={item.isNew ? "summon-new" : ""}>
-                      {item.isNew ? "Nouvelle carte" : "+1 exemplaire"}
+                      {item.isNew ? "Nouvelle carte · " : ""}+
+                      {item.count.toLocaleString("fr-FR")} exemplaires
                     </small>
                   </div>
                 );

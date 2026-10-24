@@ -1,5 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { requirePlayer } from "./lib/game_service";
 import {
   grantGold,
@@ -12,7 +14,21 @@ import {
   VICTORY_CHEST_WINS,
   chestGold,
   chestLoot,
+  chestRules,
+  chestRushCost,
 } from "@sylve/game/progression";
+import { ensureEmeralds } from "./lib/wallet";
+
+async function earnedTrophies(ctx: QueryCtx, chest: Doc<"chests">) {
+  if (chest.leagueTrophies !== undefined) return chest.leagueTrophies;
+  const game = await ctx.db.get(chest.gameId);
+  return (
+    game?.reward?.trophiesTotal ??
+    game?.trophyChanges?.find((change) => change.ownerId === chest.ownerId)
+      ?.trophiesTotal ??
+    0
+  );
+}
 
 export const list = query({
   args: {},
@@ -38,26 +54,36 @@ export const list = query({
         requiredWins: VICTORY_CHEST_WINS,
       },
       // Compact legacy inventories too: no existing chest disappears behind a locked slot.
-      chests: chests
-        .sort(
-          (a, b) =>
-            a.awardedAt - b.awardedAt || a._creationTime - b._creationTime,
-        )
-        .map(({ _id, rarity, unlockAt }, slot) => ({
-          _id,
-          slot:
-            unlockedSlots[slot] ??
-            TOTAL_CHEST_SLOTS + slot - unlockedSlots.length,
-          rarity,
-          unlockAt,
-        })),
+      chests: await Promise.all(
+        chests
+          .sort(
+            (a, b) =>
+              a.awardedAt - b.awardedAt || a._creationTime - b._creationTime,
+          )
+          .map(async (chest, slot) => {
+            const leagueTrophies = await earnedTrophies(ctx, chest);
+            return {
+              _id: chest._id,
+              slot:
+                unlockedSlots[slot] ??
+                TOTAL_CHEST_SLOTS + slot - unlockedSlots.length,
+              rarity: chest.rarity,
+              unlockAt: chest.unlockAt,
+              awardedAt: chest.awardedAt,
+              leagueTrophies,
+              instantCost:
+                chest.instantCost ??
+                chestRules(chest.rarity, leagueTrophies).instantCost,
+            };
+          }),
+      ),
     };
   },
 });
 
 export const open = mutation({
-  args: { chestId: v.id("chests") },
-  handler: async (ctx, { chestId }) => {
+  args: { chestId: v.id("chests"), maxEmeralds: v.optional(v.number()) },
+  handler: async (ctx, { chestId, maxEmeralds }) => {
     const { userId } = await requirePlayer(ctx);
     const chest = await ctx.db.get(chestId);
     if (!chest || chest.ownerId !== userId)
@@ -68,22 +94,48 @@ export const open = mutation({
         reveals: chest.reveals ?? [],
         gold: chest.gold ?? 0,
       };
-    if (Date.now() < chest.unlockAt)
-      throw new ConvexError("Ce coffre n’est pas encore prêt.");
-    // Unopened legacy chests adopt the new rewards on their first opening.
+    const now = Date.now();
+    const leagueTrophies = await earnedTrophies(ctx, chest);
+    const cost = chestRushCost({ ...chest, leagueTrophies }, now);
+    if (
+      maxEmeralds !== undefined &&
+      (!Number.isSafeInteger(maxEmeralds) || maxEmeralds < 0)
+    )
+      throw new ConvexError("Le prix d’ouverture est invalide.");
+    if (cost > 0) {
+      if (maxEmeralds === undefined)
+        throw new ConvexError("Ce coffre n’est pas encore prêt.");
+      if (cost > maxEmeralds)
+        throw new ConvexError(
+          "Le prix d’ouverture a changé. Consulte le coffre à nouveau.",
+        );
+      const wallet = await ensureEmeralds(ctx, userId);
+      if (wallet.diamonds < cost)
+        throw new ConvexError(
+          "Tu n’as pas assez d’émeraudes pour ouvrir ce coffre.",
+        );
+      await ctx.db.patch(wallet._id, { diamonds: wallet.diamonds - cost });
+    }
+    // Migrate unopened rewards once, using the league recorded at acquisition.
     const contents =
-      chest.gold === undefined
-        ? chestLoot(chest.rarity, Math.random)
+      chest.rewardVersion !== 2
+        ? chestLoot(chest.rarity, Math.random, leagueTrophies)
         : chest.contents;
-    const gold = chest.gold ?? chestGold(chest.rarity, Math.random);
+    const gold =
+      chest.rewardVersion === 2 && chest.gold !== undefined
+        ? chest.gold
+        : chestGold(chest.rarity, Math.random, leagueTrophies);
     const reveals = await grantLoot(ctx, userId, contents);
     await grantGold(ctx, userId, gold);
     await ctx.db.patch(chestId, {
       status: "opened",
-      openedAt: Date.now(),
+      openedAt: now,
       reveals,
       contents,
       gold,
+      rewardVersion: 2,
+      leagueTrophies,
+      emeraldsSpent: cost,
     });
     return { rarity: chest.rarity, reveals, gold };
   },
@@ -105,10 +157,13 @@ export const openVictory = mutation({
         "Remporte trois victoires pour ouvrir ce coffre commun.",
       );
     const contents =
-      chest.gold === undefined
-        ? chestLoot("common", Math.random)
+      chest.rewardVersion !== 2
+        ? chestLoot("common", Math.random, chest.leagueTrophies)
         : chest.contents;
-    const gold = chest.gold ?? chestGold("common", Math.random);
+    const gold =
+      chest.rewardVersion === 2 && chest.gold !== undefined
+        ? chest.gold
+        : chestGold("common", Math.random, chest.leagueTrophies);
     const reveals = await grantLoot(ctx, userId, contents);
     await grantGold(ctx, userId, gold);
     await ctx.db.patch(chest._id, {

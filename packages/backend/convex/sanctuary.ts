@@ -1,38 +1,18 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
-import {
-  WELCOME_DIAMONDS,
-  summonLoot,
-  summonPrice,
-} from "@sylve/game/summoning";
+import { summonLoot, summonPrice } from "@sylve/game/summoning";
 import { mutation, query } from "./_generated/server";
-import type { MutationCtx } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
-import { grantLoot, playerWallet } from "./lib/progression";
+import { grantLoot, playerLeague } from "./lib/progression";
+import { ensureEmeralds } from "./lib/wallet";
 import { summonCountValidator, summonPackValidator } from "./lib/validators";
-
-/** The optional field itself is the migration marker: a spent balance of zero stays zero. */
-async function ensureDiamonds(ctx: MutationCtx, ownerId: string) {
-  const wallet = await playerWallet(ctx, ownerId);
-  if (wallet) {
-    if (wallet.diamonds !== undefined) return wallet;
-    await ctx.db.patch(wallet._id, { diamonds: WELCOME_DIAMONDS });
-    return { ...wallet, diamonds: WELCOME_DIAMONDS };
-  }
-  const id = await ctx.db.insert("wallets", {
-    ownerId,
-    gold: 0,
-    diamonds: WELCOME_DIAMONDS,
-  });
-  return (await ctx.db.get(id))!;
-}
 
 export const ensureWallet = mutation({
   args: {},
   handler: async (ctx) => {
     const { userId } = await requirePlayer(ctx);
-    const wallet = await ensureDiamonds(ctx, userId);
+    const wallet = await ensureEmeralds(ctx, userId);
     return wallet.diamonds!;
   },
 });
@@ -52,7 +32,7 @@ export const unlockChestSlot = mutation({
       .unique();
     // A slot can be bought once: retries and concurrent clicks cannot debit twice.
     if (previous) return { slot, cost: previous.cost };
-    const wallet = await ensureDiamonds(ctx, userId);
+    const wallet = await ensureEmeralds(ctx, userId);
     if (wallet.diamonds! < key.price)
       throw new ConvexError("Tu n’as pas assez d’émeraudes pour cette clé.");
     await ctx.db.patch(wallet._id, { diamonds: wallet.diamonds! - key.price });
@@ -108,16 +88,17 @@ export const summon = mutation({
       };
     }
     const cost = summonPrice(packId, count);
-    const wallet = await ensureDiamonds(ctx, userId);
+    const wallet = await ensureEmeralds(ctx, userId);
     if (wallet.diamonds! < cost)
       throw new ConvexError(
         "Tu n’as pas assez d’émeraudes pour cette invocation.",
       );
     await ensureStarterDeck(ctx, userId);
+    const league = await playerLeague(ctx, userId);
     const reveals = await grantLoot(
       ctx,
       userId,
-      summonLoot(packId, count, Math.random),
+      summonLoot(packId, count, Math.random, league.peakTrophies),
     );
     await ctx.db.patch(wallet._id, { diamonds: wallet.diamonds! - cost });
     const result = { requestId, packId, count, cost, reveals };

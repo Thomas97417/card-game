@@ -160,19 +160,15 @@ describe("le sanctuaire", () => {
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();
     expect(screen.getByText("2 %")).toBeTruthy();
-    expect(screen.getByText("20 %")).toBeTruthy();
+    expect(screen.getByText("100 %")).toBeTruthy();
     expect(
-      within(purchase("Sylve", 10)).getByText("1 légendaire garanti"),
+      within(purchase("Sylve", 10)).getByText("1 compagnon légendaire garanti"),
     ).toBeTruthy();
     expect(
-      within(purchase("anciens", 10)).getByText("2 légendaires garantis"),
+      within(purchase("anciens", 10)).getByText("50 compagnons légendaires"),
     ).toBeTruthy();
-    expect(
-      within(purchase("Sylve", 10)).getByText("1 tirage gratuit"),
-    ).toBeTruthy();
-    expect(
-      within(purchase("anciens", 10)).getByText("1 tirage gratuit"),
-    ).toBeTruthy();
+    expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
+    expect(within(purchase("anciens", 10)).getByText("Offre ×10")).toBeTruthy();
     expect(
       screen
         .getByRole("link", { name: "Retour au refuge" })
@@ -206,7 +202,7 @@ describe("le sanctuaire", () => {
     },
   );
 
-  it("sends one batch purchase, locks every pack while waiting and reveals all ten cards", async () => {
+  it("sends one batch purchase, locks every pack while waiting and reveals all fifty companions", async () => {
     let finish!: (result: SummonResult) => void;
     const onSummon = vi.fn(
       (_request: SummonRequest) =>
@@ -229,10 +225,12 @@ describe("le sanctuaire", () => {
     expect(
       within(dialog).getByRole("heading", { name: "Dernières invocations" }),
     ).toBeTruthy();
-    expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
-    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(2);
-    expect(within(dialog).getByText("Nouvelle carte")).toBeTruthy();
-    expect(within(dialog).getAllByText("+1 exemplaire")).toHaveLength(9);
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(50);
+    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(50);
+    expect(
+      within(dialog).getByText(/Nouvelle carte · \+60 exemplaires/),
+    ).toBeTruthy();
+    expect(within(dialog).getAllByText("+30 exemplaires")).toHaveLength(40);
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Continuer à invoquer" }),
     );
@@ -266,7 +264,7 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Dernière invocation" }),
     );
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getAllByRole("listitem")).toHaveLength(10);
+    expect(within(dialog).getAllByRole("listitem")).toHaveLength(50);
     expect(onSummon).not.toHaveBeenCalled();
   });
 
@@ -304,7 +302,7 @@ describe("le sanctuaire", () => {
       await waitFor(() =>
         expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
       );
-      expect(within(reveal).getAllByRole("listitem")).toHaveLength(10);
+      expect(within(reveal).getAllByRole("listitem")).toHaveLength(50);
     }
     expect(onSummon).not.toHaveBeenCalled();
   });
@@ -315,7 +313,7 @@ describe("le sanctuaire", () => {
       count: 1,
       requestId: "saved-summon-request",
     });
-    const card = variantCard(CATALOG[0]!.id, "common", 2);
+    const card = variantCard(CATALOG[0]!.id, "rare", 2);
     const { onUpgrade } = setup({
       latest,
       collection: [{ card, copies: 50 }],
@@ -325,9 +323,9 @@ describe("le sanctuaire", () => {
     );
     const reveal = await screen.findByRole("dialog");
     fireEvent.click(
-      within(reveal).getByRole("button", {
+      within(reveal).getAllByRole("button", {
         name: /niveau 2, voir les informations/,
-      }),
+      })[0]!,
     );
     const details = await screen.findByRole("dialog", { name: card.name });
     expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
@@ -345,14 +343,14 @@ describe("le sanctuaire", () => {
     const reveal = await screen.findByRole("dialog");
     const items = within(reveal).getAllByRole("listitem");
     fireEvent.click(within(items[1]!).getByRole("button"));
-    const card = resolveCard(`${CATALOG[0]!.id}:common`);
+    const card = resolveCard(`${CATALOG[0]!.id}:rare`);
     const details = await screen.findByRole("dialog", { name: card.name });
-    expect(within(details).getByText("9 / 25 exemplaires")).toBeTruthy();
+    expect(within(details).getByText("49 / 25 exemplaires")).toBeTruthy();
     fireEvent.keyDown(details, { key: "Escape" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
     );
-    expect(within(reveal).getAllByRole("listitem")).toHaveLength(10);
+    expect(within(reveal).getAllByRole("listitem")).toHaveLength(50);
     fireEvent.click(
       within(reveal).getByRole("button", { name: "Fermer la fenêtre" }),
     );
