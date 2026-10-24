@@ -8,7 +8,7 @@ Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en p
 
 ### Salon et trésors
 
-`/play` est un salon illustré en plein écran : le héros à gauche ouvre le deck, les boutons de combat sont à droite et sept emplacements de trésors occupent le bas. Le premier contient un coffre commun récurrent, les deux suivants accueillent les coffres de combat et les quatre derniers sont verrouillés par des chaînes. Les illustrations originales reprennent l’univers peint de Sylve.
+`/play` est un salon illustré en plein écran : le héros à gauche ouvre le deck, les boutons de combat sont à droite et neuf emplacements de trésors occupent le bas. Le premier contient le coffre commun de trois victoires. Cinq places de combat suivent : deux sont ouvertes au départ et trois se gagnent en Bronze IV (800 trophées), Argent IV (1 600) et Or IV (2 400). Les trois dernières s’achètent au sanctuaire avec des clés à 500, 1 000 et 1 500 émeraudes. Les places acquises restent ouvertes après rétrogradation. La rangée se parcourt à la molette, au tactile, au clavier et par glisser à la souris, avec une barre de défilement masquée. Les illustrations originales reprennent l’univers peint de Sylve.
 
 - **Combat solo** : affronte le Gardien mécanique avec ton deck et gagne des coffres. La partie est enregistrée sur Convex, reprend après actualisation, commence par le joueur humain et n’a pas de chronomètre. L’IA ne connaît que les informations visibles. Elle joue après les animations ; une relance serveur après trente secondes permet de poursuivre si le client disparaît.
 - **Duel public** : cherche un autre joueur. La présence en file est renouvelée toutes les quinze secondes et expire après quarante-cinq secondes d’absence. Le vainqueur gagne un coffre.
@@ -19,7 +19,7 @@ Les combats solo connectés et duels publics rapportent **25 trophées par victo
 
 Le **coffre commun tout à gauche se déverrouille après trois victoires**, y compris contre le Gardien mécanique en combat solo. Son bouton « Ouvrir » permet de récupérer les cartes et l’or, puis le compteur repart à zéro pour un nouveau cycle de trois victoires. Il n’a aucun délai et progresse même si les places de combat sont pleines. Le compteur reste à 3/3 tant que le coffre n’a pas été ouvert.
 
-Chaque victoire éligible attribue aussi un coffre de combat si une des deux places est libre. Les délais démarrent automatiquement et en parallèle : **15 minutes, 1 heure, 3 heures ou 8 heures**, selon la rareté. Un coffre prêt continue d’occuper son emplacement jusqu’à son ouverture. Si les deux places sont occupées au moment de la victoire, **ce coffre de combat est perdu**. Le salon et le résultat du combat l’indiquent ; la victoire compte toujours pour le coffre commun.
+Chaque victoire éligible attribue aussi un coffre de combat si une des places débloquées est libre. Les délais démarrent automatiquement et en parallèle : **15 minutes, 1 heure, 3 heures ou 8 heures**, selon la rareté. Un coffre prêt continue d’occuper son emplacement jusqu’à son ouverture. Si toutes les places débloquées sont occupées au moment de la victoire, **ce coffre de combat est perdu**. Le salon et le résultat du combat l’indiquent ; la victoire compte toujours pour le coffre commun.
 
 L’ouverture révèle **deux récompenses : de l’or et un lot d’une seule carte de la rareté du coffre**. Le nombre d’exemplaires est doublé : 8–16 dans un commun, 24–40 dans un rare, 60–100 dans un épique et 150–220 dans un légendaire. Les montants d’or sont respectivement 40–80, 120–200, 300–500 et 750–1 100 pièces. Le contenu est tiré côté serveur à l’attribution, puis conservé et caché jusqu’à l’ouverture. Une ouverture répétée ne crédite jamais deux fois ses récompenses. Les anciens coffres encore fermés adoptent ces règles à leur première ouverture.
 
@@ -37,6 +37,8 @@ Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où
 Une invocation donne un exemplaire d’une variante. Le premier la débloque ; les doublons alimentent sa réserve sans changer son niveau. Les lots effectuent dix tirages puis, au besoin, remplacent des résultats non légendaires choisis au hasard pour atteindre leur garantie. Les légendaires obtenus naturellement sont conservés. Les garanties sont propres à chaque achat groupé, sans cumul des achats unitaires.
 
 Le serveur vérifie les émeraudes, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
+
+Trois cartes de clés dorées permettent aussi de débloquer définitivement les emplacements de coffre 07, 08 et 09 : **Clé de la Sylve (500 émeraudes), Clé des anciens (1 000) et Clé souveraine (1 500)**. Chaque clé s’achète une seule fois, indépendamment des autres et des ligues. Les chaînes de ces trois places portent un cadenas doré serti d’émeraude et ouvrent directement la section des clés du sanctuaire. Le débit et le déblocage sont atomiques ; réessayer un achat ne le débite jamais deux fois.
 
 ### Collection et deck
 

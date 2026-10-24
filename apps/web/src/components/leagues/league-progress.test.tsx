@@ -17,6 +17,9 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("La voie des gardiens")).toBeTruthy();
     expect(dialog.getByText("5 cartes dans le deck")).toBeTruthy();
     expect(dialog.getByText("8 cartes dans le deck")).toBeTruthy();
+    expect(dialog.getByText("3 emplacements de coffre")).toBeTruthy();
+    expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
+    expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("Challenger I")).toBeTruthy();
     expect(dialog.getByText("2 %")).toBeTruthy();
     expect(

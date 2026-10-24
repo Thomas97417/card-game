@@ -384,6 +384,60 @@ describe("ligues et trophées autoritaires", () => {
   });
 });
 
+describe("emplacements de coffre évolutifs", () => {
+  it("awards into a newly earned league slot and keeps league and paid slots after demotion", async () => {
+    const { t, alice, deckId } = await fixture();
+    await winSolo(t, alice, deckId);
+    await winSolo(t, alice, deckId);
+    await setTrophies(t, deckId, 775);
+    const promotion = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: promotion })).reward?.status,
+    ).toBe("awarded");
+    expect(
+      (await alice.query(api.chests.list, {})).chests.map(
+        (chest) => chest.slot,
+      ),
+    ).toEqual([0, 1, 2]);
+    await alice.mutation(api.sanctuary.unlockChestSlot, { slot: 7 });
+    await setTrophies(t, deckId, 0);
+    const afterDemotion = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: afterDemotion })).reward
+        ?.status,
+    ).toBe("awarded");
+    const inventory = await alice.query(api.chests.list, {});
+    expect(inventory.chests.map((chest) => chest.slot)).toEqual([0, 1, 2, 7]);
+    expect(inventory.purchasedSlots).toEqual([7]);
+    expect(inventory.victoryChest.wins).toBe(3);
+    const full = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: full })).reward?.status,
+    ).toBe("lost");
+  });
+  it("fills all eight combat slots when every key and league unlock is acquired", async () => {
+    const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, 2400);
+    for (const slot of [5, 6, 7])
+      await alice.mutation(api.sanctuary.unlockChestSlot, { slot });
+    for (let index = 0; index < 8; index++) {
+      const gameId = await winSolo(t, alice, deckId);
+      expect(
+        (await alice.query(api.games.get, { gameId })).reward?.status,
+      ).toBe("awarded");
+    }
+    expect(
+      (await alice.query(api.chests.list, {})).chests.map(
+        (chest) => chest.slot,
+      ),
+    ).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    const full = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: full })).reward?.status,
+    ).toBe("lost");
+  });
+});
+
 describe("gardien adapté aux ligues", () => {
   it("caps a strong player's bot at the current league and keeps that snapshot during a match", async () => {
     const { t, alice, deckId } = await fixture();
@@ -1411,7 +1465,7 @@ describe("coffre commun de trois victoires", () => {
       await ctx.db.insert("chests", { ...values, slot: 1 });
     });
     const legacy = await alice.query(api.chests.list, {});
-    expect(legacy.chests.map((chest) => chest.slot)).toEqual([0, 1, 2]);
+    expect(legacy.chests.map((chest) => chest.slot)).toEqual([0, 1, 8]);
     await winSolo(t, alice, deckId);
     expect((await alice.query(api.chests.list, {})).chests).toHaveLength(3);
     await alice.mutation(api.chests.open, { chestId: legacy.chests[0]!._id });
