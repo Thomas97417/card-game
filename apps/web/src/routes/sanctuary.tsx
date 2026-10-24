@@ -21,6 +21,8 @@ function SanctuaryPage() {
   const diamonds = useDiamondBalance();
   const latest = useQuery(api.sanctuary.latest);
   const summon = useMutation(api.sanctuary.summon);
+  const collection = useQuery(api.collection.list);
+  const upgrade = useMutation(api.collection.upgrade);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -39,7 +41,9 @@ function SanctuaryPage() {
       diamonds={diamonds}
       ready={ready}
       latest={latest}
+      collection={collection}
       onSummon={summon}
+      onUpgrade={(variantId) => upgrade({ variantId })}
     />
   );
 }

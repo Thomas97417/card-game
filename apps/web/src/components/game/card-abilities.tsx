@@ -1,4 +1,4 @@
-import { LockKeyhole, Sparkles } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import type { CardDefinition } from "@sylve/game";
 import { AbilityIcon, abilityIconKind } from "./ability-icons";
 
@@ -12,9 +12,7 @@ export function CardAbilities({
   if (!card.abilities?.length) return null;
   return (
     <section className="card-abilities" aria-label="Capacités de la carte">
-      <h3>
-        <Sparkles size={15} aria-hidden="true" /> Capacités
-      </h3>
+      <h3>Capacités</h3>
       <ul>
         {card.abilities.map((ability) => {
           const upgraded = next?.abilities?.find((a) => a.id === ability.id);
