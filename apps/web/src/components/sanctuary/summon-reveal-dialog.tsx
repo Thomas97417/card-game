@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Link } from "@tanstack/react-router";
 import { ArrowRight, RotateCw } from "lucide-react";
 import {
   combatTypeLabel,
@@ -19,12 +18,7 @@ import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { GoldIcon } from "@/components/gold-balance";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export function SummonRevealDialog({
   result,
@@ -187,8 +181,8 @@ export function SummonRevealDialog({
                       key={index}
                       style={
                         {
-                          "--card-x": `${50 + Math.cos(angle) * 37}%`,
-                          "--card-y": `${50 + Math.sin(angle) * 34}%`,
+                          "--card-x": Math.cos(angle),
+                          "--card-y": `${50 + Math.sin(angle) * 36}%`,
                         } as CSSProperties
                       }
                     >
@@ -377,18 +371,6 @@ export function SummonRevealDialog({
                 )}
               </div>
             )}
-            <footer className="summon-reveal-actions">
-              <DialogClose className="sanctuary-text-button">
-                Retour au sanctuaire
-              </DialogClose>
-              <Link
-                to="/decks"
-                className="sanctuary-text-button"
-                onClick={close}
-              >
-                Ma collection <ArrowRight size={15} />
-              </Link>
-            </footer>
           </>
         )}
       </DialogContent>

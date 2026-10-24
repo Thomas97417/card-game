@@ -533,7 +533,7 @@ describe("le sanctuaire", () => {
       within(dialog).getAllByRole("button", { name: /voir les informations/ }),
     ).toHaveLength(5);
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
@@ -664,7 +664,7 @@ describe("le sanctuaire", () => {
         }),
       ).toBeTruthy();
       fireEvent.click(
-        within(last).getByRole("button", { name: "Retour au sanctuaire" }),
+        within(last).getByRole("button", { name: "Fermer la fenêtre" }),
       );
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(purchase(pack, count).getAttribute("aria-label")).toContain(
@@ -698,7 +698,7 @@ describe("le sanctuaire", () => {
       ).disabled,
     ).toBe(false);
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(purchase("Sylve", 1).disabled).toBe(true);
@@ -713,7 +713,7 @@ describe("le sanctuaire", () => {
       expect(within(dialog).queryByText(/% au prochain/)).toBeNull();
       expect(dialog.querySelector(".summon-repeat-badge")).toBeNull();
       fireEvent.click(
-        within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+        within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
       );
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(onCloseCircle).toHaveBeenCalledExactlyOnceWith(
@@ -756,16 +756,16 @@ describe("le sanctuaire", () => {
     },
   );
 
-  it.each(["Escape", "collection", "pagehide", "unmount"])(
+  it.each(["Escape", "close button", "pagehide", "unmount"])(
     "revokes the discount on %s",
     async (exit) => {
       const { onCloseCircle, onSummon, unmount } = setup();
       fireEvent.click(purchase("Sylve", 1));
       const dialog = await screen.findByRole("dialog");
       if (exit === "Escape") fireEvent.keyDown(dialog, { key: "Escape" });
-      else if (exit === "collection")
+      else if (exit === "close button")
         fireEvent.click(
-          within(dialog).getByRole("link", { name: "Ma collection" }),
+          within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
         );
       else if (exit === "pagehide") fireEvent(window, new Event("pagehide"));
       else unmount();
@@ -796,7 +796,7 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("button", { name: /^Réinvoquer/ }),
     );
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     const next = reward(onSummon.mock.calls[1]![0]);
     await act(async () => finish(next));
@@ -1003,7 +1003,7 @@ describe("le sanctuaire", () => {
       within(first).getByRole("button", { name: "Révéler la carte 3" }),
     );
     fireEvent.click(
-      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(first).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(
@@ -1033,7 +1033,7 @@ describe("le sanctuaire", () => {
       revealed: [0, 1, 2, 3, 4, 5],
     });
     fireEvent.click(
-      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(resumed).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(
@@ -1061,7 +1061,7 @@ describe("le sanctuaire", () => {
       within(first).getByRole("button", { name: "Révéler la carte 4" }),
     );
     fireEvent.click(
-      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(first).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(
@@ -1166,7 +1166,7 @@ describe("le sanctuaire", () => {
     const resumed = await screen.findByRole("dialog");
     turnAll(resumed);
     fireEvent.click(
-      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(resumed).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(purchase("Sylve", 1));
@@ -1182,13 +1182,13 @@ describe("le sanctuaire", () => {
       within(first).getByRole("button", { name: "Révéler la carte 1" }),
     );
     fireEvent.click(
-      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(first).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(purchase("Sylve", 1));
     const second = await screen.findByRole("dialog");
     fireEvent.click(
-      within(second).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(second).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(
@@ -1203,7 +1203,7 @@ describe("le sanctuaire", () => {
       onSummon.mock.calls[0]![0].requestId,
     );
     fireEvent.click(
-      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+      within(resumed).getByRole("button", { name: "Fermer la fenêtre" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(

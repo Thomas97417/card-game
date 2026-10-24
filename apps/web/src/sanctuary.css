@@ -611,9 +611,10 @@
   font-variant-numeric: tabular-nums;
 }
 .summon-circle-stage {
+  --summon-orbit-x: 39%;
   position: relative;
   flex: 1;
-  width: min(1040px, 100%);
+  width: min(1080px, 100%);
   min-height: 360px;
   margin: 12px auto 0;
   container-type: size;
@@ -621,7 +622,7 @@
 }
 .summon-circle-ring {
   position: absolute;
-  inset: 10% 12%;
+  inset: 8% 10%;
   border: 1px solid #cfb47245;
   border-radius: 50%;
   background: radial-gradient(
@@ -650,7 +651,7 @@
 }
 .summon-circle-slot {
   position: absolute;
-  left: var(--card-x);
+  left: calc(50% + var(--card-x) * var(--summon-orbit-x));
   top: var(--card-y);
   width: min(180px, 18cqw, 28cqh);
   aspect-ratio: 5 / 7;
@@ -854,14 +855,6 @@
   font-size: 9px;
   line-height: 1.5;
 }
-.summon-reveal-actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-}
 .summon-repeat-error {
   padding: 12px;
   color: #ffd0b0;
@@ -988,6 +981,7 @@
     right: 12px;
   }
   .summon-circle-stage {
+    --summon-orbit-x: 37%;
     min-height: 430px;
     margin-top: 4px;
   }
@@ -1017,9 +1011,6 @@
   .summon-reward-caption small,
   .summon-reward-caption .rarity-label {
     font-size: 7px;
-  }
-  .summon-reveal-actions .sanctuary-text-button {
-    font-size: 9px;
   }
 }
 @media (max-width: 380px) {
