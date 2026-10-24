@@ -1,7 +1,8 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { CurrencyBalances } from "@/components/currency-balances";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { Link } from "@tanstack/react-router";
 import {
   Bot,
@@ -92,29 +93,7 @@ export function PlayLobby({
   const victoryReady = victoryChest.wins >= victoryChest.requiredWins;
   const chestRow = useRef<HTMLDivElement>(null);
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
-  useEffect(() => {
-    const row = chestRow.current;
-    if (!row) return;
-    const scrollHorizontally = (event: WheelEvent) => {
-      if (
-        event.ctrlKey ||
-        event.shiftKey ||
-        Math.abs(event.deltaX) >= Math.abs(event.deltaY)
-      )
-        return;
-      if (row.scrollWidth <= row.clientWidth) return;
-      const unit =
-        event.deltaMode === 1
-          ? 16
-          : event.deltaMode === 2
-            ? row.clientWidth
-            : 1;
-      row.scrollLeft += event.deltaY * unit;
-      event.preventDefault();
-    };
-    row.addEventListener("wheel", scrollHorizontally, { passive: false });
-    return () => row.removeEventListener("wheel", scrollHorizontally);
-  }, []);
+  useHorizontalWheel(chestRow);
   return (
     <main className="play-lobby" aria-busy={!ready}>
       <img

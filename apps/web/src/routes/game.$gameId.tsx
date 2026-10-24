@@ -26,7 +26,7 @@ export const Route = createFileRoute("/game/$gameId")({
       <p className="muted">
         Vérifie le lien et le compte avec lequel tu es connecté.
       </p>
-      <Link to="/play" className="sylve-button">
+      <Link to="/arena" className="sylve-button">
         Retour au salon
       </Link>
     </main>

@@ -9,6 +9,9 @@ describe("hub authentication destinations", () => {
   });
 
   it("preserves game destinations and rejects external redirects", () => {
+    expect(safeReturnTo("/arena?invite=ABCD1234")).toBe(
+      "/arena?invite=ABCD1234",
+    );
     expect(safeReturnTo("/play?code=invitation")).toBe("/play?code=invitation");
     expect(safeReturnTo("/game/duel-123")).toBe("/game/duel-123");
     expect(safeReturnTo("https://example.com/hub")).toBe("/hub");

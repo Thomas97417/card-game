@@ -88,7 +88,7 @@ function RootDocument() {
     select: (state) => {
       const pathname = state.location.pathname.replace(/\/$/, "");
       return (
-        ["/hub", "/decks", "/sanctuary", "/play", "/practice"].includes(
+        ["/hub", "/decks", "/sanctuary", "/arena", "/play", "/practice"].includes(
           pathname,
         ) || pathname.startsWith("/game/")
       );

@@ -70,9 +70,9 @@ export default function UserMenu({
                 <Map className="mr-2 size-4" />
                 Mon refuge
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate({ to: "/play" })}>
+              <DropdownMenuItem onClick={() => navigate({ to: "/arena" })}>
                 <User className="mr-2 size-4" />
-                Salon de jeu
+                Arène
               </DropdownMenuItem>
             </>
           )}
