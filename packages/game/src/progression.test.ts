@@ -17,7 +17,10 @@ import {
   upgradeGoldCost,
 } from "./index";
 import {
-  CHEST_RULES,
+  CHEST_TYPES,
+  chestRules,
+  chestRushCost,
+  chestPool,
   CHEST_SLOT_UNLOCKS,
   chestGold,
   chestLoot,
@@ -149,63 +152,140 @@ describe("variantes et progression", () => {
 });
 
 describe("tirages des coffres", () => {
-  it("uses the specified probability boundaries", () => {
-    expect(
-      [0, 0.64999, 0.65, 0.89999, 0.9, 0.97999, 0.98, 0.99999].map((value) =>
-        rollChest(() => value),
-      ),
-    ).toEqual([
-      "common",
-      "common",
-      "rare",
-      "rare",
-      "epic",
-      "epic",
-      "legendary",
-      "legendary",
-    ]);
-  });
-  it.each(RARITIES)(
-    "gives gold and a larger single stack strictly matching a %s chest's rarity",
-    (rarity) => {
+  it("exhausts each finite pool before refilling it", () => {
+    for (const trophies of [0, 2000, 2200, 6000]) {
+      const initial = chestPool(trophies);
+      const remaining = { ...initial };
+      const drawn = Object.fromEntries(
+        CHEST_TYPES.map((type) => [type, 0]),
+      ) as typeof initial;
       const random = seeded();
-      for (let i = 0; i < 50; i++) {
-        const loot = chestLoot(rarity, random);
-        expect(loot).toHaveLength(1);
-        const total = loot.reduce((sum, stack) => sum + stack.count, 0);
-        expect(total).toBeGreaterThanOrEqual(CHEST_RULES[rarity].min);
-        expect(total).toBeLessThanOrEqual(CHEST_RULES[rarity].max);
-        expect(resolveCard(loot[0]!.variantId).rarity).toBe(rarity);
-        const gold = chestGold(rarity, random);
-        expect(Number.isInteger(gold)).toBe(true);
-        expect(gold).toBeGreaterThanOrEqual(CHEST_RULES[rarity].minGold);
-        expect(gold).toBeLessThanOrEqual(CHEST_RULES[rarity].maxGold);
-        for (const stack of loot) {
-          expect(Number.isInteger(stack.count)).toBe(true);
-          expect(stack.count).toBeGreaterThan(0);
-          expect(() => resolveCard(stack.variantId)).not.toThrow();
+      for (
+        let i = 0;
+        i < Object.values(initial).reduce((a, b) => a + b, 0);
+        i++
+      ) {
+        const type = rollChest(random, trophies, remaining);
+        expect(remaining[type]).toBeGreaterThan(0);
+        remaining[type]--;
+        drawn[type]++;
+      }
+      expect(drawn).toEqual(initial);
+      expect(rollChest(() => 0, trophies, remaining)).toBe(
+        trophies < 2000 ? "common" : "rare",
+      );
+    }
+  });
+  it.each(CHEST_TYPES)(
+    "gives valid card stacks and gold at every league for %s",
+    (type) => {
+      const random = seeded();
+      for (let trophies = 0; trophies <= 6000; trophies += 200) {
+        const rule = chestRules(type, trophies);
+        expect(rule.cards.reduce((sum, card) => sum + card.chance, 0)).toBe(
+          100,
+        );
+        for (let i = 0; i < 20; i++) {
+          const [stack] = chestLoot(type, random, trophies);
+          const card = rule.cards.find(
+            (card) => card.rarity === resolveCard(stack!.variantId).rarity,
+          )!;
+          expect(card).toBeDefined();
+          expect(stack!.count).toBeGreaterThanOrEqual(card.min);
+          expect(stack!.count).toBeLessThanOrEqual(card.max);
+          const gold = chestGold(type, random, trophies);
+          expect(gold).toBeGreaterThanOrEqual(rule.minGold);
+          expect(gold).toBeLessThanOrEqual(rule.maxGold);
         }
       }
-      expect(
-        chestLoot(rarity, () => 0).reduce((sum, stack) => sum + stack.count, 0),
-      ).toBe(CHEST_RULES[rarity].min);
-      expect(
-        chestLoot(rarity, () => 0.999999).reduce(
-          (sum, stack) => sum + stack.count,
-          0,
-        ),
-      ).toBe(CHEST_RULES[rarity].max);
-      expect(chestGold(rarity, () => 0)).toBe(CHEST_RULES[rarity].minGold);
-      expect(chestGold(rarity, () => 0.999999)).toBe(
-        CHEST_RULES[rarity].maxGold,
-      );
     },
   );
-  it.each(RARITIES)("can select every monster from a %s chest", (rarity) => {
-    const variants = CATALOG.map((_, index) => {
-      const values = [0, (index + 0.5) / CATALOG.length];
-      return chestLoot(rarity, () => values.shift()!)[0]!.variantId;
+  it("uses exact wiki quantities, gold, timers and epic bonuses at league thresholds", () => {
+    expect(chestRules("rare", 1800)).toMatchObject({
+      min: 72,
+      max: 78,
+      minGold: 174,
+      maxGold: 254,
+      durationMs: 10_800_000,
+      instantCost: 30,
     });
-    expect(variants).toEqual(CATALOG.map((card) => `${card.id}:${rarity}`));
+    expect(chestRules("rare", 2000)).toMatchObject({
+      min: 76,
+      max: 79,
+      durationMs: 7_200_000,
+      instantCost: 39,
+    });
+    expect(chestRules("bigRare", 1000)).toMatchObject({
+      min: 116,
+      max: 119,
+      minGold: 219,
+      maxGold: 328,
+      durationMs: 21_600_000,
+      instantCost: 59,
+    });
+    expect(chestRules("bigRare", 2000)).toMatchObject({
+      min: 152,
+      max: 158,
+      durationMs: 14_400_000,
+      instantCost: 78,
+    });
+    expect(chestRules("legendary", 2200)).toMatchObject({
+      min: 22,
+      max: 26,
+      minGold: 364,
+      maxGold: 506,
+      durationMs: 43_200_000,
+      instantCost: 179,
+    });
+    expect(chestRules("bigRare", 6000)).toMatchObject({
+      min: 2800,
+      max: 2800,
+      minGold: 792,
+      maxGold: 923,
+    });
+    expect(chestRules("common", 0).durationMs).toBe(1_800_000);
+    expect(chestRules("common", 1200).durationMs).toBe(2_700_000);
+    expect(chestRules("common", 1400).durationMs).toBe(3_600_000);
+    for (const type of ["rare", "bigRare"] as const) {
+      const values = [type === "rare" ? 0.995 : 0.99, 0, 0];
+      expect(chestLoot(type, () => values.shift()!, 1800)[0]).toMatchObject({
+        variantId: "guardian:epic",
+        count: type === "rare" ? 17 : 33,
+      });
+      expect(chestLoot(type, () => 0.99999, 2000)[0]!.variantId).toMatch(
+        /:rare$/,
+      );
+    }
+    expect(chestLoot("common", () => 0, 2000)[0]).toEqual({
+      variantId: "guardian:rare",
+      count: 76,
+    });
   });
+  it.each(CHEST_TYPES)(
+    "allows every creature and charges only for the remaining time of %s",
+    (type) => {
+      for (const [index, base] of CATALOG.entries()) {
+        const values = [0, 0, (index + 0.5) / CATALOG.length];
+        expect(
+          chestLoot(type, () => values.shift()!)[0]!.variantId.split(":")[0],
+        ).toBe(base.id);
+      }
+      const rule = chestRules(type, 2200);
+      const chest = {
+        rarity: type,
+        awardedAt: 100,
+        unlockAt: 100 + rule.durationMs,
+        instantCost: rule.instantCost,
+        leagueTrophies: 2200,
+      };
+      expect(chestRushCost(chest, 0)).toBe(rule.instantCost);
+      expect(chestRushCost(chest, 100)).toBe(rule.instantCost);
+      expect(chestRushCost(chest, 100 + rule.durationMs / 2)).toBe(
+        Math.ceil(rule.instantCost / 2),
+      );
+      expect(chestRushCost(chest, chest.unlockAt - 1)).toBe(1);
+      expect(chestRushCost(chest, chest.unlockAt)).toBe(0);
+      expect(chestRushCost(chest, chest.unlockAt + 1)).toBe(0);
+    },
+  );
 });

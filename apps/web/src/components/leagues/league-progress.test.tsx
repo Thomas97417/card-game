@@ -52,7 +52,7 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByRole("button", { name: /^Challenger,/ })).toBeTruthy();
-    expect(dialog.getByText("2 %")).toBeTruthy();
+    expect(dialog.getByText("6,16 %")).toBeTruthy();
     expect(
       dialog
         .getByRole("list", { name: "Parcours des ligues" })
@@ -71,7 +71,7 @@ describe("le parcours des ligues", () => {
     );
     fireEvent.click(dialog.getByRole("button", { name: /^Or IV,/ }));
     expect(details.getByRole("heading", { name: "Or IV" })).toBeTruthy();
-    expect(details.getByText("6 %")).toBeTruthy();
+    expect(details.getByText("1,43 %")).toBeTruthy();
     expect(details.getByText("Deck de 8 cartes")).toBeTruthy();
     expect(
       details.getByText(
@@ -84,7 +84,7 @@ describe("le parcours des ligues", () => {
 
     fireEvent.click(dialog.getByRole("button", { name: "Ma position" }));
     expect(details.getByRole("heading", { name: "Fer IV" })).toBeTruthy();
-    expect(details.getByText("2 %")).toBeTruthy();
+    expect(details.getByText("6,16 %")).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: "Fer III 200" }));
     expect(details.getByRole("heading", { name: "Fer III" })).toBeTruthy();
 

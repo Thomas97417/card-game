@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { PlayLobby, remainingTime, type LobbyChest } from "./play-lobby";
+import { ChestUnlockDialog } from "./chest-unlock-dialog";
 import { ChestRevealDialog } from "./chest-reveal-dialog";
 import { GoldContext } from "@/components/gold-balance";
 import { leagueProgress } from "@sylve/game/leagues";
@@ -110,15 +111,16 @@ describe("le salon de combat", () => {
     fireEvent.wheel(row, { deltaY: 100, ctrlKey: true });
     expect(row.scrollLeft).toBe(1800);
   });
-  it("shows two independent combat chest timers and allows only a ready chest to open", () => {
+  it("shows two independent timers and allows inspection of a waiting chest", () => {
     const actions = setup({ chests: chests.slice(0, 2) });
     expect(screen.getByText("1:00:00")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Coffre Commun, ouvrir" }),
     );
     fireEvent.click(screen.getByRole("button", { name: /Coffre Rare/ }));
-    expect(actions.onOpenChest).toHaveBeenCalledOnce();
-    expect(actions.onOpenChest).toHaveBeenCalledWith(chests[0]);
+    expect(actions.onOpenChest).toHaveBeenCalledTimes(2);
+    expect(actions.onOpenChest).toHaveBeenNthCalledWith(1, chests[0]);
+    expect(actions.onOpenChest).toHaveBeenNthCalledWith(2, chests[1]);
   });
   it("warns about lost rewards while permitting combat with full slots", () => {
     setup({ chests });
@@ -214,5 +216,83 @@ describe("le salon de combat", () => {
     expect(screen.getByAltText("Renard archerune").getAttribute("src")).toBe(
       "/art/characters/evolutions/fox-rare.webp",
     );
+  });
+});
+
+describe("ouverture avec des émeraudes", () => {
+  const chest: LobbyChest = {
+    _id: "big-rare",
+    slot: 0,
+    rarity: "bigRare",
+    awardedAt: now,
+    unlockAt: now + 21_600_000,
+    instantCost: 59,
+  };
+  it("shows the new chest artwork and lets the player inspect its live price", () => {
+    const actions = setup({ chests: [chest], now: now + 10_800_000 });
+    const button = screen.getByRole("button", {
+      name: /Grand coffre rare,.*30 émeraudes/,
+    });
+    expect(button.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/chests/bigRare.webp",
+    );
+    fireEvent.click(button);
+    expect(actions.onOpenChest).toHaveBeenCalledWith(chest);
+  });
+  it("updates the quote as time passes and becomes free at the deadline", () => {
+    const onOpen = vi.fn();
+    const props = {
+      chest,
+      now,
+      emeralds: 100,
+      busy: false,
+      onOpen,
+      onClose: vi.fn(),
+    };
+    const { rerender } = render(<ChestUnlockDialog {...props} />);
+    expect(
+      screen.getByRole("button", {
+        name: "Ouvrir maintenant pour 59 émeraudes",
+      }),
+    ).toBeTruthy();
+    rerender(<ChestUnlockDialog {...props} now={now + 10_800_000} />);
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Ouvrir maintenant pour 30 émeraudes",
+      }),
+    );
+    expect(onOpen).toHaveBeenLastCalledWith(30);
+    rerender(
+      <ChestUnlockDialog {...props} now={chest.unlockAt} emeralds={0} />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ouvrir gratuitement" }),
+    );
+    expect(onOpen).toHaveBeenLastCalledWith(0);
+  });
+  it("blocks purchases without enough emeralds or during a request and permits waiting", () => {
+    const onOpen = vi.fn();
+    const onClose = vi.fn();
+    const props = { chest, now, emeralds: 58, busy: false, onOpen, onClose };
+    const { rerender } = render(<ChestUnlockDialog {...props} />);
+    const button = screen.getByRole("button", {
+      name: /Ouvrir maintenant/,
+    }) as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    fireEvent.click(button);
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(screen.getByText("Il te manque 1 émeraude.")).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continuer à attendre" }),
+    );
+    expect(onClose).toHaveBeenCalledOnce();
+    rerender(<ChestUnlockDialog {...props} emeralds={100} busy />);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /Ouvrir maintenant/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
   });
 });

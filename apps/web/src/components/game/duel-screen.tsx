@@ -11,7 +11,6 @@ import {
   type CardDefinition,
   type GameView,
   type GameEvent,
-  type CardRarity,
   type UnitPosition,
 } from "@sylve/game";
 import {
@@ -32,7 +31,11 @@ import { AbilityIcon, eventIconKind } from "./ability-icons";
 import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
-import { CHEST_LABELS, VICTORY_CHEST_WINS } from "@sylve/game/progression";
+import {
+  chestName,
+  VICTORY_CHEST_WINS,
+  type ChestType,
+} from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
 import { LeagueResult, TrophyIcon } from "@/components/leagues/league-progress";
 import type { TrophyChange } from "@sylve/game/leagues";
@@ -43,7 +46,7 @@ export type DuelData = GameView & {
   trophyChange?: TrophyChange | null;
   reward?: {
     status: "awarded" | "lost";
-    rarity?: CardRarity;
+    rarity?: ChestType;
     victoryWins?: number;
     trophies?: number;
     trophiesTotal?: number;
@@ -490,10 +493,7 @@ export function DuelScreen({
                       height={100}
                     />
                     <span>
-                      <strong>
-                        Coffre {CHEST_LABELS[data.reward.rarity].toLowerCase()}{" "}
-                        gagné !
-                      </strong>
+                      <strong>{chestName(data.reward.rarity)} gagné !</strong>
                       Il se déverrouille dans ton salon.
                     </span>
                   </>

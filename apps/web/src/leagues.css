@@ -654,9 +654,15 @@
 }
 .league-loot dl {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-top: 14px;
+}
+.league-loot dl small {
+  display: block;
+  color: #a8b79d;
+  font-size: 9px;
+  line-height: 1.6;
 }
 .league-loot dl > div {
   border-left: 2px solid #9da88a;

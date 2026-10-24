@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as lib_game_service from "../lib/game_service.js";
 import type * as lib_progression from "../lib/progression.js";
 import type * as lib_validators from "../lib/validators.js";
+import type * as lib_wallet from "../lib/wallet.js";
 import type * as matchmaking from "../matchmaking.js";
 import type * as privateData from "../privateData.js";
 import type * as sanctuary from "../sanctuary.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "lib/game_service": typeof lib_game_service;
   "lib/progression": typeof lib_progression;
   "lib/validators": typeof lib_validators;
+  "lib/wallet": typeof lib_wallet;
   matchmaking: typeof matchmaking;
   privateData: typeof privateData;
   sanctuary: typeof sanctuary;

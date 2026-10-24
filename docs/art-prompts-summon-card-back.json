@@ -1,0 +1,9 @@
+{
+  "tool": "image_gen.imagegen",
+  "mode": "built-in",
+  "asset": "apps/web/public/art/ui/summon-card-back.webp",
+  "reference": "apps/web/public/art/ui/rarity-common.webp",
+  "generatedSource": "/Users/thomas/.codex/generated_images/01a16f13-21df-7500-9447-5491272def8c/exec-a47298e3-50ce-4b45-8e8e-a2fda2fc893f.png",
+  "prompt": "Use case: stylized-concept\nAsset type: one production-ready universal card-back illustration for the fantasy card game Sylve, portrait 5:7 proportions.\nPrimary request: create a single distinctive secret card back shared by ALL creatures and gold rewards. Do not reveal rarity or reward type.\nInput image: the provided existing card back is a STYLE REFERENCE ONLY for the game's painterly dark forest green and antique gold ornamental craftsmanship. Design a new back rather than reproducing it.\nSubject: a closed, richly embossed deep forest-green leather card, fine antique gold vine border, centered mysterious symmetrical botanical seal of intertwined leaves and a small luminous ivory rune, tasteful softly glowing magical dust inside the border. Premium hand-painted fantasy game asset, tactile materials, sharp silhouette, readable when small.\nComposition: exactly one flat straight-on upright rectangular card with subtly rounded corners, filling the portrait canvas; symmetrical balanced border and centered seal, no perspective, no other objects. All exterior space outside the rounded card is truly transparent.\nConstraints: no text, letters, numbers, characters, coins, gems, rarity colors, labels, weapons or identifiable creature; no watermark. The image must look equally appropriate for a common, rare, epic, legendary or gold reward. Preserve clean alpha at card edges.",
+  "output": { "width": 400, "height": 560, "format": "webp", "transparent": true }
+}
