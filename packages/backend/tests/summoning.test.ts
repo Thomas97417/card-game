@@ -48,6 +48,82 @@ async function player(t: ReturnType<typeof setup>, name: string) {
 afterEach(() => vi.restoreAllMocks());
 
 describe("sanctuaire autoritaire", () => {
+  it("authenticates key purchases, rejects league slots and debits each permanent unlock only once", async () => {
+    const t = setup();
+    await expect(
+      t.mutation(api.sanctuary.unlockChestSlot, { slot: 5 }),
+    ).rejects.toThrow("Connecte-toi");
+    const { client, userId } = await player(t, "alice");
+    const bob = await player(t, "bob");
+    for (const slot of [-1, 0, 2, 4, 5.5, 8])
+      await expect(
+        client.mutation(api.sanctuary.unlockChestSlot, { slot }),
+      ).rejects.toThrow("ne s’achète pas");
+    const attempts = await Promise.all([
+      client.mutation(api.sanctuary.unlockChestSlot, { slot: 5 }),
+      client.mutation(api.sanctuary.unlockChestSlot, { slot: 5 }),
+    ]);
+    expect(attempts).toEqual([
+      { slot: 5, cost: 500 },
+      { slot: 5, cost: 500 },
+    ]);
+    expect(await client.query(api.collection.diamonds, {})).toBe(2500);
+    expect((await client.query(api.chests.list, {})).purchasedSlots).toEqual([
+      5,
+    ]);
+    expect(
+      (await bob.client.query(api.chests.list, {})).purchasedSlots,
+    ).toEqual([]);
+    await client.mutation(api.sanctuary.unlockChestSlot, { slot: 7 });
+    await client.mutation(api.sanctuary.unlockChestSlot, { slot: 6 });
+    expect(await client.query(api.collection.diamonds, {})).toBe(0);
+    expect(
+      await client.mutation(api.sanctuary.unlockChestSlot, { slot: 7 }),
+    ).toEqual({ slot: 7, cost: 1500 });
+    const saved = await t.run((ctx) =>
+      ctx.db
+        .query("chestSlotUnlocks")
+        .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+        .collect(),
+    );
+    expect(saved).toHaveLength(3);
+    expect(saved.reduce((cost, unlock) => cost + unlock.cost, 0)).toBe(3000);
+  });
+  it("rejects an unaffordable key without unlocking a slot or touching gold", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", { ownerId: userId, gold: 725, diamonds: 499 }),
+    );
+    await expect(
+      client.mutation(api.sanctuary.unlockChestSlot, { slot: 5 }),
+    ).rejects.toThrow("pas assez d’émeraudes");
+    expect(await client.query(api.collection.diamonds, {})).toBe(499);
+    expect(await client.query(api.collection.gold, {})).toBe(725);
+    expect((await client.query(api.chests.list, {})).purchasedSlots).toEqual(
+      [],
+    );
+  });
+  it("serializes competing keys against the same emerald balance", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", { ownerId: userId, gold: 0, diamonds: 1000 }),
+    );
+    const attempts = await Promise.allSettled([
+      client.mutation(api.sanctuary.unlockChestSlot, { slot: 5 }),
+      client.mutation(api.sanctuary.unlockChestSlot, { slot: 6 }),
+    ]);
+    expect(
+      attempts.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      (await client.query(api.chests.list, {})).purchasedSlots,
+    ).toHaveLength(1);
+    expect(
+      await client.query(api.collection.diamonds, {}),
+    ).toBeGreaterThanOrEqual(0);
+  });
   it("keeps summoned cards behind league deck limits and preserves diamonds when settling a defeat", async () => {
     const t = setup();
     const { client, userId } = await player(t, "alice");

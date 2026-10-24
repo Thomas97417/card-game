@@ -21,6 +21,8 @@ function SanctuaryPage() {
   const emeralds = useEmeraldBalance();
   const latest = useQuery(api.sanctuary.latest);
   const summon = useMutation(api.sanctuary.summon);
+  const chestSlots = useQuery(api.chests.list);
+  const unlockChestSlot = useMutation(api.sanctuary.unlockChestSlot);
   const collection = useQuery(api.collection.list);
   const upgrade = useMutation(api.collection.upgrade);
   const ensureStarter = useMutation(api.decks.ensureStarter);
@@ -39,10 +41,12 @@ function SanctuaryPage() {
   return (
     <Sanctuary
       emeralds={emeralds}
-      ready={ready}
+      ready={ready && !!chestSlots}
       latest={latest}
       collection={collection}
       onSummon={summon}
+      purchasedChestSlots={chestSlots?.purchasedSlots}
+      onUnlockChestSlot={(slot) => unlockChestSlot({ slot })}
       onUpgrade={(variantId) => upgrade({ variantId })}
     />
   );

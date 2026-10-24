@@ -137,6 +137,7 @@ function PlayPage() {
       league={league}
       deckSize={deck?.cardIds.length ?? 0}
       chests={treasures?.chests ?? []}
+      purchasedChestSlots={treasures?.purchasedSlots}
       victoryChest={treasures?.victoryChest}
       now={now}
       ready={ready}

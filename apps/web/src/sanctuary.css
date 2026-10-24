@@ -148,6 +148,136 @@
   max-width: 900px;
   margin: 0 auto;
 }
+.sanctuary-chest-keys {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 22px;
+  scroll-margin-block: 16px;
+}
+.sanctuary-keys-heading {
+  margin-bottom: 18px;
+  text-align: center;
+}
+.sanctuary-keys-heading h2 {
+  color: #f3dba5;
+  font:
+    400 27px/1.2 Georgia,
+    serif;
+}
+.sanctuary-keys-heading p {
+  margin-top: 6px;
+  color: #d1d9be;
+  font-size: 11px;
+}
+.sanctuary-key-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.sanctuary-key-card {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 18px 17px;
+  border: 1px solid #c5a66b99;
+  border-radius: 12px 12px 22px 22px;
+  background:
+    radial-gradient(ellipse at 50% 15%, #a58b402b, transparent 65%),
+    linear-gradient(155deg, #283e2ced, #10281ff5);
+  box-shadow:
+    0 10px 24px #051c1566,
+    inset 0 1px #f7dc9d22;
+}
+.sanctuary-key-tag {
+  align-self: flex-end;
+  color: #dbc48c;
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.sanctuary-key-art {
+  width: 136px;
+  height: 118px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 8px #061e1680);
+}
+.sanctuary-key-copy {
+  text-align: center;
+}
+.sanctuary-key-copy h3 {
+  color: #f7e6b8;
+  font:
+    400 21px/1.25 Georgia,
+    serif;
+}
+.sanctuary-key-copy p {
+  margin: 7px 0 15px;
+  color: #c6d0b5;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.sanctuary-key-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 43px;
+  margin-top: auto;
+  padding: 7px 10px;
+  border: 1px solid #87b67a99;
+  border-radius: 6px;
+  background: linear-gradient(#395b36, #244b30);
+  color: #edebc4;
+  font-size: 10px;
+  font-weight: 600;
+}
+.sanctuary-key-button > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.sanctuary-key-button .emerald-icon {
+  width: 24px;
+  height: 24px;
+}
+.sanctuary-key-button:hover:not(:disabled) {
+  border-color: #e4d18c;
+  filter: brightness(1.15);
+}
+.sanctuary-key-button:disabled {
+  opacity: 0.6;
+}
+.sanctuary-key-button:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: 3px;
+}
+.sanctuary-key-card.is-owned .sanctuary-key-button {
+  justify-content: center;
+  color: #b5dfb9;
+  opacity: 1;
+  background: #183622;
+}
+.sanctuary-feedback.sanctuary-key-success {
+  position: absolute;
+  z-index: 10;
+  inset-inline: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 0 auto;
+  flex-wrap: wrap;
+  box-shadow: 0 8px 28px #051c1580;
+}
+.sanctuary-key-success a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .summon-pack {
   --pack-glow: #7fc6a0;
   position: relative;
@@ -532,6 +662,17 @@
   }
 }
 @media (max-width: 760px) {
+  .sanctuary-key-grid {
+    gap: 12px;
+  }
+  .sanctuary-key-card {
+    padding-inline: 12px;
+  }
+  .sanctuary-key-button {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline: 6px;
+  }
   .currency-balances {
     gap: 5px;
   }
@@ -589,6 +730,44 @@
   }
 }
 @media (max-width: 560px) {
+  .sanctuary-chest-keys {
+    max-width: 380px;
+  }
+  .sanctuary-key-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .sanctuary-key-card {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 0 8px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .sanctuary-key-tag {
+    grid-column: 2;
+    justify-self: end;
+  }
+  .sanctuary-key-art {
+    grid-row: 1 / 4;
+    width: 84px;
+    height: 114px;
+  }
+  .sanctuary-key-copy {
+    grid-column: 2;
+    text-align: left;
+  }
+  .sanctuary-key-copy h3 {
+    margin-top: 5px;
+    font-size: 20px;
+  }
+  .sanctuary-key-copy p {
+    margin-bottom: 11px;
+  }
+  .sanctuary-key-button {
+    grid-column: 2;
+    justify-content: space-between;
+  }
   .hub-hud {
     display: grid;
     grid-template-columns: 1fr auto auto;

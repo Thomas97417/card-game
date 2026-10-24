@@ -1,8 +1,14 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
-import { grantGold, grantLoot, victoryChest } from "./lib/progression";
 import {
+  grantGold,
+  grantLoot,
+  victoryChest,
+  playerChestSlots,
+} from "./lib/progression";
+import {
+  TOTAL_CHEST_SLOTS,
   VICTORY_CHEST_WINS,
   chestGold,
   chestLoot,
@@ -19,8 +25,13 @@ export const list = query({
       )
       .collect();
     const recurring = await victoryChest(ctx, userId);
+    const { unlockedSlots, purchasedSlots } = await playerChestSlots(
+      ctx,
+      userId,
+    );
     return {
       serverNow: Date.now(),
+      purchasedSlots,
       victoryChest: {
         wins: recurring?.wins ?? 0,
         cycle: recurring?.cycle ?? 0,
@@ -34,7 +45,9 @@ export const list = query({
         )
         .map(({ _id, rarity, unlockAt }, slot) => ({
           _id,
-          slot,
+          slot:
+            unlockedSlots[slot] ??
+            TOTAL_CHEST_SLOTS + slot - unlockedSlots.length,
           rarity,
           unlockAt,
         })),
