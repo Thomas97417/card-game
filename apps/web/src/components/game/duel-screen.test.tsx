@@ -38,6 +38,7 @@ function matchData(): DuelData {
     ],
     Date.now(),
     () => 0.25,
+    { field: false },
   );
   state.activePlayer = 0;
   for (const [index, id, hp] of [
@@ -67,6 +68,85 @@ function setup(data = matchData()) {
   const result = render(<DuelScreen data={data} {...actions} practice />);
   return { ...result, data, actions };
 }
+
+function fieldData(): DuelData {
+  const cards = validateDeck(DEFAULT_DECK);
+  const state = createGame([
+    { userId: "alice", name: "Alice", cards },
+    { userId: "bob", name: "Bob", cards },
+  ], Date.now(), () => 0.25);
+  state.activePlayer = 0;
+  state.players[0]!.runes = [
+    { row: 0, depth: 1, health: 3 },
+    { row: 1, depth: 1, attack: 2 },
+  ];
+  state.players[0]!.pentagrams = [
+    { row: 2, depth: 1, attack: 2 },
+    { row: 3, depth: 1, health: 3 },
+  ];
+  return { ...playerView(state, "alice"), events: [] };
+}
+
+describe("éléments du terrain", () => {
+  it("renders original scenery art and inspects a neutral building without offering withdrawal", async () => {
+    const data = fieldData();
+    const { actions } = setup(data);
+    const obstacle = data.players[0]!.board[0]!;
+    expect(document.querySelectorAll(".neutral-building")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.board.length, 0),
+    );
+    expect(document.querySelectorAll(".field-mark-rune")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.runes!.length, 0),
+    );
+    expect(document.querySelectorAll(".field-mark-pentagram")).toHaveLength(
+      data.players.reduce((total, owner) => total + owner.pentagrams!.length, 0),
+    );
+    expect(document.querySelector(`.neutral-building[data-field-object="${obstacle.fieldObject}"] img`)?.getAttribute("src")).toBe(`/art/field/${obstacle.fieldObject}.webp`);
+    fireEvent.click(screen.getAllByRole("button", { name: `${obstacle.card.name}, bâtiment neutre, puissance 0, ${obstacle.hp} PV, voir les informations` })[0]!);
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByText("BÂTIMENT NEUTRE")).toBeTruthy();
+    expect(dialog.getByText("Élément du terrain · Destructible")).toBeTruthy();
+    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
+    expect(actions.onWithdrawCard).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Rune de vie", "+3 PV actuels et maximum"],
+    ["Rune de puissance", "+2 attaque"],
+    ["Pentagramme de vie", "+3 PV actuels et maximum"],
+    ["Pentagramme de puissance", "+2 attaque"],
+  ])("explains the stat and activation timing of %s", async (name, bonus) => {
+    setup(fieldData());
+    fireEvent.click(await screen.findByRole("button", { name: new RegExp(`^Ton camp.*${name}`) }));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByRole("heading", { name })).toBeTruthy();
+    expect(dialog.getByText(bonus)).toBeTruthy();
+    expect(dialog.getByText(/disparaît à sa mort ou à son retrait/)).toBeTruthy();
+    if (name.startsWith("Rune")) {
+      expect(dialog.getByText(/immédiatement, une seule fois/)).toBeTruthy();
+    } else {
+      expect(dialog.getByText(/Aucun bonus n’est accordé à la pose/)).toBeTruthy();
+      expect(dialog.getByText(/Les gains se cumulent à chaque tour/)).toBeTruthy();
+    }
+    const kind = name.startsWith("Rune") ? "rune" : "pentagram";
+    const stat = name.endsWith("vie") ? "health" : "attack";
+    expect(document.querySelector(".field-mark-preview img")?.getAttribute("src")).toBe(`/art/field/${kind}-${stat}.webp`);
+  });
+
+  it("allows deployment on a pentagram while keeping an obstacle occupied", async () => {
+    const data = fieldData();
+    const { actions } = setup(data);
+    const { card, dialog } = await openHandCard(data);
+    fireEvent.click(dialog.getByRole("button", { name: "Choisir une case" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const obstacle = data.players[0]!.board[0]!;
+    const blocked = document.querySelector(`.board-half.own .board-cell[data-row="${obstacle.row}"][data-depth="${obstacle.depth}"]`)!;
+    expect(blocked.classList.contains("legal-placement")).toBe(false);
+    const pentagram = data.players[0]!.pentagrams![0]!;
+    fireEvent.click(screen.getByRole("button", { name: /^Ton camp.*Pentagramme de puissance/ }));
+    expect(actions.onPlayCard).toHaveBeenCalledWith(card.id, pentagram.row, pentagram.depth, data.turn);
+  });
+});
 
 async function openHandCard(data: DuelData) {
   const card = data.players[data.me]!.hand[0]!;

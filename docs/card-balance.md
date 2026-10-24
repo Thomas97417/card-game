@@ -57,10 +57,10 @@ La comparaison est en Reborn 0. Renaissance, Soulbind, bonus de guilde, remises 
 
 Le moteur partagé applique les mêmes règles en entraînement, solo persistant et duel. Les bâtiments peuvent être posés dans les trois colonnes et n’effectuent aucune attaque normale. Une unité de mêlée est bloquée par tout allié devant elle sur sa rangée ; la distance peut tirer derrière ses alliés.
 
-1. L’apparition applique les passifs et les capacités de déploiement. Les alliés Nature concernés réagissent à l’apparition ; une rune présente sur la case est consommée.
+1. L’apparition applique les passifs et les capacités de déploiement. Les alliés Nature concernés réagissent à l’apparition ; une rune présente sur la case accorde immédiatement son bonus, une seule fois, puis reste liée au porteur jusqu’à sa mort ou son retrait. Un pentagramme ne donne rien à l’apparition.
 2. Le camp actif attaque de l’avant vers l’arrière, rangée par rangée. Une double attaque recalcule sa cible après chaque frappe. Les épines et les autres dégâts de capacité sont résolus avant la suppression des morts et leurs effets de mort.
 3. Les bonus d’attaque d’un tour expirent après les attaques de leur propriétaire.
-4. Le camp suivant reçoit sa régénération et ses capacités de début de tour, puis sa main est complétée.
+4. Le camp suivant reçoit sa régénération et ses capacités de début de tour, puis les bonus cumulatifs des pentagrammes occupés. Sa main est ensuite complétée. Un sceau disparaît avec son porteur.
 
 Les compétences sans déclencheur explicite dans les fiches sont interprétées comme des effets de déploiement. Une capacité visant « les alliés » exclut son propre lanceur, sauf si elle dit explicitement « gagne ». Les bonus permanents s’additionnent. Les soins ne dépassent pas les PV maximum ; les gains de vitalité augmentent les PV actuels et maximum. L’attaque reste positive ou nulle.
 

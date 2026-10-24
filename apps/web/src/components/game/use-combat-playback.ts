@@ -89,6 +89,7 @@ export function useCombatPlayback(latest: View | undefined) {
                 return {
                   ...player,
                   ...(entry.runes ? { runes: entry.runes } : {}),
+                  ...(entry.pentagrams ? { pentagrams: entry.pentagrams } : {}),
                   ...(entry.heroMaxHp !== undefined
                     ? { heroMaxHp: entry.heroMaxHp }
                     : {}),
@@ -115,6 +116,8 @@ export function useCombatPlayback(latest: View | undefined) {
               if (entry.type === "death" && index === entry.player)
                 return {
                   ...player,
+                  ...(entry.runes ? { runes: entry.runes } : {}),
+                  ...(entry.pentagrams ? { pentagrams: entry.pentagrams } : {}),
                   board: player.board.filter(
                     (unit) =>
                       !(

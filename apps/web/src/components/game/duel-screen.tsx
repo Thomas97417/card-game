@@ -5,6 +5,7 @@ import {
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
+  FIELD_BUILDINGS,
   isDeploymentDepth,
   legalPlacements,
   type CardDefinition,
@@ -138,6 +139,7 @@ export function DuelScreen({
     display.players
       .flatMap((player) => player.board)
       .find((unit) => unit.cardId === id)?.card.name ??
+    Object.values(FIELD_BUILDINGS).find((card) => card.id === id)?.name ??
     data.events.find((e) => e.cardId === id && e.unit?.definition)?.unit
       ?.definition?.name ??
     "une créature";
@@ -359,6 +361,9 @@ export function DuelScreen({
           });
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
+        onInspectField={(kind, playerIndex, row, depth) =>
+          inspect({ type: "field", kind, playerIndex, position: { row, depth } })
+        }
       />
       <section className="hand-area" aria-label="Ta main">
         <button
@@ -604,6 +609,21 @@ export function DuelScreen({
           Les bâtiments occupent une case de n’importe quelle colonne et
           n’attaquent pas. Les capacités actives sur la fiche de chaque carte
           peuvent soigner, renforcer, protéger ou invoquer des renforts.
+        </p>
+        <p>
+          Chaque partie tire un terrain différent pour chaque camp : de 0 à 3
+          bâtiments neutres, de 0 à 2 runes et de 0 à 2 pentagrammes. Chaque
+          sceau donne de la vie (+3 PV) ou de la puissance (+2 attaque).
+          Les quantités restent proches,
+          mais les positions et les petits avantages varient. Chaque camp garde
+          plusieurs cases libres pour invoquer. Les bâtiments bloquent leur case et doivent
+          être détruits ; ils ne peuvent pas être retirés. Une rune donne son
+          bonus immédiatement à l’arrivée de l’unité, une seule fois. Un
+          pentagramme ne donne rien à la pose : il ajoute son bonus à chaque
+          début de tour du propriétaire de l’unité, en cumulant les gains.
+          Les bonus de vie augmentent les PV actuels et maximum. Les deux
+          sceaux disparaissent quand leur porteur meurt ou est retiré.
+          Sélectionne un bâtiment ou un sceau pour voir ses effets.
         </p>
         <p>
           Pas de déplacement. Ton deck contient de {MIN_DECK_SIZE} à {DECK_SIZE}{" "}

@@ -1,18 +1,30 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import {
   DEPTHS,
   HERO_HP,
   ROWS,
   combatTypeLabel,
   getCombatType,
+  fieldBonus,
+  fieldMarkName,
   isDeploymentDepth,
   isMeleeBlocked,
+  unitCard,
+  unitMaxHp,
   type GameEvent,
   type GameView,
 } from "@sylve/game";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
+import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
 import {
   AbilityIcon,
@@ -32,6 +44,44 @@ import {
 
 type Player = GameView["players"][number];
 
+const sealActivations = {
+  "Rune de vie": { kind: "rune", stat: "health" },
+  "Rune de puissance": { kind: "rune", stat: "attack" },
+  "Pentagramme de vie": { kind: "pentagram", stat: "health" },
+  "Pentagramme de puissance": { kind: "pentagram", stat: "attack" },
+} as const;
+
+function sealActivation(event: GameEvent) {
+  if (event.type !== "ability" || !event.unit || (event.amount ?? 0) <= 0)
+    return undefined;
+  return sealActivations[event.ability as keyof typeof sealActivations];
+}
+
+type StatLoss = { stat: "health" | "attack"; amount: number };
+type CombatHit = { event: GameEvent; loss?: StatLoss };
+
+function appliedStatLoss(event: GameEvent, player: Player): StatLoss | undefined {
+  if (event.type !== "ability" || (event.amount ?? 0) >= 0 || !event.unit)
+    return undefined;
+  const before = player.board.find((unit) =>
+    unit.cardId === event.targetCardId &&
+    unit.row === event.targetRow && unit.depth === event.targetDepth,
+  );
+  if (!before) return undefined;
+  const base = unitCard(before, player.deck);
+  const attack = (before.attack ?? base.attack) - (event.unit.attack ?? base.attack);
+  if (attack > 0) return { stat: "attack", amount: attack };
+  const health = Math.max(
+    before.hp - event.unit.hp,
+    unitMaxHp(before, player.deck) - unitMaxHp(event.unit, player.deck),
+  );
+  if (health > 0) return { stat: "health", amount: health };
+  const icon = eventIconKind(event);
+  if (icon === "weaken" || icon === "power") return { stat: "attack", amount: 0 };
+  if (icon === "vitality") return { stat: "health", amount: 0 };
+  return undefined;
+}
+
 export function DuelArena({
   mine,
   enemy,
@@ -44,6 +94,7 @@ export function DuelArena({
   onPlace,
   onInspectUnit,
   onInspectHero,
+  onInspectField,
 }: {
   mine: Player;
   enemy: Player;
@@ -56,6 +107,12 @@ export function DuelArena({
   onPlace: (cardId: string, row: number, depth: number) => void;
   onInspectUnit: (unit: Player["board"][number], playerIndex: number) => void;
   onInspectHero: (playerIndex: number) => void;
+  onInspectField: (
+    kind: FieldMarkKind,
+    playerIndex: number,
+    row: number,
+    depth: number,
+  ) => void;
 }) {
   function heroFigure(player: Player, index: number, own: boolean) {
     const hit =
@@ -106,9 +163,19 @@ export function DuelArena({
           const unit = player.board.find(
             (entry) => entry.row === row && entry.depth === depth,
           );
+          const baseCard = unit ? unitCard(unit, player.deck) : undefined;
           const rune = player.runes?.find(
             (r) => r.row === row && r.depth === depth,
           );
+          const pentagram = player.pentagrams?.find(
+            (p) => p.row === row && p.depth === depth,
+          );
+          const mark = rune ? "rune" : pentagram ? "pentagram" : null;
+          const seal = rune ?? pentagram;
+          const bonus = seal ? fieldBonus(seal) : null;
+          const markLabel = mark && seal && bonus
+            ? `${fieldMarkName(mark, seal)} : +${bonus.value} ${bonus.stat === "health" ? "PV actuels et maximum" : "attaque"}, ${mark === "pentagram" ? "à chaque début de tour du porteur, sans bonus à la pose" : rune?.activated ? "bonus déjà accordé" : "immédiatement à l’arrivée"}`
+            : "";
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
           const legal =
@@ -147,7 +214,7 @@ export function DuelArena({
           return (
             <div
               key={`${row}-${depth}`}
-              className={`projected-cell ${unit ? "occupied" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
+              className={`projected-cell ${unit ? "occupied" : ""} ${mark && !unit ? "marked-cell" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
               style={{ ...cell.bounds, zIndex: row + 1 }}
             >
               <button
@@ -157,62 +224,59 @@ export function DuelArena({
                 data-own-cell={own && !unit ? "true" : undefined}
                 data-row={row}
                 data-depth={depth}
-                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}` : ", vide"}`}
-                aria-disabled={!legal && !unit}
-                aria-haspopup={unit ? "dialog" : undefined}
+                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.fieldObject ? "bâtiment neutre, " : ""}${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}` : mark ? `, ${markLabel}` : ", vide"}`}
+                title={!unit && mark ? markLabel : undefined}
+                aria-disabled={!legal && !unit && !mark}
+                aria-haspopup={unit || (mark && !legal) ? "dialog" : undefined}
                 tabIndex={unit ? -1 : 0}
                 onClick={() => {
                   if (legal && selected) onPlace(selected, row, depth);
                   else if (unit) onInspectUnit(unit, playerIndex);
+                  else if (mark) onInspectField(mark, playerIndex, row, depth);
                 }}
               >
-                {!unit && rune && (
-                  <span
-                    className="board-rune"
-                    title={
-                      rune.attack
-                        ? `Rune de puissance : +${rune.attack} ATQ`
-                        : `Rune de vie : +${rune.health} PV`
-                    }
-                    aria-label={
-                      rune.attack
-                        ? `Rune de puissance : +${rune.attack} ATQ`
-                        : `Rune de vie : +${rune.health} PV`
-                    }
-                  >
-                    <AbilityIcon kind={rune.attack ? "power" : "life-rune"} />
-                    <strong>+{rune.attack ?? rune.health}</strong>
-                  </span>
-                )}
                 {legal && (
                   <span className="placement-hint" aria-hidden="true">
                     <GameIcon kind={getCombatType(selectedCard!)} size={23} />
                   </span>
                 )}
               </button>
+              {mark && bonus && (
+                <FieldMark
+                  kind={mark}
+                  stat={bonus.stat}
+                  amount={bonus.value}
+                  activated={rune?.activated}
+                />
+              )}
               {unit && (
                 <button
                   type="button"
                   className="board-unit-control"
                   style={cell.unit}
-                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
+                  aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
                   onClick={() => onInspectUnit(unit, playerIndex)}
                 >
                   <div
-                    className={`board-unit ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
+                    data-field-object={unit.fieldObject}
+                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
                   >
                     <span className="unit-shadow" />
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
-                      <StatBadge
-                        kind="attack"
-                        value={unit.card.attack}
-                        combatType={getCombatType(unit.card)}
-                      />
+                      {!unit.fieldObject && (
+                        <StatBadge
+                          kind="attack"
+                          value={unit.card.attack}
+                          baseValue={baseCard?.attack}
+                          combatType={getCombatType(unit.card)}
+                        />
+                      )}
                       <StatBadge
                         kind="health"
                         value={unit.hp}
+                        baseValue={baseCard?.health}
                         wounded={unit.hp < unit.card.health}
                       />
                     </div>
@@ -307,21 +371,30 @@ function CombatEffects({
   enemy: Player;
   me: number;
 }) {
-  const [hits, setHits] = useState<GameEvent[]>([]);
+  const [hits, setHits] = useState<CombatHit[]>([]);
+  const currentView = useRef({ mine, enemy, me });
+  useEffect(() => {
+    currentView.current = { mine, enemy, me };
+  }, [mine, enemy, me]);
   useEffect(() => {
     if (
       !event ||
       (event.type !== "attack" &&
-        (event.type !== "ability" || event.runes) &&
+        (event.type !== "ability" || (event.runes && !event.unit)) &&
         (event.type !== "summon" || !event.ability))
     )
       return;
+    // Capture the target before the playback commits this ability's snapshot.
+    const view = currentView.current;
+    const player = (event.targetPlayer ?? event.player) === view.me ? view.mine : view.enemy;
+    const loss = appliedStatLoss(event, player);
+    if (loss?.amount === 0) return;
     const timer = window.setTimeout(
       () => {
         setHits((previous) =>
-          previous.some((hit) => hit.seq === event.seq)
+          previous.some((hit) => hit.event.seq === event.seq)
             ? previous
-            : [...previous, event],
+            : [...previous, { event, loss }],
         );
       },
       event.type === "ability"
@@ -333,7 +406,7 @@ function CombatEffects({
     return () => window.clearTimeout(timer);
   }, [event]);
   const removeHit = useCallback((sequence: number) => {
-    setHits((previous) => previous.filter((hit) => hit.seq !== sequence));
+    setHits((previous) => previous.filter((hit) => hit.event.seq !== sequence));
   }, []);
   return (
     <div
@@ -341,7 +414,7 @@ function CombatEffects({
       aria-live="polite"
       aria-relevant="additions"
     >
-      {hits.map((hit) => {
+      {hits.map(({ event: hit, loss }) => {
         const own = (hit.targetPlayer ?? hit.player) === me;
         const player = own ? mine : enemy;
         const target =
@@ -352,18 +425,39 @@ function CombatEffects({
           hit.targetRow ?? (hit.type === "summon" ? hit.row : undefined);
         const depth =
           hit.targetDepth ?? (hit.type === "summon" ? hit.depth : undefined);
-        const position =
+        const seal = sealActivation(hit);
+        const cell =
           row !== undefined && depth !== undefined
-            ? groundCell(row, own ? DEPTHS - 1 - depth : DEPTHS + depth).impact
-            : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
+            ? groundCell(row, own ? DEPTHS - 1 - depth : DEPTHS + depth)
+            : undefined;
+        const position = cell
+          ? seal || loss ? cell.aboveUnit : cell.impact
+          : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
         return (
-          <DamageNumber
-            key={hit.seq}
-            hit={hit}
-            position={position}
-            targetName={target?.name ?? player.name}
-            onComplete={removeHit}
-          />
+          <Fragment key={hit.seq}>
+            {(seal || loss) && cell && (
+              <span
+                className={`seal-activation seal-activation-${loss?.stat ?? seal!.stat} ${loss ? "stat-loss-glow" : ""}`}
+                data-seal-kind={seal?.kind}
+                data-stat={loss?.stat ?? seal?.stat}
+                style={cell.bounds}
+                aria-hidden="true"
+              >
+                <span className="seal-glow-floor" />
+                <span className="seal-glow-column" />
+                {Array.from({ length: 4 }, (_, index) => (
+                  <span key={index} className="seal-glow-spark" />
+                ))}
+              </span>
+            )}
+            <DamageNumber
+              hit={hit}
+              loss={loss}
+              position={position}
+              targetName={target?.name ?? player.name}
+              onComplete={removeHit}
+            />
+          </Fragment>
         );
       })}
     </div>
@@ -372,20 +466,26 @@ function CombatEffects({
 
 function DamageNumber({
   hit,
+  loss,
   position,
   targetName,
   onComplete,
 }: {
   hit: GameEvent;
+  loss?: StatLoss;
   position: CSSProperties;
   targetName: string;
   onComplete: (sequence: number) => void;
 }) {
-  const icon =
-    eventIconKind(hit) ??
+  const icon = loss
+    ? loss.stat === "attack" ? "weaken" : "vitality"
+    : eventIconKind(hit) ??
     (hit.type === "attack" && hit.damage === 0 && hit.unit?.block
       ? "block"
       : undefined);
+  const seal = sealActivation(hit);
+  const stat = loss?.stat ?? seal?.stat;
+  const amount = loss ? -loss.amount : hit.amount;
   useEffect(() => {
     const timer = window.setTimeout(
       () => onComplete(hit.seq),
@@ -395,16 +495,21 @@ function DamageNumber({
   }, [hit.seq, onComplete]);
   return (
     <span
-      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""}`}
+      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""} ${seal ? `seal-gain seal-gain-${seal.stat}` : ""} ${loss ? "stat-loss" : ""}`}
       style={position}
       aria-label={
         hit.type === "ability" || hit.type === "summon"
-          ? `${targetName} : ${hit.ability}${hit.amount === undefined ? "" : ` ${hit.amount}`}`
+          ? `${targetName} : ${hit.ability}${amount === undefined ? "" : ` ${amount > 0 ? "+" : ""}${amount}`}${stat ? stat === "health" ? " PV" : " puissance" : ""}`
           : `${targetName} subit ${hit.damage} dégâts`
       }
     >
       {icon && <AbilityIcon kind={icon} size={30} />}
-      {hit.type === "summon" ? (
+      {stat ? (
+        <span className="stat-change-value">
+          <strong>{loss ? "−" : "+"}{Math.abs(amount ?? 0)}</strong>
+          <small>{stat === "health" ? "PV" : "puissance"}</small>
+        </span>
+      ) : hit.type === "summon" ? (
         <small className="effect-word">Renfort</small>
       ) : icon === "mental-shield" && (hit.damage ?? hit.amount) === 0 ? (
         <small className="effect-word">Protégée</small>

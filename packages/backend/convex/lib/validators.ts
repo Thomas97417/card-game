@@ -213,12 +213,26 @@ const unitValidator = v.object({
   formationAttack: v.optional(v.number()),
   temporaryAttack: v.optional(v.number()),
   definition: v.optional(cardValidator),
+  fieldObject: v.optional(
+    v.union(
+      v.literal("spikes"),
+      v.literal("dark-tree"),
+      v.literal("mossy-rock"),
+    ),
+  ),
 });
 const runeValidator = v.object({
   row: v.number(),
   depth: v.number(),
-  health: v.number(),
+  health: v.optional(v.number()),
   attack: v.optional(v.number()),
+  activated: v.optional(v.boolean()),
+});
+const pentagramValidator = v.object({
+  row: v.number(),
+  depth: v.number(),
+  attack: v.optional(v.number()),
+  health: v.optional(v.number()),
 });
 export const stateValidator = v.object({
   players: v.array(
@@ -233,6 +247,7 @@ export const stateValidator = v.object({
       discard: v.array(v.string()),
       board: v.array(unitValidator),
       runes: v.optional(v.array(runeValidator)),
+      pentagrams: v.optional(v.array(pentagramValidator)),
     }),
   ),
   activePlayer: v.number(),
@@ -269,4 +284,5 @@ export const eventValidator = v.object({
   amount: v.optional(v.number()),
   unit: v.optional(unitValidator),
   runes: v.optional(v.array(runeValidator)),
+  pentagrams: v.optional(v.array(pentagramValidator)),
 });

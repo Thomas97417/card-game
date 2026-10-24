@@ -3,6 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CATALOG,
+  createFieldBuilding,
   DEFAULT_DECK,
   getCombatType,
   validateDeck,
@@ -45,7 +46,7 @@ async function player(t: Test, name: string) {
   });
   return t.withIdentity({ subject: user._id, sessionId: session._id });
 }
-async function match() {
+async function match({ field = true } = {}) {
   const t = setup();
   const alice = await player(t, "alice");
   const bob = await player(t, "bob");
@@ -57,6 +58,16 @@ async function match() {
   await bob.mutation(api.games.joinPrivate, {
     code: invitation.code,
     deckId: bDeck,
+  });
+  if (!field) await t.run(async (ctx) => {
+    const game = (await ctx.db.get(invitation.gameId))!;
+    const state = game.state!;
+    for (const owner of state.players) {
+      owner.board = [];
+      owner.runes = [];
+      owner.pentagrams = [];
+    }
+    await ctx.db.patch(invitation.gameId, { state });
   });
   return { t, alice, bob, aDeck, bDeck, gameId: invitation.gameId };
 }
@@ -311,9 +322,139 @@ describe("invitations et synchronisation", () => {
     expect(game!.state!.players).toHaveLength(2);
   });
 });
+describe("terrain autoritaire", () => {
+  it("persists asymmetric scenery and shows both players the same authoritative fields", async () => {
+    const { t, alice, bob, gameId } = await match();
+    const a = await alice.query(api.games.get, { gameId });
+    const b = await bob.query(api.games.get, { gameId });
+    const fields = (view: typeof a) => view.players.map(({ board, runes, pentagrams }) => ({ board, runes, pentagrams }));
+    expect(fields(a)[0]).not.toEqual(fields(a)[1]);
+    expect(fields(a)).toEqual(fields(b));
+    const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
+    for (const [index, owner] of a.players.entries()) {
+      expect(stored.state!.players[index]!.board).toEqual(owner.board.map(({ card: _card, ...unit }) => unit));
+      expect(stored.state!.players[index]!.runes).toEqual(owner.runes);
+      expect(stored.state!.players[index]!.pentagrams).toEqual(owner.pentagrams);
+    }
+    expect(a.players.every((owner) => owner.deck.every((card) => card.kind !== "field-building"))).toBe(true);
+  });
+
+  it("rejects attempts to occupy or withdraw a neutral obstacle without changing the turn", async () => {
+    const { t, alice, bob, gameId } = await match({ field: false });
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.board = [createFieldBuilding("spikes", 0, 0)];
+      await ctx.db.patch(gameId, { state });
+    });
+    const view = await alice.query(api.games.get, { gameId });
+    const active = view.activePlayer === 0 ? alice : bob;
+    const owner = view.players[view.activePlayer]!;
+    const obstacle = owner.board[0]!;
+    const own = await active.query(api.games.get, { gameId });
+    await expect(active.mutation(api.games.playCard, {
+      gameId, cardId: own.players[own.me]!.hand[0]!.id,
+      row: obstacle.row, depth: obstacle.depth, expectedTurn: 1,
+    })).rejects.toThrow("occupée");
+    await expect(active.mutation(api.games.withdrawCard, {
+      gameId, cardId: obstacle.cardId, position: { row: obstacle.row, depth: obstacle.depth }, expectedTurn: 1,
+    })).rejects.toThrow("bâtiment neutre");
+    expect(await active.query(api.games.get, { gameId })).toEqual(own);
+  });
+
+  it.each([{ health: 3 }, { attack: 2 }])("persists a rune's one-time activation and bound lifetime: %o", async (bonus) => {
+    const { t, alice, bob, gameId } = await match({ field: false });
+    const rune = { row: 0, depth: 1, ...bonus };
+    const remainingRune = { row: 2, depth: 1, health: 3 };
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.runes = [rune, remainingRune];
+      await ctx.db.patch(gameId, { state });
+    });
+    const first = await alice.query(api.games.get, { gameId });
+    const active = first.activePlayer === 0 ? alice : bob;
+    const inactive = first.activePlayer === 0 ? bob : alice;
+    const own = await active.query(api.games.get, { gameId });
+    const card = own.players[own.me]!.hand[0]!;
+    await active.mutation(api.games.playCard, {
+      gameId, cardId: card.id, row: rune.row, depth: rune.depth, expectedTurn: 1,
+    });
+    const reconnected = await inactive.query(api.games.get, { gameId });
+    const grantedRunes = [{ ...rune, activated: true }, remainingRune];
+    expect(reconnected.players[own.me]!.runes).toEqual(grantedRunes);
+    expect(reconnected.players[own.me]!.board[0]).toMatchObject({
+      hp: card.health + (bonus.health ?? 0),
+      card: { health: card.health + (bonus.health ?? 0), attack: card.attack + (bonus.attack ?? 0) },
+    });
+    expect(reconnected.events.find((event) => event.ability?.startsWith("Rune de")))
+      .toMatchObject({ runes: grantedRunes });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 2 });
+    const nextTurn = await active.query(api.games.get, { gameId });
+    expect(nextTurn.players[own.me]!.runes).toEqual(grantedRunes);
+    expect(nextTurn.players[own.me]!.board[0]).toEqual(reconnected.players[own.me]!.board[0]);
+    expect(nextTurn.events.filter((event) => event.ability?.startsWith("Rune de")))
+      .toEqual(reconnected.events.filter((event) => event.ability?.startsWith("Rune de")));
+    await active.mutation(api.games.withdrawCard, {
+      gameId, cardId: card.id,
+      position: { row: rune.row, depth: rune.depth }, expectedTurn: 3,
+    });
+    const after = await inactive.query(api.games.get, { gameId });
+    expect(after.players[own.me]!.runes).toEqual([remainingRune]);
+    expect(after.players[own.me]!.deck.find((entry) => entry.id === card.id)).toEqual(card);
+  });
+
+  it("persists a pentagram across placement, cumulative turn bonuses and withdrawal", async () => {
+    const { t, alice, bob, gameId } = await match({ field: false });
+    const remainingPentagram = { row: 2, depth: 1, attack: 2 };
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      state.players[state.activePlayer]!.pentagrams = [
+        { row: 0, depth: 1, attack: 2 },
+        remainingPentagram,
+      ];
+      await ctx.db.patch(gameId, { state });
+    });
+    const first = await alice.query(api.games.get, { gameId });
+    const active = first.activePlayer === 0 ? alice : bob;
+    const inactive = first.activePlayer === 0 ? bob : alice;
+    const view = await active.query(api.games.get, { gameId });
+    const owner = view.players[view.me]!;
+    const pentagram = owner.pentagrams![0]!;
+    const card = owner.hand[0]!;
+    await active.mutation(api.games.playCard, {
+      gameId, cardId: card.id, row: pentagram.row, depth: pentagram.depth, expectedTurn: 1,
+    });
+    const other = await inactive.query(api.games.get, { gameId });
+    const boosted = other.players[view.me]!;
+    expect(boosted.pentagrams).toEqual(owner.pentagrams);
+    expect(boosted.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack);
+    expect(other.events.some((event) => event.ability === "Pentagramme de puissance")).toBe(false);
+    expect(other.players[view.me]!.hand).toEqual([]);
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 2 });
+    let reconnected = await active.query(api.games.get, { gameId });
+    expect(reconnected.players[view.me]!.pentagrams).toEqual(owner.pentagrams);
+    expect(reconnected.players[view.me]!.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 2);
+    expect(reconnected.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2 });
+    await active.mutation(api.games.endTurn, { gameId, expectedTurn: 3 });
+    await inactive.mutation(api.games.endTurn, { gameId, expectedTurn: 4 });
+    reconnected = await active.query(api.games.get, { gameId });
+    expect(reconnected.players[view.me]!.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 4);
+    expect(reconnected.players[view.me]!.deck.find((entry) => entry.id === card.id)!.attack).toBe(card.attack);
+    await active.mutation(api.games.withdrawCard, {
+      gameId, cardId: card.id,
+      position: { row: pentagram.row, depth: pentagram.depth }, expectedTurn: 5,
+    });
+    const after = await inactive.query(api.games.get, { gameId });
+    expect(after.players[view.me]!.pentagrams).toEqual([remainingPentagram]);
+    expect(after.events.at(-1)).toMatchObject({ type: "withdraw", pentagrams: [remainingPentagram] });
+  });
+});
+
 describe("tours autoritaires", () => {
   it("redraws a deployed variant and withdraws only the selected duplicate", async () => {
-    const { alice, bob, gameId } = await match();
+    const { alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -371,7 +512,7 @@ describe("tours autoritaires", () => {
     expect(after.players[own.me]!.hand).toEqual(deployed.players[own.me]!.hand);
   });
   it("synchronizes withdrawals before playing and protects ownership", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -446,7 +587,7 @@ describe("tours autoritaires", () => {
     expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("synchronizes placement, combat and the next turn, rejecting invalid zones and stale plays", async () => {
-    const { alice, bob, gameId } = await match();
+    const { alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -512,7 +653,7 @@ describe("tours autoritaires", () => {
     expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("ignores the old deadline after a card is played and schedules the next player's deadline", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const own = await active.query(api.games.get, { gameId });
@@ -534,13 +675,13 @@ describe("tours autoritaires", () => {
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(3);
   });
   it("advances disconnected players at the server deadline", async () => {
-    const { t, alice, gameId } = await match();
+    const { t, alice, gameId } = await match({ field: false });
     await vi.advanceTimersByTimeAsync(60_000);
     await t.finishInProgressScheduledFunctions();
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("surrender ends the game, releases both players and makes old deadlines harmless", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     await alice.mutation(api.games.surrender, { gameId });
     expect((await bob.query(api.games.get, { gameId })).winner).toBe(1);
     expect((await bob.query(api.games.activity, {})).gameId).toBeNull();

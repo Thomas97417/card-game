@@ -35,6 +35,7 @@ function fresh(...ids: string[]) {
     ],
     0,
     random,
+    { field: false },
   );
   state.activePlayer = 0;
   return state;

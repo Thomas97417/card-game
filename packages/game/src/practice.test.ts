@@ -11,6 +11,7 @@ import {
   validateDeck,
   variantCard,
   getCombatType,
+  unitCard,
   RARITIES,
   MAX_CARD_LEVEL,
   type GameState,
@@ -45,6 +46,7 @@ function initial() {
     ],
     0,
     () => 0.25,
+    { field: false },
   );
   state.activePlayer = 1;
   return state;
@@ -331,12 +333,12 @@ describe("terrain d’entraînement", () => {
           expect(new Set(owner.hand).size).toBe(4);
           expect(owner.discard).toEqual([]);
           expect(
-            owner.board.every((unit) => decks[index]!.includes(unit.cardId)),
+            owner.board.every((unit) => unit.fieldObject || decks[index]!.includes(unit.cardId)),
           ).toBe(true);
           expect(
             owner.board.every((unit) =>
               isDeploymentDepth(
-                owner.cards.find((card) => card.id === unit.cardId)!,
+                unitCard(unit, owner.cards),
                 unit.depth,
               ),
             ),

@@ -11,7 +11,11 @@ export function CreaturePortrait({
   return (
     <img
       className={`creature-portrait ${className}`}
-      src={`/art/characters/${card.artId ?? baseCardId(card)}.webp`}
+      src={
+        card.kind === "field-building"
+          ? `/art/field/${card.id.replace(/^field-/, "")}.webp`
+          : `/art/characters/${card.artId ?? baseCardId(card)}.webp`
+      }
       alt={card.name}
       width={256}
       height={256}

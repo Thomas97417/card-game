@@ -21,6 +21,7 @@ function setup(me = 0) {
     ],
     Date.now(),
     () => 0.25,
+    { field: false },
   );
   state.activePlayer = me;
   const game: Game = {

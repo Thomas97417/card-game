@@ -432,6 +432,8 @@ const eventIcons: Record<string, AbilityIconKind> = {
   "Double attaque": "double-strike",
   Perforation: "piercing",
   "Rune de vie": "life-rune",
+  "Pentagramme de vie": "vitality",
+  "Pentagramme de puissance": "power",
   Renfort: "reinforcement",
   "Alliance de l’Ordre": "order-alliance",
   Affaiblissement: "weaken",

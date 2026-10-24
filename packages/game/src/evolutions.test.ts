@@ -36,6 +36,7 @@ function fresh(...ids: string[]) {
     ],
     0,
     random,
+    { field: false },
   );
   state.activePlayer = 0;
   return state;
@@ -331,7 +332,7 @@ describe("evolution combat skills", () => {
       result.players[0]!.board.find((u) => u.cardId === "fox:common")!.attack,
     ).toBeUndefined();
   });
-  it("creates attack runes and consumes them only on their own cell", () => {
+  it("creates attack runes that activate on arrival and disappear with their occupant", () => {
     let state = deploy(
       fresh("enchantress:epic"),
       "enchantress:epic",
@@ -341,11 +342,14 @@ describe("evolution combat skills", () => {
     const rune = state.players[0]!.runes![0]!;
     expect(rune).toMatchObject({ health: 0, attack: 4 });
     state = deploy(state, "guardian:common", rune.row, rune.depth).state;
-    expect(state.players[0]!.runes).toEqual([]);
+    expect(state.players[0]!.runes).toEqual([{ ...rune, activated: true }]);
     expect(
       state.players[0]!.board.find((u) => u.cardId === "guardian:common")!
         .attack,
     ).toBe(7);
+    state = attack(state, 1).state;
+    state = withdraw(state, 0, "guardian:common", state.turn, 0).state;
+    expect(state.players[0]!.runes).toEqual([]);
   });
   it("applies end-of-turn damage and resolves start-of-turn hero kills", () => {
     const state = fresh("tree:rare", "tree:epic");

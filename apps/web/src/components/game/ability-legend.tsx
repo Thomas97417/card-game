@@ -48,7 +48,7 @@ const entries: [AbilityIconKind, string, string][] = [
   [
     "life-rune",
     "Rune de vie",
-    "Renforce la prochaine unité qui apparaît sur cette case.",
+    "Augmente les PV dès l’arrivée sur la case, une seule fois.",
   ],
   [
     "reinforcement",
@@ -98,6 +98,11 @@ export function AbilityLegend() {
         leurs effets et leurs valeurs. Un cadenas indique un niveau encore à
         atteindre.
       </p>
+      <p>
+        En combat, un chiffre vert dépasse la valeur normale de la carte à son
+        niveau et à sa rareté ; un chiffre corail est inférieur. Les PV affichés
+        sont comparés à la vie normale, même après un bonus de vie maximale.
+      </p>
       <dl>
         {entries.map(([kind, label, description]) => (
           <div key={label}>
@@ -109,6 +114,12 @@ export function AbilityLegend() {
           </div>
         ))}
       </dl>
+      <p>
+        Sur le terrain, runes et pentagrammes peuvent renforcer la vie ou la
+        puissance. Les runes agissent immédiatement à l’arrivée ; les
+        pentagrammes ajoutent leur bonus à chaque début de tour du propriétaire,
+        sans gain à la pose. Le sceau disparaît avec son porteur.
+      </p>
     </details>
   );
 }

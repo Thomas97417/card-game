@@ -1,4 +1,6 @@
 export * from "./cards";
+export * from "./field";
+import { populateField, type FieldBuildingKind } from "./field";
 import summonProfiles from "./data/mighty-party-summons.json";
 import {
   GameError,
@@ -91,14 +93,32 @@ export interface Unit {
   attackLimit?: number;
   formationAttack?: number;
   temporaryAttack?: number;
-  /** Summoned tokens never enter the reusable deck or collection. */
+  /** Definitions for summoned tokens and scenery outside the collectible deck. */
   definition?: CardDefinition;
+  /** Neutral scenery present at creation; cannot be voluntarily withdrawn. */
+  fieldObject?: FieldBuildingKind;
 }
-export interface Rune {
+export interface FieldBonus {
   row: number;
   depth: number;
-  health: number;
+  /** One stat per seal; optional fields preserve older saved matches. */
+  health?: number;
   attack?: number;
+}
+export interface Rune extends FieldBonus {
+  /** Applied once on arrival; remains bound to its occupant until departure. */
+  activated?: boolean;
+}
+export type Pentagram = FieldBonus;
+
+export function fieldBonus(mark: FieldBonus) {
+  return mark.attack !== undefined
+    ? { stat: "attack" as const, value: mark.attack }
+    : { stat: "health" as const, value: mark.health ?? 0 };
+}
+
+export function fieldMarkName(kind: "rune" | "pentagram", mark: FieldBonus) {
+  return `${kind === "rune" ? "Rune" : "Pentagramme"} de ${fieldBonus(mark).stat === "health" ? "vie" : "puissance"}`;
 }
 export function unitCard(
   unit: Unit,
@@ -257,6 +277,7 @@ export interface PlayerState {
   discard: string[];
   board: Unit[];
   runes?: Rune[];
+  pentagrams?: Pentagram[];
 }
 export interface GameState {
   players: PlayerState[];
@@ -293,6 +314,7 @@ export interface GameEvent {
   amount?: number;
   unit?: Unit;
   runes?: Rune[];
+  pentagrams?: Pentagram[];
 }
 export interface Transition {
   state: GameState;
@@ -318,6 +340,9 @@ function cloneGame(input: GameState): GameState {
         ...(unit.definition ? { definition: cloneCard(unit.definition) } : {}),
       })),
       ...(player.runes ? { runes: player.runes.map((r) => ({ ...r })) } : {}),
+      ...(player.pentagrams
+        ? { pentagrams: player.pentagrams.map((p) => ({ ...p })) }
+        : {}),
     })),
   };
 }
@@ -352,6 +377,7 @@ export function createGame(
   players: PlayerInput[],
   now: number,
   random: () => number,
+  options: { field?: boolean } = {},
 ): GameState {
   if (players.length !== 2 || players[0]!.userId === players[1]!.userId)
     throw new GameError("Il faut deux joueurs différents.");
@@ -377,6 +403,7 @@ export function createGame(
     sequence: 0,
   };
   for (const player of state.players) refill(player, random);
+  if (options.field !== false) populateField(state.players, random);
   return state;
 }
 
@@ -479,7 +506,12 @@ export function withdraw(
     throw new GameError("Choisis la créature à retirer sur le terrain.");
   const unit = matches[0];
   if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
+  if (unit.fieldObject)
+    throw new GameError(
+      "Un bâtiment neutre doit être détruit pour libérer sa case.",
+    );
   player.board = player.board.filter((entry) => entry !== unit);
+  const removedMarks = releaseFieldMarks(player, unit);
   player.discard = [];
   const events: GameEvent[] = [];
   emit(state, events, {
@@ -488,6 +520,7 @@ export function withdraw(
     cardId,
     row: unit.row,
     depth: unit.depth,
+    ...removedMarks,
   });
   refreshFormation(state, events);
   return { state, events };
@@ -914,25 +947,44 @@ function appeared(
   const rune = owner.runes?.find(
     (r) => r.row === unit.row && r.depth === unit.depth,
   );
-  if (rune) {
-    unit.maxHp = unitMaxHp(unit, owner.cards) + rune.health;
-    unit.hp += rune.health;
-    if (rune.attack)
-      unit.attack =
-        (unit.attack ?? unitCard(unit, owner.cards).attack) + rune.attack;
-    owner.runes = owner.runes!.filter((r) => r !== rune);
-    effectEvent(
-      state,
-      events,
-      player,
-      unit,
-      rune.attack ? "Rune de puissance" : "Rune de vie",
-      player,
-      unit,
-      rune.attack ?? rune.health,
-    );
-    events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
+  if (rune && !rune.activated) {
+    rune.activated = true;
+    applyFieldBonus(state, events, player, unit, rune, "rune");
+    events[events.length - 1]!.runes = owner.runes!.map((r) => ({ ...r }));
   }
+}
+
+function applyFieldBonus(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  unit: Unit,
+  mark: FieldBonus,
+  kind: "rune" | "pentagram",
+) {
+  const owner = state.players[player]!;
+  const bonus = fieldBonus(mark);
+  if (bonus.stat === "health") {
+    unit.maxHp = unitMaxHp(unit, owner.cards) + bonus.value;
+    unit.hp += bonus.value;
+  } else {
+    unit.attack = (unit.attack ?? unitCard(unit, owner.cards).attack) + bonus.value;
+  }
+  effectEvent(state, events, player, unit, fieldMarkName(kind, mark), player, unit, bonus.value);
+}
+
+/** Clear the occupant's seals before death skills can summon a replacement. */
+function releaseFieldMarks(owner: PlayerState, unit: UnitPosition) {
+  const updates: Pick<GameEvent, "runes" | "pentagrams"> = {};
+  if (owner.runes?.some((mark) => mark.row === unit.row && mark.depth === unit.depth)) {
+    owner.runes = owner.runes.filter((mark) => mark.row !== unit.row || mark.depth !== unit.depth);
+    updates.runes = owner.runes.map((mark) => ({ ...mark }));
+  }
+  if (owner.pentagrams?.some((mark) => mark.row === unit.row && mark.depth === unit.depth)) {
+    owner.pentagrams = owner.pentagrams.filter((mark) => mark.row !== unit.row || mark.depth !== unit.depth);
+    updates.pentagrams = owner.pentagrams.map((mark) => ({ ...mark }));
+  }
+  return updates;
 }
 function applyAbilities(
   state: GameState,
@@ -1025,6 +1077,9 @@ function applyAbilities(
             ) &&
             !owner.runes?.some(
               (r) => r.row === cell.row && r.depth === cell.depth,
+            ) &&
+            !owner.pentagrams?.some(
+              (p) => p.row === cell.row && p.depth === cell.depth,
             ),
         );
         const cell = pick(cells, random)[0];
@@ -1562,12 +1617,14 @@ function removeDead(
     for (const [player, owner] of state.players.entries()) {
       for (const dead of [...owner.board].filter((u) => u.hp <= 0)) {
         owner.board = owner.board.filter((u) => u !== dead);
+        const removedMarks = releaseFieldMarks(owner, dead);
         emit(state, events, {
           type: "death",
           player,
           cardId: dead.cardId,
           row: dead.row,
           depth: dead.depth,
+          ...removedMarks,
         });
         applyAbilities(state, player, dead, "death", events, random);
         react(state, player, "ally_death", events, random, dead);
@@ -1916,6 +1973,17 @@ export function endTurn(
     removeDead(state, events, random);
     if (victory(state, events)) return { state, events };
   }
+  removeDead(state, events, random);
+  if (victory(state, events)) return { state, events };
+  // Only the owner's start of turn triggers persistent seals, never deployment.
+  for (const unit of ordered(defender.board)) {
+    if (unit.hp <= 0) continue;
+    const pentagram = defender.pentagrams?.find(
+      (mark) => mark.row === unit.row && mark.depth === unit.depth,
+    );
+    if (pentagram)
+      applyFieldBonus(state, events, opponentIndex, unit, pentagram, "pentagram");
+  }
   refill(defender, random);
   emit(state, events, { type: "turn", player: opponentIndex });
   return { state, events };
@@ -1950,6 +2018,7 @@ export function playerView(state: GameState, userId: string) {
       // Deck composition is public; hand contents and draw order stay private.
       deck: player.cards.map((card) => ({ ...card })),
       runes: player.runes?.map((r) => ({ ...r })),
+      pentagrams: player.pentagrams?.map((p) => ({ ...p })),
       board: player.board.map((unit) => ({
         ...unit,
         card: {

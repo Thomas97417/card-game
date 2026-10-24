@@ -8,6 +8,7 @@ import {
   RARITIES,
   getCombatType,
   resolveCard,
+  legalPlacements,
   upgradeCost,
   upgradeGoldCost,
 } from "@sylve/game";
@@ -74,6 +75,11 @@ async function winSolo(t: Test, alice: Player, deckId: Id<"decks">) {
     const game = (await ctx.db.get(gameId))!;
     const state = game.state!;
     state.players[1]!.heroHp = 1;
+    for (const owner of state.players) {
+      owner.board = [];
+      owner.runes = [];
+      owner.pentagrams = [];
+    }
     await ctx.db.patch(gameId, { state });
   });
   const view = await alice.query(api.games.get, { gameId });
@@ -540,6 +546,15 @@ describe("collection autoritaire", () => {
     });
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     const card = resolveCard(variantId);
+    await t.run(async (ctx) => {
+      const state = (await ctx.db.get(gameId))!.state!;
+      for (const owner of state.players) {
+        owner.board = [];
+        owner.runes = [];
+        owner.pentagrams = [];
+      }
+      await ctx.db.patch(gameId, { state });
+    });
     await alice.mutation(api.games.playCard, {
       gameId,
       cardId: variantId,
@@ -579,6 +594,11 @@ describe("collection autoritaire", () => {
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     await t.run(async (ctx) => {
       const state = (await ctx.db.get(gameId))!.state!;
+      for (const owner of state.players) {
+        owner.board = [];
+        owner.runes = [];
+        owner.pentagrams = [];
+      }
       state.players[1]!.heroHp = 100;
       state.players[1]!.heroMaxHp = 100;
       state.players[0]!.board.push({
@@ -629,6 +649,11 @@ describe("collection autoritaire", () => {
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     await t.run(async (ctx) => {
       const state = (await ctx.db.get(gameId))!.state!;
+      for (const owner of state.players) {
+        owner.board = [];
+        owner.runes = [];
+        owner.pentagrams = [];
+      }
       state.players[0]!.board.push({
         cardId: "guardian:common",
         row: 1,
@@ -665,6 +690,17 @@ describe("collection autoritaire", () => {
       });
     });
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    // Isolate reinforcement persistence from the randomized initial terrain.
+    await t.run(async (ctx) => {
+      const game = (await ctx.db.get(gameId))!;
+      const state = game.state!;
+      for (const owner of state.players) {
+        owner.board = [];
+        owner.runes = [];
+        owner.pentagrams = [];
+      }
+      await ctx.db.patch(gameId, { state });
+    });
     const before = await alice.query(api.games.get, { gameId });
     await alice.mutation(api.games.playCard, {
       gameId,
@@ -675,9 +711,9 @@ describe("collection autoritaire", () => {
     });
     const view = await alice.query(api.games.get, { gameId });
     expect(view.players[0]!.deck).toHaveLength(4);
-    expect(view.players[0]!.board).toHaveLength(2);
+    expect(view.players[0]!.board.filter((unit) => !unit.fieldObject)).toHaveLength(2);
     expect(
-      view.players[0]!.board.find((u) => u.definition)?.card,
+      view.players[0]!.board.find((u) => u.definition && !u.fieldObject)?.card,
     ).toMatchObject({ name: "Rejeton des spores", attack: 2, health: 2 });
     expect(view.events.filter((e) => e.type === "summon")).toHaveLength(2);
     expect(
@@ -697,7 +733,7 @@ describe("collection autoritaire", () => {
       expectedTurn: view.turn,
     });
     const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
-    expect(stored.state!.players[1]!.board.some((u) => u.definition)).toBe(
+    expect(stored.state!.players[1]!.board.some((u) => u.definition?.kind === "zombie")).toBe(
       true,
     );
     expect(stored.soloRecentCards).toEqual(["witch:common"]);
@@ -1188,11 +1224,11 @@ describe("solo persistant", () => {
       bob.mutation(api.games.soloTurn, { gameId, expectedTurn: 1 }),
     ).rejects.toThrow("appartient");
     const card = view.players[0]!.hand[0]!;
+    const cell = legalPlacements(card, view.players[0]!.board)[0]!;
     await alice.mutation(api.games.playCard, {
       gameId,
       cardId: card.id,
-      row: 0,
-      depth: getCombatType(card) === "melee" ? 0 : 2,
+      ...cell,
       expectedTurn: 1,
     });
     view = await alice.query(api.games.get, { gameId });
@@ -1214,18 +1250,18 @@ describe("solo persistant", () => {
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     const view = await alice.query(api.games.get, { gameId });
     const card = view.players[0]!.hand[0]!;
+    const cell = legalPlacements(card, view.players[0]!.board)[0]!;
     await alice.mutation(api.games.playCard, {
       gameId,
       cardId: card.id,
-      row: 0,
-      depth: getCombatType(card) === "melee" ? 0 : 2,
+      ...cell,
       expectedTurn: 1,
     });
     await t.finishAllScheduledFunctions(() => vi.runAllTimers());
     const restored = await alice.query(api.games.get, { gameId });
     expect(restored.turn).toBe(3);
     expect(restored.activePlayer).toBe(0);
-    expect(restored.players[1]!.board).toHaveLength(1);
+    expect(restored.players[1]!.board.filter((unit) => !unit.fieldObject)).toHaveLength(1);
   });
 });
 
