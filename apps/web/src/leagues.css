@@ -168,12 +168,6 @@
 .league-dialog-heading {
   padding: 22px 80px 16px 32px;
 }
-.league-dialog-heading .eyebrow {
-  display: block;
-  margin-bottom: 9px;
-  font-size: 9px;
-  letter-spacing: 2.5px;
-}
 .league-dialog-heading [data-slot="dialog-title"] {
   padding: 0;
   font-size: 36px;
@@ -545,15 +539,6 @@
   width: 18px;
   height: 18px;
 }
-.league-road-state {
-  margin-top: 5px;
-  color: #92a88e;
-  font-size: 9px;
-}
-.league-road-step.is-current .league-road-state {
-  color: #f1d18c;
-  font-weight: 600;
-}
 .league-road-rewards {
   display: flex;
   flex-direction: column;
@@ -826,10 +811,6 @@
   }
   .league-dialog-heading [data-slot="dialog-description"] {
     font-size: 11px;
-  }
-  .league-dialog-heading .eyebrow {
-    font-size: 8px;
-    letter-spacing: 1.8px;
   }
   .league-journey-overview {
     grid-template-columns: minmax(0, 1fr);

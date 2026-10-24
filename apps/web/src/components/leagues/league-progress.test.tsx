@@ -45,7 +45,7 @@ describe("le parcours des ligues", () => {
       screen.getByRole("button", { name: /Ta ligue : Fer IV, 175 trophées/ }),
     );
     const dialog = within(await screen.findByRole("dialog"));
-    expect(dialog.getByText("La voie des gardiens")).toBeTruthy();
+    expect(dialog.getByText("La ligue des gardiens")).toBeTruthy();
     expect(dialog.getByText("5 cartes dans le deck")).toBeTruthy();
     expect(dialog.getByText("8 cartes dans le deck")).toBeTruthy();
     expect(dialog.getByText("3 emplacements de coffre")).toBeTruthy();

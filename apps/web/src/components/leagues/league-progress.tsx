@@ -144,8 +144,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
   return (
     <>
       <header className="league-dialog-heading">
-        <span className="eyebrow">LES LIGUES DE LA SYLVE</span>
-        <DialogTitle>La voie des gardiens</DialogTitle>
+        <DialogTitle>La ligue des gardiens</DialogTitle>
         <DialogDescription>
           Chaque palier ouvre de nouveaux horizons. Trace ta voie, agrandis ton
           deck et découvre de plus beaux trésors.
@@ -334,13 +333,6 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                     <span className="league-road-threshold">
                       <TrophyIcon />
                       {league.minTrophies.toLocaleString("fr-FR")}
-                    </span>
-                    <span className="league-road-state">
-                      {active
-                        ? "Tu es ici"
-                        : unlocked
-                          ? "Atteinte"
-                          : "À atteindre"}
                     </span>
                   </button>
                   {(slot || chestSlot) && (
