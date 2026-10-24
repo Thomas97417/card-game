@@ -7,29 +7,32 @@ export function GameHeader({
   children,
   league,
   className = "",
+  showBack = true,
 }: {
   children?: ReactNode;
   league?: LeagueProgress;
   className?: string;
+  showBack?: boolean;
 }) {
   return (
     <header className={`game-page-header ${className}`}>
-      {children ?? (
-        <Link
-          to="/hub"
-          className="workshop-back"
-          aria-label="Retour au refuge"
-          draggable={false}
-        >
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
+      {children ??
+        (showBack && (
+          <Link
+            to="/hub"
+            className="workshop-back"
+            aria-label="Retour au refuge"
             draggable={false}
-          />
-        </Link>
-      )}
+          >
+            <img
+              src="/art/ui/back-arrow.webp"
+              alt=""
+              width={288}
+              height={157}
+              draggable={false}
+            />
+          </Link>
+        ))}
       <PlayerHeader league={league} />
     </header>
   );

@@ -4,7 +4,16 @@ const ICON_ARTWORK = {
   ranged: "ranged-bow",
   building: "building-tower",
   all: "all-cards",
+  refuge: "refuge-map",
+  sanctuary: "sanctuary-crystal",
+  arena: "arena-swords",
+  archives: "archives-book",
+  guardian: "guardian-emblem",
+  settings: "settings-gear",
+  logout: "logout-door",
 } as const;
+
+export type GameIconKind = keyof typeof ICON_ARTWORK;
 
 interface IconProps {
   size?: number;
@@ -17,7 +26,7 @@ export function GameIcon({
   size = 20,
   className = "",
 }: IconProps & {
-  kind: keyof typeof ICON_ARTWORK;
+  kind: GameIconKind;
 }) {
   return (
     <img

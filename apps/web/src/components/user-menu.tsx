@@ -1,14 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import {
-  ChevronRight,
-  Leaf,
-  LogOut,
-  Map,
-  Settings,
-  Swords,
-} from "lucide-react";
-import { CollectionIcon } from "@/components/game/game-icon";
+import { ChevronRight } from "lucide-react";
+import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 
 import {
   DropdownMenu,
@@ -50,7 +43,7 @@ export default function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuLabel className="sylve-user-identity">
             <span className="sylve-user-emblem" aria-hidden="true">
-              <Leaf size={23} />
+              <GameIcon kind="guardian" size={34} />
             </span>
             <div>
               <span className="sylve-menu-eyebrow">COMPTE DU GARDIEN</span>
@@ -63,7 +56,7 @@ export default function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate({ to: "/hub" })}>
             <span className="sylve-menu-icon">
-              <Map size={18} />
+              <GameIcon kind="refuge" size={28} />
             </span>
             <span>
               Le refuge<small>Retrouver la clairière</small>
@@ -72,16 +65,25 @@ export default function UserMenu() {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/decks" })}>
             <span className="sylve-menu-icon">
-              <CollectionIcon size={20} />
+              <CollectionIcon size={28} />
             </span>
             <span>
               Mon deck<small>Préparer mes compagnons</small>
             </span>
             <ChevronRight className="sylve-menu-chevron" size={14} />
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate({ to: "/sanctuary" })}>
+            <span className="sylve-menu-icon">
+              <GameIcon kind="sanctuary" size={28} />
+            </span>
+            <span>
+              Le sanctuaire<small>Invoquer des compagnons</small>
+            </span>
+            <ChevronRight className="sylve-menu-chevron" size={14} />
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/arena" })}>
             <span className="sylve-menu-icon">
-              <Swords size={18} />
+              <GameIcon kind="arena" size={28} />
             </span>
             <span>
               L’arène<small>Rejoindre un combat</small>
@@ -93,7 +95,7 @@ export default function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
             <span className="sylve-menu-icon">
-              <Settings size={18} />
+              <GameIcon kind="settings" size={28} />
             </span>
             <span>
               Paramètres<small>Gérer mon compte</small>
@@ -116,7 +118,7 @@ export default function UserMenu() {
           }}
         >
           <span className="sylve-menu-icon">
-            <LogOut size={18} />
+            <GameIcon kind="logout" size={28} />
           </span>
           Se déconnecter
         </DropdownMenuItem>
