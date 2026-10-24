@@ -387,14 +387,6 @@
     height: 44px;
     padding: 1px;
   }
-  .hub-location {
-    min-width: 44px;
-    justify-content: center;
-    padding-inline: 8px;
-  }
-  .hub-location span {
-    display: none;
-  }
   .header-inner:has(.league-panel, .player-league-loading)
     .header-account-actions {
     width: 100%;

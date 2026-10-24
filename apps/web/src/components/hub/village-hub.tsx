@@ -142,13 +142,7 @@ export function VillageHub({ activity }: VillageHubProps) {
       <main className="relative isolate h-full overflow-hidden bg-[#182e25] font-sans text-[#f5f0dd]">
         <h1 className="sr-only">Le refuge des gardiens</h1>
 
-        <GameHeader className="hub-hud">
-          <div className="hub-location flex min-h-11 items-center gap-2 rounded-full border border-[#d1be85]/35 bg-[#1a3026]/75 px-4 text-[10px] font-medium tracking-[0.1em] text-[#fff6dd] shadow-lg backdrop-blur-sm">
-            <MapPin size={14} className="shrink-0 text-[#e4c381]" />
-            <span className="hidden sm:inline">La clairière des anciens</span>
-            <span className="sm:hidden">Le refuge</span>
-          </div>
-        </GameHeader>
+        <GameHeader className="hub-hud" showBack={false} />
 
         <div
           ref={mapScroll}
