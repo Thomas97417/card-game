@@ -9,7 +9,6 @@ import {
   Compass,
   Crown,
   Gem,
-  Layers3,
   MapPin,
   MousePointer2,
   Settings2,
@@ -42,6 +41,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { CurrencyBalances } from "@/components/currency-balances";
 import { AbilityLegend } from "@/components/game/ability-legend";
+import { CollectionIcon } from "@/components/game/game-icon";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type ModalId = "home" | "archives";
@@ -49,7 +49,7 @@ type Place = {
   id: PlaceId;
   name: string;
   purpose: string;
-  icon: LucideIcon;
+  icon: LucideIcon | typeof CollectionIcon;
   area: CSSProperties;
 };
 
@@ -81,7 +81,7 @@ const PLACES: readonly Place[] = [
     id: "workshop",
     name: "L’atelier",
     purpose: "Préparer mon deck",
-    icon: Layers3,
+    icon: CollectionIcon,
     area: { left: "8%", top: "46%", width: "29%", height: "31%" },
   },
   {
@@ -387,7 +387,7 @@ function HomeContent({
       </DialogDescription>
       <div className="mt-6 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-[#dee2d3] bg-[#eef0e5] p-5">
-          <Layers3 size={20} className="mb-3 text-[#6a805a]" />
+          <CollectionIcon size={20} className="mb-3" />
           <span className="block font-serif text-3xl">{deckCount ?? "—"}</span>
           <span className="text-xs text-[#697664]">
             {deckCount === 1 ? "deck préparé" : "decks préparés"}
@@ -427,7 +427,7 @@ function HomeContent({
 function ArchivesContent() {
   const steps = [
     {
-      icon: Layers3,
+      icon: CollectionIcon,
       title: "Rassemble ton alliance",
       copy: `Compose un deck de ${MIN_DECK_SIZE} à ${DECK_SIZE} variantes distinctes. Chaque carte jouée est remplacée immédiatement pour garder ${HAND_SIZE} cartes en main. Une carte déjà sur le terrain peut revenir en main ; une carte déjà en main ne peut pas y apparaître en double.`,
     },

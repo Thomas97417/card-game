@@ -230,6 +230,54 @@ describe("l’atelier et la collection", () => {
     expect(screen.queryByRole("combobox")).toBeNull();
     expect(screen.queryByText("L’atelier des gardiens")).toBeNull();
   });
+  it("sorts the reserve by descending rarity by default and after returning to Toutes", () => {
+    const reserve: OwnedCard[] = [
+      { card: variantCard("fox", "rare"), copies: 0 },
+      { card: variantCard("guardian", "legendary"), copies: 0 },
+      {
+        card: { ...variantCard("knight", "common"), rarity: undefined },
+        copies: 0,
+      },
+      { card: variantCard("wolf", "epic"), copies: 0 },
+      { card: variantCard("dragon", "legendary"), copies: 0 },
+      { card: variantCard("bear", "rare"), copies: 0 },
+    ];
+    const owned = [
+      ...fullCollection.filter((entry) =>
+        savedDeck.cardIds.includes(entry.card.id),
+      ),
+      ...reserve,
+    ];
+    const originalIds = owned.map((entry) => entry.card.id);
+    const { onSave } = setup(savedDeck, owned);
+    const expectedOrder = [1, 4, 3, 0, 5, 2].map(
+      (index) => reserve[index]!.card.name,
+    );
+    const visibleNames = () =>
+      collection()
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")!.split(",")[0]);
+
+    expect(
+      screen.getByRole("button", { name: "Toutes" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(visibleNames()).toEqual(expectedOrder);
+    fireEvent.click(screen.getByRole("button", { name: "Bâtiments" }));
+    fireEvent.click(screen.getByRole("button", { name: "Rare" }));
+    fireEvent.click(screen.getByRole("button", { name: "Toutes" }));
+    expect(visibleNames()).toEqual(expectedOrder);
+    expect(owned.map((entry) => entry.card.id)).toEqual(originalIds);
+    expect(
+      deckCards().map(
+        (button) => button.getAttribute("aria-label")!.split(",")[0],
+      ),
+    ).toEqual(
+      savedDeck.cardIds.map(
+        (id) => owned.find((entry) => entry.card.id === id)!.card.name,
+      ),
+    );
+    expect(onSave).not.toHaveBeenCalled();
+  });
   it.each(["mouse", "touch"])(
     "replaces a card by dragging with %s and saves eight unique variants",
     async (pointerType) => {

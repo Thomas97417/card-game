@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Check, ChevronRight, Layers3, LockKeyhole } from "lucide-react";
+import { Check, ChevronRight, LockKeyhole } from "lucide-react";
 import { RARITIES, RARITY_LABELS } from "@sylve/game";
+import { CollectionIcon } from "@/components/game/game-icon";
 import {
   DECK_SLOT_UNLOCKS,
   LEAGUES,
@@ -118,7 +119,7 @@ export function LeaguePanel({
       </button>
       {!compact && showNextUnlock && (
         <p className="league-next-unlock">
-          <Layers3 size={13} />
+          <CollectionIcon size={13} />
           {nextSlot
             ? `Deck de ${nextSlot.slot} cartes en ${leagueAt(nextSlot.trophies).label}`
             : "Les 8 emplacements de deck sont débloqués"}
@@ -194,7 +195,7 @@ export function LeaguePanel({
                   </span>
                   {slot ? (
                     <small className="league-slot-reward">
-                      <Layers3 size={12} />
+                      <CollectionIcon size={12} />
                       {slot.slot} cartes dans le deck
                     </small>
                   ) : (

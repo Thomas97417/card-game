@@ -6,7 +6,6 @@ import {
   Check,
   Crown,
   Plus,
-  Layers3,
 } from "lucide-react";
 import {
   maxCardLevel,
@@ -28,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
-import { GameIcon } from "@/components/game/game-icon";
+import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 import { CardAbilities } from "@/components/game/card-abilities";
@@ -271,7 +270,7 @@ export function CardUpgradeDialog({
             <aside className="upgrade-deck-panel" aria-label="Actions du deck">
               <span className="eyebrow">TON DECK</span>
               <div className="upgrade-deck-status" data-in-deck={inDeck}>
-                {inDeck ? <Check size={17} /> : <Layers3 size={17} />}
+                {inDeck ? <Check size={17} /> : <CollectionIcon size={17} />}
                 <span>{inDeck ? "Dans ton deck" : "Dans ta collection"}</span>
               </div>
               <div className="upgrade-deck-actions">
