@@ -10,7 +10,7 @@ import {
 import { CHEST_RULES, chestGold, chestLoot, rollChest } from "./progression";
 
 describe("league progression", () => {
-  it("starts at Iron IV, promotes on exact thresholds and ends at Challenger I", () => {
+  it("starts at Iron IV, promotes on exact thresholds and ends at Challenger", () => {
     expect(leagueProgress(0)).toMatchObject({
       trophies: 0,
       current: { label: "Fer IV" },
@@ -26,7 +26,7 @@ describe("league progression", () => {
     expect(leagueAt(200).label).toBe("Fer III");
     expect(leagueAt(800).label).toBe("Bronze IV");
     expect(leagueProgress(999_999)).toMatchObject({
-      current: { label: "Challenger I" },
+      current: { label: "Challenger", division: null },
       next: null,
       earned: 200,
     });

@@ -30,17 +30,20 @@ export interface League {
   index: number;
   tier: (typeof TIERS)[number]["id"];
   name: string;
-  division: "IV" | "III" | "II" | "I";
+  division: "IV" | "III" | "II" | "I" | null;
   label: string;
   minTrophies: number;
   chestChances: Record<CardRarity, number>;
   lootMultiplier: number;
 }
 
-/** The last three prestige leagues each have one division. */
+/** The last three prestige leagues have no numbered divisions. */
 export const LEAGUES: readonly League[] = TIERS.flatMap((tier, tierIndex) => {
-  const divisions =
-    tierIndex < 7 ? (["IV", "III", "II", "I"] as const) : (["I"] as const);
+  const hasDivisions = tierIndex < 7;
+  // Keep the existing prestige league IDs unchanged.
+  const divisions = hasDivisions
+    ? (["IV", "III", "II", "I"] as const)
+    : (["I"] as const);
   return divisions.map((division, divisionIndex) => {
     const index =
       tierIndex < 7 ? tierIndex * 4 + divisionIndex : 28 + tierIndex - 7;
@@ -53,8 +56,8 @@ export const LEAGUES: readonly League[] = TIERS.flatMap((tier, tierIndex) => {
       index,
       tier: tier.id,
       name: tier.name,
-      division,
-      label: `${tier.name} ${division}`,
+      division: hasDivisions ? division : null,
+      label: hasDivisions ? `${tier.name} ${division}` : tier.name,
       minTrophies: index * TROPHIES_PER_DIVISION,
       chestChances: {
         common: weights[0]!,

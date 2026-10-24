@@ -49,10 +49,10 @@
 .player-league-loading {
   display: grid;
   place-items: center;
-  width: 190px;
+  width: 280px;
   height: 44px;
   border: 1px solid #cfb16c66;
-  border-radius: 9px;
+  border-radius: 24px;
   background: #193429e6;
   color: #e6d3a4;
 }
@@ -87,11 +87,12 @@
   box-shadow: 0 -2px 9px #dfc17140;
 }
 .player-header-actions .league-panel.is-compact {
+  width: 280px;
   min-width: 0;
   min-height: 44px;
-  max-width: 270px;
-  gap: 7px;
-  padding: 3px 10px 3px 4px;
+  max-width: 340px;
+  gap: 12px;
+  padding: 3px 18px 3px 8px;
   margin: 0;
 }
 .player-header-actions .league-badge {
@@ -327,8 +328,8 @@
     width: 100%;
     max-width: none;
     height: 64px;
-    padding: 4px;
-    gap: 3px;
+    padding: 5px 9px 5px 5px;
+    gap: 6px;
   }
   .player-header-actions .league-badge {
     width: 30px !important;
