@@ -7,8 +7,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
-  Crown,
-  Gem,
   MapPin,
   MousePointer2,
   Shield,
@@ -37,14 +35,18 @@ import { GameHeader } from "@/components/game-header";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { AbilityLegend } from "@/components/game/ability-legend";
-import { CollectionIcon } from "@/components/game/game-icon";
+import {
+  CollectionIcon,
+  GameIcon,
+  type GameIconKind,
+} from "@/components/game/game-icon";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type Place = {
   id: PlaceId;
   name: string;
   purpose: string;
-  icon: LucideIcon | typeof CollectionIcon;
+  icon: GameIconKind;
   area: CSSProperties;
 };
 
@@ -55,35 +57,35 @@ const PLACES: readonly Place[] = [
     id: "archives",
     name: "Les archives",
     purpose: "Les règles du cercle",
-    icon: BookOpen,
+    icon: "archives",
     area: { left: "11%", top: "5%", width: "23%", height: "40%" },
   },
   {
     id: "home",
     name: "Maison des gardiens",
     purpose: "Profil et paramètres",
-    icon: Crown,
+    icon: "guardian",
     area: { left: "37%", top: "4%", width: "30%", height: "49%" },
   },
   {
     id: "sanctuary",
     name: "Le sanctuaire",
     purpose: "Invoquer des compagnons",
-    icon: Gem,
+    icon: "sanctuary",
     area: { left: "69%", top: "9%", width: "22%", height: "36%" },
   },
   {
     id: "workshop",
     name: "L’atelier",
     purpose: "Préparer mon deck",
-    icon: CollectionIcon,
+    icon: "all",
     area: { left: "8%", top: "46%", width: "29%", height: "31%" },
   },
   {
     id: "arena",
     name: "L’arène",
     purpose: "Entrer dans le cercle",
-    icon: Swords,
+    icon: "arena",
     area: { left: "65%", top: "49%", width: "29%", height: "31%" },
   },
 ];
@@ -305,7 +307,6 @@ export function VillageHub({ activity }: VillageHubProps) {
 }
 
 function BuildingLabel({ place, active }: { place: Place; active?: boolean }) {
-  const Icon = place.icon;
   return (
     <>
       <span
@@ -315,7 +316,7 @@ function BuildingLabel({ place, active }: { place: Place; active?: boolean }) {
         <ArrowRight size={15} />
       </span>
       <span className="relative flex min-w-40 items-center gap-2.5 rounded-lg border border-[#d1be85]/70 bg-[#1a3026]/95 px-4 py-2.5 text-left shadow-[0_4px_16px_#10251d60] backdrop-blur-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:border-[#f3d791] group-hover:bg-[#304a31] group-focus-visible:-translate-y-1 group-focus-visible:border-[#f3d791]">
-        <Icon size={20} strokeWidth={1.4} className="shrink-0 text-[#e4c987]" />
+        <GameIcon kind={place.icon} size={32} />
         <span>
           <span className="block font-serif text-[17px] leading-tight text-[#fff6dd]">
             {place.name}
