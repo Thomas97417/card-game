@@ -7,6 +7,7 @@ export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients" | "divine";
 export type SummonCount = 1 | 10;
 export const HEROES_PER_SUMMON = 5;
+export const SUMMON_REVEAL_SLOTS = 6;
 
 export interface SummonPack {
   id: SummonPackId;
@@ -70,6 +71,70 @@ export interface SummonResult {
   goldBySummon?: number[];
   /** Ephemeral permission returned only to the purchase's open reveal circle. */
   repeatToken?: string;
+  revealProgress?: SummonRevealProgress;
+  /** Missing on legacy draws, which are treated as already viewed. */
+  revealCompleted?: boolean;
+}
+
+export interface SummonRevealProgress {
+  round: number;
+  revealed: number[];
+}
+
+export type SummonReward =
+  | { kind: "hero"; item: LootReveal }
+  | { kind: "gold"; amount: number };
+
+/** Stable positions keep resumed cards and their reveal markers aligned. */
+export function summonRoundRewards(
+  result: SummonResult,
+  round: number,
+): SummonReward[] {
+  const rewards: SummonReward[] = result.reveals
+    .slice(round * HEROES_PER_SUMMON, (round + 1) * HEROES_PER_SUMMON)
+    .map((item) => ({ kind: "hero", item }));
+  const total = result.gold ?? 0;
+  const gold =
+    result.goldBySummon?.[round] ??
+    Math.floor(total / result.count) + (round < total % result.count ? 1 : 0);
+  if (gold > 0) rewards.push({ kind: "gold", amount: gold });
+  let seed = 2166136261;
+  for (const char of `${result.requestId}:${round}`)
+    seed = Math.imul(seed ^ char.charCodeAt(0), 16777619) >>> 0;
+  for (let i = rewards.length - 1; i > 0; i--) {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    const j = seed % (i + 1);
+    [rewards[i], rewards[j]] = [rewards[j]!, rewards[i]!];
+  }
+  return rewards;
+}
+
+export function mergeSummonProgress(
+  current?: SummonRevealProgress,
+  update?: SummonRevealProgress,
+): SummonRevealProgress {
+  return {
+    round: Math.max(current?.round ?? 0, update?.round ?? 0),
+    revealed: [
+      ...new Set([...(current?.revealed ?? []), ...(update?.revealed ?? [])]),
+    ].sort((a, b) => a - b),
+  };
+}
+
+export function summonRevealIndices(result: SummonResult): number[] {
+  return Array.from({ length: result.count }, (_, round) =>
+    summonRoundRewards(result, round).map(
+      (_, index) => round * SUMMON_REVEAL_SLOTS + index,
+    ),
+  ).flat();
+}
+
+export function summonRevealComplete(
+  result: SummonResult,
+  progress: SummonRevealProgress,
+): boolean {
+  const revealed = new Set(progress.revealed);
+  return summonRevealIndices(result).every((index) => revealed.has(index));
 }
 
 export interface SummonOffer {

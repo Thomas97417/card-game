@@ -17,6 +17,7 @@ const requestId = (id: number) =>
 function history(result: SummonResult) {
   const saved = { ...result };
   delete saved.repeatToken;
+  saved.revealCompleted ??= true;
   return saved;
 }
 function setup() {
@@ -485,7 +486,7 @@ describe("sanctuaire autoritaire", () => {
       });
       await ctx.db.insert("summons", { ownerId: userId, ...oldResult });
     });
-    const replay = { ...oldResult, gold: 0 };
+    const replay = { ...oldResult, gold: 0, revealCompleted: true };
     expect(await client.query(api.sanctuary.latest, {})).toEqual(replay);
     expect(
       await client.mutation(api.sanctuary.summon, {
@@ -804,5 +805,208 @@ describe("sanctuaire autoritaire", () => {
       WELCOME_DIAMONDS,
     );
     expect(await client.query(api.collection.list, {})).toEqual([]);
+  });
+
+  it.each([1, 10] as const)(
+    "persists x%s reveal progress across closure without granting rewards or restoring the discount",
+    async (count) => {
+      const t = setup();
+      const { client } = await player(t, "alice");
+      const request = {
+        packId: "sylve" as const,
+        count,
+        requestId: requestId(1),
+      };
+      const first = await client.mutation(api.sanctuary.summon, request);
+      expect(first.revealProgress).toEqual({ round: 0, revealed: [] });
+      expect(first.revealCompleted).toBe(false);
+      const before = {
+        emeralds: await client.query(api.collection.diamonds, {}),
+        gold: await client.query(api.collection.gold, {}),
+        cards: await client.query(api.collection.list, {}),
+      };
+      await Promise.all(
+        [0, 2].map((index) =>
+          client.mutation(api.sanctuary.saveRevealProgress, {
+            requestId: request.requestId,
+            round: 0,
+            revealed: [index],
+          }),
+        ),
+      );
+      await client.mutation(api.sanctuary.closeCircle, {
+        repeatToken: first.repeatToken!,
+      });
+      const resumed = await client.query(api.sanctuary.unfinished, {});
+      expect(resumed).toMatchObject({
+        requestId: request.requestId,
+        revealProgress: { round: 0, revealed: [0, 2] },
+        revealCompleted: false,
+      });
+      expect(resumed).not.toHaveProperty("repeatToken");
+      if (count === 10) {
+        await client.mutation(api.sanctuary.saveRevealProgress, {
+          requestId: request.requestId,
+          round: 1,
+          revealed: [0, 1, 2, 3, 4, 5, 8],
+        });
+        // A late response from an earlier page cannot hide cards or rewind the step.
+        await client.mutation(api.sanctuary.saveRevealProgress, {
+          requestId: request.requestId,
+          round: 0,
+          revealed: [0],
+        });
+        expect(
+          (await client.query(api.sanctuary.unfinished, {}))!.revealProgress,
+        ).toEqual({ round: 1, revealed: [0, 1, 2, 3, 4, 5, 8] });
+      }
+      const progress = {
+        round: count - 1,
+        revealed: Array.from({ length: count * 6 }, (_, index) => index),
+      };
+      expect(
+        await client.mutation(api.sanctuary.saveRevealProgress, {
+          requestId: request.requestId,
+          ...progress,
+        }),
+      ).toEqual({ completed: true });
+      await client.mutation(api.sanctuary.saveRevealProgress, {
+        requestId: request.requestId,
+        round: 0,
+        revealed: [0],
+      });
+      expect(await client.query(api.sanctuary.unfinished, {})).toBeNull();
+      expect(await client.query(api.sanctuary.latest, {})).toMatchObject({
+        revealProgress: progress,
+        revealCompleted: true,
+      });
+      expect(await client.mutation(api.sanctuary.summon, request)).toEqual({
+        ...history(first),
+        revealProgress: progress,
+        revealCompleted: true,
+      });
+      await expect(
+        client.mutation(api.sanctuary.summon, {
+          ...request,
+          requestId: requestId(2),
+          repeatToken: first.repeatToken,
+        }),
+      ).rejects.toThrow("remise n’est plus disponible");
+      expect(await client.query(api.collection.diamonds, {})).toBe(
+        before.emeralds,
+      );
+      expect(await client.query(api.collection.gold, {})).toBe(before.gold);
+      expect(await client.query(api.collection.list, {})).toEqual(before.cards);
+    },
+  );
+
+  it("keeps every unfinished purchase available even after newer purchases", async () => {
+    const t = setup();
+    const { client } = await player(t, "alice");
+    await client.mutation(api.sanctuary.summon, {
+      packId: "sylve",
+      count: 1,
+      requestId: requestId(1),
+    });
+    await client.mutation(api.sanctuary.summon, {
+      packId: "sylve",
+      count: 10,
+      requestId: requestId(2),
+    });
+    expect((await client.query(api.sanctuary.unfinished, {}))!.requestId).toBe(
+      requestId(1),
+    );
+    await client.mutation(api.sanctuary.saveRevealProgress, {
+      requestId: requestId(1),
+      round: 0,
+      revealed: [0, 1, 2, 3, 4, 5],
+    });
+    expect((await client.query(api.sanctuary.unfinished, {}))!.requestId).toBe(
+      requestId(2),
+    );
+    await client.mutation(api.sanctuary.saveRevealProgress, {
+      requestId: requestId(2),
+      round: 9,
+      revealed: Array.from({ length: 60 }, (_, index) => index),
+    });
+    expect(await client.query(api.sanctuary.unfinished, {})).toBeNull();
+    expect(await client.query(api.collection.diamonds, {})).toBe(
+      WELCOME_DIAMONDS - 149 - 1299,
+    );
+  });
+
+  it("validates reveal positions and sequence and isolates each player's progress", async () => {
+    const t = setup();
+    const alice = await player(t, "alice");
+    const bob = await player(t, "bob");
+    await expect(t.query(api.sanctuary.unfinished, {})).rejects.toThrow(
+      "Connecte-toi",
+    );
+    await expect(
+      t.mutation(api.sanctuary.saveRevealProgress, {
+        requestId: requestId(1),
+        round: 0,
+        revealed: [],
+      }),
+    ).rejects.toThrow("Connecte-toi");
+    await alice.client.mutation(api.sanctuary.summon, {
+      packId: "sylve",
+      count: 10,
+      requestId: requestId(1),
+    });
+    for (const progress of [
+      { round: -1, revealed: [] },
+      { round: 10, revealed: [] },
+      { round: 0.5, revealed: [] },
+      { round: 0, revealed: [-1] },
+      { round: 0, revealed: [60] },
+      { round: 0, revealed: [0.5] },
+      { round: 0, revealed: Array(61).fill(0) },
+      { round: 1, revealed: [0, 1] },
+      { round: 0, revealed: [6] },
+    ])
+      await expect(
+        alice.client.mutation(api.sanctuary.saveRevealProgress, {
+          requestId: requestId(1),
+          ...progress,
+        }),
+      ).rejects.toThrow();
+    await expect(
+      bob.client.mutation(api.sanctuary.saveRevealProgress, {
+        requestId: requestId(1),
+        round: 0,
+        revealed: [0],
+      }),
+    ).rejects.toThrow("introuvable");
+    expect(await bob.client.query(api.sanctuary.unfinished, {})).toBeNull();
+    expect(
+      (await alice.client.query(api.sanctuary.unfinished, {}))!.revealProgress,
+    ).toEqual({ round: 0, revealed: [] });
+  });
+
+  it("treats legacy purchases as completed instead of prompting players to reveal them again", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    await t.run((ctx) =>
+      ctx.db.insert("summons", {
+        ownerId: userId,
+        requestId: requestId(1),
+        packId: "sylve",
+        count: 1,
+        cost: 149,
+        reveals: [],
+      }),
+    );
+    expect(await client.query(api.sanctuary.unfinished, {})).toBeNull();
+    expect(
+      (await client.query(api.sanctuary.latest, {}))!.revealCompleted,
+    ).toBe(true);
+    expect(
+      await client.mutation(api.sanctuary.saveRevealProgress, {
+        requestId: requestId(1),
+        round: 0,
+        revealed: [],
+      }),
+    ).toEqual({ completed: true });
   });
 });

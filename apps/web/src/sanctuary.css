@@ -529,6 +529,28 @@
   align-items: center;
   gap: 7px;
 }
+.sanctuary-resume-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 15px;
+  border: 1px solid #d5b66c;
+  border-radius: 8px;
+  color: #ffedb1;
+  background: linear-gradient(#4d6540, #274932);
+  box-shadow: 0 3px 12px #061e1655;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sanctuary-resume-button:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+.sanctuary-resume-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
 .sanctuary-text-button {
   min-height: 44px;
   border-radius: 4px;

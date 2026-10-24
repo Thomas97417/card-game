@@ -14,6 +14,9 @@ import {
   SUMMON_PACKS,
   summonOffer,
   summonQuantity,
+  mergeSummonProgress,
+  summonRevealComplete,
+  type SummonRevealProgress,
   type SummonCount,
   type SummonPack,
   type SummonPackId,
@@ -25,6 +28,10 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { BestiaryDialog } from "./bestiary-dialog";
 import { SummonRevealDialog } from "./summon-reveal-dialog";
+import {
+  useSummonRevealProgress,
+  type SaveSummonProgress,
+} from "./use-summon-reveal-progress";
 
 export interface SummonRequest {
   packId: SummonPackId;
@@ -38,10 +45,12 @@ interface SanctuaryProps {
   ready: boolean;
   peakTrophies?: number;
   latest?: SummonResult | null;
+  unfinished?: SummonResult | null;
   collection: OwnedCard[] | undefined;
   purchasedChestSlots?: readonly number[];
   onSummon: (request: SummonRequest) => Promise<SummonResult>;
   onCloseCircle: (repeatToken: string) => Promise<unknown>;
+  onSaveRevealProgress: SaveSummonProgress;
   onUnlockChestSlot: (slot: number) => Promise<unknown>;
   onUpgrade: (variantId: string) => Promise<unknown>;
 }
@@ -51,10 +60,12 @@ export function Sanctuary({
   ready,
   peakTrophies = 0,
   latest,
+  unfinished,
   collection,
   purchasedChestSlots = [],
   onSummon,
   onCloseCircle,
+  onSaveRevealProgress,
   onUnlockChestSlot,
   onUpgrade,
 }: SanctuaryProps) {
@@ -64,6 +75,7 @@ export function Sanctuary({
   } | null>(null);
   const [result, setResult] = useState<SummonResult | null>(null);
   const [viewingHistory, setViewingHistory] = useState(false);
+  const [resuming, setResuming] = useState(false);
   const [lastResult, setLastResult] = useState<SummonResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyKey, setBusyKey] = useState<number | null>(null);
@@ -77,6 +89,11 @@ export function Sanctuary({
   const mounted = useRef(true);
   const closeCircle = useRef(onCloseCircle);
   closeCircle.current = onCloseCircle;
+  const progress = useSummonRevealProgress(
+    onSaveRevealProgress,
+    latest,
+    unfinished,
+  );
 
   const releaseCircle = useCallback(() => {
     circleEpoch.current++;
@@ -90,6 +107,7 @@ export function Sanctuary({
     releaseCircle();
     setResult(null);
     setViewingHistory(false);
+    setResuming(false);
     setError(null);
   }, [releaseCircle]);
   useEffect(() => {
@@ -103,7 +121,31 @@ export function Sanctuary({
   }, [closeResult, releaseCircle]);
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
   useHorizontalWheel(offersRow);
-  const previous = lastResult ?? latest;
+  const previous = lastResult
+    ? progress.current(lastResult)
+    : latest
+      ? progress.current(latest)
+      : null;
+
+  function openSaved(draw: SummonResult) {
+    // Finding the paid draw also resolves a previously lost purchase response.
+    if (pending.current?.requestId === draw.requestId) pending.current = null;
+    const saved = progress.resume(draw);
+    setViewingHistory(saved.revealCompleted !== false);
+    setResuming(saved.revealCompleted === false);
+    setResult({ ...saved, repeatToken: undefined });
+  }
+
+  function saveProgress(update: SummonRevealProgress) {
+    if (!result) return;
+    const merged = mergeSummonProgress(result.revealProgress, update);
+    progress.update(result, merged);
+    setResult({
+      ...result,
+      revealProgress: merged,
+      revealCompleted: summonRevealComplete(result, merged),
+    });
+  }
 
   async function invoke(
     packId: SummonPackId,
@@ -134,13 +176,22 @@ export function Sanctuary({
           requestId: crypto.randomUUID(),
           ...(repeatToken ? { repeatToken } : {}),
         };
-      const reward = await onSummon(pending.current);
+      const purchased = await onSummon(pending.current);
+      const reward = {
+        ...purchased,
+        revealProgress: purchased.revealProgress ?? { round: 0, revealed: [] },
+        revealCompleted: purchased.revealCompleted ?? false,
+      };
       const saved = { ...reward };
       delete saved.repeatToken;
-      if (mounted.current) setLastResult(saved);
+      if (mounted.current) {
+        setLastResult(saved);
+        progress.remember(saved);
+      }
       if (mounted.current && epoch === circleEpoch.current) {
         activeCircle.current = reward.repeatToken ?? null;
-        setViewingHistory(false);
+        setViewingHistory(reward.revealCompleted);
+        setResuming(false);
         setResult(reward);
       } else if (reward.repeatToken) {
         void closeCircle.current(reward.repeatToken).catch(() => undefined);
@@ -324,15 +375,26 @@ export function Sanctuary({
             className="sanctuary-navigation"
             aria-label="Explorer le sanctuaire"
           >
-            {previous && (
+            {progress.pending && (
+              <button
+                type="button"
+                className="sanctuary-resume-button"
+                disabled={!!busy || busyKey !== null}
+                onClick={() => {
+                  if (progress.pending) openSaved(progress.pending);
+                }}
+              >
+                <History size={17} />
+                Finissez votre tirage
+                <ArrowRight size={16} />
+              </button>
+            )}
+            {previous && previous.revealCompleted !== false && (
               <button
                 type="button"
                 className="sanctuary-text-button"
                 disabled={!!busy || busyKey !== null}
-                onClick={() => {
-                  setViewingHistory(true);
-                  setResult({ ...previous, repeatToken: undefined });
-                }}
+                onClick={() => openSaved(previous)}
               >
                 <History size={17} />
                 Dernière invocation
@@ -385,9 +447,11 @@ export function Sanctuary({
         )}
       </div>
       <SummonRevealDialog
-        key={result?.requestId ?? "closed"}
+        key={`${result?.requestId ?? "closed"}:${viewingHistory}:${resuming}`}
         result={result}
         history={viewingHistory}
+        resuming={resuming}
+        onProgress={viewingHistory ? undefined : saveProgress}
         collection={collection}
         emeralds={emeralds}
         ready={ready}

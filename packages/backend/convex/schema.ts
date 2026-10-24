@@ -40,8 +40,13 @@ export default defineSchema({
     reveals: v.array(revealValidator),
     gold: v.optional(v.number()),
     goldBySummon: v.optional(v.array(v.number())),
+    revealProgress: v.optional(
+      v.object({ round: v.number(), revealed: v.array(v.number()) }),
+    ),
+    revealCompleted: v.optional(v.boolean()),
   })
     .index("by_owner_request", ["ownerId", "requestId"])
+    .index("by_owner_reveal", ["ownerId", "revealCompleted"])
     .index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),

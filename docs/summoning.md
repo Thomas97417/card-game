@@ -8,7 +8,9 @@ Lors d’un nouvel achat, six dos identiques forment un cercle. L’identité, l
 
 Un lot ×10 est acheté et crédité une seule fois. Il se révèle en dix cercles successifs de six cartes. Le bouton central passe au tirage suivant après les six retournements ; au dernier cercle, il propose un nouvel achat du même lot. Le serveur conserve les dix montants d’or séparément, en plus du total. Les anciennes invocations restent consultables : leur or total est réparti entre les étapes sans ajout de récompense ; celles sans or conservent leurs cinq cartes.
 
-Dans « Dernière invocation », les cartes apparaissent immédiatement face visible, pour chacune des dix étapes d’un lot ×10 également. Cette consultation permet d’ouvrir les fiches et de parcourir les tirages sans rejouer leur révélation. Elle ne réactive pas la remise du cercle. Les blocs sur l’or garanti et les quantités selon le record de ligue ont été retirés des offres ; les taux, les quantités par rareté et les garanties du bouton ×10 restent affichés.
+Les cartes retournées et l’étape en cours sont maintenant sauvegardées à chaque action. Si le joueur quitte avant la fin, le bouton « Finissez votre tirage » permet de reprendre gratuitement les mêmes récompenses, avec les cartes déjà découvertes face visible et les autres encore cachées. Un lot ×10 reprend à l’étape interrompue. Les achats inachevés restent disponibles même après un nouvel achat et sont proposés du plus ancien au plus récent. Un brouillon local protège les retournements en cours d’enregistrement ; le serveur fusionne les mises à jour sans jamais masquer une carte déjà révélée.
+
+Une fois le tirage entièrement révélé, « Dernière invocation » affiche directement ses cartes face visible, pour chacune des dix étapes d’un lot ×10 également. Les anciens tirages sans suivi de progression sont considérés comme terminés. Reprendre ou consulter un tirage ne réactive pas le tarif réduit perdu à la fermeture du cercle, ne débite rien et ne crédite aucune récompense supplémentaire. Les blocs sur l’or garanti et les quantités selon le record de ligue ont été retirés des offres ; les taux, les quantités par rareté et les garanties du bouton ×10 restent affichés.
 
 ## Remise de réinvocation
 
@@ -35,3 +37,5 @@ Après correction du périmètre de la remise, les [tarifs du sanctuaire hors du
 Les [offres simplifiées](summon-offers-simplified.webp) et l’[historique immédiatement révélé](summon-history-visible.webp), sans Sparkles ni phrase d’aide, ont été vérifiés dans le jeu connecté.
 
 Le [bouton de réinvocation à 139 émeraudes](summon-repeat-139.webp), sans mention de pourcentage, a été contrôlé avec des récompenses de démonstration. Le prix débité, la limite d’accessibilité à 138/139 émeraudes et l’unicité du débit sont vérifiés côté serveur.
+
+La [mention « Finissez votre tirage »](summon-resume-entry.webp) et la [reprise après rechargement au milieu de la deuxième invocation d’un lot ×10](summon-resume-progress.webp) ont été vérifiées dans un aperçu isolé avec des récompenses fictives et un solde nul. Les tests couvrent la conservation des cartes retournées, la reprise après réponse perdue, plusieurs tirages en attente, les mises à jour tardives, les entrées invalides et l’absence de nouveau débit ou crédit.

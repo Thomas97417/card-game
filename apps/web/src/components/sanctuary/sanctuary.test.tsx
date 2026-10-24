@@ -7,7 +7,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { CATALOG, resolveCard, variantCard } from "@sylve/game";
 import {
   summonGold,
@@ -53,6 +53,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
   const onUnlockChestSlot = vi.fn().mockResolvedValue(undefined);
   const onCloseCircle = vi.fn().mockResolvedValue(undefined);
+  const onSaveRevealProgress = vi.fn().mockResolvedValue({ completed: false });
   const props = {
     emeralds: 3_000,
     ready: true,
@@ -61,6 +62,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
     onUpgrade,
     onUnlockChestSlot,
     onCloseCircle,
+    onSaveRevealProgress,
     ...overrides,
   };
   const view = (next: Parameters<typeof Sanctuary>[0]) => (
@@ -77,6 +79,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
     onUpgrade,
     onUnlockChestSlot,
     onCloseCircle,
+    onSaveRevealProgress,
     update: (changes: Partial<Parameters<typeof Sanctuary>[0]>) => {
       Object.assign(props, changes);
       result.rerender(view(props));
@@ -96,6 +99,8 @@ function turnAll(dialog: HTMLElement) {
   }))
     fireEvent.click(button);
 }
+
+afterEach(() => window.localStorage.clear());
 
 describe("le sanctuaire", () => {
   it("offers three unique keys and unlocks a slot once without invoking cards", async () => {
@@ -460,7 +465,7 @@ describe("le sanctuaire", () => {
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(
-      screen.getByRole("button", { name: "Dernière invocation" }),
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
     expect(await screen.findByRole("dialog")).toBeTruthy();
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
@@ -617,11 +622,13 @@ describe("le sanctuaire", () => {
         "1299 émeraudes",
       );
       fireEvent.click(
-        screen.getByRole("button", { name: "Dernière invocation" }),
+        screen.getByRole("button", { name: "Finissez votre tirage" }),
       );
       const history = await screen.findByRole("dialog");
       expect(within(history).queryByText(/% au prochain/)).toBeNull();
+      expect(onSummon).toHaveBeenCalledOnce();
       for (let round = 0; round < count; round++) {
+        turnAll(history);
         if (round < count - 1)
           fireEvent.click(
             within(history).getByRole("button", {
@@ -695,7 +702,7 @@ describe("le sanctuaire", () => {
       "149 émeraudes",
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Dernière invocation" }),
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
     expect(
       within(await screen.findByRole("dialog")).queryByText(/% au prochain/),
@@ -808,6 +815,238 @@ describe("le sanctuaire", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(5);
     expect(within(dialog).queryByText("Carte d’or")).toBeNull();
+  });
+
+  it("resumes only the hidden cards of an interrupted purchase without a second payment or discount", async () => {
+    const { onSummon, onSaveRevealProgress } = setup();
+    fireEvent.click(purchase("Sylve", 1));
+    const first = await screen.findByRole("dialog");
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Révéler la carte 1" }),
+    );
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Révéler la carte 3" }),
+    );
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(
+      screen.queryByRole("button", { name: "Dernière invocation" }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(within(resumed).getByText("Finissez votre tirage")).toBeTruthy();
+    expect(within(resumed).getByRole("status").textContent).toBe(
+      "2 / 6 cartes révélées",
+    );
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(4);
+    expect(
+      within(resumed).queryByRole("button", { name: "Révéler la carte 1" }),
+    ).toBeNull();
+    expect(
+      within(resumed).getByRole("button", {
+        name: "Réinvoquer ×1, 149 émeraudes",
+      }),
+    ).toBeTruthy();
+    turnAll(resumed);
+    expect(onSummon).toHaveBeenCalledOnce();
+    expect(onSaveRevealProgress).toHaveBeenLastCalledWith({
+      requestId: onSummon.mock.calls[0]![0].requestId,
+      round: 0,
+      revealed: [0, 1, 2, 3, 4, 5],
+    });
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(
+      screen.queryByRole("button", { name: "Finissez votre tirage" }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog")).queryByRole("button", {
+        name: /^Révéler la carte/,
+      }),
+    ).toBeNull();
+  });
+
+  it("resumes a ten-pack on its interrupted step and preserves earlier reveals", async () => {
+    const { onSummon } = setup();
+    fireEvent.click(purchase("Sylve", 10));
+    const first = await screen.findByRole("dialog");
+    turnAll(first);
+    fireEvent.click(
+      within(first).getByRole("button", { name: /^Invocation suivante/ }),
+    );
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Révéler la carte 4" }),
+    );
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(within(resumed).getByText("Invocation 2 / 10")).toBeTruthy();
+    expect(within(resumed).getByRole("status").textContent).toBe(
+      "1 / 6 cartes révélées",
+    );
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(5);
+    turnAll(resumed);
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: /^Invocation suivante/ }),
+    );
+    expect(within(resumed).getByText("Invocation 3 / 10")).toBeTruthy();
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(6);
+    expect(onSummon).toHaveBeenCalledOnce();
+  });
+
+  it("restores server-saved progress after a reload even with no emeralds", async () => {
+    const draw: SummonResult = {
+      ...reward({
+        packId: "sylve",
+        count: 10,
+        requestId: "server-saved-progress",
+      }),
+      revealProgress: {
+        round: 4,
+        revealed: [...Array.from({ length: 24 }, (_, index) => index), 24, 27],
+      },
+      revealCompleted: false,
+    };
+    const { onSummon } = setup({ latest: draw, unfinished: draw, emeralds: 0 });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(within(resumed).getByText("Invocation 5 / 10")).toBeTruthy();
+    expect(within(resumed).getByRole("status").textContent).toBe(
+      "2 / 6 cartes révélées",
+    );
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(4);
+    expect(onSummon).not.toHaveBeenCalled();
+  });
+
+  it("retains a browser draft until the server acknowledges it and recovers it on the next visit", async () => {
+    const onSaveRevealProgress = vi
+      .fn()
+      .mockRejectedValue(new Error("Offline"));
+    const first = setup({ onSaveRevealProgress });
+    fireEvent.click(purchase("Sylve", 1));
+    const dialog = await screen.findByRole("dialog");
+    const request = first.onSummon.mock.calls[0]![0];
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Révéler la carte 2" }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Révéler la carte 5" }),
+    );
+    await waitFor(() => expect(onSaveRevealProgress).toHaveBeenCalledTimes(2));
+    first.unmount();
+    const draw: SummonResult = {
+      ...reward(request),
+      revealProgress: { round: 0, revealed: [] },
+      revealCompleted: false,
+    };
+    const next = setup({ latest: draw, unfinished: draw, emeralds: 0 });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(within(resumed).getByRole("status").textContent).toBe(
+      "2 / 6 cartes révélées",
+    );
+    expect(next.onSaveRevealProgress).toHaveBeenCalledWith({
+      requestId: request.requestId,
+      round: 0,
+      revealed: [1, 4],
+    });
+    expect(next.onSummon).not.toHaveBeenCalled();
+  });
+
+  it("resumes a purchase confirmed by the server after a lost response and keeps the next purchase separate", async () => {
+    const onSummon = vi
+      .fn<(request: SummonRequest) => Promise<SummonResult>>()
+      .mockRejectedValueOnce(new Error("Response lost"))
+      .mockImplementation(async (request) => reward(request));
+    const { update } = setup({ onSummon });
+    fireEvent.click(purchase("Sylve", 1));
+    await screen.findByRole("alert");
+    const paid = onSummon.mock.calls[0]![0];
+    const draw: SummonResult = {
+      ...reward(paid),
+      revealProgress: { round: 0, revealed: [] },
+      revealCompleted: false,
+    };
+    update({ latest: draw, unfinished: draw });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    turnAll(resumed);
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(purchase("Sylve", 1));
+    await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(2));
+    expect(onSummon.mock.calls[1]![0].requestId).not.toBe(paid.requestId);
+  });
+
+  it("can finish an earlier draw after buying another one", async () => {
+    const { onSummon, onSaveRevealProgress } = setup();
+    fireEvent.click(purchase("Sylve", 1));
+    const first = await screen.findByRole("dialog");
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Révéler la carte 1" }),
+    );
+    fireEvent.click(
+      within(first).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(purchase("Sylve", 1));
+    const second = await screen.findByRole("dialog");
+    fireEvent.click(
+      within(second).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(within(resumed).getByRole("status").textContent).toBe(
+      "1 / 6 cartes révélées",
+    );
+    turnAll(resumed);
+    expect(onSaveRevealProgress.mock.calls.at(-1)![0].requestId).toBe(
+      onSummon.mock.calls[0]![0].requestId,
+    );
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog")).getByRole("status").textContent,
+    ).toBe("0 / 6 cartes révélées");
+    expect(onSummon).toHaveBeenCalledTimes(2);
   });
 
   it("keeps the creature bestiary available from the new page", async () => {

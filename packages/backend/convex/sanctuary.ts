@@ -5,6 +5,10 @@ import {
   summonGoldRewards,
   summonLoot,
   summonOffer,
+  mergeSummonProgress,
+  summonRevealIndices,
+  summonRevealComplete,
+  SUMMON_REVEAL_SLOTS,
 } from "@sylve/game/summoning";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
@@ -69,7 +73,105 @@ export const latest = query({
       reveals,
       gold: result.gold ?? 0,
       ...(result.goldBySummon ? { goldBySummon: result.goldBySummon } : {}),
+      ...(result.revealProgress
+        ? { revealProgress: result.revealProgress }
+        : {}),
+      revealCompleted: result.revealCompleted ?? true,
     };
+  },
+});
+
+export const unfinished = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    const result = await ctx.db
+      .query("summons")
+      .withIndex("by_owner_reveal", (q) =>
+        q.eq("ownerId", userId).eq("revealCompleted", false),
+      )
+      .order("asc")
+      .first();
+    if (!result) return null;
+    const {
+      requestId,
+      packId,
+      count,
+      cost,
+      reveals,
+      gold,
+      goldBySummon,
+      revealProgress,
+    } = result;
+    return {
+      requestId,
+      packId,
+      count,
+      cost,
+      reveals,
+      gold: gold ?? 0,
+      ...(goldBySummon ? { goldBySummon } : {}),
+      revealProgress: revealProgress ?? { round: 0, revealed: [] },
+      revealCompleted: false,
+    };
+  },
+});
+
+export const saveRevealProgress = mutation({
+  args: {
+    requestId: v.string(),
+    round: v.number(),
+    revealed: v.array(v.number()),
+  },
+  handler: async (ctx, { requestId, round, revealed }) => {
+    const { userId } = await requirePlayer(ctx);
+    const result = await ctx.db
+      .query("summons")
+      .withIndex("by_owner_request", (q) =>
+        q.eq("ownerId", userId).eq("requestId", requestId),
+      )
+      .unique();
+    if (!result) throw new ConvexError("Ce tirage est introuvable.");
+    const valid = new Set(summonRevealIndices(result));
+    if (
+      !Number.isInteger(round) ||
+      round < 0 ||
+      round >= result.count ||
+      revealed.length > result.count * SUMMON_REVEAL_SLOTS ||
+      revealed.some((index) => !Number.isInteger(index) || !valid.has(index))
+    )
+      throw new ConvexError("Progression du tirage invalide.");
+    // Legacy results have already been presented in the fully revealed history.
+    if (result.revealCompleted === undefined) return { completed: true };
+    const progress = mergeSummonProgress(result.revealProgress, {
+      round,
+      revealed,
+    });
+    const visible = new Set(progress.revealed);
+    let accessibleRound = 0;
+    while (
+      accessibleRound < result.count - 1 &&
+      [...valid]
+        .filter(
+          (index) =>
+            Math.floor(index / SUMMON_REVEAL_SLOTS) === accessibleRound,
+        )
+        .every((index) => visible.has(index))
+    )
+      accessibleRound++;
+    if (
+      progress.round > accessibleRound ||
+      progress.revealed.some(
+        (index) => Math.floor(index / SUMMON_REVEAL_SLOTS) > accessibleRound,
+      )
+    )
+      throw new ConvexError("Termine d’abord les cartes du tirage en cours.");
+    const completed = summonRevealComplete(result, progress);
+    await ctx.db.patch(result._id, {
+      revealProgress: progress,
+      revealCompleted: completed,
+    });
+    return { completed };
   },
 });
 
@@ -125,6 +227,10 @@ export const summon = mutation({
         ...(previous.goldBySummon
           ? { goldBySummon: previous.goldBySummon }
           : {}),
+        ...(previous.revealProgress
+          ? { revealProgress: previous.revealProgress }
+          : {}),
+        revealCompleted: previous.revealCompleted ?? true,
         ...(wallet?.activeSummonId === previous._id
           ? { repeatToken: previous._id }
           : {}),
@@ -173,6 +279,8 @@ export const summon = mutation({
       reveals,
       gold,
       goldBySummon,
+      revealProgress: { round: 0, revealed: [] },
+      revealCompleted: false,
     };
     const invocationId = await ctx.db.insert("summons", {
       ownerId: userId,

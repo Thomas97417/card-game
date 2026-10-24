@@ -7,9 +7,10 @@ import {
   resolveCard,
   type OwnedCard,
 } from "@sylve/game";
-import type { LootReveal } from "@sylve/game/progression";
 import {
-  HEROES_PER_SUMMON,
+  SUMMON_REVEAL_SLOTS,
+  summonRoundRewards,
+  type SummonRevealProgress,
   summonOffer,
   summonPack,
   type SummonResult,
@@ -25,35 +26,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type Reward =
-  | { kind: "hero"; item: LootReveal }
-  | { kind: "gold"; amount: number };
-
-function roundRewards(result: SummonResult, round: number): Reward[] {
-  const rewards: Reward[] = result.reveals
-    .slice(round * HEROES_PER_SUMMON, (round + 1) * HEROES_PER_SUMMON)
-    .map((item) => ({ kind: "hero", item }));
-  // Old history has only an aggregate. Split that existing total without granting anything.
-  const total = result.gold ?? 0;
-  const gold =
-    result.goldBySummon?.[round] ??
-    Math.floor(total / result.count) + (round < total % result.count ? 1 : 0);
-  if (gold > 0) rewards.push({ kind: "gold", amount: gold });
-  // The position of the gold card must not give it away. Keep history order stable.
-  let seed = 2166136261;
-  for (const char of `${result.requestId}:${round}`)
-    seed = Math.imul(seed ^ char.charCodeAt(0), 16777619) >>> 0;
-  for (let i = rewards.length - 1; i > 0; i--) {
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-    const j = seed % (i + 1);
-    [rewards[i], rewards[j]] = [rewards[j]!, rewards[i]!];
-  }
-  return rewards;
-}
-
 export function SummonRevealDialog({
   result,
   history = false,
+  resuming = false,
+  onProgress,
   collection,
   emeralds,
   busy = false,
@@ -66,6 +43,8 @@ export function SummonRevealDialog({
 }: {
   result: SummonResult | null;
   history?: boolean;
+  resuming?: boolean;
+  onProgress?: (progress: SummonRevealProgress) => void;
   collection: OwnedCard[] | undefined;
   emeralds?: number | null;
   busy?: boolean;
@@ -76,8 +55,13 @@ export function SummonRevealDialog({
   onRepeat: () => void;
   onRetry?: () => void;
 }) {
-  const [round, setRound] = useState(0);
-  const [flipped, setFlipped] = useState<Set<string>>(() => new Set());
+  const [round, setRound] = useState(() =>
+    history ? 0 : (result?.revealProgress?.round ?? 0),
+  );
+  const [flipped, setFlipped] = useState<Set<number>>(
+    () => new Set(result?.revealProgress?.revealed),
+  );
+  const flippedRef = useRef(flipped);
   const [inspected, setInspected] = useState<string | null>(null);
   const [lastFlipped, setLastFlipped] = useState<number | null>(null);
   const popup = useRef<HTMLDivElement>(null);
@@ -94,10 +78,12 @@ export function SummonRevealDialog({
         copies: inspectedReveal.copies,
       })
     : undefined;
-  const rewards = result ? roundRewards(result, round) : [];
+  const rewards = result ? summonRoundRewards(result, round) : [];
   const revealed = history
     ? rewards.length
-    : rewards.filter((_, index) => flipped.has(`${round}:${index}`)).length;
+    : rewards.filter((_, index) =>
+        flipped.has(round * SUMMON_REVEAL_SLOTS + index),
+      ).length;
   const complete = revealed === rewards.length;
   const lastRound = result ? round === result.count - 1 : true;
   const offer = result
@@ -128,9 +114,13 @@ export function SummonRevealDialog({
   }
 
   function flip(index: number) {
-    if (flipped.has(`${round}:${index}`)) return;
+    const marker = round * SUMMON_REVEAL_SLOTS + index;
+    if (flippedRef.current.has(marker)) return;
+    const next = new Set(flippedRef.current).add(marker);
+    flippedRef.current = next;
     setLastFlipped(index);
-    setFlipped((previous) => new Set(previous).add(`${round}:${index}`));
+    setFlipped(next);
+    onProgress?.({ round, revealed: [...next].sort((a, b) => a - b) });
   }
 
   return (
@@ -151,7 +141,11 @@ export function SummonRevealDialog({
             <header className="summon-reveal-heading">
               <div>
                 <span className="summon-reveal-eyebrow">
-                  {history ? "Dernière invocation" : "Le cercle des esprits"}
+                  {history
+                    ? "Dernière invocation"
+                    : resuming
+                      ? "Finissez votre tirage"
+                      : "Le cercle des esprits"}
                 </span>
                 <DialogTitle>{summonPack(result.packId).name}</DialogTitle>
               </div>
@@ -168,7 +162,8 @@ export function SummonRevealDialog({
                 key={round}
               >
                 {rewards.map((reward, index) => {
-                  const isFlipped = history || flipped.has(`${round}:${index}`);
+                  const isFlipped =
+                    history || flipped.has(round * SUMMON_REVEAL_SLOTS + index);
                   const angle =
                     ((-120 + (index * 360) / rewards.length) * Math.PI) / 180;
                   return (
@@ -326,7 +321,14 @@ export function SummonRevealDialog({
                   onClick={() => {
                     if (!lastRound) {
                       setLastFlipped(null);
-                      setRound((value) => value + 1);
+                      setRound(round + 1);
+                      if (!history)
+                        onProgress?.({
+                          round: round + 1,
+                          revealed: [...flippedRef.current].sort(
+                            (a, b) => a - b,
+                          ),
+                        });
                     } else onRepeat();
                   }}
                 >
