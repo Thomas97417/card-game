@@ -22,7 +22,6 @@ import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import {
   ArrowRightLeft,
   Check,
-  Layers3,
   Leaf,
   ListFilter,
   X,
@@ -30,7 +29,7 @@ import {
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
 import { StatBadge } from "@/components/game/stat-badge";
-import { GameIcon } from "@/components/game/game-icon";
+import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { CurrencyBalances } from "@/components/currency-balances";
@@ -204,12 +203,18 @@ export function DeckWorkshop({
   const available = (collection ?? [])
     .map((entry) => entry.card)
     .filter((card) => !cards.includes(card.id));
-  const visible = available.filter(
-    (card) =>
-      (!filter || getCombatType(card) === filter) &&
-      (rarityFilters.length === 0 ||
-        rarityFilters.includes(card.rarity ?? "common")),
-  );
+  const visible = available
+    .filter(
+      (card) =>
+        (!filter || getCombatType(card) === filter) &&
+        (rarityFilters.length === 0 ||
+          rarityFilters.includes(card.rarity ?? "common")),
+    )
+    .sort(
+      (a, b) =>
+        RARITIES.indexOf(b.rarity ?? "common") -
+        RARITIES.indexOf(a.rarity ?? "common"),
+    );
   const selectedCard = picked ? entries.get(picked)?.card : undefined;
 
   function cancelDrag() {
@@ -482,7 +487,7 @@ export function DeckWorkshop({
                           if (picked) replaceCard(picked, slot);
                         }}
                       >
-                        <Layers3 size={27} />
+                        <CollectionIcon size={27} />
                         <span>Emplacement libre</span>
                       </button>
                     </div>
@@ -586,11 +591,7 @@ export function DeckWorkshop({
                 setMessage(instructions);
               }}
             >
-              {type ? (
-                <GameIcon kind={type} size={25} />
-              ) : (
-                <Layers3 size={19} strokeWidth={1.6} aria-hidden="true" />
-              )}
+              <GameIcon kind={type ?? "all"} size={25} />
               <span>{label}</span>
             </button>
           ))}

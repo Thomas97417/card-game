@@ -1,5 +1,13 @@
 # Illustrations de Sylve
 
+## Filtres « Toutes » et « Bâtiments »
+
+Deux illustrations ont été créées avec **ImageGen intégré**, par deux appels distincts avec fond transparent, puis encodées en WebP de 256 × 256 px avec alpha conservé : `apps/web/public/art/ui/all-cards.webp`, un éventail de cartes aux couleurs des quatre raretés, et `apps/web/public/art/ui/building-tower.webp`, une tour de pierre au toit vert et aux ornements dorés. Les prompts exacts et les chemins des sources sont conservés dans [art-prompts-collection-filters.json](art-prompts-collection-filters.json).
+
+Le composant partagé `GameIcon` affiche les deux illustrations dans les filtres de l’atelier. Le bâtiment apparaît aussi dans les cartes, les statistiques de combat, les détails et le bestiaire. `CollectionIcon` réutilise l’éventail dans les emplacements libres, la fiche d’amélioration, le refuge, les archives et les récompenses de ligue. La collection de l’atelier s’affiche par rareté décroissante : légendaire, épique, rare, commune ; les cartes de même rareté gardent leur ordre d’origine.
+
+Le [rendu de l’atelier](decks-rarity-filters-validation.jpg) montre le tri et les deux nouvelles illustrations dans les filtres.
+
 ## Trophées et ligues
 
 Onze nouveaux visuels originaux ont été créés avec **ImageGen intégré**, chacun par un appel distinct avec transparence : `apps/web/public/art/ui/trophy.webp` et les dix écussons `apps/web/public/art/leagues/{iron,bronze,silver,gold,platinum,emerald,diamond,master,grandmaster,challenger}.webp`. Les images ont été encodées en WebP de 384 × 384 px avec alpha conservé. Le trophée est utilisé dans l’arène et les résultats ; les écussons figurent dans l’arène, l’atelier, les promotions et le parcours des ligues. Les chiffres romains IV, III, II et I sont superposés en HTML par `LeagueBadge`, sur la plaque sombre de l’illustration. Les trois dernières ligues de prestige portent I.
