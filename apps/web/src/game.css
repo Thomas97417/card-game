@@ -1733,6 +1733,9 @@ button:disabled {
 .seal-activation-attack {
   color: #ffdb83;
 }
+.seal-activation.stat-loss-glow {
+  color: #ff8277;
+}
 .seal-glow-floor {
   position: absolute;
   inset: 20% 5% 8%;
@@ -2300,7 +2303,8 @@ button:disabled {
     0 2px 2px #275830,
     0 0 12px #b7e39b;
 }
-.damage-float.seal-gain {
+.damage-float.seal-gain,
+.damage-float.stat-loss {
   z-index: 1;
   padding: 7px 13px;
   border: 1px solid #c3f8a4a6;
@@ -2317,16 +2321,23 @@ button:disabled {
   box-shadow: 0 0 20px #ffdc9366;
   text-shadow: 0 2px 2px #543b1c;
 }
-.seal-gain-value {
+.damage-float.stat-loss {
+  color: #ffb1a5;
+  border-color: #ff8f83b3;
+  background: linear-gradient(135deg, #4b2022f5, #632d2fde);
+  box-shadow: 0 0 20px #ff786666;
+  text-shadow: 0 2px 2px #42181c;
+}
+.stat-change-value {
   display: grid;
   justify-items: center;
   gap: 1px;
 }
-.seal-gain-value strong {
+.stat-change-value strong {
   font-size: clamp(23px, 2.5vw, 36px);
   line-height: 1;
 }
-.seal-gain-value small {
+.stat-change-value small {
   font-size: clamp(10px, 0.95vw, 14px);
   font-weight: 700;
   line-height: 1.2;

@@ -53,6 +53,25 @@ function Playback({ view }: { view: PlaybackView }) {
   return display && <Arena view={display} event={event} />;
 }
 
+function debuffMatch(stat: "health" | "attack", target: number, attack?: number, hp?: number) {
+  const state = fresh();
+  const source = 1 - target;
+  state.activePlayer = source;
+  const owner = state.players[source]!;
+  const caster = owner.cards.find((card) => card.id === "wisp:common")!;
+  caster.abilities = [{
+    id: "test-stat-loss", name: stat === "attack" ? "Affaiblissement" : "Flétrissure",
+    description: "Diminue les statistiques adverses.", unlockLevel: 1, active: true,
+    effect: stat, trigger: "deploy", target: "all_enemies", value: stat === "attack" ? -2 : -3,
+  }];
+  const victim = state.players[target]!.cards[0]!;
+  state.players[target]!.board = [{ cardId: victim.id, row: 1, depth: 1, hp: hp ?? victim.health, attack }];
+  const initial = { ...playerView(state, "alice"), events: [] };
+  const result = summon(state, source, caster.id, 0, 2, 1, 1, () => 0.25);
+  const confirmed = { ...playerView(result.state, "alice"), events: result.events };
+  return { initial, confirmed, victim };
+}
+
 describe("activation illustrée des sceaux", () => {
   it.each([
     ["rune", "health", "+3PV"],
@@ -126,6 +145,76 @@ describe("activation illustrée des sceaux", () => {
     act(() => vi.runAllTimers());
     expect(container.querySelector(".seal-activation")).toBeNull();
     expect(container.querySelector(".seal-gain")).toBeNull();
+  });
+});
+
+describe("animation des pertes de statistiques", () => {
+  it.each([
+    ["attack", 1, undefined, "−2puissance"],
+    ["attack", 0, 1, "−1puissance"],
+    ["health", 0, undefined, "−3PV"],
+    ["health", 1, undefined, "−3PV"],
+  ] as const)("shows the actual %s loss on player %s at the ability impact", (stat, target, attack, text) => {
+    vi.useFakeTimers();
+    const { initial, confirmed, victim } = debuffMatch(stat, target, attack);
+    const { container, rerender } = render(<Playback view={initial} />);
+    rerender(<Playback view={confirmed} />);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
+    expect(container.querySelector(".stat-loss-glow")).toBeNull();
+    expect(container.querySelector(".stat-loss")).toBeNull();
+    act(() => vi.advanceTimersByTime(1));
+    const cell = groundCell(1, target === 0 ? 1 : 4);
+    const glow = container.querySelector<HTMLElement>(".stat-loss-glow")!;
+    expect(glow.dataset.stat).toBe(stat);
+    expect(glow.dataset.sealKind).toBeUndefined();
+    expect(glow.style.left).toBe(cell.bounds.left);
+    const number = container.querySelector<HTMLElement>(".stat-loss")!;
+    expect(number.textContent).toBe(text);
+    expect(number.style.marginTop).toBe(cell.aboveUnit.marginTop);
+    expect(number.getAttribute("aria-label")).toContain(victim.name);
+    expect(container.querySelector(`.board-half.${target === 0 ? "own" : "enemy"} .stat-badge.${stat}`)?.getAttribute("data-stat-change")).toBe("debuffed");
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.ability - COMBAT_TIMING.abilityImpact));
+    expect(container.querySelectorAll(".stat-loss-glow")).toHaveLength(1);
+    expect(container.querySelectorAll(".stat-loss")).toHaveLength(1);
+    act(() => vi.runAllTimers());
+    expect(container.querySelector(".stat-loss-glow")).toBeNull();
+    expect(container.querySelector(".stat-loss")).toBeNull();
+    rerender(<Playback view={{ ...confirmed }} />);
+    act(() => vi.runAllTimers());
+    expect(container.querySelector(".stat-loss-glow")).toBeNull();
+  });
+
+  it("does not show a fictitious loss when a weakened unit already has zero attack", () => {
+    vi.useFakeTimers();
+    const { initial, confirmed } = debuffMatch("attack", 1, 0);
+    const { container, rerender } = render(<Playback view={initial} />);
+    rerender(<Playback view={confirmed} />);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact));
+    expect(container.querySelector(".stat-loss-glow")).toBeNull();
+    expect(container.querySelector(".stat-loss")).toBeNull();
+    expect(container.querySelector('.damage-float[aria-label*="Affaiblissement"]')).toBeNull();
+    act(() => vi.runAllTimers());
+  });
+
+  it("keeps a lethal health loss visible above the cell after the unit dies", () => {
+    vi.useFakeTimers();
+    const { initial, confirmed } = debuffMatch("health", 1, undefined, 3);
+    const { container, rerender } = render(<Playback view={initial} />);
+    rerender(<Playback view={confirmed} />);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact));
+    expect(container.querySelector(".stat-loss")?.textContent).toBe("−3PV");
+    act(() => vi.advanceTimersByTime(
+      COMBAT_TIMING.ability - COMBAT_TIMING.abilityImpact + COMBAT_TIMING.attack + COMBAT_TIMING.death,
+    ));
+    expect(container.querySelector(".board-half.enemy .board-unit")).toBeNull();
+    expect(container.querySelector(".stat-loss")?.textContent).toBe("−3PV");
+    expect(container.querySelector(".stat-loss-glow")).toBeTruthy();
+    act(() => vi.runAllTimers());
+    expect(container.querySelector(".stat-loss")).toBeNull();
+    expect(container.querySelector(".stat-loss-glow")).toBeNull();
   });
 });
 

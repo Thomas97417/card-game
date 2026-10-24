@@ -25,6 +25,8 @@ L’[activation en entraînement](seal-activation-game.png) montre la lueur ambr
 
 La page [Field de Mighty Party](https://mightyparty.fandom.com/wiki/Field) sert de référence pour la présence de bâtiments, de runes et de pentagrammes au début du combat. Les illustrations et les effets chiffrés sont des adaptations originales pour Sylve ; ils ne reproduisent pas les statistiques de Mighty Party. Les règles retenues sont décrites dans [field.md](field.md).
 
+Les pertes de statistiques réutilisent le halo et les étincelles avec une teinte rouge et une étiquette sombre « −N puissance » ou « −N PV ». Les captures de contrôle montrent une [perte de puissance](debuff-attack-animation.png) causée par le Saule des murmures et une [perte de vie](debuff-health-animation.png) appliquée par une capacité de démonstration. Les deux scénarios utilisent les composants réels et les événements du moteur partagé ; leurs écrans temporaires ne sont pas intégrés au jeu. La perte affichée tient compte du plancher de puissance à zéro.
+
 ## Trophées et ligues
 
 Onze nouveaux visuels originaux ont été créés avec **ImageGen intégré**, chacun par un appel distinct avec transparence : `apps/web/public/art/ui/trophy.webp` et les dix écussons `apps/web/public/art/leagues/{iron,bronze,silver,gold,platinum,emerald,diamond,master,grandmaster,challenger}.webp`. Les images ont été encodées en WebP de 384 × 384 px avec alpha conservé. Le trophée est utilisé dans l’arène et les résultats ; les écussons figurent dans l’arène, l’atelier, les promotions et le parcours des ligues. Les chiffres romains IV, III, II et I sont superposés en HTML par `LeagueBadge`, sur la plaque sombre de l’illustration. Les trois dernières ligues de prestige portent I.

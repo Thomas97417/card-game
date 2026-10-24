@@ -2,6 +2,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useRef,
   useState,
   type CSSProperties,
 } from "react";
@@ -16,6 +17,7 @@ import {
   isDeploymentDepth,
   isMeleeBlocked,
   unitCard,
+  unitMaxHp,
   type GameEvent,
   type GameView,
 } from "@sylve/game";
@@ -53,6 +55,31 @@ function sealActivation(event: GameEvent) {
   if (event.type !== "ability" || !event.unit || (event.amount ?? 0) <= 0)
     return undefined;
   return sealActivations[event.ability as keyof typeof sealActivations];
+}
+
+type StatLoss = { stat: "health" | "attack"; amount: number };
+type CombatHit = { event: GameEvent; loss?: StatLoss };
+
+function appliedStatLoss(event: GameEvent, player: Player): StatLoss | undefined {
+  if (event.type !== "ability" || (event.amount ?? 0) >= 0 || !event.unit)
+    return undefined;
+  const before = player.board.find((unit) =>
+    unit.cardId === event.targetCardId &&
+    unit.row === event.targetRow && unit.depth === event.targetDepth,
+  );
+  if (!before) return undefined;
+  const base = unitCard(before, player.deck);
+  const attack = (before.attack ?? base.attack) - (event.unit.attack ?? base.attack);
+  if (attack > 0) return { stat: "attack", amount: attack };
+  const health = Math.max(
+    before.hp - event.unit.hp,
+    unitMaxHp(before, player.deck) - unitMaxHp(event.unit, player.deck),
+  );
+  if (health > 0) return { stat: "health", amount: health };
+  const icon = eventIconKind(event);
+  if (icon === "weaken" || icon === "power") return { stat: "attack", amount: 0 };
+  if (icon === "vitality") return { stat: "health", amount: 0 };
+  return undefined;
 }
 
 export function DuelArena({
@@ -344,7 +371,11 @@ function CombatEffects({
   enemy: Player;
   me: number;
 }) {
-  const [hits, setHits] = useState<GameEvent[]>([]);
+  const [hits, setHits] = useState<CombatHit[]>([]);
+  const currentView = useRef({ mine, enemy, me });
+  useEffect(() => {
+    currentView.current = { mine, enemy, me };
+  }, [mine, enemy, me]);
   useEffect(() => {
     if (
       !event ||
@@ -353,12 +384,17 @@ function CombatEffects({
         (event.type !== "summon" || !event.ability))
     )
       return;
+    // Capture the target before the playback commits this ability's snapshot.
+    const view = currentView.current;
+    const player = (event.targetPlayer ?? event.player) === view.me ? view.mine : view.enemy;
+    const loss = appliedStatLoss(event, player);
+    if (loss?.amount === 0) return;
     const timer = window.setTimeout(
       () => {
         setHits((previous) =>
-          previous.some((hit) => hit.seq === event.seq)
+          previous.some((hit) => hit.event.seq === event.seq)
             ? previous
-            : [...previous, event],
+            : [...previous, { event, loss }],
         );
       },
       event.type === "ability"
@@ -370,7 +406,7 @@ function CombatEffects({
     return () => window.clearTimeout(timer);
   }, [event]);
   const removeHit = useCallback((sequence: number) => {
-    setHits((previous) => previous.filter((hit) => hit.seq !== sequence));
+    setHits((previous) => previous.filter((hit) => hit.event.seq !== sequence));
   }, []);
   return (
     <div
@@ -378,7 +414,7 @@ function CombatEffects({
       aria-live="polite"
       aria-relevant="additions"
     >
-      {hits.map((hit) => {
+      {hits.map(({ event: hit, loss }) => {
         const own = (hit.targetPlayer ?? hit.player) === me;
         const player = own ? mine : enemy;
         const target =
@@ -395,14 +431,15 @@ function CombatEffects({
             ? groundCell(row, own ? DEPTHS - 1 - depth : DEPTHS + depth)
             : undefined;
         const position = cell
-          ? seal ? cell.aboveUnit : cell.impact
+          ? seal || loss ? cell.aboveUnit : cell.impact
           : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
         return (
           <Fragment key={hit.seq}>
-            {seal && cell && (
+            {(seal || loss) && cell && (
               <span
-                className={`seal-activation seal-activation-${seal.stat}`}
-                data-seal-kind={seal.kind}
+                className={`seal-activation seal-activation-${loss?.stat ?? seal!.stat} ${loss ? "stat-loss-glow" : ""}`}
+                data-seal-kind={seal?.kind}
+                data-stat={loss?.stat ?? seal?.stat}
                 style={cell.bounds}
                 aria-hidden="true"
               >
@@ -415,6 +452,7 @@ function CombatEffects({
             )}
             <DamageNumber
               hit={hit}
+              loss={loss}
               position={position}
               targetName={target?.name ?? player.name}
               onComplete={removeHit}
@@ -428,21 +466,26 @@ function CombatEffects({
 
 function DamageNumber({
   hit,
+  loss,
   position,
   targetName,
   onComplete,
 }: {
   hit: GameEvent;
+  loss?: StatLoss;
   position: CSSProperties;
   targetName: string;
   onComplete: (sequence: number) => void;
 }) {
-  const icon =
-    eventIconKind(hit) ??
+  const icon = loss
+    ? loss.stat === "attack" ? "weaken" : "vitality"
+    : eventIconKind(hit) ??
     (hit.type === "attack" && hit.damage === 0 && hit.unit?.block
       ? "block"
       : undefined);
   const seal = sealActivation(hit);
+  const stat = loss?.stat ?? seal?.stat;
+  const amount = loss ? -loss.amount : hit.amount;
   useEffect(() => {
     const timer = window.setTimeout(
       () => onComplete(hit.seq),
@@ -452,19 +495,19 @@ function DamageNumber({
   }, [hit.seq, onComplete]);
   return (
     <span
-      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""} ${seal ? `seal-gain seal-gain-${seal.stat}` : ""}`}
+      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""} ${seal ? `seal-gain seal-gain-${seal.stat}` : ""} ${loss ? "stat-loss" : ""}`}
       style={position}
       aria-label={
         hit.type === "ability" || hit.type === "summon"
-          ? `${targetName} : ${hit.ability}${hit.amount === undefined ? "" : ` ${hit.amount > 0 ? "+" : ""}${hit.amount}`}${seal ? seal.stat === "health" ? " PV" : " puissance" : ""}`
+          ? `${targetName} : ${hit.ability}${amount === undefined ? "" : ` ${amount > 0 ? "+" : ""}${amount}`}${stat ? stat === "health" ? " PV" : " puissance" : ""}`
           : `${targetName} subit ${hit.damage} dégâts`
       }
     >
       {icon && <AbilityIcon kind={icon} size={30} />}
-      {seal ? (
-        <span className="seal-gain-value">
-          <strong>+{hit.amount}</strong>
-          <small>{seal.stat === "health" ? "PV" : "puissance"}</small>
+      {stat ? (
+        <span className="stat-change-value">
+          <strong>{loss ? "−" : "+"}{Math.abs(amount ?? 0)}</strong>
+          <small>{stat === "health" ? "PV" : "puissance"}</small>
         </span>
       ) : hit.type === "summon" ? (
         <small className="effect-word">Renfort</small>
