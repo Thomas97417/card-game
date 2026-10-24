@@ -87,7 +87,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 16px 24px 32px;
+  padding: 16px 0 32px;
 }
 .sanctuary-eyebrow {
   display: inline-flex;
@@ -110,7 +110,15 @@
   margin: auto;
 }
 .sanctuary-offer-row {
-  --sanctuary-pack-width: clamp(340px, calc((100vw - 76px) / 2), 436px);
+  --sanctuary-offer-inset: 32px;
+  --sanctuary-pack-width: clamp(
+    340px,
+    calc(
+      (100vw - 2 * var(--sanctuary-offer-inset) - var(--sanctuary-offer-gap)) /
+        2
+    ),
+    436px
+  );
   --sanctuary-key-width: 280px;
   --sanctuary-offer-gap: 28px;
   display: flex;
@@ -124,7 +132,8 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 4px 8px 24px;
+  padding: 4px var(--sanctuary-offer-inset) 24px;
+  scroll-padding-inline: var(--sanctuary-offer-inset);
   cursor: grab;
   user-select: none;
 }
@@ -154,7 +163,8 @@
 }
 .sanctuary-key-grid {
   display: grid;
-  grid-template-columns: repeat(3, var(--sanctuary-key-width));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--sanctuary-key-width);
   gap: var(--sanctuary-offer-gap);
 }
 .sanctuary-key-card {
@@ -237,12 +247,6 @@
 .sanctuary-key-button:focus-visible {
   outline: 2px solid #ffe0a0;
   outline-offset: 3px;
-}
-.sanctuary-key-card.is-owned .sanctuary-key-button {
-  justify-content: center;
-  color: #b5dfb9;
-  opacity: 1;
-  background: #183622;
 }
 .sanctuary-feedback.sanctuary-key-success {
   position: absolute;
@@ -1132,6 +1136,7 @@
 }
 @media (max-width: 760px) {
   .sanctuary-offer-row {
+    --sanctuary-offer-inset: 24px;
     --sanctuary-pack-width: min(380px, calc(100vw - 48px));
     --sanctuary-key-width: min(280px, calc(100vw - 48px));
     --sanctuary-offer-gap: 16px;
@@ -1153,9 +1158,6 @@
   .emerald-balance .emerald-icon {
     width: 30px;
     height: 30px;
-  }
-  .sanctuary-content {
-    padding-inline: 16px;
   }
   .summon-pack {
     padding-inline: 18px;

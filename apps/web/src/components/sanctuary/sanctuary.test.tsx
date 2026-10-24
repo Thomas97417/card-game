@@ -58,6 +58,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const props = {
     emeralds: 3_000,
     ready: true,
+    purchasedChestSlots: [],
     collection: undefined,
     onSummon,
     onUpgrade,
@@ -114,19 +115,18 @@ describe("le sanctuaire", () => {
     await waitFor(() =>
       expect(onUnlockChestSlot).toHaveBeenCalledExactlyOnceWith(5),
     );
-    expect(
-      (
-        (await screen.findByRole("button", {
-          name: "Emplacement 7 déjà débloqué",
-        })) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
+    await waitFor(() =>
+      expect(
+        within(keys).queryByRole("article", { name: "Clé de la Sylve" }),
+      ).toBeNull(),
+    );
+    expect(within(keys).getAllByRole("article")).toHaveLength(2);
     expect(
       screen.getByText("L’emplacement 7 est débloqué pour toujours."),
     ).toBeTruthy();
     expect(onSummon).not.toHaveBeenCalled();
   });
-  it("shows saved unlocks and blocks keys without enough emeralds", () => {
+  it("hides saved unlocks and blocks remaining keys without enough emeralds", () => {
     const { onUnlockChestSlot } = setup({
       emeralds: 500,
       purchasedChestSlots: [6],
@@ -140,18 +140,48 @@ describe("le sanctuaire", () => {
       ).disabled,
     ).toBe(false);
     expect(
-      (
-        within(keys).getByRole("button", {
-          name: "Emplacement 8 déjà débloqué",
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
+      within(keys).queryByRole("article", { name: "Clé des anciens" }),
+    ).toBeNull();
+    expect(within(keys).getAllByRole("article")).toHaveLength(2);
     const expensive = within(keys).getByRole("button", {
       name: /emplacement 9 —/,
     });
     expect((expensive as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(expensive);
     expect(onUnlockChestSlot).not.toHaveBeenCalled();
+  });
+  it("waits for key ownership before displaying offers and hides the section when every key is owned", () => {
+    const { update, onUnlockChestSlot } = setup({
+      ready: false,
+      purchasedChestSlots: undefined,
+    });
+    expect(screen.queryByRole("region", { name: "Clés de coffre" })).toBeNull();
+    update({ ready: true, purchasedChestSlots: [5, 6, 7] });
+    expect(screen.queryByRole("region", { name: "Clés de coffre" })).toBeNull();
+    expect(purchase("Sylve", 1).disabled).toBe(false);
+    expect(onUnlockChestSlot).not.toHaveBeenCalled();
+  });
+  it("removes the final key after confirmation without waiting for refreshed ownership", async () => {
+    const { update, onUnlockChestSlot, onSummon } = setup({
+      emeralds: 1_500,
+      purchasedChestSlots: [5, 6],
+    });
+    const keys = screen.getByRole("region", { name: "Clés de coffre" });
+    expect(within(keys).getAllByRole("article")).toHaveLength(1);
+    const buy = within(keys).getByRole("button", { name: /emplacement 9 —/ });
+    fireEvent.click(buy);
+    fireEvent.click(buy);
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("region", { name: "Clés de coffre" }),
+      ).toBeNull(),
+    );
+    update({ purchasedChestSlots: [5, 6] });
+    expect(screen.queryByRole("region", { name: "Clés de coffre" })).toBeNull();
+    update({ purchasedChestSlots: [5, 6, 7] });
+    expect(screen.queryByRole("region", { name: "Clés de coffre" })).toBeNull();
+    expect(onUnlockChestSlot).toHaveBeenCalledExactlyOnceWith(7);
+    expect(onSummon).not.toHaveBeenCalled();
   });
   it("locks invocations during a key purchase and lets a failed purchase be retried", async () => {
     let reject!: (reason: Error) => void;
@@ -178,7 +208,11 @@ describe("le sanctuaire", () => {
     await act(async () => reject(new Error("Network unavailable")));
     expect(await screen.findByRole("alert")).toBeTruthy();
     fireEvent.click(buy);
-    await screen.findByRole("button", { name: "Emplacement 7 déjà débloqué" });
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /emplacement 7 —/ }),
+      ).toBeNull(),
+    );
     expect(onUnlockChestSlot).toHaveBeenCalledTimes(2);
   });
   it("shows both balances, explicit rates and batch guarantees, and links to the hub and collection", () => {
