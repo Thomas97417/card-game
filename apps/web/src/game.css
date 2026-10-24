@@ -636,6 +636,17 @@ button:disabled {
 .stat-badge.wounded strong {
   color: #fff5b6;
 }
+.stat-badge[data-stat-change="normal"] strong {
+  color: #fff9e5;
+}
+.stat-badge[data-stat-change="buffed"] strong,
+.stat-limit[data-stat-change="buffed"] {
+  color: #a5ff85;
+}
+.stat-badge[data-stat-change="debuffed"] strong,
+.stat-limit[data-stat-change="debuffed"] {
+  color: #ff9187;
+}
 .card-stats .stat-badge {
   width: clamp(36px, 36%, 58px);
   height: auto;
@@ -1715,6 +1726,61 @@ button:disabled {
   z-index: 15;
   pointer-events: none;
 }
+.seal-activation {
+  position: absolute;
+  color: #b6ff8c;
+}
+.seal-activation-attack {
+  color: #ffdb83;
+}
+.seal-glow-floor {
+  position: absolute;
+  inset: 20% 5% 8%;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, currentColor, transparent 68%);
+  box-shadow: 0 0 22px currentColor, inset 0 0 18px currentColor;
+  animation: seal-bloom var(--damage-duration) ease-out both;
+}
+.seal-glow-column {
+  position: absolute;
+  bottom: 15%;
+  left: 12%;
+  width: 76%;
+  height: 170%;
+  border-radius: 50% 50% 30% 30%;
+  background: linear-gradient(to top, currentColor, transparent 85%);
+  mask-image: linear-gradient(to right, transparent, #000 35% 65%, transparent);
+  transform-origin: bottom;
+  animation: seal-rise var(--damage-duration) ease-out both;
+}
+.seal-glow-spark {
+  position: absolute;
+  bottom: 28%;
+  left: 23%;
+  width: 5px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+  --spark-drift: -12px;
+  animation: seal-spark var(--damage-duration) ease-out both;
+}
+.seal-glow-spark:nth-last-child(3) {
+  left: 42%;
+  bottom: 38%;
+  --spark-drift: 8px;
+}
+.seal-glow-spark:nth-last-child(2) {
+  left: 63%;
+  bottom: 23%;
+  --spark-drift: -5px;
+}
+.seal-glow-spark:last-child {
+  left: 80%;
+  bottom: 44%;
+  --spark-drift: 15px;
+}
 .damage-float {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -1742,6 +1808,23 @@ button:disabled {
   45% {
     transform: translateX(45px) scale(1.05);
   }
+}
+@keyframes seal-bloom {
+  0% { opacity: 0; transform: scale(0.65); }
+  18% { opacity: 0.65; transform: scale(1); }
+  60% { opacity: 0.25; }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+@keyframes seal-rise {
+  0% { opacity: 0; transform: scaleY(0.2); }
+  20% { opacity: 0.36; transform: scaleY(1); }
+  65% { opacity: 0.15; }
+  100% { opacity: 0; transform: scaleY(1.12); }
+}
+@keyframes seal-spark {
+  0% { opacity: 0; transform: translateY(0) scale(0.4); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--spark-drift), -140px) scale(0.1); }
 }
 @keyframes lunge-left {
   0%,
@@ -2010,6 +2093,14 @@ button:disabled {
     animation: none;
     opacity: 1;
   }
+  .seal-glow-floor {
+    animation: none;
+    opacity: 0.35;
+  }
+  .seal-glow-column,
+  .seal-glow-spark {
+    display: none;
+  }
 }
 
 .card-abilities {
@@ -2208,6 +2299,37 @@ button:disabled {
   text-shadow:
     0 2px 2px #275830,
     0 0 12px #b7e39b;
+}
+.damage-float.seal-gain {
+  z-index: 1;
+  padding: 7px 13px;
+  border: 1px solid #c3f8a4a6;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #183c30f5, #254b30de);
+  box-shadow: 0 0 20px #b7e39b66;
+  -webkit-text-stroke: 0;
+  white-space: nowrap;
+}
+.damage-float.seal-gain-attack {
+  color: #ffdf95;
+  border-color: #ffdc93b3;
+  background: linear-gradient(135deg, #44331cf5, #584323de);
+  box-shadow: 0 0 20px #ffdc9366;
+  text-shadow: 0 2px 2px #543b1c;
+}
+.seal-gain-value {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+.seal-gain-value strong {
+  font-size: clamp(23px, 2.5vw, 36px);
+  line-height: 1;
+}
+.seal-gain-value small {
+  font-size: clamp(10px, 0.95vw, 14px);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .ability-icon {

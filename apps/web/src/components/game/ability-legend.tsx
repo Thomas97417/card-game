@@ -57,6 +57,11 @@ export function AbilityLegend() {
         leurs effets et leurs valeurs. Un cadenas indique un niveau encore à
         atteindre.
       </p>
+      <p>
+        En combat, un chiffre vert dépasse la valeur normale de la carte à son
+        niveau et à sa rareté ; un chiffre corail est inférieur. Les PV affichés
+        sont comparés à la vie normale, même après un bonus de vie maximale.
+      </p>
       <dl>
         {entries.map(([kind, label, description]) => (
           <div key={kind}>

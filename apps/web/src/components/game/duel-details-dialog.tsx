@@ -10,6 +10,7 @@ import {
   FACTION_LABELS,
   fieldBonus,
   fieldMarkName,
+  unitCard,
   type CardDefinition,
   type GameView,
   type UnitPosition,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
-import { StatBadge } from "./stat-badge";
+import { StatBadge, statChange } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
 import { UnitEffectIcons } from "./ability-icons";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
@@ -78,6 +79,7 @@ export function DuelDetailsDialog({
         )
       : undefined;
   const card = unit?.card ?? inspectedCard;
+  const baseCard = unit && player ? unitCard(unit, player.deck) : card;
   const neutral = card?.kind === "field-building";
   const fieldMark =
     inspection?.type === "field"
@@ -240,6 +242,7 @@ export function DuelDetailsDialog({
                           <StatBadge
                             kind="attack"
                             value={card.attack}
+                            baseValue={baseCard?.attack}
                             combatType={getCombatType(card)}
                           />
                         </dd>
@@ -250,9 +253,18 @@ export function DuelDetailsDialog({
                           <StatBadge
                             kind="health"
                             value={unit?.hp ?? card.health}
+                            baseValue={baseCard?.health}
                             wounded={!!unit && unit.hp < card.health}
                           />
-                          {unit && <span>/ {card.health}</span>}
+                          {unit && (
+                            <span
+                              className="stat-limit"
+                              data-stat-change={statChange(card.health, baseCard?.health)}
+                              title={`Vie maximale normale : ${baseCard?.health}`}
+                            >
+                              / {card.health}
+                            </span>
+                          )}
                         </dd>
                       </div>
                     </dl>

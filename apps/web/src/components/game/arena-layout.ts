@@ -76,6 +76,11 @@ function makeCell(row: number, column: number) {
       top: `${(anchor.y / ARENA_HEIGHT) * 100}%`,
       marginTop: `${-((cellWidth * 0.55) / ARENA_WIDTH) * 100}vw`,
     },
+    aboveUnit: {
+      left: `${(anchor.x / ARENA_WIDTH) * 100}%`,
+      top: `${(anchor.y / ARENA_HEIGHT) * 100}%`,
+      marginTop: `${-((cellWidth * 1.1) / ARENA_WIDTH) * 100}vw`,
+    },
     unit: {
       left: `${((anchor.x - left) / width) * 100}%`,
       top: `${((anchor.y - top) / height) * 100}%`,

@@ -21,6 +21,8 @@ Les [prompts complets des sceaux](art-prompts-seals.json) conservent les sources
 
 Les captures du jeu réel montrent la [fiche du pentagramme de vie](seals-painted-detail.png) et le [terrain avec un pentagramme occupé](seals-painted-board.png). La tortue reste à 15 PV lors de sa pose et passe à 18 PV au début de son tour suivant. Le badge du sceau reste lisible sous son porteur.
 
+L’[activation en entraînement](seal-activation-game.png) montre la lueur ambrée d’une rune de puissance et son gain au-dessus de la Sentinelle. Les halos, étincelles et gains sont animés en CSS à partir des événements de combat. Les [couleurs des statistiques](combat-stat-colors.png) sont vérifiées avec le composant réel du plateau et un état de démonstration : vert pour les valeurs supérieures à la carte normale, corail en dessous, ivoire à égalité. Les tests contrôlent l’impact des quatre sceaux, leur répétition aux tours suivants, l’absence de rejeu lors d’une actualisation, la référence au niveau et à la rareté, les renforts et les fiches. Le scénario temporaire de contrôle n’est pas intégré aux écrans du jeu.
+
 La page [Field de Mighty Party](https://mightyparty.fandom.com/wiki/Field) sert de référence pour la présence de bâtiments, de runes et de pentagrammes au début du combat. Les illustrations et les effets chiffrés sont des adaptations originales pour Sylve ; ils ne reproduisent pas les statistiques de Mighty Party. Les règles retenues sont décrites dans [field.md](field.md).
 
 ## Trophées et ligues
