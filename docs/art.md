@@ -302,3 +302,25 @@ Quatre images originales ont été générées avec **ImageGen intégré**, un a
 Les quatre fichiers sont en **WebP RGBA de 512 × 512 px**, pour environ **232 Kio au total**, avec alpha réel vérifié. Le [manifeste des quatre prompts](art-prompts-chest-keys.json) conserve les prompts complets et les PNG sources. Les fichiers référencés par le jeu sont tous dans le dépôt.
 
 Les composants réels ont été vérifiés à **1 440 × 900**, **390 × 844** et **320 × 700 px** dans un aperçu local avec des achats simulés. Le contrôle navigateur vérifie les neuf emplacements, la molette horizontale, la barre masquée, le glisser à la souris, l’absence d’ouverture après un glisser et le clic normal sur un coffre prêt. Les trois clés chargent ; l’achat simulé met à jour le solde et l’état acquis, sans erreur JavaScript ni débordement horizontal de la page. Aperçus : [coffres ordinateur](chest-slots-desktop.webp), [cadenas dorés ordinateur](chest-slots-premium-desktop.webp), [coffres mobile](chest-slots-mobile.webp), [cadenas dorés mobile](chest-slots-premium-mobile.webp), [clés ordinateur](chest-keys-desktop.webp), [achat de clé](chest-key-purchased-desktop.webp), [clés mobile](chest-keys-mobile.webp), [petit mobile](chest-keys-small-mobile.webp).
+
+## Grand coffre rare et butin par ligue
+
+Le nouveau grand coffre rare possède une illustration distincte, assortie au bois bleu et aux renforts argentés du coffre rare : `apps/web/public/art/chests/bigRare.webp`, WebP 512 × 512 avec canal alpha vérifié par `webpinfo`. Elle a été créée avec l’outil imagegen intégré ; le [prompt final et la référence](art-prompts-big-rare-chest.json) sont conservés dans le dépôt.
+
+L’arène affiche le prix d’ouverture immédiate sous le compte à rebours. La fenêtre permet d’ouvrir avec des émeraudes ou de continuer à attendre ; le prix diminue et devient gratuit à l’échéance. Les fiches de ligue détaillent les cinq catégories, leurs chances, les lots de cartes, l’or et le délai. Les invocations affichent la quantité par compagnon correspondant au record de ligue, puis le nombre réellement gagné sur chaque carte.
+
+Rendus vérifiés avec des données de démonstration : [ouverture sur ordinateur](chests-rush-desktop.webp), [mobile](chests-rush-mobile.webp), [petit mobile](chests-rush-small-mobile.webp), [sanctuaire](chests-summons-desktop.webp), [sanctuaire mobile](chests-summons-mobile.webp), [révélation ×10](chests-summons-reveal-desktop.webp) et [révélation sur petit mobile](chests-summons-reveal-small-mobile.webp).
+
+## Trois appels et carte d’or
+
+La Sylve retrouve ses taux de 65 % / 25 % / 8 % / 2 %, avec un éventail de quatre raretés et une mention de la carte d’or garantie. Les anciens reprennent leur éventail épique / légendaire et leurs taux de 80 % / 20 %. L’offre entièrement légendaire devient l’Appel des divinités, avec une bordure dorée renforcée et des prix de 4 499 / 39 999 émeraudes. Les trois offres se parcourent sur la même rangée horizontale, avant les clés.
+
+La carte d’or apparaît en plus des compagnons dans la révélation de la Sylve. Elle réutilise l’illustration des pièces et un cadre doré en CSS, avec le montant réellement crédité. La dernière invocation conserve cette récompense à la réouverture.
+
+Le [rendu de la carte d’or](summons-gold-bonus.webp) a été vérifié avec les composants réels à 1 280 × 720 dans un aperçu isolé : cinq compagnons et une carte d’or supplémentaire. Les trois offres et leurs taux ont également été contrôlés dans le sanctuaire ouvert.
+
+### Cercle d’invocation et dos commun
+
+La révélation utilise désormais un [dos unique](../apps/web/public/art/ui/summon-card-back.webp), généré avec ImageGen intégré à partir du style forestier du jeu. Le [manifeste](art-prompts-summon-card-back.json) conserve son prompt complet. Le WebP transparent de 400 × 560 px est partagé par toutes les raretés et par la carte d’or, dont la position est mélangée pour garder la surprise.
+
+Les six cartes se retournent individuellement autour d’un bouton central. Les lots ×10 se révèlent en dix étapes ; le dernier cercle propose le même achat à tarif réduit, uniquement sur son bouton central et tant que le cercle reste ouvert. Les offres du sanctuaire gardent leurs prix de base, dont le tarif groupé permanent du ×10. La carte d’or s’ajoute désormais aussi aux anciens et aux divinités pour conserver six récompenses par nouveau tirage. Le [fonctionnement et les captures de validation](summoning.md) détaillent les tarifs, la reprise réseau et les anciens résultats.

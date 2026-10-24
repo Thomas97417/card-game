@@ -5,7 +5,7 @@ import {
   cardValidator,
   eventValidator,
   stateValidator,
-  rarityValidator,
+  chestTypeValidator,
   lootValidator,
   revealValidator,
   summonPackValidator,
@@ -22,6 +22,7 @@ export default defineSchema({
     ownerId: v.string(),
     gold: v.number(),
     diamonds: v.optional(v.number()),
+    activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
   emeraldPurchases: defineTable({
     ownerId: v.string(),
@@ -58,8 +59,15 @@ export default defineSchema({
     count: summonCountValidator,
     cost: v.number(),
     reveals: v.array(revealValidator),
+    gold: v.optional(v.number()),
+    goldBySummon: v.optional(v.array(v.number())),
+    revealProgress: v.optional(
+      v.object({ round: v.number(), revealed: v.array(v.number()) }),
+    ),
+    revealCompleted: v.optional(v.boolean()),
   })
     .index("by_owner_request", ["ownerId", "requestId"])
+    .index("by_owner_reveal", ["ownerId", "revealCompleted"])
     .index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),
@@ -67,6 +75,8 @@ export default defineSchema({
     cycle: v.number(),
     contents: v.array(lootValidator),
     gold: v.optional(v.number()),
+    rewardVersion: v.optional(v.literal(2)),
+    leagueTrophies: v.optional(v.number()),
     lastClaim: v.optional(
       v.object({
         cycle: v.number(),
@@ -85,7 +95,7 @@ export default defineSchema({
     ownerId: v.string(),
     gameId: v.id("games"),
     slot: v.number(),
-    rarity: rarityValidator,
+    rarity: chestTypeValidator,
     status: v.union(v.literal("unopened"), v.literal("opened")),
     awardedAt: v.number(),
     unlockAt: v.number(),
@@ -93,7 +103,22 @@ export default defineSchema({
     contents: v.array(lootValidator),
     gold: v.optional(v.number()),
     reveals: v.optional(v.array(revealValidator)),
+    rewardVersion: v.optional(v.literal(2)),
+    leagueTrophies: v.optional(v.number()),
+    instantCost: v.optional(v.number()),
+    emeraldsSpent: v.optional(v.number()),
   }).index("by_owner_status", ["ownerId", "status"]),
+  chestPools: defineTable({
+    ownerId: v.string(),
+    leagueIndex: v.number(),
+    remaining: v.object({
+      common: v.number(),
+      rare: v.number(),
+      bigRare: v.number(),
+      epic: v.number(),
+      legendary: v.number(),
+    }),
+  }).index("by_owner_league", ["ownerId", "leagueIndex"]),
   decks: defineTable({
     ownerId: v.string(),
     name: v.string(),
@@ -127,7 +152,7 @@ export default defineSchema({
         ownerId: v.string(),
         status: v.union(v.literal("awarded"), v.literal("lost")),
         chestId: v.optional(v.id("chests")),
-        rarity: v.optional(rarityValidator),
+        rarity: v.optional(chestTypeValidator),
         victoryWins: v.optional(v.number()),
         trophies: v.optional(v.number()),
         trophiesTotal: v.optional(v.number()),

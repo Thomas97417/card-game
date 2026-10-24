@@ -3,6 +3,7 @@ import { v } from "convex/values";
 export const summonPackValidator = v.union(
   v.literal("sylve"),
   v.literal("ancients"),
+  v.literal("divine"),
 );
 export const summonCountValidator = v.union(v.literal(1), v.literal(10));
 
@@ -11,6 +12,10 @@ export const rarityValidator = v.union(
   v.literal("rare"),
   v.literal("epic"),
   v.literal("legendary"),
+);
+export const chestTypeValidator = v.union(
+  rarityValidator,
+  v.literal("bigRare"),
 );
 export const lootValidator = v.object({
   variantId: v.string(),

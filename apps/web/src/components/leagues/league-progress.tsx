@@ -7,8 +7,13 @@ import {
   LockKeyhole,
   Sparkles,
 } from "lucide-react";
-import { CHEST_SLOT_UNLOCKS } from "@sylve/game/progression";
-import { RARITIES, RARITY_LABELS } from "@sylve/game";
+import {
+  CHEST_SLOT_UNLOCKS,
+  CHEST_TYPES,
+  CHEST_LABELS,
+  chestRules,
+} from "@sylve/game/progression";
+import { RARITY_LABELS } from "@sylve/game";
 import { CollectionIcon } from "@/components/game/game-icon";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
@@ -444,10 +449,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
             </span>
             <span>
               <Sparkles size={14} aria-hidden="true" />
-              Butin ×
-              {selected.lootMultiplier.toLocaleString("fr-FR", {
-                maximumFractionDigits: 2,
-              })}
+              Butin selon la ligue
             </span>
           </div>
           {(selectedDeckSlot || selectedChestSlot) && (
@@ -465,25 +467,45 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
         </div>
         <div className="league-loot">
           <h4>Les trésors de ce palier</h4>
-          <p>
-            Chances des coffres de combat · une carte de la rareté du coffre.
-          </p>
+          <p>Chances initiales et contenu des coffres de combat.</p>
           <dl>
-            {RARITIES.map((rarity) => (
-              <div key={rarity} data-rarity={rarity}>
-                <dt>{RARITY_LABELS[rarity]}</dt>
-                <dd>
-                  {selected.chestChances[rarity].toLocaleString("fr-FR", {
-                    maximumFractionDigits: 2,
-                  })}{" "}
-                  %
-                </dd>
-              </div>
-            ))}
+            {CHEST_TYPES.map((rarity) => {
+              const rule = chestRules(rarity, selected.minTrophies);
+              return (
+                <div
+                  key={rarity}
+                  data-rarity={rarity === "bigRare" ? "rare" : rarity}
+                >
+                  <dt>{CHEST_LABELS[rarity]}</dt>
+                  <dd>
+                    {selected.chestChances[rarity].toLocaleString("fr-FR", {
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    %
+                  </dd>
+                  {selected.chestChances[rarity] > 0 ? (
+                    <>
+                      {rule.cards.map((card) => (
+                        <small key={card.rarity}>
+                          {RARITY_LABELS[card.rarity]} : {card.min}–{card.max} (
+                          {card.chance.toLocaleString("fr-FR")} %)
+                        </small>
+                      ))}
+                      <small>
+                        {rule.minGold}–{rule.maxGold} or
+                      </small>
+                      <small>{rule.durationMs / 60_000} min d’attente</small>
+                    </>
+                  ) : (
+                    <small>Indisponible à ce palier</small>
+                  )}
+                </div>
+              );
+            })}
           </dl>
           <small>
-            Cartes et or : +{Math.round((selected.lootMultiplier - 1) * 100)} %
-            par rapport à Fer IV. Butin fixé à l’obtention du coffre.
+            Chaque coffre gagné est retiré de la réserve de sa ligue, renouvelée
+            une fois épuisée. Le butin est fixé à l’obtention du coffre.
           </small>
         </div>
       </section>

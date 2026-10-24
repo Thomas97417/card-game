@@ -1,13 +1,15 @@
 import { resolveCard, validateDeck, type GameState } from "@sylve/game";
 import {
   deckCapacity,
+  leagueAt,
   leagueProgress,
   TROPHIES_PER_WIN,
   TROPHIES_PER_LOSS,
   type TrophyChange,
 } from "@sylve/game/leagues";
 import {
-  CHEST_RULES,
+  chestRules,
+  chestPool,
   unlockedChestSlots,
   VICTORY_CHEST_WINS,
   chestLoot,
@@ -187,7 +189,14 @@ async function advanceVictoryChest(
     wins === VICTORY_CHEST_WINS
       ? chestGold("common", Math.random, trophies)
       : 0;
-  if (chest) await ctx.db.patch(chest._id, { wins, contents, gold });
+  if (chest)
+    await ctx.db.patch(chest._id, {
+      wins,
+      contents,
+      gold,
+      leagueTrophies: trophies,
+      rewardVersion: 2,
+    });
   else
     await ctx.db.insert("victoryChests", {
       ownerId,
@@ -195,6 +204,8 @@ async function advanceVictoryChest(
       cycle: 0,
       contents,
       gold,
+      leagueTrophies: trophies,
+      rewardVersion: 2,
     });
   return wins;
 }
@@ -269,7 +280,22 @@ export async function awardMatchRewards(
     });
     return;
   }
-  const rarity = rollChest(Math.random, trophiesTotal);
+  const leagueIndex = leagueAt(trophiesTotal).index;
+  const savedPool = await ctx.db
+    .query("chestPools")
+    .withIndex("by_owner_league", (q) =>
+      q.eq("ownerId", ownerId).eq("leagueIndex", leagueIndex),
+    )
+    .unique();
+  const remaining =
+    savedPool && Object.values(savedPool.remaining).some((count) => count > 0)
+      ? { ...savedPool.remaining }
+      : chestPool(trophiesTotal);
+  const rarity = rollChest(Math.random, trophiesTotal, remaining);
+  remaining[rarity]--;
+  if (savedPool) await ctx.db.patch(savedPool._id, { remaining });
+  else await ctx.db.insert("chestPools", { ownerId, leagueIndex, remaining });
+  const rule = chestRules(rarity, trophiesTotal);
   const now = Date.now();
   const slot = unlockedSlots.find(
     (i) => !unopened.some((chest) => chest.slot === i),
@@ -281,7 +307,10 @@ export async function awardMatchRewards(
     rarity,
     status: "unopened",
     awardedAt: now,
-    unlockAt: now + CHEST_RULES[rarity].durationMs,
+    unlockAt: now + rule.durationMs,
+    instantCost: rule.instantCost,
+    leagueTrophies: trophiesTotal,
+    rewardVersion: 2,
     contents: chestLoot(rarity, Math.random, trophiesTotal),
     gold: chestGold(rarity, Math.random, trophiesTotal),
   });

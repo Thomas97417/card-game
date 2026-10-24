@@ -13,7 +13,6 @@ import {
   X,
   LoaderCircle,
 } from "lucide-react";
-import { type CardRarity } from "@sylve/game";
 import {
   leagueProgress,
   leagueAt,
@@ -23,6 +22,8 @@ import {
 } from "@sylve/game/leagues";
 import {
   CHEST_LABELS,
+  chestRushCost,
+  type ChestType,
   CHEST_SLOT_KEYS,
   CHEST_SLOT_UNLOCKS,
   TOTAL_CHEST_SLOTS,
@@ -34,8 +35,11 @@ import {
 export interface LobbyChest {
   _id: string;
   slot: number;
-  rarity: CardRarity;
+  rarity: ChestType;
   unlockAt: number;
+  awardedAt?: number;
+  instantCost?: number;
+  leagueTrophies?: number;
 }
 export function remainingTime(milliseconds: number) {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
@@ -319,10 +323,10 @@ export function PlayLobby({
                 type="button"
                 key={slot}
                 className={`play-chest ${remaining <= 0 ? "is-ready" : ""}`}
-                data-rarity={chest.rarity}
-                disabled={!ready || busy || remaining > 0}
+                data-rarity={chest.rarity === "bigRare" ? "rare" : chest.rarity}
+                disabled={!ready || busy}
                 onClick={() => onOpenChest(chest)}
-                aria-label={`Coffre ${CHEST_LABELS[chest.rarity]}, ${remaining <= 0 ? "ouvrir" : `prêt dans ${remainingTime(remaining)}`}`}
+                aria-label={`${chest.rarity === "bigRare" ? "Grand coffre rare" : `Coffre ${CHEST_LABELS[chest.rarity]}`}, ${remaining <= 0 ? "ouvrir" : `prêt dans ${remainingTime(remaining)}, ouvrir maintenant pour ${chestRushCost(chest, now)} émeraudes`}`}
               >
                 <span className="play-chest-rarity">
                   {CHEST_LABELS[chest.rarity]}
@@ -347,6 +351,11 @@ export function PlayLobby({
                     </>
                   )}
                 </span>
+                {remaining > 0 && (
+                  <span className="play-chest-rush">
+                    Ouvrir <EmeraldAmount amount={chestRushCost(chest, now)} />
+                  </span>
+                )}
               </button>
             ) : (
               <div

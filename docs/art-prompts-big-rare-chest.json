@@ -1,0 +1,13 @@
+{
+  "tool": "image_gen.imagegen",
+  "mode": "built-in",
+  "asset": "apps/web/public/art/chests/bigRare.webp",
+  "reference": "apps/web/public/art/chests/rare.webp",
+  "prompt": "Use case: stylized-concept. Asset type: transparent inventory chest sprite for the Sylve fantasy card game. Input image: the existing rare chest is a style reference. Create a NEW BIG RARE CHEST, a larger and more reinforced version of this chest: broad substantial teal wooden body, ornate silver metal leaf-engraved bands, prominent blue sapphire lock and extra blue sapphire corner gems, a second pair of silver reinforcing bands, beautifully rendered painterly 3D fantasy game item. Match the reference camera angle (front plus right side visible, slightly from above), materials, detail and lighting. Center one closed chest, entire object visible with generous transparent padding on a square canvas, no background or floor, genuine alpha transparency. Keep the blue rare identity, distinct from a purple epic or golden legendary chest. No text, no letters, no watermark, no frame, no UI.",
+  "output": {
+    "width": 512,
+    "height": 512,
+    "format": "webp",
+    "transparent": true
+  }
+}
