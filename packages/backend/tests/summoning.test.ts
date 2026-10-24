@@ -610,7 +610,8 @@ describe("sanctuaire autoritaire", () => {
         requestId: requestId(6),
         repeatToken: third.repeatToken,
       });
-      const cappedCost = packId === "sylve" && count === 1 ? 129 : second.cost;
+      const cappedCost =
+        packId === "sylve" ? (count === 1 ? 129 : 999) : second.cost;
       expect(third.cost).toBe(cappedCost);
       expect(fourth.cost).toBe(cappedCost);
       expect(await client.mutation(api.sanctuary.summon, thirdRequest)).toEqual(
@@ -771,54 +772,66 @@ describe("sanctuaire autoritaire", () => {
     ).toBe(149);
   });
 
-  it("does not consume an active circle's permission on insufficient funds", async () => {
-    const t = setup();
-    const { client, userId } = await player(t, "alice");
-    const first = await client.mutation(api.sanctuary.summon, {
-      packId: "sylve",
-      count: 1,
-      requestId: requestId(1),
-    });
-    const walletId = await t.run(async (ctx) => {
-      const wallet = (await ctx.db
-        .query("wallets")
-        .withIndex("by_owner", (q) => q.eq("ownerId", userId))
-        .unique())!;
-      await ctx.db.patch(wallet._id, { diamonds: 138 });
-      return wallet._id;
-    });
-    const request = {
-      packId: "sylve" as const,
-      count: 1 as const,
-      requestId: requestId(2),
-      repeatToken: first.repeatToken,
-    };
-    await expect(
-      client.mutation(api.sanctuary.summon, request),
-    ).rejects.toThrow("pas assez d’émeraudes");
-    expect(await client.query(api.collection.diamonds, {})).toBe(138);
-    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 139 }));
-    const second = await client.mutation(api.sanctuary.summon, request);
-    expect(second.cost).toBe(139);
-    expect(await client.query(api.collection.diamonds, {})).toBe(0);
-    const next = {
-      ...request,
-      requestId: requestId(3),
-      repeatToken: second.repeatToken,
-    };
-    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 128 }));
-    await expect(client.mutation(api.sanctuary.summon, next)).rejects.toThrow(
-      "pas assez d’émeraudes",
-    );
-    expect(await client.query(api.collection.diamonds, {})).toBe(128);
-    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 129 }));
-    const third = await client.mutation(api.sanctuary.summon, next);
-    expect(third.cost).toBe(129);
-    const gold = await client.query(api.collection.gold, {});
-    expect(await client.mutation(api.sanctuary.summon, next)).toEqual(third);
-    expect(await client.query(api.collection.gold, {})).toBe(gold);
-    expect(await client.query(api.collection.diamonds, {})).toBe(0);
-  });
+  it.each([
+    { count: 1, repeatPrice: 139, floorPrice: 129 },
+    { count: 10, repeatPrice: 1149, floorPrice: 999 },
+  ] as const)(
+    "preserves the x$count circle on insufficient funds and charges each price once",
+    async ({ count, repeatPrice, floorPrice }) => {
+      const t = setup();
+      const { client, userId } = await player(t, "alice");
+      const first = await client.mutation(api.sanctuary.summon, {
+        packId: "sylve",
+        count,
+        requestId: requestId(1),
+      });
+      const walletId = await t.run(async (ctx) => {
+        const wallet = (await ctx.db
+          .query("wallets")
+          .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+          .unique())!;
+        await ctx.db.patch(wallet._id, { diamonds: repeatPrice - 1 });
+        return wallet._id;
+      });
+      const request = {
+        packId: "sylve" as const,
+        count,
+        requestId: requestId(2),
+        repeatToken: first.repeatToken,
+      };
+      await expect(
+        client.mutation(api.sanctuary.summon, request),
+      ).rejects.toThrow("pas assez d’émeraudes");
+      expect(await client.query(api.collection.diamonds, {})).toBe(
+        repeatPrice - 1,
+      );
+      await t.run((ctx) => ctx.db.patch(walletId, { diamonds: repeatPrice }));
+      const second = await client.mutation(api.sanctuary.summon, request);
+      expect(second.cost).toBe(repeatPrice);
+      expect(await client.query(api.collection.diamonds, {})).toBe(0);
+      const next = {
+        ...request,
+        requestId: requestId(3),
+        repeatToken: second.repeatToken,
+      };
+      await t.run((ctx) =>
+        ctx.db.patch(walletId, { diamonds: floorPrice - 1 }),
+      );
+      await expect(client.mutation(api.sanctuary.summon, next)).rejects.toThrow(
+        "pas assez d’émeraudes",
+      );
+      expect(await client.query(api.collection.diamonds, {})).toBe(
+        floorPrice - 1,
+      );
+      await t.run((ctx) => ctx.db.patch(walletId, { diamonds: floorPrice }));
+      const third = await client.mutation(api.sanctuary.summon, next);
+      expect(third.cost).toBe(floorPrice);
+      const gold = await client.query(api.collection.gold, {});
+      expect(await client.mutation(api.sanctuary.summon, next)).toEqual(third);
+      expect(await client.query(api.collection.gold, {})).toBe(gold);
+      expect(await client.query(api.collection.diamonds, {})).toBe(0);
+    },
+  );
 
   it("rejects unknown packs, invalid quantities and invalid request identifiers without a debit", async () => {
     const t = setup();

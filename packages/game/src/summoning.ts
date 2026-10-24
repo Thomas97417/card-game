@@ -16,7 +16,7 @@ export interface SummonPack {
   price: number;
   tenPrice: number;
   repeatPrices: readonly number[];
-  repeatTenPrice: number;
+  repeatTenPrices: readonly number[];
   guaranteedLegendaries: number;
   rates: Record<CardRarity, number>;
 }
@@ -30,7 +30,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     price: 149,
     tenPrice: 1_299,
     repeatPrices: [139, 129],
-    repeatTenPrice: 1_169,
+    repeatTenPrices: [1_149, 999],
     guaranteedLegendaries: 1,
     rates: { common: 65, rare: 25, epic: 8, legendary: 2 },
   },
@@ -42,7 +42,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     price: 449,
     tenPrice: 3_899,
     repeatPrices: [404],
-    repeatTenPrice: 3_509,
+    repeatTenPrices: [3_509],
     guaranteedLegendaries: 2,
     rates: { common: 0, rare: 0, epic: 80, legendary: 20 },
   },
@@ -54,7 +54,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     price: 4_499,
     tenPrice: 39_999,
     repeatPrices: [4_049],
-    repeatTenPrice: 35_999,
+    repeatTenPrices: [35_999],
     guaranteedLegendaries: 50,
     rates: { common: 0, rare: 0, epic: 0, legendary: 100 },
   },
@@ -166,18 +166,14 @@ export function summonOffer(
 ): SummonOffer {
   const baseCost = summonPrice(packId, count);
   const pack = summonPack(packId);
-  const step = pack.repeatPrices.indexOf(previousCost ?? baseCost) + 1;
-  const repeatPrice =
-    pack.repeatPrices[Math.min(step, pack.repeatPrices.length - 1)]!;
+  const prices = count === 10 ? pack.repeatTenPrices : pack.repeatPrices;
+  const step = prices.indexOf(previousCost ?? baseCost) + 1;
+  const repeatPrice = prices[Math.min(step, prices.length - 1)]!;
   return {
     packId,
     count,
     baseCost,
-    cost: repeat
-      ? count === 10
-        ? pack.repeatTenPrice
-        : repeatPrice
-      : baseCost,
+    cost: repeat ? repeatPrice : baseCost,
   };
 }
 

@@ -576,61 +576,84 @@ describe("le sanctuaire", () => {
     expect(screen.queryByText(/Prochain appel/)).toBeNull();
   });
 
-  it("offers 139 then 129 emeralds for successive Sylve repeats and keeps the 129 floor", async () => {
-    const prices = [149, 139, 129, 129];
-    let purchases = 0;
-    const onSummon = vi.fn(async (request: SummonRequest) => ({
-      ...reward(request),
-      cost: prices[purchases++]!,
-    }));
-    const { update } = setup({ onSummon, emeralds: 149 });
-    fireEvent.click(purchase("Sylve", 1));
-    for (const [index, price] of [139, 129, 129].entries()) {
-      const dialog = await screen.findByRole("dialog");
+  it.each([
+    { count: 1, prices: [149, 139, 129, 129] },
+    { count: 10, prices: [1299, 1149, 999, 999] },
+  ] as const)(
+    "progresses Sylve x$count repeat prices to their floor and resets outside the circle",
+    async ({ count, prices }) => {
+      let purchases = 0;
+      const onSummon = vi.fn(async (request: SummonRequest) => ({
+        ...reward(request),
+        cost: prices[purchases++]!,
+      }));
+      const { update } = setup({ onSummon, emeralds: prices[0] });
+      const finishBatch = (dialog: HTMLElement) => {
+        for (let round = 0; round < count; round++) {
+          turnAll(dialog);
+          if (round < count - 1)
+            fireEvent.click(
+              within(dialog).getByRole("button", {
+                name: /^Invocation suivante/,
+              }),
+            );
+        }
+      };
+      fireEvent.click(purchase("Sylve", count));
+      for (const [index, price] of prices.slice(1).entries()) {
+        const dialog = await screen.findByRole("dialog");
+        await waitFor(() =>
+          expect(
+            within(dialog).getAllByRole("button", {
+              name: /^Révéler la carte/,
+            }),
+          ).toHaveLength(6),
+        );
+        finishBatch(dialog);
+        const repeat = within(dialog).getByRole("button", {
+          name: `Réinvoquer ×${count}, ${price} émeraudes`,
+        }) as HTMLButtonElement;
+        update({ emeralds: price - 1 });
+        expect(repeat.disabled).toBe(true);
+        update({ emeralds: price });
+        expect(repeat.disabled).toBe(false);
+        fireEvent.click(repeat);
+        await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(index + 2));
+      }
+      const last = await screen.findByRole("dialog");
       await waitFor(() =>
         expect(
-          within(dialog).getAllByRole("button", { name: /^Révéler la carte/ }),
+          within(last).getAllByRole("button", {
+            name: /^Révéler la carte/,
+          }),
         ).toHaveLength(6),
       );
-      turnAll(dialog);
-      const repeat = within(dialog).getByRole("button", {
-        name: `Réinvoquer ×1, ${price} émeraudes`,
-      }) as HTMLButtonElement;
-      update({ emeralds: price - 1 });
-      expect(repeat.disabled).toBe(true);
-      update({ emeralds: price });
-      expect(repeat.disabled).toBe(false);
-      fireEvent.click(repeat);
-      await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(index + 2));
-    }
-    const last = await screen.findByRole("dialog");
-    await waitFor(() =>
+      finishBatch(last);
       expect(
-        within(last).getAllByRole("button", { name: /^Révéler la carte/ }),
-      ).toHaveLength(6),
-    );
-    turnAll(last);
-    expect(
-      within(last).getByRole("button", {
-        name: "Réinvoquer ×1, 129 émeraudes",
-      }),
-    ).toBeTruthy();
-    fireEvent.click(
-      within(last).getByRole("button", { name: "Retour au sanctuaire" }),
-    );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
-      "149 émeraudes",
-    );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Dernière invocation" }),
-    );
-    expect(
-      within(await screen.findByRole("dialog")).getByRole("button", {
-        name: "Réinvoquer ×1, 149 émeraudes",
-      }),
-    ).toBeTruthy();
-  });
+        within(last).getByRole("button", {
+          name: `Réinvoquer ×${count}, ${prices[3]} émeraudes`,
+        }),
+      ).toBeTruthy();
+      fireEvent.click(
+        within(last).getByRole("button", { name: "Retour au sanctuaire" }),
+      );
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(purchase("Sylve", count).getAttribute("aria-label")).toContain(
+        `${prices[0]} émeraudes`,
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dernière invocation" }),
+      );
+      const history = await screen.findByRole("dialog");
+      finishBatch(history);
+      expect(
+        within(history).getByRole("button", {
+          name: `Réinvoquer ×${count}, ${prices[0]} émeraudes`,
+        }),
+      ).toBeTruthy();
+    },
+    15000,
+  );
 
   it("allows exactly affordable discounted repeats only inside a newly purchased circle", async () => {
     const { update } = setup({ emeralds: 149 });

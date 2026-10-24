@@ -151,14 +151,16 @@ describe("invocations du sanctuaire", () => {
           packId: pack.id,
           count,
           baseCost,
-          cost: count === 10 ? pack.repeatTenPrice : pack.repeatPrices[0],
+          cost: count === 10 ? pack.repeatTenPrices[0] : pack.repeatPrices[0],
         });
         let previousCost = baseCost;
         const expected =
-          pack.id === "sylve" && count === 1
-            ? [139, 129, 129, 129]
+          pack.id === "sylve"
+            ? count === 1
+              ? [139, 129, 129, 129]
+              : [1149, 999, 999, 999]
             : Array(4).fill(
-                count === 10 ? pack.repeatTenPrice : pack.repeatPrices[0],
+                count === 10 ? pack.repeatTenPrices[0] : pack.repeatPrices[0],
               );
         for (const cost of expected) {
           const offer = summonOffer(pack.id, count, true, previousCost);
