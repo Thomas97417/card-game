@@ -4,7 +4,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  LocateFixed,
   LockKeyhole,
   Sparkles,
 } from "lucide-react";
@@ -224,7 +223,6 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
               className="league-position-button"
               onClick={() => selectStep(current.index)}
             >
-              <LocateFixed size={14} aria-hidden="true" />
               Ma position
             </button>
             <button
