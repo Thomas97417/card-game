@@ -7,6 +7,7 @@ export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients" | "divine";
 export type SummonCount = 1 | 10;
 export const HEROES_PER_SUMMON = 5;
+export const SUMMON_REPEAT_DISCOUNT = 10;
 
 export interface SummonPack {
   id: SummonPackId;
@@ -33,7 +34,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     id: "ancients",
     name: "Appel des anciens",
     description:
-      "Cinq compagnons épiques ou légendaires répondent à ton appel.",
+      "Cinq compagnons épiques ou légendaires et une carte d’or en bonus.",
     price: 449,
     tenPrice: 3_899,
     guaranteedLegendaries: 2,
@@ -43,7 +44,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     id: "divine",
     name: "Appel des divinités",
     description:
-      "Cinq légendaires, avec une chance de doubler les exemplaires d’un compagnon.",
+      "Cinq légendaires, une carte d’or et une chance de doubler un compagnon.",
     price: 4_499,
     tenPrice: 39_999,
     guaranteedLegendaries: 50,
@@ -58,6 +59,16 @@ export interface SummonResult {
   cost: number;
   reveals: LootReveal[];
   gold?: number;
+  /** One frozen gold reward for each invocation, in reveal order. */
+  goldBySummon?: number[];
+}
+
+export interface SummonOffer {
+  packId: SummonPackId;
+  count: SummonCount;
+  baseCost: number;
+  cost: number;
+  discountPercent: number;
 }
 
 export function summonPack(id: SummonPackId): SummonPack {
@@ -71,6 +82,23 @@ export function summonPrice(id: SummonPackId, count: SummonCount): number {
     throw new Error("Choisis une ou dix invocations.");
   const pack = summonPack(id);
   return count === 10 ? pack.tenPrice : pack.price;
+}
+
+/** A purchase earns a non-stacking discount for the next identical pack/format. */
+export function summonOffer(
+  packId: SummonPackId,
+  count: SummonCount,
+  repeat = false,
+): SummonOffer {
+  const baseCost = summonPrice(packId, count);
+  const discountPercent = repeat ? SUMMON_REPEAT_DISCOUNT : 0;
+  return {
+    packId,
+    count,
+    baseCost,
+    cost: Math.floor((baseCost * (100 - discountPercent)) / 100),
+    discountPercent,
+  };
 }
 
 export function summonQuantity(
@@ -102,12 +130,23 @@ export function summonGold(
   random: () => number,
   peakTrophies = 0,
 ) {
+  return summonGoldRewards(id, count, random, peakTrophies).reduce(
+    (sum, amount) => sum + amount,
+    0,
+  );
+}
+
+export function summonGoldRewards(
+  id: SummonPackId,
+  count: SummonCount,
+  random: () => number,
+  peakTrophies = 0,
+) {
   summonPrice(id, count);
-  if (id !== "sylve") return 0;
   const range = summonGoldQuantity(peakTrophies);
   return Array.from({ length: count }, () =>
     rollReward([range.min, range.max], random),
-  ).reduce((sum, amount) => sum + amount, 0);
+  );
 }
 
 /** Base rarity rates apply in every league. Ten-packs upgrade only missing guarantees. */

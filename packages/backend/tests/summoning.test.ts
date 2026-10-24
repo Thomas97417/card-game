@@ -1,7 +1,11 @@
 import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { WELCOME_DIAMONDS, SUMMON_PACKS } from "@sylve/game/summoning";
+import {
+  WELCOME_DIAMONDS,
+  SUMMON_PACKS,
+  summonOffer,
+} from "@sylve/game/summoning";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 import { DEFAULT_DECK } from "@sylve/game";
@@ -199,6 +203,9 @@ describe("sanctuaire autoritaire", () => {
     await expect(t.query(api.sanctuary.latest, {})).rejects.toThrow(
       "Connecte-toi",
     );
+    await expect(t.query(api.sanctuary.offers, {})).rejects.toThrow(
+      "Connecte-toi",
+    );
     await expect(
       t.mutation(api.sanctuary.summon, {
         packId: "sylve",
@@ -271,7 +278,8 @@ describe("sanctuaire autoritaire", () => {
         expect(
           collection.some((entry) => entry.card.id === item.variantId),
         ).toBe(true);
-      expect(result.gold).toBe(pack.id === "sylve" ? 5000 : 0);
+      expect(result.gold).toBe(5000);
+      expect(result.goldBySummon).toEqual(Array(10).fill(500));
       expect(await client.query(api.collection.gold, {})).toBe(result.gold);
       expect(await client.query(api.sanctuary.latest, {})).toEqual(result);
     },
@@ -508,7 +516,9 @@ describe("sanctuaire autoritaire", () => {
       }),
     ).rejects.toThrow("assez d’émeraudes");
     expect(await alice.client.query(api.collection.list, {})).toEqual(before);
-    expect(await alice.client.query(api.collection.gold, {})).toBe(0);
+    expect(
+      await alice.client.query(api.collection.gold, {}),
+    ).toBeGreaterThanOrEqual(5000);
     expect(await bob.client.query(api.collection.diamonds, {})).toBe(0);
     expect(await bob.client.query(api.sanctuary.latest, {})).toBeNull();
     await bob.client.mutation(api.sanctuary.summon, {
@@ -518,6 +528,97 @@ describe("sanctuaire autoritaire", () => {
     });
     expect(await bob.client.query(api.collection.diamonds, {})).toBe(2_851);
     expect(await alice.client.query(api.collection.diamonds, {})).toBe(101);
+  });
+
+  it.each(
+    SUMMON_PACKS.flatMap((pack) =>
+      ([1, 10] as const).map((count) => ({ packId: pack.id, count })),
+    ),
+  )(
+    "persists a server-calculated discount for $packId x$count, isolated from other packs, formats and accounts",
+    async ({ packId, count }) => {
+      const t = setup();
+      const alice = await player(t, "alice");
+      const bob = await player(t, "bob");
+      await t.run((ctx) =>
+        ctx.db.insert("wallets", {
+          ownerId: alice.userId,
+          gold: 0,
+          diamonds: 200000,
+        }),
+      );
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const before = await alice.client.query(api.sanctuary.offers, {});
+      expect(before).toHaveLength(6);
+      expect(before.every((offer) => offer.discountPercent === 0)).toBe(true);
+      const request = { packId, count, requestId: requestId(1) };
+      const first = await alice.client.mutation(api.sanctuary.summon, request);
+      expect(first.cost).toBe(summonOffer(packId, count).cost);
+      const after = await alice.client.query(api.sanctuary.offers, {});
+      expect(after.filter((offer) => offer.discountPercent > 0)).toEqual([
+        summonOffer(packId, count, true),
+      ]);
+      expect(await bob.client.query(api.sanctuary.offers, {})).toEqual(before);
+      const nextRequest = { ...request, requestId: requestId(2) };
+      const results = await Promise.all([
+        alice.client.mutation(api.sanctuary.summon, nextRequest),
+        alice.client.mutation(api.sanctuary.summon, nextRequest),
+      ]);
+      expect(results[0]).toEqual(results[1]);
+      expect(results[0]!.cost).toBe(summonOffer(packId, count, true).cost);
+      expect(results[0]!.goldBySummon).toHaveLength(count);
+      expect(results[0]!.goldBySummon!.reduce((a, b) => a + b, 0)).toBe(
+        results[0]!.gold,
+      );
+      expect(
+        await alice.client.mutation(api.sanctuary.summon, request),
+      ).toEqual(first);
+      expect(await alice.client.query(api.collection.diamonds, {})).toBe(
+        200000 - first.cost - results[0]!.cost,
+      );
+      // Earning the next offer again never adds another 10 percent.
+      expect(await alice.client.query(api.sanctuary.offers, {})).toEqual(after);
+      expect(await alice.client.query(api.sanctuary.latest, {})).toEqual(
+        results[0],
+      );
+    },
+  );
+
+  it("serializes discounted purchases and keeps an unaffordable offer available", async () => {
+    const t = setup();
+    const { client, userId } = await player(t, "alice");
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    await client.mutation(api.sanctuary.summon, {
+      packId: "sylve",
+      count: 1,
+      requestId: requestId(1),
+    });
+    await t.run(async (ctx) => {
+      const wallet = (await ctx.db
+        .query("wallets")
+        .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+        .unique())!;
+      await ctx.db.patch(wallet._id, { diamonds: 267 });
+    });
+    const results = await Promise.allSettled(
+      [2, 3].map((id) =>
+        client.mutation(api.sanctuary.summon, {
+          packId: "sylve",
+          count: 1,
+          requestId: requestId(id),
+        }),
+      ),
+    );
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(await client.query(api.collection.diamonds, {})).toBe(133);
+    expect(await client.query(api.collection.gold, {})).toBe(1000);
+    expect(
+      (await client.query(api.sanctuary.offers, {})).find(
+        (offer) => offer.packId === "sylve" && offer.count === 1,
+      )?.cost,
+    ).toBe(134);
   });
 
   it("rejects unknown packs, invalid quantities and invalid request identifiers without a debit", async () => {

@@ -1,6 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
-import { summonGold, summonLoot, summonPrice } from "@sylve/game/summoning";
+import {
+  SUMMON_PACKS,
+  summonGoldRewards,
+  summonLoot,
+  summonOffer,
+} from "@sylve/game/summoning";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
@@ -56,7 +61,35 @@ export const latest = query({
       .first();
     if (!result) return null;
     const { requestId, packId, count, cost, reveals } = result;
-    return { requestId, packId, count, cost, reveals, gold: result.gold ?? 0 };
+    return {
+      requestId,
+      packId,
+      count,
+      cost,
+      reveals,
+      gold: result.gold ?? 0,
+      ...(result.goldBySummon ? { goldBySummon: result.goldBySummon } : {}),
+    };
+  },
+});
+
+export const offers = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    return Promise.all(
+      SUMMON_PACKS.flatMap((pack) =>
+        ([1, 10] as const).map(async (count) => {
+          const previous = await ctx.db
+            .query("summons")
+            .withIndex("by_owner_pack_count", (q) =>
+              q.eq("ownerId", userId).eq("packId", pack.id).eq("count", count),
+            )
+            .first();
+          return summonOffer(pack.id, count, !!previous);
+        }),
+      ),
+    );
   },
 });
 
@@ -86,9 +119,19 @@ export const summon = mutation({
         cost: previous.cost,
         reveals: previous.reveals,
         gold: previous.gold ?? 0,
+        ...(previous.goldBySummon
+          ? { goldBySummon: previous.goldBySummon }
+          : {}),
       };
     }
-    const cost = summonPrice(packId, count);
+    const lastPurchase = await ctx.db
+      .query("summons")
+      .withIndex("by_owner_pack_count", (q) =>
+        q.eq("ownerId", userId).eq("packId", packId).eq("count", count),
+      )
+      .first();
+    // The server determines the discount. Replays above keep their original price.
+    const { cost } = summonOffer(packId, count, !!lastPurchase);
     const wallet = await ensureEmeralds(ctx, userId);
     if (wallet.diamonds! < cost)
       throw new ConvexError(
@@ -101,12 +144,26 @@ export const summon = mutation({
       userId,
       summonLoot(packId, count, Math.random, league.peakTrophies),
     );
-    const gold = summonGold(packId, count, Math.random, league.peakTrophies);
+    const goldBySummon = summonGoldRewards(
+      packId,
+      count,
+      Math.random,
+      league.peakTrophies,
+    );
+    const gold = goldBySummon.reduce((sum, amount) => sum + amount, 0);
     await ctx.db.patch(wallet._id, {
       diamonds: wallet.diamonds! - cost,
       gold: wallet.gold + gold,
     });
-    const result = { requestId, packId, count, cost, reveals, gold };
+    const result = {
+      requestId,
+      packId,
+      count,
+      cost,
+      reveals,
+      gold,
+      goldBySummon,
+    };
     await ctx.db.insert("summons", { ownerId: userId, ...result });
     return result;
   },

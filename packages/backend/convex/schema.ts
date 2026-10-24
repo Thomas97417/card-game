@@ -38,8 +38,10 @@ export default defineSchema({
     cost: v.number(),
     reveals: v.array(revealValidator),
     gold: v.optional(v.number()),
+    goldBySummon: v.optional(v.array(v.number())),
   })
     .index("by_owner_request", ["ownerId", "requestId"])
+    .index("by_owner_pack_count", ["ownerId", "packId", "count"])
     .index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),

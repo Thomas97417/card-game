@@ -316,3 +316,9 @@ La Sylve retrouve ses taux de 65 % / 25 % / 8 % / 2 %, avec un éventail de quat
 La carte d’or apparaît en plus des compagnons dans la révélation de la Sylve. Elle réutilise l’illustration des pièces et un cadre doré en CSS, avec le montant réellement crédité. La dernière invocation conserve cette récompense à la réouverture.
 
 Le [rendu de la carte d’or](summons-gold-bonus.webp) a été vérifié avec les composants réels à 1 280 × 720 dans un aperçu isolé : cinq compagnons et une carte d’or supplémentaire. Les trois offres et leurs taux ont également été contrôlés dans le sanctuaire ouvert.
+
+### Cercle d’invocation et dos commun
+
+La révélation utilise désormais un [dos unique](../apps/web/public/art/ui/summon-card-back.webp), généré avec ImageGen intégré à partir du style forestier du jeu. Le [manifeste](art-prompts-summon-card-back.json) conserve son prompt complet. Le WebP transparent de 400 × 560 px est partagé par toutes les raretés et par la carte d’or, dont la position est mélangée pour garder la surprise.
+
+Les six cartes se retournent individuellement autour d’un bouton central. Les lots ×10 se révèlent en dix étapes ; le dernier cercle propose le même achat avec 10 % de remise. La carte d’or s’ajoute désormais aussi aux anciens et aux divinités pour conserver six récompenses par nouveau tirage. Le [fonctionnement et les captures de validation](summoning.md) détaillent les tarifs, la reprise réseau et les anciens résultats.

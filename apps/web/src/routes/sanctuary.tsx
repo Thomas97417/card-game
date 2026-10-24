@@ -20,6 +20,7 @@ export const Route = createFileRoute("/sanctuary")({
 function SanctuaryPage() {
   const emeralds = useEmeraldBalance();
   const latest = useQuery(api.sanctuary.latest);
+  const offers = useQuery(api.sanctuary.offers);
   const summon = useMutation(api.sanctuary.summon);
   const chestSlots = useQuery(api.chests.list);
   const unlockChestSlot = useMutation(api.sanctuary.unlockChestSlot);
@@ -42,9 +43,10 @@ function SanctuaryPage() {
   return (
     <Sanctuary
       emeralds={emeralds}
-      ready={ready && !!chestSlots && !!league}
+      ready={ready && !!chestSlots && !!league && !!offers}
       peakTrophies={league?.peakTrophies}
       latest={latest}
+      offers={offers}
       collection={collection}
       onSummon={summon}
       purchasedChestSlots={chestSlots?.purchasedSlots}

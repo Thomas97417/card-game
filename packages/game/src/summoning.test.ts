@@ -4,8 +4,10 @@ import {
   SUMMON_PACKS,
   summonGold,
   summonGoldQuantity,
+  summonGoldRewards,
   summonLoot,
   summonPrice,
+  summonOffer,
   summonQuantity,
 } from "./summoning";
 
@@ -116,7 +118,7 @@ describe("invocations du sanctuaire", () => {
     expect(() => summonQuantity("ancients", "common")).toThrow();
   });
 
-  it("adds gold to the Sylve without consuming any of the companion slots and scales it with peak league", () => {
+  it("adds one gold card to every invocation without consuming a companion slot and scales it with peak league", () => {
     expect(summonGoldQuantity(0)).toEqual({ min: 500, max: 1000 });
     expect(summonGoldQuantity(6000)).toEqual({ min: 2000, max: 4000 });
     expect(summonGold("sylve", 1, () => 0)).toBe(500);
@@ -124,10 +126,37 @@ describe("invocations du sanctuaire", () => {
     expect(summonGold("sylve", 10, () => 0)).toBe(5000);
     expect(summonGold("sylve", 10, () => 0.999999, 6000)).toBe(40000);
     for (const pack of ["ancients", "divine"] as const)
-      expect(summonGold(pack, 10, () => 0.999999, 6000)).toBe(0);
+      expect(summonGold(pack, 10, () => 0.999999, 6000)).toBe(40000);
+    let roll = 0;
+    expect(summonGoldRewards("sylve", 10, () => roll++ / 10)).toEqual([
+      500, 550, 600, 650, 700, 750, 800, 850, 900, 950,
+    ]);
     expect(summonLoot("sylve", 1, () => 0)).toHaveLength(5);
     expect(summonLoot("sylve", 10, () => 0)).toHaveLength(50);
   });
+
+  it.each(SUMMON_PACKS)(
+    "discounts the next $id single or ten-pack by 10 percent without stacking",
+    (pack) => {
+      for (const count of [1, 10] as const) {
+        const baseCost = summonPrice(pack.id, count);
+        expect(summonOffer(pack.id, count)).toEqual({
+          packId: pack.id,
+          count,
+          baseCost,
+          cost: baseCost,
+          discountPercent: 0,
+        });
+        expect(summonOffer(pack.id, count, true)).toEqual({
+          packId: pack.id,
+          count,
+          baseCost,
+          cost: Math.floor(baseCost * 0.9),
+          discountPercent: 10,
+        });
+      }
+    },
+  );
 
   it("retains the original prices and can select every creature", () => {
     for (const [id, price, tenPrice] of [
