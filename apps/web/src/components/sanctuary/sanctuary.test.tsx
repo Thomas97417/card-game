@@ -339,6 +339,7 @@ describe("le sanctuaire", () => {
     );
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Dernière invocation")).toBeTruthy();
+    expect(within(dialog).queryByText(/Un nouvel appel ouvrira/)).toBeNull();
     for (let round = 1; round <= 10; round++) {
       expect(within(dialog).getByText(`Invocation ${round} / 10`)).toBeTruthy();
       expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
@@ -355,9 +356,6 @@ describe("le sanctuaire", () => {
           name: "Carte d’or : 500 pièces d’or",
         }),
       ).toBeTruthy();
-      expect(within(dialog).getByRole("status").textContent).toBe(
-        "6 / 6 cartes révélées",
-      );
       if (round < 10) {
         const next = within(dialog).getByRole("button", {
           name: /^Invocation suivante/,
@@ -482,6 +480,7 @@ describe("le sanctuaire", () => {
       ),
     ).toBeNull();
     expect(dialog.querySelector(".lucide-sparkles")).toBeNull();
+    expect(within(dialog).queryByText(/cartes révélées/)).toBeNull();
     expect(within(dialog).queryByText("Carte d’or")).toBeNull();
     expect(
       within(dialog).queryByRole("button", { name: /voir les informations/ }),
@@ -495,9 +494,6 @@ describe("le sanctuaire", () => {
     ).toEqual(Array(6).fill("/art/ui/summon-card-back.webp"));
     fireEvent.click(backs[0]!);
     fireEvent.click(backs[0]!);
-    expect(within(dialog).getByRole("status").textContent).toBe(
-      "1 / 6 cartes révélées",
-    );
     expect(
       within(dialog).getAllByRole("button", { name: /^Révéler la carte/ }),
     ).toHaveLength(5);
@@ -759,7 +755,9 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("button", { name: /^Réinvoquer/ }),
     );
     expect(await screen.findByRole("alert")).toBeTruthy();
-    expect(within(dialog).getByText("6 / 6 cartes révélées")).toBeTruthy();
+    expect(
+      within(dialog).queryByRole("button", { name: /^Révéler la carte/ }),
+    ).toBeNull();
     update({ emeralds: 0 });
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Retrouver mon invocation" }),
@@ -839,9 +837,6 @@ describe("le sanctuaire", () => {
     );
     const resumed = await screen.findByRole("dialog");
     expect(within(resumed).getByText("Finissez votre tirage")).toBeTruthy();
-    expect(within(resumed).getByRole("status").textContent).toBe(
-      "2 / 6 cartes révélées",
-    );
     expect(
       within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
     ).toHaveLength(4);
@@ -897,9 +892,6 @@ describe("le sanctuaire", () => {
     );
     const resumed = await screen.findByRole("dialog");
     expect(within(resumed).getByText("Invocation 2 / 10")).toBeTruthy();
-    expect(within(resumed).getByRole("status").textContent).toBe(
-      "1 / 6 cartes révélées",
-    );
     expect(
       within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
     ).toHaveLength(5);
@@ -933,9 +925,6 @@ describe("le sanctuaire", () => {
     );
     const resumed = await screen.findByRole("dialog");
     expect(within(resumed).getByText("Invocation 5 / 10")).toBeTruthy();
-    expect(within(resumed).getByRole("status").textContent).toBe(
-      "2 / 6 cartes révélées",
-    );
     expect(
       within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
     ).toHaveLength(4);
@@ -968,9 +957,9 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
     const resumed = await screen.findByRole("dialog");
-    expect(within(resumed).getByRole("status").textContent).toBe(
-      "2 / 6 cartes révélées",
-    );
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(4);
     expect(next.onSaveRevealProgress).toHaveBeenCalledWith({
       requestId: request.requestId,
       round: 0,
@@ -1029,9 +1018,9 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
     const resumed = await screen.findByRole("dialog");
-    expect(within(resumed).getByRole("status").textContent).toBe(
-      "1 / 6 cartes révélées",
-    );
+    expect(
+      within(resumed).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(5);
     turnAll(resumed);
     expect(onSaveRevealProgress.mock.calls.at(-1)![0].requestId).toBe(
       onSummon.mock.calls[0]![0].requestId,
@@ -1044,8 +1033,10 @@ describe("le sanctuaire", () => {
       screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
     expect(
-      within(await screen.findByRole("dialog")).getByRole("status").textContent,
-    ).toBe("0 / 6 cartes révélées");
+      within(await screen.findByRole("dialog")).getAllByRole("button", {
+        name: /^Révéler la carte/,
+      }),
+    ).toHaveLength(6);
     expect(onSummon).toHaveBeenCalledTimes(2);
   });
 

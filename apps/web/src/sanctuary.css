@@ -800,10 +800,6 @@
   text-align: center;
   color: #e0cb94;
 }
-.summon-flipped-counter {
-  color: #c5cfba;
-  font-size: 11px;
-}
 .summon-repeat-button {
   display: flex;
   flex-wrap: wrap;
@@ -993,9 +989,6 @@
   }
   .summon-circle-center {
     gap: 7px;
-  }
-  .summon-flipped-counter {
-    font-size: 9px;
   }
   .summon-repeat-button {
     padding: 8px 3px;
