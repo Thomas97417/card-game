@@ -44,12 +44,14 @@ function reward(request: SummonRequest): SummonResult {
 function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const onSummon = vi.fn(async (request: SummonRequest) => reward(request));
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
+  const onUnlockChestSlot = vi.fn().mockResolvedValue(undefined);
   const props = {
     emeralds: 3_000,
     ready: true,
     collection: undefined,
     onSummon,
     onUpgrade,
+    onUnlockChestSlot,
     ...overrides,
   };
   const result = render(
@@ -59,7 +61,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
       </EmeraldContext.Provider>
     </GoldContext.Provider>,
   );
-  return { ...result, onSummon, onUpgrade };
+  return { ...result, onSummon, onUpgrade, onUnlockChestSlot };
 }
 const purchase = (pack: "Sylve" | "anciens", count: 1 | 10) =>
   screen.getByRole("button", {
@@ -69,6 +71,83 @@ const purchase = (pack: "Sylve" | "anciens", count: 1 | 10) =>
   }) as HTMLButtonElement;
 
 describe("le sanctuaire", () => {
+  it("offers three unique keys and unlocks a slot once without invoking cards", async () => {
+    const { onUnlockChestSlot, onSummon } = setup();
+    const keys = screen.getByRole("region", { name: "Clés de coffre" });
+    expect(within(keys).getAllByRole("article")).toHaveLength(3);
+    const buy = within(keys).getByRole("button", { name: /emplacement 7 —/ });
+    fireEvent.click(buy);
+    fireEvent.click(buy);
+    await waitFor(() =>
+      expect(onUnlockChestSlot).toHaveBeenCalledExactlyOnceWith(5),
+    );
+    expect(
+      (
+        (await screen.findByRole("button", {
+          name: "Emplacement 7 déjà débloqué",
+        })) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      screen.getByText("L’emplacement 7 est débloqué pour toujours."),
+    ).toBeTruthy();
+    expect(onSummon).not.toHaveBeenCalled();
+  });
+  it("shows saved unlocks and blocks keys without enough emeralds", () => {
+    const { onUnlockChestSlot } = setup({
+      emeralds: 500,
+      purchasedChestSlots: [6],
+    });
+    const keys = screen.getByRole("region", { name: "Clés de coffre" });
+    expect(
+      (
+        within(keys).getByRole("button", {
+          name: /emplacement 7 —/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    expect(
+      (
+        within(keys).getByRole("button", {
+          name: "Emplacement 8 déjà débloqué",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    const expensive = within(keys).getByRole("button", {
+      name: /emplacement 9 —/,
+    });
+    expect((expensive as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(expensive);
+    expect(onUnlockChestSlot).not.toHaveBeenCalled();
+  });
+  it("locks invocations during a key purchase and lets a failed purchase be retried", async () => {
+    let reject!: (reason: Error) => void;
+    const onUnlockChestSlot = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, fail) => {
+            reject = fail;
+          }),
+      )
+      .mockResolvedValue(undefined);
+    setup({ onUnlockChestSlot });
+    const buy = screen.getByRole("button", { name: /emplacement 7 —/ });
+    fireEvent.click(buy);
+    expect(purchase("Sylve", 1).disabled).toBe(true);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /emplacement 8 —/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    await act(async () => reject(new Error("Network unavailable")));
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    fireEvent.click(buy);
+    await screen.findByRole("button", { name: "Emplacement 7 déjà débloqué" });
+    expect(onUnlockChestSlot).toHaveBeenCalledTimes(2);
+  });
   it("shows both balances, explicit rates and batch guarantees, and links to the hub and collection", () => {
     setup();
     expect(

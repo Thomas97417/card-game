@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
 import {
   WELCOME_DIAMONDS,
   summonLoot,
@@ -33,6 +34,34 @@ export const ensureWallet = mutation({
     const { userId } = await requirePlayer(ctx);
     const wallet = await ensureDiamonds(ctx, userId);
     return wallet.diamonds!;
+  },
+});
+
+export const unlockChestSlot = mutation({
+  args: { slot: v.number() },
+  handler: async (ctx, { slot }) => {
+    const { userId } = await requirePlayer(ctx);
+    const key = CHEST_SLOT_KEYS.find((key) => key.slot === slot);
+    if (!key)
+      throw new ConvexError("Cet emplacement ne s’achète pas avec une clé.");
+    const previous = await ctx.db
+      .query("chestSlotUnlocks")
+      .withIndex("by_owner_slot", (q) =>
+        q.eq("ownerId", userId).eq("slot", slot),
+      )
+      .unique();
+    // A slot can be bought once: retries and concurrent clicks cannot debit twice.
+    if (previous) return { slot, cost: previous.cost };
+    const wallet = await ensureDiamonds(ctx, userId);
+    if (wallet.diamonds! < key.price)
+      throw new ConvexError("Tu n’as pas assez d’émeraudes pour cette clé.");
+    await ctx.db.patch(wallet._id, { diamonds: wallet.diamonds! - key.price });
+    await ctx.db.insert("chestSlotUnlocks", {
+      ownerId: userId,
+      slot,
+      cost: key.price,
+    });
+    return { slot, cost: key.price };
   },
 });
 

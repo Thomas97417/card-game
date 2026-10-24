@@ -12,8 +12,9 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import z from "zod";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { settingsError } from "./settings-error";
 
 export default function UpdateEmailCard({ email }: { email: string }) {
   const { data: accounts } = useQuery({
@@ -35,22 +36,28 @@ export default function UpdateEmailCard({ email }: { email: string }) {
         { newEmail: value.newEmail },
         {
           onSuccess: () => {
-            toast.success("Email updated successfully.");
+            toast.success("Ton adresse e-mail a été enregistrée.");
           },
           onError: (error) => {
-            toast.error(error.error.message);
+            toast.error(
+              settingsError(
+                error.error,
+                "Ton adresse e-mail n’a pas pu être enregistrée. Réessaie.",
+              ),
+            );
           },
         },
       );
     },
     validators: {
       onSubmit: z.object({
-        newEmail: z.string().email("Invalid email address"),
+        newEmail: z.string().email("Saisis une adresse e-mail valide."),
       }),
     },
   });
   return (
     <form
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -60,26 +67,32 @@ export default function UpdateEmailCard({ email }: { email: string }) {
       <SettingsCard>
         <SettingsCardContent>
           <SettingsCardHeader
-            title="Email Address"
-            description="The email address associated with your account."
+            icon={Mail}
+            title="Adresse e-mail"
+            description="L’adresse utilisée pour te connecter et retrouver ton compte."
           />
           <form.Field
             name="newEmail"
             children={(field) => (
               <div className="flex flex-col gap-1">
-                <Label htmlFor="newEmail">Email</Label>
+                <Label htmlFor="newEmail">Ton adresse e-mail</Label>
                 <Input
                   id="newEmail"
-                  autoComplete="off"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={field.state.meta.errors.length > 0}
                   required
                   disabled={isSocialOnly}
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-80 bg-transparent"
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
+                  <p
+                    key={error?.message}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {error?.message}
                   </p>
                 ))}
@@ -90,8 +103,8 @@ export default function UpdateEmailCard({ email }: { email: string }) {
         <SettingsCardFooter>
           <p className="text-sm text-muted-foreground">
             {isSocialOnly
-              ? "Email is managed by your social login provider."
-              : "Please enter a valid email address."}
+              ? "Cette adresse est gérée par ton fournisseur de connexion."
+              : "Utilise une adresse à laquelle tu as accès."}
           </p>
           <form.Subscribe>
             {(state) => (
@@ -103,9 +116,15 @@ export default function UpdateEmailCard({ email }: { email: string }) {
                 }
               >
                 {state.isSubmitting ? (
-                  <Loader2 className="animate-spin size-4" />
+                  <>
+                    <Loader2
+                      className="animate-spin size-4"
+                      aria-hidden="true"
+                    />
+                    Enregistrement…
+                  </>
                 ) : (
-                  "Save"
+                  "Enregistrer"
                 )}
               </Button>
             )}

@@ -172,6 +172,36 @@ describe("l’atelier et la collection", () => {
     },
   );
 
+  it.each(["Cartes du deck", "Cartes de la collection"])(
+    "reserves horizontal touch gestures on %s for scrolling instead of moving cards",
+    async (label) => {
+      const { onSave } = setup();
+      const row = screen.getByRole("region", { name: label });
+      const source = within(row).getAllByRole("button")[0]!;
+      pointer(source, "pointerdown", {
+        pointerType: "touch",
+        clientX: 200,
+        clientY: 300,
+      });
+      pointer(source, "pointermove", {
+        pointerType: "touch",
+        clientX: 100,
+        clientY: 310,
+      });
+      pointer(source, "pointercancel", { pointerType: "touch" });
+      fireEvent.click(source, { detail: 1 });
+      expect(document.querySelector(".workshop-drag-preview")).toBeNull();
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(deckCards()).toHaveLength(8);
+      expect(onSave).not.toHaveBeenCalled();
+
+      pointer(source, "pointerdown", { pointerType: "touch" });
+      pointer(source, "pointerup", { pointerType: "touch" });
+      fireEvent.click(source, { detail: 1 });
+      expect(await screen.findByRole("dialog")).toBeTruthy();
+    },
+  );
+
   it("chains four slots in Iron IV and prevents adding or dropping into them", async () => {
     const { onSave } = setup(starter, fullCollection, 500, 0);
     expect(deckCards()).toHaveLength(4);

@@ -36,21 +36,6 @@
     #120f0ce8
   );
 }
-.play-header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 28px;
-  min-height: clamp(90px, 12svh, 135px);
-  padding: 16px clamp(20px, 3vw, 56px);
-}
-.play-header h1 {
-  font:
-    400 clamp(22px, 2.3vw, 35px)/1.15 Georgia,
-    serif;
-  letter-spacing: -0.6px;
-  text-shadow: 0 2px 10px #0a1b13;
-}
 .play-main {
   display: flex;
   justify-content: space-between;
@@ -130,9 +115,6 @@
   max-width: 490px;
   padding-block: 12px;
   text-shadow: 0 2px 8px #18291cb3;
-}
-.play-battles > .league-panel {
-  margin-bottom: 19px;
 }
 .play-eyebrow {
   display: block;
@@ -287,7 +269,6 @@
   align-items: center;
   gap: 16px;
   width: 100%;
-  max-width: 1030px;
   margin: 0 auto 10px;
 }
 .play-treasures-heading h2 {
@@ -302,20 +283,34 @@
 }
 .play-chest-row {
   display: flex;
-  justify-content: flex-start;
+  justify-content: safe center;
   gap: 12px;
-  max-width: 1030px;
+  width: 100%;
   margin-inline: auto;
   overflow-x: auto;
   padding: 4px 5px 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #c8a76d66 transparent;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+}
+.play-chest-row::-webkit-scrollbar {
+  display: none;
+}
+.play-chest-row.is-dragging,
+.play-chest-row.is-dragging * {
+  cursor: grabbing;
+}
+.play-chest-row:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: 2px;
 }
 .play-chest {
   position: relative;
-  flex: 1 0 0;
-  min-width: 112px;
-  max-width: 245px;
+  flex: 0 0 clamp(150px, 15vw, 190px);
+  min-width: 0;
   height: clamp(175px, 24svh, 265px);
   display: flex;
   flex-direction: column;
@@ -440,9 +435,9 @@
 }
 .play-chest-locked > .play-slot-chain {
   position: absolute;
-  inset: 9% 4% auto;
+  inset: 2% 4% auto;
   width: 92%;
-  height: 77%;
+  height: 72%;
   flex: none;
   object-fit: contain;
   filter: drop-shadow(0 4px 3px #000a);
@@ -450,6 +445,29 @@
 .play-chest-locked .play-chest-action {
   color: #baad90;
   background: #141812cc;
+}
+.play-chest-lock-caption {
+  z-index: 1;
+  margin-bottom: 7px;
+  color: #caba95;
+  font-size: 9px;
+}
+.play-chest-purchasable {
+  border-color: #c4a45d99;
+  text-decoration: none;
+  background: linear-gradient(145deg, #4d432b99, #152d21e6);
+}
+.play-chest-purchasable:hover {
+  border-color: #f5d587;
+}
+.play-chest-purchasable .play-chest-action {
+  color: #cef1ce;
+  border-color: #68a36c66;
+  background: #143421cc;
+}
+.play-chest-action .emerald-icon {
+  width: 23px;
+  height: 23px;
 }
 .play-lobby button:focus-visible,
 .play-lobby a:focus-visible {
@@ -472,19 +490,6 @@
   background: #eff0e5;
 }
 @media (max-width: 760px) {
-  .play-header {
-    min-height: 88px;
-    padding: 14px 18px;
-    gap: 13px;
-  }
-  .play-header h1 {
-    max-width: 190px;
-    font-size: 22px;
-  }
-  .play-header .workshop-back {
-    width: 52px;
-    height: 42px;
-  }
   .play-main {
     min-height: 370px;
     gap: 12px;
@@ -602,10 +607,6 @@
   }
 }
 @media (max-height: 750px) and (min-width: 761px) {
-  .play-header {
-    min-height: 74px;
-    padding-block: 10px;
-  }
   .play-main {
     min-height: 330px;
     padding-bottom: 6px;

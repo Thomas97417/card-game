@@ -526,7 +526,7 @@ export function DuelScreen({
                 </button>
               )}
               <Link
-                to="/play"
+                to="/arena"
                 className={`sylve-button ${practice ? "secondary" : ""}`}
               >
                 Retour au salon <ArrowRight size={16} />

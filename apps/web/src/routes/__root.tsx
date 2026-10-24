@@ -30,6 +30,9 @@ import bestiaryCss from "../bestiary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
+import { PlayerHeaderProvider } from "@/components/player-header";
+import playerHeaderCss from "../player-header.css?url";
+import settingsCss from "../settings.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -66,6 +69,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: leaguesCss },
       { rel: "stylesheet", href: sanctuaryCss },
       { rel: "stylesheet", href: bestiaryCss },
+      { rel: "stylesheet", href: playerHeaderCss },
+      { rel: "stylesheet", href: settingsCss },
     ],
   }),
 
@@ -90,9 +95,15 @@ function RootDocument() {
     select: (state) => {
       const pathname = state.location.pathname.replace(/\/$/, "");
       return (
-        ["/hub", "/decks", "/sanctuary", "/play", "/practice"].includes(
-          pathname,
-        ) || pathname.startsWith("/game/")
+        [
+          "/hub",
+          "/decks",
+          "/sanctuary",
+          "/arena",
+          "/play",
+          "/settings",
+          "/practice",
+        ].includes(pathname) || pathname.startsWith("/game/")
       );
     },
   });
@@ -115,25 +126,27 @@ function RootDocument() {
           >
             <GoldProvider>
               <EmeraldProvider>
-                <div
-                  className={
-                    isImmersive
-                      ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                      : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                  }
-                >
-                  {!isImmersive && <Header />}
+                <PlayerHeaderProvider>
                   <div
                     className={
                       isImmersive
-                        ? "min-h-0 overflow-hidden"
-                        : "min-h-0 overflow-y-auto"
+                        ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                        : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                     }
                   >
-                    <Outlet />
+                    {!isImmersive && <Header />}
+                    <div
+                      className={
+                        isImmersive
+                          ? "min-h-0 overflow-hidden"
+                          : "min-h-0 overflow-y-auto"
+                      }
+                    >
+                      <Outlet />
+                    </div>
                   </div>
-                </div>
-                <Toaster richColors />
+                  <Toaster richColors />
+                </PlayerHeaderProvider>
               </EmeraldProvider>
             </GoldProvider>
             <Scripts />

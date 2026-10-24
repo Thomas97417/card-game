@@ -1,5 +1,23 @@
 # Illustrations de Sylve
 
+## En-tête et menu des paramètres
+
+L’icône `apps/web/public/art/ui/settings-gear.webp` a été créée avec **ImageGen intégré** : un engrenage de noyer sculpté, bordé de laiton doré, avec des incrustations de feuilles et un centre émeraude. Le WebP de 384 × 384 px conserve l’alpha généré et mesure environ 52 Ko. Le [prompt complet](art-prompts-settings.json) conserve aussi le chemin du PNG original.
+
+Elle ouvre le menu utilisateur, assorti aux panneaux vert forêt et aux bordures dorées du jeu. Le refuge, l’atelier, le salon, le sanctuaire et l’en-tête général partagent désormais la ligue, les deux monnaies et ce bouton. La progression dans la division remplit le fond du panneau de ligue ; le survol et le libellé accessible précisent les trophées restants. Les écrans de combat conservent leur interface. Le sélecteur de thème a été retiré.
+
+Le rendu de l’en-tête partagé est conservé sur [ordinateur](header-desktop-validation.webp) à 1280 × 720 px et sur [mobile](header-mobile-validation.webp) à 390 × 844 px. Le sanctuaire et les paramètres ont également été vérifiés à 320 px, ainsi que la navigation du menu au clavier.
+
+## Maison des gardiens et paramètres
+
+Le décor `apps/web/public/art/guardian-house.webp` a été créé avec **ImageGen intégré** : un intérieur de bois sculpté et de pierre claire, une cheminée, des lanternes en laiton et de grandes fenêtres ouvertes sur le village forestier. Le WebP de 1672 × 941 px, encodé en qualité 88, couvre tout l’écran de `/settings`. Le [prompt complet et le PNG source](art-prompts-guardian-house.json) sont conservés dans le manifeste.
+
+La Maison des gardiens du refuge ouvre directement les paramètres. Les rubriques Profil, Sécurité et Appareils, leurs formulaires, validations, notifications et confirmations sont en français. Les panneaux reprennent le vert forêt et les dorures du jeu. Le défilement se limite au contenu de la page ; les saisies restent conservées entre les rubriques.
+
+`GameHeader` est partagé par le refuge, les decks, le salon, le sanctuaire et les paramètres. Sa hauteur vaut 100 px sur ordinateur et 88 px sur mobile. Les mesures dans le navigateur donnent les mêmes positions pour les cinq pages : ligue et or à 28 px du haut sur ordinateur, puis à 12 px sur mobile ; bouton des paramètres à 24 px puis 22 px. L’historique des invocations est regroupé avec les raccourcis du sanctuaire pour conserver cette géométrie.
+
+Les aperçus finaux des paramètres sont conservés sur [ordinateur](settings-desktop-validation.webp) et sur [mobile](settings-mobile-validation.webp). Les onglets et confirmations ont aussi été vérifiés au clavier et à 320 px de large.
+
 ## Éléments du terrain
 
 Trois bâtiments neutres originaux ont été créés le 24 octobre 2026 avec **ImageGen intégré**, par trois appels distincts avec transparence :
@@ -178,7 +196,7 @@ Constraints: actual alpha-transparent background, including inside the bow. No c
 
 ## Salon et coffres de progression
 
-Le salon `/play` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
+L’arène `/arena` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
 
 Les quatre sprites `apps/web/public/art/chests/{common,rare,epic,legendary}.webp` ont chacun été générés séparément avec ImageGen et une transparence demandée. Ils partagent une vue de trois quarts : bois et fer, métal bleu, cristaux violets puis or lumineux. Le canal alpha des quatre WebP a été vérifié avec `webpinfo`. Les coffres sont encodés à 512 × 512 px, qualité 90 ; le décor à 1672 × 941 px, qualité 88, avec `cwebp`. Aucun fallback CLI de génération n’a été utilisé.
 
@@ -273,3 +291,12 @@ Les invocations de l’Oracle du firmament et du Grand forgeron ont leurs propre
 Le [manifeste Legendary](art-prompts-legendary.json) contient les **26 prompts complets**, les PNG générés et chaque chemin final. Les illustrations sont originales et ne reprennent pas les images de Mighty Party. Planches de comparaison Epic → Legendary : [familles 1–10](legendary-art-1.jpg), [familles 11–20](legendary-art-2.jpg), [invocations et icônes](legendary-summons-and-icons.jpg).
 
 Les composants réels ont été contrôlés à **1 330 × 1 100** et **390 × 844 px** dans un aperçu local : les 20 nouveaux portraits chargent, les plafonds 31 et 26 suivent la famille, aucune erreur JavaScript ni aucun débordement horizontal n’est relevé. Le focus initial de la fiche d’amélioration est placé sur sa fenêtre pour qu’elle s’ouvre en haut sur mobile. Aperçus : [bestiaire ordinateur](legendary-bestiary-desktop.jpg), [bestiaire mobile](legendary-bestiary-mobile.jpg), [fiche ordinateur](legendary-upgrade-desktop.jpg), [fiche mobile](legendary-upgrade-mobile.jpg). Les [sources et règles Legendary](references/mighty-party/legendary-cards.md) détaillent les statistiques et compétences intégrées.
+
+
+## Emplacements de coffre et clés — 24 octobre 2026
+
+Quatre images originales ont été générées avec **ImageGen intégré**, un appel par image : les chaînes croisées et leur cadenas doré serti d’émeraude (`apps/web/public/art/ui/premium-slot-chains.webp`), puis les clés de la Sylve, des anciens et souveraine (`apps/web/public/art/keys/chest-key-{1,2,3}.webp`). Les trois clés possèdent des silhouettes distinctes, avec des feuilles de chêne et des incrustations vertes. Les chaînes de fer déjà présentes restent utilisées pour les déblocages de ligue.
+
+Les quatre fichiers sont en **WebP RGBA de 512 × 512 px**, pour environ **232 Kio au total**, avec alpha réel vérifié. Le [manifeste des quatre prompts](art-prompts-chest-keys.json) conserve les prompts complets et les PNG sources. Les fichiers référencés par le jeu sont tous dans le dépôt.
+
+Les composants réels ont été vérifiés à **1 440 × 900**, **390 × 844** et **320 × 700 px** dans un aperçu local avec des achats simulés. Le contrôle navigateur vérifie les neuf emplacements, la molette horizontale, la barre masquée, le glisser à la souris, l’absence d’ouverture après un glisser et le clic normal sur un coffre prêt. Les trois clés chargent ; l’achat simulé met à jour le solde et l’état acquis, sans erreur JavaScript ni débordement horizontal de la page. Aperçus : [coffres ordinateur](chest-slots-desktop.webp), [cadenas dorés ordinateur](chest-slots-premium-desktop.webp), [coffres mobile](chest-slots-mobile.webp), [cadenas dorés mobile](chest-slots-premium-mobile.webp), [clés ordinateur](chest-keys-desktop.webp), [achat de clé](chest-key-purchased-desktop.webp), [clés mobile](chest-keys-mobile.webp), [petit mobile](chest-keys-small-mobile.webp).

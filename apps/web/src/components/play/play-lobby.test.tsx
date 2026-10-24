@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { PlayLobby, remainingTime, type LobbyChest } from "./play-lobby";
 import { ChestRevealDialog } from "./chest-reveal-dialog";
 import { GoldContext } from "@/components/gold-balance";
+import { leagueProgress } from "@sylve/game/leagues";
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>
@@ -62,12 +63,52 @@ describe("le salon de combat", () => {
     expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(2);
     expect(
       screen.getAllByRole("img", { name: /verrouillé par une chaîne/ }),
-    ).toHaveLength(4);
+    ).toHaveLength(3);
+    expect(
+      screen.getAllByRole("link", { name: /acheter .* au sanctuaire/ }),
+    ).toHaveLength(3);
+    expect(document.querySelectorAll(".play-chest")).toHaveLength(9);
     expect(
       screen.getByRole("button", {
         name: "Coffre commun de victoires, 0 sur 3 victoires",
       }),
     ).toBeTruthy();
+  });
+  it("opens earned league slots permanently and independently purchased slots", () => {
+    setup({ league: leagueProgress(0, 2400), purchasedChestSlots: [5, 7] });
+    expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(7);
+    expect(
+      screen.queryAllByRole("img", { name: /verrouillé par une chaîne/ }),
+    ).toHaveLength(0);
+    expect(
+      screen.getAllByRole("link", { name: /acheter .* au sanctuaire/ }),
+    ).toHaveLength(1);
+    expect(
+      screen
+        .getByRole("link", { name: /Clé des anciens/ })
+        .getAttribute("href"),
+    ).toBe("/sanctuary");
+  });
+  it("uses the unlocked capacity for the full warning", () => {
+    setup({ chests: chests.slice(0, 2), purchasedChestSlots: [6] });
+    expect(
+      screen.queryByText(/le prochain coffre de combat sera perdu/),
+    ).toBeNull();
+    expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(1);
+  });
+  it("scrolls the chest row horizontally with the wheel while preserving zoom gestures", () => {
+    setup();
+    const row = screen.getByRole("region", { name: /défilement horizontal/ });
+    Object.defineProperties(row, {
+      scrollWidth: { value: 1600 },
+      clientWidth: { value: 800 },
+    });
+    expect(fireEvent.wheel(row, { deltaY: 200 })).toBe(false);
+    expect(row.scrollLeft).toBe(200);
+    fireEvent.wheel(row, { deltaY: 100, deltaMode: 1 });
+    expect(row.scrollLeft).toBe(1800);
+    fireEvent.wheel(row, { deltaY: 100, ctrlKey: true });
+    expect(row.scrollLeft).toBe(1800);
   });
   it("shows two independent combat chest timers and allows only a ready chest to open", () => {
     const actions = setup({ chests: chests.slice(0, 2) });

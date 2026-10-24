@@ -16,7 +16,14 @@ import {
   upgradeCost,
   upgradeGoldCost,
 } from "./index";
-import { CHEST_RULES, chestGold, chestLoot, rollChest } from "./progression";
+import {
+  CHEST_RULES,
+  CHEST_SLOT_UNLOCKS,
+  chestGold,
+  chestLoot,
+  rollChest,
+  unlockedChestSlots,
+} from "./progression";
 
 function seeded(seed = 17) {
   return () => {
@@ -26,6 +33,20 @@ function seeded(seed = 17) {
 }
 
 describe("variantes et progression", () => {
+  it("starts with two slots, grants three league unlocks at their milestones and validates paid slots", () => {
+    expect(unlockedChestSlots()).toEqual([0, 1]);
+    for (const unlock of CHEST_SLOT_UNLOCKS) {
+      expect(unlockedChestSlots(unlock.trophies - 1)).not.toContain(
+        unlock.slot,
+      );
+      expect(unlockedChestSlots(unlock.trophies)).toContain(unlock.slot);
+    }
+    expect(unlockedChestSlots(0, [-1, 2, 4, 6, 6, 9])).toEqual([0, 1, 6]);
+    expect(unlockedChestSlots(2400, [5, 6, 7])).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7,
+    ]);
+    expect(unlockedChestSlots(Number.NaN)).toEqual([0, 1]);
+  });
   it("requires duplicates and gold for each successive level", () => {
     for (const rarity of RARITIES)
       for (let level = 1; level < maxCardLevel(rarity); level++) {

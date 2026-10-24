@@ -1,9 +1,55 @@
 import { CATALOG, RARITIES, type CardRarity } from "./index";
 import { leagueAt } from "./leagues";
 
-/** Two combat-chest slots, one recurring victory chest and four locked slots. */
+/** Two starting combat slots, three league unlocks and three purchased slots. */
 export const CHEST_SLOTS = 2;
-export const LOCKED_CHEST_SLOTS = 4;
+export const LEAGUE_CHEST_SLOTS = 5;
+export const CHEST_SLOT_UNLOCKS = [
+  { slot: 2, trophies: 800 },
+  { slot: 3, trophies: 1600 },
+  { slot: 4, trophies: 2400 },
+] as const;
+export const CHEST_SLOT_KEYS = [
+  {
+    slot: 5,
+    name: "Clé de la Sylve",
+    price: 500,
+    image: "/art/keys/chest-key-1.webp",
+  },
+  {
+    slot: 6,
+    name: "Clé des anciens",
+    price: 1000,
+    image: "/art/keys/chest-key-2.webp",
+  },
+  {
+    slot: 7,
+    name: "Clé souveraine",
+    price: 1500,
+    image: "/art/keys/chest-key-3.webp",
+  },
+] as const;
+export const TOTAL_CHEST_SLOTS = LEAGUE_CHEST_SLOTS + CHEST_SLOT_KEYS.length;
+
+export function unlockedChestSlots(
+  peakTrophies = 0,
+  purchasedSlots: readonly number[] = [],
+) {
+  const trophies = Number.isFinite(peakTrophies)
+    ? Math.max(0, peakTrophies)
+    : 0;
+  return Array.from({ length: TOTAL_CHEST_SLOTS }, (_, slot) => slot).filter(
+    (slot) =>
+      slot < CHEST_SLOTS ||
+      CHEST_SLOT_UNLOCKS.some(
+        (unlock) => unlock.slot === slot && trophies >= unlock.trophies,
+      ) ||
+      CHEST_SLOT_KEYS.some(
+        (key) => key.slot === slot && purchasedSlots.includes(slot),
+      ),
+  );
+}
+
 export const VICTORY_CHEST_WINS = 3;
 export interface VictoryChestProgress {
   wins: number;

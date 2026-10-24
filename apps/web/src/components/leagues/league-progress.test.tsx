@@ -4,6 +4,29 @@ import { leagueProgress } from "@sylve/game/leagues";
 import { LeaguePanel, LeagueResult } from "./league-progress";
 
 describe("le parcours des ligues", () => {
+  it("fills the compact header background within the current division and resets on promotion", () => {
+    const { rerender } = render(
+      <LeaguePanel progress={leagueProgress(375)} compact />,
+    );
+    const progress = screen.getByRole("progressbar", {
+      name: "Progression vers Fer II",
+    });
+    expect(progress.getAttribute("aria-valuenow")).toBe("175");
+    expect(progress.getAttribute("aria-valuemax")).toBe("200");
+    expect(progress.firstElementChild?.getAttribute("style")).toContain("87.5%");
+    rerender(<LeaguePanel progress={leagueProgress(400)} compact />);
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "0",
+    );
+    rerender(<LeaguePanel progress={leagueProgress(6100)} compact />);
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe(
+      "Ligue maximale atteinte",
+    );
+    expect(
+      screen.getByRole("progressbar").firstElementChild?.getAttribute("style"),
+    ).toContain("100%");
+  });
+
   it("shows the remaining trophies, all league thresholds and deck unlocks", async () => {
     render(<LeaguePanel progress={leagueProgress(175)} />);
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
@@ -17,6 +40,9 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("La voie des gardiens")).toBeTruthy();
     expect(dialog.getByText("5 cartes dans le deck")).toBeTruthy();
     expect(dialog.getByText("8 cartes dans le deck")).toBeTruthy();
+    expect(dialog.getByText("3 emplacements de coffre")).toBeTruthy();
+    expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
+    expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("Challenger I")).toBeTruthy();
     expect(dialog.getByText("2 %")).toBeTruthy();
     expect(

@@ -37,8 +37,11 @@ export default function PasswordInput({
       />
       <button
         type="button"
-        tabIndex={-1}
-        className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer transition-colors"
+        aria-label={
+          visible ? "Masquer le mot de passe" : "Afficher le mot de passe"
+        }
+        aria-pressed={visible}
+        className="password-visibility-toggle text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer transition-colors"
         onClick={() => setVisible((v) => !v)}
       >
         {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

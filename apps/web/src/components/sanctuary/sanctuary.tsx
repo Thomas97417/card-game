@@ -1,7 +1,8 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import { ArrowRight, History, LoaderCircle } from "lucide-react";
+import { ArrowRight, Check, History, LoaderCircle } from "lucide-react";
+import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
 import {
   combatTypeLabel,
   RARITIES,
@@ -17,7 +18,7 @@ import {
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
@@ -40,7 +41,9 @@ interface SanctuaryProps {
   ready: boolean;
   latest?: SummonResult | null;
   collection: OwnedCard[] | undefined;
+  purchasedChestSlots?: readonly number[];
   onSummon: (request: SummonRequest) => Promise<SummonResult>;
+  onUnlockChestSlot: (slot: number) => Promise<unknown>;
   onUpgrade: (variantId: string) => Promise<unknown>;
 }
 
@@ -49,7 +52,9 @@ export function Sanctuary({
   ready,
   latest,
   collection,
+  purchasedChestSlots = [],
   onSummon,
+  onUnlockChestSlot,
   onUpgrade,
 }: SanctuaryProps) {
   const [busy, setBusy] = useState<{
@@ -59,6 +64,9 @@ export function Sanctuary({
   const [result, setResult] = useState<SummonResult | null>(null);
   const [lastResult, setLastResult] = useState<SummonResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [busyKey, setBusyKey] = useState<number | null>(null);
+  const [unlockedKeys, setUnlockedKeys] = useState<number[]>([]);
+  const [unlockedMessage, setUnlockedMessage] = useState<string | null>(null);
   const lock = useRef(false);
   const pending = useRef<SummonRequest | null>(null);
   const previous = lastResult ?? latest;
@@ -70,6 +78,7 @@ export function Sanctuary({
     lock.current = true;
     setBusy({ packId, count });
     setError(null);
+    setUnlockedMessage(null);
     try {
       if (pending.current?.packId !== packId || pending.current.count !== count)
         pending.current = { packId, count, requestId: crypto.randomUUID() };
@@ -89,6 +98,40 @@ export function Sanctuary({
     }
   }
 
+  async function unlockSlot(slot: number) {
+    const key = CHEST_SLOT_KEYS.find((key) => key.slot === slot);
+    if (
+      !key ||
+      lock.current ||
+      !ready ||
+      emeralds == null ||
+      emeralds < key.price ||
+      purchasedChestSlots.includes(slot) ||
+      unlockedKeys.includes(slot)
+    )
+      return;
+    lock.current = true;
+    setBusyKey(slot);
+    setError(null);
+    setUnlockedMessage(null);
+    try {
+      await onUnlockChestSlot(slot);
+      setUnlockedKeys((keys) => [...keys, slot]);
+      setUnlockedMessage(
+        `L’emplacement ${slot + 2} est débloqué pour toujours.`,
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof ConvexError && typeof cause.data === "string"
+          ? cause.data
+          : "L’achat n’a pas pu être confirmé. Réessaie : cet emplacement ne sera débité qu’une fois.",
+      );
+    } finally {
+      setBusyKey(null);
+      lock.current = false;
+    }
+  }
+
   return (
     <main className="sanctuary-page" aria-label="Le sanctuaire">
       <div className="sanctuary-scenery" aria-hidden="true">
@@ -101,37 +144,7 @@ export function Sanctuary({
         />
         <div className="sanctuary-shade" />
       </div>
-      <header className="sanctuary-header">
-        <Link
-          to="/hub"
-          className="workshop-back"
-          aria-label="Retour au refuge"
-          draggable={false}
-        >
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <div className="sanctuary-header-tools">
-          {previous && (
-            <button
-              type="button"
-              className="sanctuary-history-button"
-              aria-label="Dernière invocation"
-              title="Dernière invocation"
-              disabled={!!busy}
-              onClick={() => setResult(previous)}
-            >
-              <History size={17} />
-            </button>
-          )}
-          <CurrencyBalances />
-        </div>
-      </header>
+      <GameHeader />
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
@@ -145,16 +158,116 @@ export function Sanctuary({
                 key={pack.id}
                 pack={pack}
                 emeralds={emeralds}
-                ready={ready}
+                ready={ready && busyKey === null}
                 busy={busy}
                 onInvoke={invoke}
               />
             ))}
           </section>
+          <section
+            className="sanctuary-chest-keys"
+            id="chest-keys"
+            aria-labelledby="chest-keys-title"
+            aria-busy={busyKey !== null}
+          >
+            <div className="sanctuary-keys-heading">
+              <h2 id="chest-keys-title">Clés de coffre</h2>
+              <p>Plus de place pour tes trésors. Un déblocage pour toujours.</p>
+            </div>
+            <div className="sanctuary-key-grid">
+              {CHEST_SLOT_KEYS.map((key) => {
+                const owned =
+                  purchasedChestSlots.includes(key.slot) ||
+                  unlockedKeys.includes(key.slot);
+                const insufficient = emeralds != null && emeralds < key.price;
+                const working = busyKey === key.slot;
+                return (
+                  <article
+                    className={`sanctuary-key-card ${owned ? "is-owned" : ""}`}
+                    key={key.slot}
+                    aria-labelledby={`key-${key.slot}`}
+                  >
+                    <span className="sanctuary-key-tag">
+                      {owned ? "Acquis" : "Achat unique"}
+                    </span>
+                    <img
+                      className="sanctuary-key-art"
+                      src={key.image}
+                      alt=""
+                      width={512}
+                      height={512}
+                      draggable={false}
+                    />
+                    <div className="sanctuary-key-copy">
+                      <h3 id={`key-${key.slot}`}>{key.name}</h3>
+                      <p>
+                        Déverrouille l’emplacement de coffre{" "}
+                        {String(key.slot + 2).padStart(2, "0")}.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="sanctuary-key-button"
+                      disabled={
+                        !ready ||
+                        !!busy ||
+                        busyKey !== null ||
+                        emeralds == null ||
+                        insufficient ||
+                        owned
+                      }
+                      aria-label={
+                        owned
+                          ? `Emplacement ${key.slot + 2} déjà débloqué`
+                          : `Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`
+                      }
+                      title={
+                        !owned && insufficient
+                          ? `Il te manque ${(key.price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                          : undefined
+                      }
+                      onClick={() => void unlockSlot(key.slot)}
+                    >
+                      {owned ? (
+                        <>
+                          <Check size={16} />
+                          Emplacement débloqué
+                        </>
+                      ) : (
+                        <>
+                          <span>
+                            {working ? (
+                              <LoaderCircle
+                                className="animate-spin"
+                                size={15}
+                              />
+                            ) : null}
+                            Déverrouiller
+                          </span>
+                          <EmeraldAmount amount={key.price} />
+                        </>
+                      )}
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
           <nav
             className="sanctuary-navigation"
             aria-label="Explorer le sanctuaire"
           >
+            {previous && (
+              <button
+                type="button"
+                className="sanctuary-text-button"
+                disabled={!!busy || busyKey !== null}
+                onClick={() => setResult(previous)}
+              >
+                <History size={17} />
+                Dernière invocation
+              </button>
+            )}
             <BestiaryDialog />
             <Link to="/decks" className="sanctuary-text-button">
               Ma collection
@@ -166,6 +279,15 @@ export function Sanctuary({
           <p className="sanctuary-feedback" role="status">
             <LoaderCircle className="animate-spin" size={16} />
             Les esprits répondent à ton appel…
+          </p>
+        )}
+        {unlockedMessage && (
+          <p className="sanctuary-feedback sanctuary-key-success" role="status">
+            <Check size={16} />
+            {unlockedMessage}
+            <Link to="/arena">
+              Voir mes coffres <ArrowRight size={15} />
+            </Link>
           </p>
         )}
         {error && (
@@ -314,13 +436,15 @@ export function SummonRevealDialog({
   const [inspected, setInspected] = useState<string | null>(null);
   const popup = useRef<HTMLDivElement>(null);
   const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
-  const reveals = new Map(result?.reveals.map((item) => [item.variantId, item]));
+  const reveals = new Map(
+    result?.reveals.map((item) => [item.variantId, item]),
+  );
   const inspectedReveal = inspected ? reveals.get(inspected) : undefined;
   const inspectedEntry = inspectedReveal
-    ? entries.get(inspectedReveal.variantId) ?? {
+    ? (entries.get(inspectedReveal.variantId) ?? {
         card: resolveCard(inspectedReveal.variantId, inspectedReveal.level),
         copies: inspectedReveal.copies,
-      }
+      })
     : undefined;
 
   function close() {
@@ -381,7 +505,9 @@ export function SummonRevealDialog({
                       type="button"
                       className="workshop-card"
                       data-rarity={card.rarity}
-                      style={{ "--creature-color": card.color } as CSSProperties}
+                      style={
+                        { "--creature-color": card.color } as CSSProperties
+                      }
                       aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations`}
                       aria-haspopup="dialog"
                       onClick={() => setInspected(item.variantId)}

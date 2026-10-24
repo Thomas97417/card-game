@@ -5,6 +5,8 @@ import { authClient } from "@/lib/auth-client";
 
 import { Button } from "@/components/ui/button";
 import { TriangleAlert } from "lucide-react";
+import { useState } from "react";
+import { settingsError } from "./settings-error";
 
 import {
   SettingsCard,
@@ -27,58 +29,83 @@ import {
 
 export default function DeleteAccountCard() {
   const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    await authClient.deleteUser({
-      fetchOptions: {
-        onSuccess: () => {
-          navigate({ to: "/" });
-          location.reload();
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await authClient.deleteUser({
+        fetchOptions: {
+          onSuccess: () => {
+            navigate({ to: "/" });
+            location.reload();
+          },
+          onError: (error) => {
+            toast.error(
+              settingsError(
+                error.error,
+                "Ton compte n’a pas pu être supprimé. Réessaie.",
+              ),
+            );
+          },
         },
-        onError: (error) => {
-          toast.error(error.error.message);
-        },
-      },
-    });
+      });
+    } catch {
+      toast.error(
+        "Ton compte n’a pas pu être supprimé. Vérifie ta connexion et réessaie.",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
-    <SettingsCard className="border-destructive">
+    <SettingsCard className="settings-card-danger">
       <SettingsCardContent>
         <SettingsCardHeader
-          title="Delete Account"
-          description="Permanently delete your account and all associated data. This action cannot be undone."
+          icon={TriangleAlert}
+          title="Supprimer mon compte"
+          description="Supprime définitivement ton compte Sylve et l’accès à ta progression."
         />
       </SettingsCardContent>
-      <SettingsCardFooter className="bg-destructive/10 dark:bg-destructive/10">
-        <p className="text-sm text-muted-foreground">Proceed with caution.</p>
+      <SettingsCardFooter>
+        <p className="text-sm text-muted-foreground">
+          Cette action est irréversible.
+        </p>
         <AlertDialog>
           <AlertDialogTrigger
             render={
               <Button
                 size="sm"
                 variant="destructive"
-                className="hover:cursor-pointer"
+                className="settings-destructive-button"
+                disabled={deleting}
               />
             }
           >
-            Delete Account
+            Supprimer mon compte
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="settings-confirmation">
             <AlertDialogHeader>
               <AlertDialogMedia>
                 <TriangleAlert className="size-5" />
               </AlertDialogMedia>
-              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogTitle>Supprimer ton compte ?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action is permanent and cannot be undone. All your data
-                will be deleted immediately.
+                Cette action est définitive. Tu perdras l’accès à ton compte et
+                à ta progression.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction variant="destructive" onClick={handleDelete}>
-                Delete Account
+              <AlertDialogCancel disabled={deleting}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                className="settings-destructive-button"
+                disabled={deleting}
+                onClick={handleDelete}
+              >
+                {deleting ? "Suppression…" : "Supprimer définitivement"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

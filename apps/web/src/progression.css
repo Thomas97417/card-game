@@ -29,13 +29,6 @@
     700 15px/1.2 "Avenir Next",
     sans-serif;
 }
-.workshop-header > .gold-balance,
-.play-header > .gold-balance {
-  margin-left: auto;
-}
-.play-header h1 {
-  min-width: 0;
-}
 [data-rarity="common"] {
   --rarity-color: #a4b4a0;
   --rarity-rgb: 164, 180, 160;
@@ -717,12 +710,6 @@
   }
 }
 @media (max-width: 760px) {
-  .workshop-header {
-    gap: 10px;
-  }
-  .play-header h1 {
-    font-size: clamp(17px, 4.5vw, 24px);
-  }
   .gold-balance {
     gap: 5px;
     padding-right: 10px;

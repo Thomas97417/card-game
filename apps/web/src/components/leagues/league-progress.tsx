@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, ChevronRight, LockKeyhole } from "lucide-react";
+import { Archive, Check, ChevronRight, LockKeyhole } from "lucide-react";
+import { CHEST_SLOT_UNLOCKS } from "@sylve/game/progression";
 import { RARITIES, RARITY_LABELS } from "@sylve/game";
 import { CollectionIcon } from "@/components/game/game-icon";
 import {
@@ -73,14 +74,34 @@ export function LeaguePanel({
 }) {
   const [open, setOpen] = useState(false);
   const { current, next, trophies, earned, required, nextSlot } = progress;
+  const percentage = Math.min(100, Math.max(0, (earned / required) * 100));
+  const progressLabel = `Progression vers ${next?.label ?? "le sommet des ligues"}`;
+  const progressDescription = next
+    ? `${earned} sur ${required} trophées, ${next.minTrophies - trophies} trophées avant ${next.label}`
+    : "Ligue maximale atteinte";
   return (
     <>
       <button
         className={`league-panel ${compact ? "is-compact" : ""}`}
+        type="button"
         onClick={() => setOpen(true)}
         aria-label={`Ta ligue : ${current.label}, ${trophies} trophées. Voir les ligues et récompenses`}
         aria-haspopup="dialog"
+        title={progressDescription}
       >
+        {compact && (
+          <span
+            className="league-panel-background"
+            role="progressbar"
+            aria-label={progressLabel}
+            aria-valuemin={0}
+            aria-valuemax={required}
+            aria-valuenow={earned}
+            aria-valuetext={progressDescription}
+          >
+            <span style={{ width: `${percentage}%` }} />
+          </span>
+        )}
         <LeagueBadge league={current} size={compact ? 58 : 80} />
         <span className="league-panel-content">
           <span className="league-panel-heading">
@@ -95,17 +116,13 @@ export function LeaguePanel({
               <span
                 className="league-progress-track"
                 role="progressbar"
-                aria-label={`Progression vers ${next?.label ?? "le sommet des ligues"}`}
+                aria-label={progressLabel}
                 aria-valuemin={0}
                 aria-valuemax={required}
                 aria-valuenow={earned}
-                aria-valuetext={
-                  next
-                    ? `${next.minTrophies - trophies} trophées avant ${next.label}`
-                    : "Ligue maximale atteinte"
-                }
+                aria-valuetext={progressDescription}
               >
-                <span style={{ width: `${(earned / required) * 100}%` }} />
+                <span style={{ width: `${percentage}%` }} />
               </span>
               <span className="league-panel-next">
                 {next
@@ -135,7 +152,7 @@ export function LeaguePanel({
             {TROPHIES_PER_LOSS} trophées, sans descendre sous zéro. Une
             promotion tous les {TROPHIES_PER_DIVISION} trophées. Les défis
             amicaux et l’entraînement local ne changent pas tes trophées. Les
-            emplacements de deck débloqués restent acquis après une
+            emplacements de deck et de coffre débloqués restent acquis après une
             rétrogradation.
           </DialogDescription>
           <div className="league-current-summary">
@@ -181,6 +198,9 @@ export function LeaguePanel({
               const slot = DECK_SLOT_UNLOCKS.find(
                 (unlock) => unlock.trophies === league.minTrophies,
               );
+              const chestSlot = CHEST_SLOT_UNLOCKS.find(
+                (unlock) => unlock.trophies === league.minTrophies,
+              );
               return (
                 <li
                   key={league.id}
@@ -204,6 +224,12 @@ export function LeaguePanel({
                       {league.lootMultiplier.toLocaleString("fr-FR", {
                         maximumFractionDigits: 2,
                       })}
+                    </small>
+                  )}
+                  {chestSlot && (
+                    <small className="league-slot-reward">
+                      <Archive size={12} />
+                      {chestSlot.slot + 1} emplacements de coffre
                     </small>
                   )}
                   <span className="league-road-state">
