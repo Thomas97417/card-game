@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
 import {
-  Archive,
   ArrowUpRight,
   Check,
   ChevronLeft,
@@ -81,6 +80,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
   const stepRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const didCenter = useRef(false);
   const detailsId = useId();
+  const progressGradientId = useId();
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
   useHorizontalWheel(roadRef);
 
@@ -109,6 +109,10 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
     (unlock) => unlock.trophies === nextMilestone?.minTrophies,
   );
   const percentage = Math.min(100, Math.max(0, (earned / required) * 100));
+  const progressLabel = `Progression vers ${next?.label ?? "le sommet des ligues"}`;
+  const progressDescription = next
+    ? `${earned} sur ${required} trophées, ${next.minTrophies - trophies} trophées avant ${next.label}`
+    : "Ligue maximale atteinte";
 
   function centerStep(index: number, smooth: boolean) {
     const road = roadRef.current;
@@ -166,28 +170,6 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
               <span>Deck : {progress.deckCapacity} cartes max.</span>
             </span>
           </div>
-          <div className="league-current-progress">
-            <div>
-              <span>
-                {next ? `Vers ${next.label}` : "Le sommet des gardiens"}
-              </span>
-              <strong>
-                {next
-                  ? `${next.minTrophies - trophies} trophées restants`
-                  : "Ligue maximale atteinte"}
-              </strong>
-            </div>
-            <span
-              className="league-progress-track"
-              role="progressbar"
-              aria-label={`Progression vers ${next?.label ?? "le sommet des ligues"}`}
-              aria-valuemin={0}
-              aria-valuemax={required}
-              aria-valuenow={earned}
-            >
-              <span style={{ width: `${percentage}%` }} />
-            </span>
-          </div>
         </section>
 
         <aside className="league-next-milestone">
@@ -205,7 +187,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
             </h3>
             <p>
               {nextChestSlot
-                ? `Et ${nextChestSlot.slot + 1} emplacements de coffre.`
+                ? `Et un ${nextChestSlot.slot + 1}ᵉ emplacement de coffre.`
                 : nextMilestone
                   ? "Une nouvelle place pour ta prochaine créature."
                   : "Tes emplacements de deck et de coffre restent acquis."}
@@ -318,6 +300,55 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                     }}
                   >
                     <span className="league-road-emblem">
+                      {active && (
+                        <span
+                          className="league-road-progress"
+                          role="progressbar"
+                          aria-label={progressLabel}
+                          aria-valuemin={0}
+                          aria-valuemax={required}
+                          aria-valuenow={earned}
+                          aria-valuetext={progressDescription}
+                          title={progressDescription}
+                        >
+                          <svg
+                            viewBox="0 0 100 100"
+                            aria-hidden="true"
+                            focusable="false"
+                          >
+                            <defs>
+                              <linearGradient
+                                id={progressGradientId}
+                                x1="0"
+                                y1="0"
+                                x2="1"
+                                y2="1"
+                              >
+                                <stop stopColor="#b88c45" />
+                                <stop offset="0.5" stopColor="#f5e1a5" />
+                                <stop offset="1" stopColor="#e4bd69" />
+                              </linearGradient>
+                            </defs>
+                            <circle
+                              className="league-road-progress-track"
+                              cx="50"
+                              cy="50"
+                              r="46"
+                            />
+                            <circle
+                              className="league-road-progress-value"
+                              cx="50"
+                              cy="50"
+                              r="46"
+                              pathLength="100"
+                              stroke={`url(#${progressGradientId})`}
+                              strokeDasharray="100"
+                              strokeDashoffset={100 - percentage}
+                              strokeLinecap={percentage > 0 ? "round" : "butt"}
+                            />
+                          </svg>
+                        </span>
+                      )}
                       <LeagueBadge league={league} size={74} />
                       <span className="league-road-marker" aria-hidden="true">
                         {active ? (
@@ -345,7 +376,15 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                       )}
                       {chestSlot && (
                         <small>
-                          <Archive size={12} aria-hidden="true" />
+                          <img
+                            className="league-chest-icon"
+                            src="/art/chests/common.webp"
+                            alt=""
+                            aria-hidden="true"
+                            width={20}
+                            height={20}
+                            draggable={false}
+                          />
                           {chestSlot.slot + 1} emplacements de coffre
                         </small>
                       )}

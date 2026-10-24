@@ -106,6 +106,56 @@ describe("le parcours des ligues", () => {
     ).toBeTruthy();
   });
 
+  it("keeps division progress on the current timeline node and resets its ring on promotion", async () => {
+    const { rerender } = render(
+      <LeaguePanel progress={leagueProgress(420)} compact />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer II/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const ring = dialog.getByRole("progressbar", {
+      name: "Progression vers Fer I",
+    });
+    expect(ring.getAttribute("aria-valuenow")).toBe("20");
+    expect(ring.getAttribute("aria-valuemax")).toBe("200");
+    expect(ring.getAttribute("aria-valuetext")).toContain(
+      "180 trophées avant Fer I",
+    );
+    expect(
+      ring
+        .querySelector(".league-road-progress-value")
+        ?.getAttribute("stroke-dashoffset"),
+    ).toBe("90");
+    expect(
+      within(
+        dialog.getByRole("region", { name: "Ta progression" }),
+      ).queryByRole("progressbar"),
+    ).toBeNull();
+    expect(dialog.getByText("Et un 3ᵉ emplacement de coffre.")).toBeTruthy();
+
+    fireEvent.click(dialog.getByRole("button", { name: "Palier suivant" }));
+    expect(ring.closest('[aria-current="step"]')?.textContent).toContain(
+      "Fer II",
+    );
+    expect(dialog.getAllByRole("progressbar")).toHaveLength(1);
+
+    rerender(<LeaguePanel progress={leagueProgress(600)} compact />);
+    expect(
+      dialog
+        .getByRole("progressbar", { name: "Progression vers Bronze IV" })
+        .getAttribute("aria-valuenow"),
+    ).toBe("0");
+    rerender(<LeaguePanel progress={leagueProgress(6100)} compact />);
+    const finalRing = dialog.getByRole("progressbar");
+    expect(finalRing.getAttribute("aria-valuetext")).toBe(
+      "Ligue maximale atteinte",
+    );
+    expect(
+      finalRing
+        .querySelector(".league-road-progress-value")
+        ?.getAttribute("stroke-dashoffset"),
+    ).toBe("0");
+  });
+
   it("explores the entire timeline with the keyboard while retaining the current league", async () => {
     render(<LeaguePanel progress={leagueProgress(175)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
@@ -147,6 +197,7 @@ describe("le parcours des ligues", () => {
     expect(
       dialog.getByRole("heading", { name: "Un deck de 7 cartes" }),
     ).toBeTruthy();
+    expect(dialog.getByText("Et un 4ᵉ emplacement de coffre.")).toBeTruthy();
     expect(
       dialog.getByRole("region", { name: "Ta progression" }).textContent,
     ).toContain("Deck : 6 cartes max.");
