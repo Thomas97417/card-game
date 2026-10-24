@@ -17,7 +17,7 @@ import {
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
-import { PlayerHeader } from "@/components/player-header";
+import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
@@ -101,37 +101,7 @@ export function Sanctuary({
         />
         <div className="sanctuary-shade" />
       </div>
-      <header className="sanctuary-header">
-        <Link
-          to="/hub"
-          className="workshop-back"
-          aria-label="Retour au refuge"
-          draggable={false}
-        >
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <div className="sanctuary-header-tools">
-          {previous && (
-            <button
-              type="button"
-              className="sanctuary-history-button"
-              aria-label="Dernière invocation"
-              title="Dernière invocation"
-              disabled={!!busy}
-              onClick={() => setResult(previous)}
-            >
-              <History size={17} />
-            </button>
-          )}
-          <PlayerHeader />
-        </div>
-      </header>
+      <GameHeader />
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
@@ -155,6 +125,17 @@ export function Sanctuary({
             className="sanctuary-navigation"
             aria-label="Explorer le sanctuaire"
           >
+            {previous && (
+              <button
+                type="button"
+                className="sanctuary-text-button"
+                disabled={!!busy}
+                onClick={() => setResult(previous)}
+              >
+                <History size={17} />
+                Dernière invocation
+              </button>
+            )}
             <BestiaryDialog />
             <Link to="/decks" className="sanctuary-text-button">
               Ma collection
@@ -320,13 +301,15 @@ export function SummonRevealDialog({
   const [inspected, setInspected] = useState<string | null>(null);
   const popup = useRef<HTMLDivElement>(null);
   const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
-  const reveals = new Map(result?.reveals.map((item) => [item.variantId, item]));
+  const reveals = new Map(
+    result?.reveals.map((item) => [item.variantId, item]),
+  );
   const inspectedReveal = inspected ? reveals.get(inspected) : undefined;
   const inspectedEntry = inspectedReveal
-    ? entries.get(inspectedReveal.variantId) ?? {
+    ? (entries.get(inspectedReveal.variantId) ?? {
         card: resolveCard(inspectedReveal.variantId, inspectedReveal.level),
         copies: inspectedReveal.copies,
-      }
+      })
     : undefined;
 
   function close() {
@@ -387,7 +370,9 @@ export function SummonRevealDialog({
                       type="button"
                       className="workshop-card"
                       data-rarity={card.rarity}
-                      style={{ "--creature-color": card.color } as CSSProperties}
+                      style={
+                        { "--creature-color": card.color } as CSSProperties
+                      }
                       aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations`}
                       aria-haspopup="dialog"
                       onClick={() => setInspected(item.variantId)}

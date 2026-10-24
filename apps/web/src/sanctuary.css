@@ -4,10 +4,6 @@
   gap: 8px;
   min-width: 0;
 }
-.workshop-header > .currency-balances,
-.play-header > .currency-balances {
-  margin-left: auto;
-}
 .emerald-icon {
   display: block;
   flex-shrink: 0;
@@ -77,37 +73,12 @@
     #091c18c9 100%
   );
 }
-.sanctuary-header {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 20px;
-  min-height: 92px;
-  padding: 12px clamp(20px, 3.5vw, 64px);
-}
-.sanctuary-header-tools {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
 .sanctuary-navigation {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
-}
-.sanctuary-history-button {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border: 1px solid #b7ac7466;
-  border-radius: 50%;
-  background: #102d25cc;
-  color: #ead9b2;
 }
 .sanctuary-content {
   display: flex;
@@ -505,10 +476,6 @@
   }
 }
 @media (min-width: 761px) and (max-height: 800px) {
-  .sanctuary-header {
-    min-height: 78px;
-    padding-block: 8px;
-  }
   .summon-pack {
     padding-block: 15px 12px;
   }
@@ -546,22 +513,6 @@
   .emerald-balance .emerald-icon {
     width: 30px;
     height: 30px;
-  }
-  .sanctuary-header {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 0 12px;
-    min-height: 80px;
-    padding: 10px 16px;
-  }
-  .sanctuary-header .workshop-back {
-    width: 58px;
-    height: 46px;
-  }
-  .sanctuary-header-tools {
-    grid-column: 2;
-    grid-row: 1;
-    gap: 8px;
   }
   .sanctuary-content {
     padding-inline: 16px;

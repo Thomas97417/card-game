@@ -31,6 +31,7 @@ import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
 import playerHeaderCss from "../player-header.css?url";
+import settingsCss from "../settings.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: leaguesCss },
       { rel: "stylesheet", href: sanctuaryCss },
       { rel: "stylesheet", href: playerHeaderCss },
+      { rel: "stylesheet", href: settingsCss },
     ],
   }),
 
@@ -91,9 +93,14 @@ function RootDocument() {
     select: (state) => {
       const pathname = state.location.pathname.replace(/\/$/, "");
       return (
-        ["/hub", "/decks", "/sanctuary", "/play", "/practice"].includes(
-          pathname,
-        ) || pathname.startsWith("/game/")
+        [
+          "/hub",
+          "/decks",
+          "/sanctuary",
+          "/play",
+          "/settings",
+          "/practice",
+        ].includes(pathname) || pathname.startsWith("/game/")
       );
     },
   });

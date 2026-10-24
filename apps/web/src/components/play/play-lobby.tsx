@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { PlayerHeader } from "@/components/player-header";
+import { GameHeader } from "@/components/game-header";
 import { Link } from "@tanstack/react-router";
 import {
   Bot,
@@ -88,18 +88,7 @@ export function PlayLobby({
         draggable={false}
       />
       <div className="play-shade" />
-      <header className="play-header">
-        <Link to="/hub" className="workshop-back" aria-label="Retour au refuge">
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <PlayerHeader league={ready ? league : undefined} />
-      </header>
+      <GameHeader league={ready ? league : undefined} />
       <div className="play-main">
         <Link
           className="play-hero"

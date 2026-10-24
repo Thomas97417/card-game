@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
 
 export function SettingsCard({
   children,
@@ -6,13 +7,7 @@ export function SettingsCard({
   ...props
 }: React.ComponentProps<"div">) {
   return (
-    <div
-      className={cn(
-        "flex w-full flex-col items-start rounded-lg border border-border bg-card",
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn("settings-card", className)} {...props}>
       {children}
     </div>
   );
@@ -26,9 +21,7 @@ export function SettingsCardContent({
   className?: string;
 }) {
   return (
-    <div className={cn("flex w-full flex-col gap-4 p-6", className)}>
-      {children}
-    </div>
+    <div className={cn("settings-card-content", className)}>{children}</div>
   );
 }
 
@@ -40,28 +33,30 @@ export function SettingsCardFooter({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "flex min-h-14 w-full items-center justify-between rounded-b-lg border-t border-border bg-muted px-6",
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn("settings-card-footer", className)}>{children}</div>
   );
 }
 
 export function SettingsCardHeader({
   title,
   description,
+  icon: Icon,
 }: {
   title: string;
   description: string;
+  icon?: LucideIcon;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <h2 className="text-lg font-medium">{title}</h2>
-      <p className="text-sm text-muted-foreground">{description}</p>
+    <div className="settings-card-heading">
+      {Icon && (
+        <span className="settings-card-icon">
+          <Icon size={21} aria-hidden="true" />
+        </span>
+      )}
+      <div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
     </div>
   );
 }

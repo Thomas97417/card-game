@@ -11,14 +11,11 @@ import {
   Gem,
   MapPin,
   MousePointer2,
-  Settings2,
   Shield,
   Swords,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  CATALOG,
-  RARITIES,
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
@@ -36,13 +33,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { PlayerHeader } from "@/components/player-header";
+import { GameHeader } from "@/components/game-header";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { AbilityLegend } from "@/components/game/ability-legend";
 import { CollectionIcon } from "@/components/game/game-icon";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
-type ModalId = "home" | "archives";
 type Place = {
   id: PlaceId;
   name: string;
@@ -64,7 +60,7 @@ const PLACES: readonly Place[] = [
   {
     id: "home",
     name: "Maison des gardiens",
-    purpose: "Ton refuge",
+    purpose: "Profil et paramètres",
     icon: Crown,
     area: { left: "37%", top: "4%", width: "30%", height: "49%" },
   },
@@ -99,9 +95,6 @@ const hotspotStyle = cn(
 );
 
 interface VillageHubProps {
-  playerName?: string;
-  deckCount?: number;
-  collectionCount?: number;
   activity?: {
     gameId: Id<"games"> | null;
     status: string | null;
@@ -109,13 +102,7 @@ interface VillageHubProps {
   };
 }
 
-export function VillageHub({
-  playerName,
-  deckCount,
-  collectionCount,
-  activity,
-}: VillageHubProps) {
-  const [modal, setModal] = useState<ModalId>("home");
+export function VillageHub({ activity }: VillageHubProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
@@ -151,14 +138,13 @@ export function VillageHub({
       <main className="relative isolate h-full overflow-hidden bg-[#182e25] font-sans text-[#f5f0dd]">
         <h1 className="sr-only">Le refuge des gardiens</h1>
 
-        <header className="hub-hud pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-4 bg-gradient-to-b from-[#112a22]/60 to-transparent px-4 pt-4 pb-16 sm:px-7 sm:pt-6">
-          <div className="flex min-h-11 items-center gap-2 rounded-full border border-[#d1be85]/35 bg-[#1a3026]/75 px-4 text-[10px] font-medium tracking-[0.1em] text-[#fff6dd] shadow-lg backdrop-blur-sm">
+        <GameHeader className="hub-hud">
+          <div className="hub-location flex min-h-11 items-center gap-2 rounded-full border border-[#d1be85]/35 bg-[#1a3026]/75 px-4 text-[10px] font-medium tracking-[0.1em] text-[#fff6dd] shadow-lg backdrop-blur-sm">
             <MapPin size={14} className="shrink-0 text-[#e4c381]" />
             <span className="hidden sm:inline">La clairière des anciens</span>
             <span className="sm:hidden">Le refuge</span>
           </div>
-          <PlayerHeader />
-        </header>
+        </GameHeader>
 
         <div
           ref={mapScroll}
@@ -222,6 +208,7 @@ export function VillageHub({
                   );
                 }
                 if (
+                  place.id === "home" ||
                   place.id === "arena" ||
                   place.id === "workshop" ||
                   place.id === "sanctuary"
@@ -230,11 +217,13 @@ export function VillageHub({
                     <Link
                       key={place.id}
                       to={
-                        place.id === "arena"
-                          ? "/play"
-                          : place.id === "sanctuary"
-                            ? "/sanctuary"
-                            : "/decks"
+                        place.id === "home"
+                          ? "/settings"
+                          : place.id === "arena"
+                            ? "/play"
+                            : place.id === "sanctuary"
+                              ? "/sanctuary"
+                              : "/decks"
                       }
                       aria-label={label}
                       className={hotspotStyle}
@@ -248,7 +237,6 @@ export function VillageHub({
                 return (
                   <DialogTrigger
                     key={id}
-                    onClick={() => setModal(id)}
                     aria-label={label}
                     className={hotspotStyle}
                     style={place.area}
@@ -308,14 +296,7 @@ export function VillageHub({
       </main>
 
       <DialogContent>
-        {modal === "home" && (
-          <HomeContent
-            playerName={playerName}
-            deckCount={deckCount}
-            collectionCount={collectionCount}
-          />
-        )}
-        {modal === "archives" && <ArchivesContent />}
+        <ArchivesContent />
       </DialogContent>
     </Dialog>
   );
@@ -360,61 +341,6 @@ function ModalEyebrow({
     <div className="mb-4 flex items-center gap-2 text-[10px] font-semibold tracking-[0.15em] text-[#8d7950] uppercase">
       <Icon size={15} /> {children}
     </div>
-  );
-}
-
-function HomeContent({
-  playerName,
-  deckCount,
-  collectionCount,
-}: Pick<VillageHubProps, "playerName" | "deckCount" | "collectionCount">) {
-  return (
-    <>
-      <ModalEyebrow icon={Crown}>Maison des gardiens</ModalEyebrow>
-      <DialogTitle>Un endroit où revenir.</DialogTitle>
-      <DialogDescription>
-        {playerName
-          ? `${playerName}, ce refuge est le tien.`
-          : "Ce refuge est le tien, gardien."}{" "}
-        Prépare tes compagnons, apprends à les connaître et pars à la rencontre
-        d’autres gardiens.
-      </DialogDescription>
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-[#dee2d3] bg-[#eef0e5] p-5">
-          <CollectionIcon size={20} className="mb-3" />
-          <span className="block font-serif text-3xl">{deckCount ?? "—"}</span>
-          <span className="text-xs text-[#697664]">
-            {deckCount === 1 ? "deck préparé" : "decks préparés"}
-          </span>
-        </div>
-        <div className="rounded-xl border border-[#dee2d3] bg-[#eef0e5] p-5">
-          <Gem size={20} className="mb-3 text-[#6a805a]" />
-          <span className="block font-serif text-3xl">
-            {collectionCount ?? "—"}{" "}
-            <small className="text-base">
-              / {CATALOG.length * RARITIES.length}
-            </small>
-          </span>
-          <span className="text-xs text-[#697664]">variantes débloquées</span>
-        </div>
-      </div>
-      <p className="mt-5 rounded-lg border-l-2 border-[#b49862] bg-[#f0ecdd] px-4 py-3 text-xs leading-6 text-[#697664]">
-        Quatre compagnons communs t’accompagnent au départ. Gagne des combats,
-        ouvre tes coffres et utilise l’or et les exemplaires en réserve pour
-        renforcer tes cartes à l’atelier.
-      </p>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-        <Link to="/decks" className="sylve-button">
-          Visiter l’atelier <ArrowRight size={15} />
-        </Link>
-        <Link
-          to="/settings"
-          className="flex min-h-11 items-center gap-2 text-xs text-[#5d7259] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-[#305c4a]"
-        >
-          <Settings2 size={14} /> Mon compte
-        </Link>
-      </div>
-    </>
   );
 }
 

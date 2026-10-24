@@ -1,7 +1,7 @@
 .deck-workshop {
   --workshop-gold: #d7b777;
   --workshop-cream: #f4ebd4;
-  --workshop-header-height: clamp(100px, 15svh, 152px);
+  --workshop-header-height: var(--game-header-height);
   /* The table begins at 30.3% of the 1672 × 941 illustration. Account for
      the centered cover crop so the cards stay on the wood at every ratio. */
   --workshop-table-top: calc(50svh - max(100svh, 56.28vw) * 0.197);
@@ -58,21 +58,12 @@
 .deck-workshop button:disabled {
   cursor: default;
 }
-.workshop-header,
 .workshop-content,
 .workshop-footer {
   width: 100%;
   max-width: 1640px;
   margin-inline: auto;
   padding-inline: clamp(20px, 3vw, 56px);
-}
-.workshop-header {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 32px;
-  min-height: var(--workshop-header-height);
-  padding-block: 18px 24px;
 }
 .workshop-back {
   display: inline-flex;
@@ -597,9 +588,6 @@
   }
 }
 @media (max-width: 1100px) {
-  .workshop-header {
-    gap: 22px;
-  }
   .workshop-footer {
     flex-wrap: wrap;
     gap: 8px;
@@ -615,18 +603,12 @@
 }
 @media (max-width: 760px) {
   .deck-workshop {
-    --workshop-header-height: 100px;
     --workshop-content-chrome: 114px;
     --workshop-card-gap: 17px;
   }
-  .workshop-header,
   .workshop-content,
   .workshop-footer {
     padding-inline: 18px;
-  }
-  .workshop-header {
-    gap: 18px;
-    padding-block: 18px;
   }
   .workshop-back {
     width: 60px;
@@ -698,12 +680,6 @@
   }
 }
 @media (max-height: 800px) and (min-width: 761px) {
-  .deck-workshop {
-    --workshop-header-height: 80px;
-  }
-  .workshop-header {
-    padding-block: 14px;
-  }
   .workshop-footer {
     min-height: 70px;
     padding-block: 10px;

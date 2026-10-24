@@ -1,17 +1,10 @@
-import { authClient } from "@/lib/auth-client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Loader2, Monitor, Smartphone, Globe, X, LogOut } from "lucide-react";
-import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
-import {
-  SettingsCard,
-  SettingsCardContent,
-  SettingsCardFooter,
-  SettingsCardHeader,
-} from "./settings-card";
-import { Skeleton } from "../ui/skeleton";
+import { Globe, Loader2, LogOut, Monitor, Smartphone, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,21 +17,53 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import {
+  SettingsCard,
+  SettingsCardContent,
+  SettingsCardFooter,
+  SettingsCardHeader,
+} from "./settings-card";
+import { settingsError } from "./settings-error";
+
+function DeviceIcon({ userAgent }: { userAgent: string | null | undefined }) {
+  if (!userAgent) return <Globe size={21} />;
+  return /mobile|android|iphone/i.test(userAgent) ? (
+    <Smartphone size={21} />
+  ) : (
+    <Monitor size={21} />
+  );
+}
+
+function browserName(userAgent: string | null | undefined) {
+  if (!userAgent) return "Navigateur inconnu";
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("firefox")) return "Firefox";
+  if (ua.includes("edg")) return "Edge";
+  if (ua.includes("opera") || ua.includes("opr")) return "Opera";
+  if (ua.includes("chrome")) return "Chrome";
+  if (ua.includes("safari")) return "Safari";
+  return "Navigateur inconnu";
+}
 
 export default function SessionsCard() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [revokingAll, setRevokingAll] = useState(false);
-  const router = useRouter();
-
-  const { data: sessions, isLoading } = useQuery({
+  const {
+    data: sessions,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["sessions"],
     queryFn: async () => {
-      const { data } = await authClient.listSessions();
+      const { data, error } = await authClient.listSessions();
+      if (error)
+        throw new Error("Impossible de charger les appareils connectés.");
       return data;
     },
   });
-
   const { data: currentSession } = useQuery({
     queryKey: ["current-session"],
     queryFn: async () => {
@@ -46,155 +71,156 @@ export default function SessionsCard() {
       return data;
     },
   });
-
   const currentSessionId = currentSession?.session?.id;
+  const otherSessions = sessions?.filter(
+    (session) => session.id !== currentSessionId,
+  );
+  const busy = revokingId !== null || revokingAll;
 
   async function revokeSession(sessionId: string, sessionToken: string) {
-    const isCurrent = sessionId === currentSessionId;
+    if (busy) return;
     setRevokingId(sessionToken);
-    await authClient.revokeSession(
-      { token: sessionToken },
-      {
-        onSuccess: () => {
-          if (isCurrent) {
-            router.navigate({ to: "/" });
-            return;
-          }
-          toast.success("Session revoked.");
-          queryClient.invalidateQueries({ queryKey: ["sessions"] });
-        },
-        onError: (error) => {
-          toast.error(error.error.message);
-        },
-      },
-    );
-    setRevokingId(null);
+    try {
+      const { error } = await authClient.revokeSession({ token: sessionToken });
+      if (error) {
+        toast.error(
+          settingsError(
+            error,
+            "Cet appareil n’a pas pu être déconnecté. Réessaie.",
+          ),
+        );
+      } else if (sessionId === currentSessionId) {
+        await router.navigate({ to: "/" });
+        location.reload();
+      } else {
+        toast.success("L’appareil a été déconnecté.");
+        await queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      }
+    } catch {
+      toast.error(
+        "Cet appareil n’a pas pu être déconnecté. Vérifie ta connexion et réessaie.",
+      );
+    } finally {
+      setRevokingId(null);
+    }
   }
 
   async function revokeOtherSessions() {
+    if (busy) return;
     setRevokingAll(true);
-    const { error } = await authClient.revokeOtherSessions();
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("All other sessions revoked.");
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+    try {
+      const { error } = await authClient.revokeOtherSessions();
+      if (error) {
+        toast.error(
+          settingsError(
+            error,
+            "Les autres appareils n’ont pas pu être déconnectés. Réessaie.",
+          ),
+        );
+      } else {
+        toast.success("Tous les autres appareils ont été déconnectés.");
+        await queryClient.invalidateQueries({ queryKey: ["sessions"] });
+      }
+    } catch {
+      toast.error("La déconnexion a échoué. Vérifie ta connexion et réessaie.");
+    } finally {
+      setRevokingAll(false);
     }
-    setRevokingAll(false);
   }
-
-  function getDeviceIcon(userAgent: string | null | undefined) {
-    if (!userAgent) return <Globe className="size-4" />;
-    const ua = userAgent.toLowerCase();
-    if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
-      return <Smartphone className="size-4" />;
-    }
-    return <Monitor className="size-4" />;
-  }
-
-  function getBrowserName(userAgent: string | null | undefined) {
-    if (!userAgent) return "Unknown browser";
-    const ua = userAgent.toLowerCase();
-    if (ua.includes("firefox")) return "Firefox";
-    if (ua.includes("edg")) return "Edge";
-    if (ua.includes("safari") && !ua.includes("chrome")) return "Safari";
-    if (ua.includes("chrome")) return "Chrome";
-    if (ua.includes("opera") || ua.includes("opr")) return "Opera";
-    return "Unknown browser";
-  }
-
-  const otherSessions = sessions?.filter(
-    (s) => s.id !== currentSessionId,
-  );
 
   return (
     <SettingsCard>
       <SettingsCardContent>
         <SettingsCardHeader
-          title="Active Sessions"
-          description="Manage your active sessions across devices."
+          icon={Monitor}
+          title="Appareils connectés"
+          description="Retrouve tes sessions ouvertes et ferme celles dont tu n’as plus besoin."
         />
-        <div className="flex flex-col gap-2">
+        <div className="settings-sessions">
           {isLoading ? (
-            <>
-              <Skeleton className="h-14 w-full" />
-              <Skeleton className="h-14 w-full" />
-            </>
+            <p className="settings-session-empty" role="status">
+              Chargement des appareils…
+            </p>
+          ) : isError ? (
+            <div className="settings-session-empty" role="alert">
+              <p>Impossible de charger les appareils connectés.</p>
+              <Button
+                className="settings-secondary-button"
+                onClick={() => void refetch()}
+              >
+                Réessayer
+              </Button>
+            </div>
           ) : sessions?.length ? (
             sessions.map((session) => {
               const isCurrent = session.id === currentSessionId;
               return (
-                <div
-                  key={session.token}
-                  className="flex items-center justify-between rounded-md border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-muted-foreground">
-                      {getDeviceIcon(session.userAgent)}
+                <div key={session.id} className="settings-session">
+                  <span className="settings-device-icon" aria-hidden="true">
+                    <DeviceIcon userAgent={session.userAgent} />
+                  </span>
+                  <div className="settings-session-details">
+                    <div className="settings-session-name">
+                      <strong>{browserName(session.userAgent)}</strong>
+                      {isCurrent && (
+                        <span className="settings-current-device">
+                          Cet appareil
+                        </span>
+                      )}
                     </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span>{getBrowserName(session.userAgent)}</span>
-                        {isCurrent && (
-                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[0.65rem] font-medium text-primary">
-                            Current
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        Last active{" "}
-                        {new Date(session.updatedAt).toLocaleDateString(
-                          undefined,
-                          {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </span>
-                    </div>
+                    <span className="settings-session-date">
+                      Dernière activité :{" "}
+                      {new Date(session.updatedAt).toLocaleString("fr-FR", {
+                        day: "numeric",
+                        month: "long",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
                   {isCurrent ? (
                     <AlertDialog>
                       <AlertDialogTrigger
+                        aria-label="Déconnecter cet appareil"
+                        title="Déconnecter cet appareil"
                         render={
                           <Button
                             variant="ghost"
-                            size="icon-xs"
-                            className="hover:cursor-pointer text-muted-foreground hover:text-destructive"
-                            disabled={revokingId === session.token}
+                            size="icon"
+                            className="settings-session-revoke"
+                            disabled={busy}
                           />
                         }
                       >
                         {revokingId === session.token ? (
-                          <Loader2 className="size-3 animate-spin" />
+                          <Loader2 className="animate-spin" />
                         ) : (
-                          <X className="size-3" />
+                          <X size={16} />
                         )}
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="settings-confirmation">
                         <AlertDialogHeader>
                           <AlertDialogMedia>
-                            <LogOut className="size-5" />
+                            <LogOut size={21} />
                           </AlertDialogMedia>
                           <AlertDialogTitle>
-                            Revoke current session?
+                            Déconnecter cet appareil ?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            You will be logged out immediately and redirected to
-                            the home page.
+                            Tu seras immédiatement déconnecté et redirigé vers
+                            l’accueil.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
                           <AlertDialogAction
-                            variant="destructive"
+                            className="settings-destructive-button"
+                            disabled={busy}
                             onClick={() =>
-                              revokeSession(session.id, session.token)
+                              void revokeSession(session.id, session.token)
                             }
                           >
-                            Log out
+                            Se déconnecter
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -202,15 +228,19 @@ export default function SessionsCard() {
                   ) : (
                     <Button
                       variant="ghost"
-                      size="icon-xs"
-                      className="hover:cursor-pointer text-muted-foreground hover:text-destructive"
-                      disabled={revokingId === session.token}
-                      onClick={() => revokeSession(session.id, session.token)}
+                      size="icon"
+                      className="settings-session-revoke"
+                      disabled={busy}
+                      aria-label={`Déconnecter l’appareil ${browserName(session.userAgent)}`}
+                      title="Déconnecter cet appareil"
+                      onClick={() =>
+                        void revokeSession(session.id, session.token)
+                      }
                     >
                       {revokingId === session.token ? (
-                        <Loader2 className="size-3 animate-spin" />
+                        <Loader2 className="animate-spin" />
                       ) : (
-                        <X className="size-3" />
+                        <X size={16} />
                       )}
                     </Button>
                   )}
@@ -218,25 +248,24 @@ export default function SessionsCard() {
               );
             })
           ) : (
-            <p className="text-sm text-muted-foreground">No active sessions.</p>
+            <p className="settings-session-empty">Aucun appareil connecté.</p>
           )}
         </div>
       </SettingsCardContent>
       <SettingsCardFooter>
-        <p className="text-sm text-muted-foreground">
-          Revoke access from devices you don't recognize.
-        </p>
+        <p>Ta session actuelle restera ouverte.</p>
         <Button
-          size="sm"
-          variant="destructive"
-          className="hover:cursor-pointer"
-          disabled={!otherSessions?.length || revokingAll}
-          onClick={revokeOtherSessions}
+          className="settings-secondary-button"
+          disabled={!currentSessionId || !otherSessions?.length || busy}
+          onClick={() => void revokeOtherSessions()}
         >
           {revokingAll ? (
-            <Loader2 className="size-4 animate-spin" />
+            <>
+              <Loader2 className="animate-spin" aria-hidden="true" />
+              Déconnexion…
+            </>
           ) : (
-            "Revoke all others"
+            "Déconnecter les autres appareils"
           )}
         </Button>
       </SettingsCardFooter>
