@@ -1,0 +1,214 @@
+{
+  "tool": "image_gen built-in",
+  "generatedOn": "2026-10-24",
+  "assets": [
+    {
+      "id": "guardian",
+      "name": "Gardien du serment éternel",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Gardien du serment éternel, the Legendary evolution of a friendly moss-covered stone golem with cyan glowing carved spirals, fern mane and massive fists, now with a towering gilded stone crown, golden leaf plate armor, radiant emerald chest rune and a magnificent oak greatshield. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/guardian-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-d10132ad-2691-4518-a974-2a61c65544eb.png"
+    },
+    {
+      "id": "fox",
+      "name": "Renard du zénith",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Renard du zénith, the Legendary evolution of a nimble red fox woodland archer with amber eyes and a bushy tail, now with a golden suncrest helm, regal ivory leaf cloak and an elaborate sunwood bow with floating golden ember arrows. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/fox-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-23052c4e-679f-4db7-8cd3-7ae111efffea.png"
+    },
+    {
+      "id": "owl",
+      "name": "Oracle du firmament",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Oracle du firmament, the Legendary evolution of a wise round woodland owl with cream feathers and large amber eyes, now with a magnificent golden crescent feather crown, ivory ceremonial robes and a radiant staff with a suspended forest star. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/owl-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-e9d588bc-870d-45f1-bbf7-37bd94f3ad39.png"
+    },
+    {
+      "id": "stag",
+      "name": "Cerf du grand serment",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Cerf du grand serment, the Legendary evolution of a noble woodland stag with golden antlers and cream spotted fur, now with vast golden crystalline antlers, a gilded oak crown and an ivory emerald ceremonial mantle. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/stag-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-d8f5de43-5885-4743-a886-3791a5a7c79c.png"
+    },
+    {
+      "id": "mushroom",
+      "name": "Souverain des floraisons",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Souverain des floraisons, the Legendary evolution of a determined small mushroom forest sentinel with a mossy red cap, leafy body and rooted feet, now with a grand golden flowering cap crown, ivory bark royal robes and a luminous blossom scepter. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/mushroom-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-ea525fb5-2095-4304-96d5-51f863b729d4.png"
+    },
+    {
+      "id": "dragon",
+      "name": "Dragon du soleil éternel",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Dragon du soleil éternel, the Legendary evolution of a charming small amber woodland dragon with leaf-shaped wings and curled horns, now with a majestic golden horn crown, golden emerald scale armor and resplendent ivory amber leaf wings. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/dragon-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-006b5bf3-d5c7-42f9-9ce1-f6524ea3c683.png"
+    },
+    {
+      "id": "turtle",
+      "name": "Tortue du monde ancien",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Tortue du monde ancien, the Legendary evolution of a friendly sturdy ancient green turtle with a mossy stone shell, now with a massive ancient golden crystal shell bearing a miniature oak crown canopy and radiant amber protective spikes. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/turtle-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9186f30e-a45e-40bb-9fbd-3ca01c087a49.png"
+    },
+    {
+      "id": "wisp",
+      "name": "Esprit des marées célestes",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Esprit des marées célestes, the Legendary evolution of a luminous turquoise water spirit with a gentle small face and flowing translucent body, now with a radiant golden lotus crown, flowing ivory water silk robes and golden pearl droplets around a magnificent water staff. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/wisp-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-fcef1dc4-fa22-404b-bf98-0dc427f3cfe6.png"
+    },
+    {
+      "id": "wolf",
+      "name": "Loup de l’astre rouge",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Loup de l’astre rouge, the Legendary evolution of a determined silver-blue woodland wolf warrior with amber eyes, now with a golden lunar crown, regal ivory fur cloak, ancient golden leaf armor and two crescent swords with amber light. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/wolf-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-b08403fb-ee6b-4ab7-8089-074cdbacdc4e.png"
+    },
+    {
+      "id": "knight",
+      "name": "Champion des ronces",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Champion des ronces, the Legendary evolution of a friendly adult woodland knight with green vine-covered armor and a round wooden shield, now with a majestic golden oak crown helm, emerald ivory royal plate armor, a radiant vine greatshield and an ancient golden sword. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/knight-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-a0fbfd2d-3695-4bd9-ae7a-dad47390a14a.png"
+    },
+    {
+      "id": "serpent",
+      "name": "Vipère du pacte ancestral",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Vipère du pacte ancestral, the Legendary evolution of a graceful coiled jade green forest serpent with amber eyes, now with a magnificent golden crystalline cobra crown, ornate emerald scales, ivory leaf collar and amber magic wisps. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/serpent-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-7e3a47e3-f6fa-4697-b45e-e69cc0a34e97.png"
+    },
+    {
+      "id": "bear",
+      "name": "Ours de la couronne d’orage",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Ours de la couronne d’orage, the Legendary evolution of a stout noble brown woodland bear warrior with a cream muzzle, now with an elaborate golden forest crown, heavy gilded ivory armor and a mighty thunder axe with a bright amber crystal. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/bear-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-cfe84b63-f73d-4a33-a080-cdf591b7247d.png"
+    },
+    {
+      "id": "healer",
+      "name": "Féline de l’aube éternelle",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Féline de l’aube éternelle, the Legendary evolution of a gentle upright cream and ginger woodland cat with warm eyes, now with a radiant golden flower circlet, a magnificent ivory emerald petal cloak and a golden lotus healing staff. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/healer-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-4c259563-146d-4909-85e8-f4dddaded4ac.png"
+    },
+    {
+      "id": "gnome",
+      "name": "Grand forgeron de la Sylve",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Grand forgeron de la Sylve, the Legendary evolution of a stout friendly red-bearded forest gnome with a green cap and leather apron, now with an elaborate golden smith crown cap, ivory bronze masterwork armor and a great luminous golden root hammer. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/gnome-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-a6811579-c9a0-40d2-9917-99e895f97284.png"
+    },
+    {
+      "id": "enchantress",
+      "name": "Souveraine des pétales",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Souveraine des pétales, the Legendary evolution of a graceful adult copper-haired woodland enchantress with pointed ears and emerald cream robes, now with a grand golden flower crown, flowing ivory emerald royal robes and a radiant golden petal staff with floating amber crystals. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/enchantress-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-461dad5a-2f71-455d-b4f0-a7b088fccb54.png"
+    },
+    {
+      "id": "lynx",
+      "name": "Lynx aux mille reflets",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Lynx aux mille reflets, the Legendary evolution of a noble anthropomorphic lynx with tufted ears, gold eyes and fluffy tail, now with a golden leaf crown over an ivory emerald hood, ornate light golden armor and twin gleaming crescent blades. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/lynx-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-e60acc87-5a39-4110-9208-1ef7bd018351.png"
+    },
+    {
+      "id": "bard",
+      "name": "Virtuose de l’arbre-monde",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Virtuose de l’arbre-monde, the Legendary evolution of a cheerful small golden woodland songbird bard with a leaf cloak, now with a magnificent golden feather crown, ivory emerald feather mantle and a grand golden harp shaped like an ancient oak. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/bard-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-3eeb1442-d6aa-42f6-9c03-9df359b78ca3.png"
+    },
+    {
+      "id": "vampire",
+      "name": "Monarque des ailes pourpres",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Monarque des ailes pourpres, the Legendary evolution of a small noble plum-purple vampire bat with amber eyes, cream chest tuft and tiny fangs, now with a grand golden leaf crown, ivory crimson velvet royal cloak, ornate golden collar and magnificent spread purple red wings. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/vampire-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9987d11d-d90c-4f46-aea2-9c686ee9b95d.png"
+    },
+    {
+      "id": "captain",
+      "name": "Reine des clairières",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Reine des clairières, the Legendary evolution of a courageous adult woodland warrior woman with braided copper hair and emerald leaf armor, now with an elaborate golden laurel crown, regal ivory emerald leaf plate armor, radiant golden leaf wings and an ancient sun blade. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/captain-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9fbae6fb-3649-40a1-bb59-eb2dc01c51d7.png"
+    },
+    {
+      "id": "witch",
+      "name": "Impératrice des spores",
+      "rarity": "legendary",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy woodland card game Sylve. Subject: Impératrice des spores, the Legendary evolution of a charming small adult forest witch with silver hair, golden eyes and a plum mushroom cap hat, now with a grand golden bioluminescent mushroom crown, ivory emerald royal robes and a radiant branching golden spore staff. Preserve the woodland creature species and core personality; this is its regal final evolution. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with sophisticated GOLD and IVORY highlights. Composition: ONE complete character centered in three-quarter view facing slightly right, entire body, feet, head, wings and every prop visible; leave generous transparent margins on all sides; compact silhouette readable at 90 pixels. Constraints: genuinely transparent background; no scene, no floor, no shadow plane, no card frame, no border, no text, letters, numbers, UI, logo or watermark. Original Sylve design, not a reproduction of Mighty Party artwork.",
+      "path": "apps/web/public/art/characters/evolutions/witch-legendary.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-0a22358b-d3fa-4e28-b74f-ad9166df9ada.png"
+    },
+    {
+      "id": "root-coil",
+      "type": "character",
+      "subject": "Bobine des racines, a small friendly magical woodland gnome invention building with twisted oak roots around a copper coil, floating golden electric crystal at the top, mossy stone base, amber sparks, compact complete tower",
+      "path": "apps/web/public/art/characters/root-coil.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-object summoned character sprite for the original woodland fantasy card game Sylve. Subject: Bobine des racines, a small friendly magical woodland gnome invention building with twisted oak roots around a copper coil, floating golden electric crystal at the top, mossy stone base, amber sparks, compact complete tower. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 90 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-ba46e8f1-59f4-4e31-b55e-7b75f5bb3fb8.png"
+    },
+    {
+      "id": "life-palace",
+      "type": "character",
+      "subject": "Autel des sources, a small friendly magical woodland shrine building made of ancient carved oak and pale mossy stone, luminous emerald water basin, golden leaf roof, tiny healing crystals, complete rooted base",
+      "path": "apps/web/public/art/characters/life-palace.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-object summoned character sprite for the original woodland fantasy card game Sylve. Subject: Autel des sources, a small friendly magical woodland shrine building made of ancient carved oak and pale mossy stone, luminous emerald water basin, golden leaf roof, tiny healing crystals, complete rooted base. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 90 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-4db26360-fc03-49c8-8ceb-845236342472.png"
+    },
+    {
+      "id": "silence",
+      "type": "icon",
+      "subject": "one closed violet flower magically sealed by a small silver ring with a dimmed amber center, symbolizing silence",
+      "path": "apps/web/public/art/abilities/silence.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for the original woodland fantasy card game Sylve. Subject: one closed violet flower magically sealed by a small silver ring with a dimmed amber center, symbolizing silence. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 24 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-f976a74e-7e97-4c6b-a17a-9084441f836b.png"
+    },
+    {
+      "id": "evasion",
+      "type": "icon",
+      "subject": "one golden woodland feather carried by a graceful turquoise curved wind trail, symbolizing evasion",
+      "path": "apps/web/public/art/abilities/evasion.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for the original woodland fantasy card game Sylve. Subject: one golden woodland feather carried by a graceful turquoise curved wind trail, symbolizing evasion. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 24 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-992ad04e-29f7-4bf9-9f00-9f37c78c2052.png"
+    },
+    {
+      "id": "counter-attack",
+      "type": "icon",
+      "subject": "two short silver woodland swords crossing with a small golden curved return arrow wrapped around them, symbolizing a counterattack",
+      "path": "apps/web/public/art/abilities/counter-attack.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for the original woodland fantasy card game Sylve. Subject: two short silver woodland swords crossing with a small golden curved return arrow wrapped around them, symbolizing a counterattack. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 24 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-894ed6a1-5408-4678-a8f3-161a587aa20c.png"
+    },
+    {
+      "id": "immunity",
+      "type": "icon",
+      "subject": "one ornate emerald and gold leaf shield inside a luminous ivory magical orb, symbolizing immunity",
+      "path": "apps/web/public/art/abilities/immunity.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for the original woodland fantasy card game Sylve. Subject: one ornate emerald and gold leaf shield inside a luminous ivory magical orb, symbolizing immunity. Style: polished hand-painted 2D storybook fantasy, delicate dark outlines, rich painted textures, moss green cream amber and warm golden palette, softly luminous shading. One complete centered subject only, compact bold silhouette readable at 24 pixels, generous transparent margins. Genuinely transparent background, no scene, no floor, no shadow plane, no border, no text, letters, UI, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-7629b53b-a1e0-4de1-8808-c3ec4545876a.png"
+    }
+  ]
+}

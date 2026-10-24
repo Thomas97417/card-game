@@ -86,7 +86,7 @@ export function DuelArena({
           <StatBadge
             kind="health"
             value={player.heroHp}
-            wounded={player.heroHp < HERO_HP}
+            wounded={player.heroHp < (player.heroMaxHp ?? HERO_HP)}
           />
         </button>
       </div>
@@ -169,11 +169,19 @@ export function DuelArena({
                 {!unit && rune && (
                   <span
                     className="board-rune"
-                    title={`Rune de vie : +${rune.health} PV`}
-                    aria-label={`Rune de vie : +${rune.health} PV`}
+                    title={
+                      rune.attack
+                        ? `Rune de puissance : +${rune.attack} ATQ`
+                        : `Rune de vie : +${rune.health} PV`
+                    }
+                    aria-label={
+                      rune.attack
+                        ? `Rune de puissance : +${rune.attack} ATQ`
+                        : `Rune de vie : +${rune.health} PV`
+                    }
                   >
-                    <AbilityIcon kind="life-rune" />
-                    <strong>+{rune.health}</strong>
+                    <AbilityIcon kind={rune.attack ? "power" : "life-rune"} />
+                    <strong>+{rune.attack ?? rune.health}</strong>
                   </span>
                 )}
                 {legal && (

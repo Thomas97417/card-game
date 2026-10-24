@@ -89,6 +89,9 @@ export function useCombatPlayback(latest: View | undefined) {
                 return {
                   ...player,
                   ...(entry.runes ? { runes: entry.runes } : {}),
+                  ...(entry.heroMaxHp !== undefined
+                    ? { heroMaxHp: entry.heroMaxHp }
+                    : {}),
                   ...(entry.unit
                     ? {
                         board: player.board.map((unit) =>

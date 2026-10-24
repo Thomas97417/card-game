@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUp,
@@ -9,7 +9,7 @@ import {
   Layers3,
 } from "lucide-react";
 import {
-  MAX_CARD_LEVEL,
+  maxCardLevel,
   RARITY_LABELS,
   resolveCard,
   upgradeCost,
@@ -17,6 +17,7 @@ import {
   combatTypeLabel,
   getCombatType,
   FACTION_LABELS,
+  GENDER_LABELS,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -51,10 +52,12 @@ export function CardUpgradeDialog({
   onMove: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const popup = useRef<HTMLDivElement>(null);
   const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
-  const max = level >= MAX_CARD_LEVEL;
+  const maximum = maxCardLevel(card?.rarity, card?.baseId);
+  const max = level >= maximum;
   const cost = upgradeCost(level, card?.rarity);
   const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
@@ -86,6 +89,8 @@ export function CardUpgradeDialog({
       }}
     >
       <DialogContent
+        ref={popup}
+        initialFocus={popup}
         className="upgrade-dialog"
         appearance="game"
         data-rarity={card?.rarity ?? "common"}
@@ -121,6 +126,7 @@ export function CardUpgradeDialog({
                   <GameIcon kind={getCombatType(card)} size={18} />
                   {combatTypeLabel(card)}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </span>
               </div>
             </div>
@@ -167,7 +173,7 @@ export function CardUpgradeDialog({
                     />
                     <span>
                       {max
-                        ? `Niveau ${level} / ${MAX_CARD_LEVEL}`
+                        ? `Niveau ${level} / ${maximum}`
                         : `${entry.copies} / ${cost} exemplaires`}
                     </span>
                   </span>

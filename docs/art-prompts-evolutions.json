@@ -1,0 +1,365 @@
+{
+  "tool": "image_gen built-in",
+  "generatedOn": "2026-10-24",
+  "assets": [
+    {
+      "id": "guardian",
+      "rarity": "rare",
+      "name": "Gardien des runes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Gardien des runes, Rare evolution of a friendly moss-covered stone golem with cyan glowing carved spirals, fern mane and massive fists, now with a blue crystal shoulder crest, layered silver stone armor and a carved rune shield. Style: polished hand-painted 2D storybook fantasy, slightly chibi proportions, delicate dark outlines, rich painted stone and moss textures, soft luminous shading, warm woodland palette. Composition: one complete subject centered, three-quarter view facing slightly right, entire body, feet and props visible with generous transparent margins, compact readable silhouette. Genuinely transparent background. No scenery, floor, shadow plane, frame, text, UI, letters, numbers, logo or watermark. Original Sylve creature, visually more advanced than the common golem.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-da97775c-62bc-48b1-818f-6855070f9d40.png",
+      "path": "apps/web/public/art/characters/evolutions/guardian-rare.webp"
+    },
+    {
+      "id": "guardian",
+      "rarity": "epic",
+      "name": "Colosse du serment",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Colosse du serment, a Epic evolution of a friendly moss-covered stone golem with cyan glowing carved spirals, fern mane and massive fists, with an elaborate amethyst crystal crown, colossal ancient armor and two floating rune stones. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/guardian-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-4da3f1f8-e956-4d5c-aa03-224bb2fc8dfe.png"
+    },
+    {
+      "id": "fox",
+      "rarity": "rare",
+      "name": "Renard archerune",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Renard archerune, a Rare evolution of a nimble red fox woodland archer with amber eyes and a bushy tail, with a teal leaf ranger cloak and curved enchanted blue ember bow. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/fox-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-8ab40044-6de5-450e-9f13-832c3ab374e0.png"
+    },
+    {
+      "id": "fox",
+      "rarity": "epic",
+      "name": "Renard des comètes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Renard des comètes, a Epic evolution of a nimble red fox woodland archer with amber eyes and a bushy tail, with a violet starwoven mantle, silver antler bow and floating bright ember arrows. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/fox-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-fde6656f-ef9c-4d88-a869-5851512843ad.png"
+    },
+    {
+      "id": "owl",
+      "rarity": "rare",
+      "name": "Oracle des clairières",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Oracle des clairières, a Rare evolution of a wise round woodland owl with cream feathers and large amber eyes, with a teal priestly leaf shawl and blue crystal staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/owl-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9a15c062-5383-40d8-9ce2-351a8207809a.png"
+    },
+    {
+      "id": "owl",
+      "rarity": "epic",
+      "name": "Hiérophante des brumes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Hiérophante des brumes, a Epic evolution of a wise round woodland owl with cream feathers and large amber eyes, with an ornate violet moon-feather headdress and luminous branching ceremonial staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/owl-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-d851f64b-fdc7-4b3e-9bbb-ca820aff02a0.png"
+    },
+    {
+      "id": "stag",
+      "rarity": "rare",
+      "name": "Cerf prophète",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Cerf prophète, a Rare evolution of a noble woodland stag with golden antlers and cream spotted fur, with blue crystal antler tips and a layered leaf mantle. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/stag-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-0e598363-6c99-4e61-b6e1-d5ec1ba886f5.png"
+    },
+    {
+      "id": "stag",
+      "rarity": "epic",
+      "name": "Cerf des astres",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Cerf des astres, a Epic evolution of a noble woodland stag with golden antlers and cream spotted fur, with tall branching violet crystalline antlers, a silver forest crown and a star embroidered mantle. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/stag-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-b93252c1-5caa-43e2-9351-60ea1dc40bbf.png"
+    },
+    {
+      "id": "mushroom",
+      "rarity": "rare",
+      "name": "Veilleur des fougères",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Veilleur des fougères, a Rare evolution of a determined small mushroom forest sentinel with a mossy red cap, leafy body and rooted feet, with blue bioluminescent cap patterns, fern armor and a seed staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/mushroom-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-20def5d1-9816-4836-94eb-f6bba89ca924.png"
+    },
+    {
+      "id": "mushroom",
+      "rarity": "epic",
+      "name": "Ancien des floraisons",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Ancien des floraisons, a Epic evolution of a determined small mushroom forest sentinel with a mossy red cap, leafy body and rooted feet, with a magnificent violet flowering cap canopy, layered bark robes and a tall blossom staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/mushroom-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-fd6fcb86-782b-4167-9101-bc23025a080f.png"
+    },
+    {
+      "id": "dragon",
+      "rarity": "rare",
+      "name": "Dragon sylvestre",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Dragon sylvestre, a Rare evolution of a charming small amber woodland dragon with leaf-shaped wings and curled horns, with blue thorn crystals on his leafy wing edges and a glowing amber staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/dragon-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-6cb1ebf6-65b5-454e-a95a-65f169b8427d.png"
+    },
+    {
+      "id": "dragon",
+      "rarity": "epic",
+      "name": "Dragon des tempêtes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Dragon des tempêtes, a Epic evolution of a charming small amber woodland dragon with leaf-shaped wings and curled horns, with a violet thorn crown, emerald armored scales and dramatic crystalline leaf wings. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/dragon-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-45f198f5-f22e-4aab-9d0e-6aaf1b0f69fb.png"
+    },
+    {
+      "id": "turtle",
+      "rarity": "rare",
+      "name": "Tortue des roseaux",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Tortue des roseaux, a Rare evolution of a friendly sturdy ancient green turtle with a mossy stone shell, with blue crystalline shell spikes, reeds and river pearl ornaments. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/turtle-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-8bf2fe18-8427-4f2e-bb22-8fca689a547c.png"
+    },
+    {
+      "id": "turtle",
+      "rarity": "epic",
+      "name": "Tortue des marais anciens",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Tortue des marais anciens, a Epic evolution of a friendly sturdy ancient green turtle with a mossy stone shell, with a massive purple amethyst and moss shell with water lilies and formidable ancient spikes. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/turtle-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-66e9ffb4-d276-481e-aa04-88b45976d3f2.png"
+    },
+    {
+      "id": "wisp",
+      "rarity": "rare",
+      "name": "Esprit des fougères",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Esprit des fougères, a Rare evolution of a luminous turquoise water spirit with a gentle small face and flowing translucent body, with a blue crystal leaf crown, reed wand and a curled flowing tail. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/wisp-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-092caa2a-978f-4c52-90e1-c2d7cc75642d.png"
+    },
+    {
+      "id": "wisp",
+      "rarity": "epic",
+      "name": "Esprit des pluies",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Esprit des pluies, a Epic evolution of a luminous turquoise water spirit with a gentle small face and flowing translucent body, with an ornate violet lotus crown, graceful flowing robes of water and floating pearl droplets. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/wisp-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-923c256a-a2e2-4f45-a741-017a075b4f7e.png"
+    },
+    {
+      "id": "wolf",
+      "rarity": "rare",
+      "name": "Loup de givre",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Loup de givre, a Rare evolution of a determined silver-blue woodland wolf warrior with amber eyes, with a blue crystal blade, leather harness and protective leaf shoulder armor. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/wolf-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-01c3eb86-04fc-49cf-86ee-1cee24e006b1.png"
+    },
+    {
+      "id": "wolf",
+      "rarity": "epic",
+      "name": "Loup de l’éclipse",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Loup de l’éclipse, a Epic evolution of a determined silver-blue woodland wolf warrior with amber eyes, with a violet moon crest, elaborate silver armor and twin crescent blades. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/wolf-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-ed74c3ce-733d-4022-baa3-23c7286163b9.png"
+    },
+    {
+      "id": "knight",
+      "rarity": "rare",
+      "name": "Écuyer des ronces",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Écuyer des ronces, a Rare evolution of a friendly adult woodland knight with green vine-covered armor and a round wooden shield, with polished blue leaf armor, an oak shield and a short silver sword. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/knight-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-d91ab5a2-9aea-41df-a106-ec6afce3a20e.png"
+    },
+    {
+      "id": "knight",
+      "rarity": "epic",
+      "name": "Paladin des bosquets",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Paladin des bosquets, a Epic evolution of a friendly adult woodland knight with green vine-covered armor and a round wooden shield, with ornate violet and emerald plate armor, a bright leaf-shaped greatshield and a luminous sword. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/knight-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-921d6884-fd0a-4fa0-aa85-6e433a971fbe.png"
+    },
+    {
+      "id": "serpent",
+      "rarity": "rare",
+      "name": "Vipère des ombres",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Vipère des ombres, a Rare evolution of a graceful coiled jade green forest serpent with amber eyes, with a blue occult crystal collar and silver leaf crest. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/serpent-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-26d5b085-49ac-42cc-bdb4-5b4a9806a5aa.png"
+    },
+    {
+      "id": "serpent",
+      "rarity": "epic",
+      "name": "Basilic de jade",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Basilic de jade, a Epic evolution of a graceful coiled jade green forest serpent with amber eyes, with an ornate amethyst cobra hood, emerald crystal scales and hovering violet sparks. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/serpent-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-99d054db-94a2-4256-9a99-343d51fe8ead.png"
+    },
+    {
+      "id": "bear",
+      "rarity": "rare",
+      "name": "Ours des fjords",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Ours des fjords, a Rare evolution of a stout noble brown woodland bear warrior with a cream muzzle, with blue engraved leaf armor, fur shoulder cloak and a small rune axe. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/bear-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-c1d105cf-b051-4d22-b621-1917efbcbd1f.png"
+    },
+    {
+      "id": "bear",
+      "rarity": "epic",
+      "name": "Ours du tonnerre",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Ours du tonnerre, a Epic evolution of a stout noble brown woodland bear warrior with a cream muzzle, with heavy violet crystal armor, a silver forest diadem and a mighty thunder rune axe. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/bear-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-25f4afeb-d931-416c-8ea6-d8cb1e9a82d1.png"
+    },
+    {
+      "id": "healer",
+      "rarity": "rare",
+      "name": "Féline des lierres",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Féline des lierres, a Rare evolution of a gentle upright cream and ginger woodland cat with warm eyes, with a teal leaf shawl, silver claw bracelets and a blue healing crystal staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/healer-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-c2541431-f4f8-4fe4-aa4c-e3d31bf73aab.png"
+    },
+    {
+      "id": "healer",
+      "rarity": "epic",
+      "name": "Féline des neuf aurores",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Féline des neuf aurores, a Epic evolution of a gentle upright cream and ginger woodland cat with warm eyes, with a magnificent violet petal cloak, silver leaf circlet and elaborate radiant crystal staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/healer-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9e774679-a2d2-4d35-95f1-b29f1c9dcb07.png"
+    },
+    {
+      "id": "gnome",
+      "rarity": "rare",
+      "name": "Maître des racines",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Maître des racines, a Rare evolution of a stout friendly red-bearded forest gnome with a green cap and leather apron, with a blue crystal-tipped root hammer and a carved wooden tool pack. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/gnome-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-0b7a101f-605b-460b-9395-13a8fe25cb5f.png"
+    },
+    {
+      "id": "gnome",
+      "rarity": "epic",
+      "name": "Forgeron des anciens",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Forgeron des anciens, a Epic evolution of a stout friendly red-bearded forest gnome with a green cap and leather apron, with an elaborate violet crystal smithing cap, silver work armor and a luminous ancient hammer. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/gnome-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-0496c4f0-5f93-43fb-917c-97ddf8abe09d.png"
+    },
+    {
+      "id": "idol",
+      "rarity": "rare",
+      "name": "Totem des couronnes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Totem des couronnes, a Rare evolution of a small immobile ancient standing stone forest idol with a dignified friendly face and amber chest rune, with a blue crystal crown and symmetrical carved leaf ornaments. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/idol-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-320e648c-17a1-4aae-b408-0cf6ca396cbc.png"
+    },
+    {
+      "id": "idol",
+      "rarity": "epic",
+      "name": "Idole du soleil",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Idole du soleil, a Epic evolution of a small immobile ancient standing stone forest idol with a dignified friendly face and amber chest rune, with a magnificent violet and golden sun crown, layered carved stone and radiant amber runes. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/idol-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-9e9fa07f-2b98-4300-a412-806cb1dbfeb8.png"
+    },
+    {
+      "id": "enchantress",
+      "rarity": "rare",
+      "name": "Enchanteresse des runes",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Enchanteresse des runes, a Rare evolution of a graceful adult copper-haired woodland enchantress with pointed ears and emerald cream robes, with a blue crystal leaf circlet, carved wand and three floating stones. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/enchantress-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-447eb612-0198-4784-82e4-c307fb7fc0ac.png"
+    },
+    {
+      "id": "enchantress",
+      "rarity": "epic",
+      "name": "Archimage des pétales",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Archimage des pétales, a Epic evolution of a graceful adult copper-haired woodland enchantress with pointed ears and emerald cream robes, with an elaborate violet flowering headdress, silver embroidered robes and a floating petal crystal constellation. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/enchantress-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-0432a7e5-1581-42e4-a398-bba91c5ece84.png"
+    },
+    {
+      "id": "lynx",
+      "rarity": "rare",
+      "name": "Lynx insaisissable",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Lynx insaisissable, a Rare evolution of a noble anthropomorphic lynx with tufted ears, gold eyes and fluffy tail, with a dark teal ranger hood, blue crystal shoulder guard and curved silver dagger. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/lynx-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-e03186f8-40d8-4a1a-8524-0107787ceb8d.png"
+    },
+    {
+      "id": "lynx",
+      "rarity": "epic",
+      "name": "Lynx des miroirs",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Lynx des miroirs, a Epic evolution of a noble anthropomorphic lynx with tufted ears, gold eyes and fluffy tail, with a flowing violet hooded mantle, silver leaf armor and two crescent crystal daggers. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/lynx-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-abefad80-5c60-4f4c-a66f-640950be7d30.png"
+    },
+    {
+      "id": "bard",
+      "rarity": "rare",
+      "name": "Ménestrel des branches",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Ménestrel des branches, a Rare evolution of a cheerful small golden woodland songbird bard with a leaf cloak, with a teal feather hat, silver leaf trim and a blue crystal lute. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/bard-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-ab4bb58c-8b03-4b22-89dc-8e41d11b001e.png"
+    },
+    {
+      "id": "bard",
+      "rarity": "epic",
+      "name": "Maestro des frondaisons",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Maestro des frondaisons, a Epic evolution of a cheerful small golden woodland songbird bard with a leaf cloak, with an ornate violet feather mantle, silver laurel circlet and a radiant ancient golden harp. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/bard-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-cab87600-3c75-4729-a828-591cc5b1dfe5.png"
+    },
+    {
+      "id": "tree",
+      "rarity": "rare",
+      "name": "Saule obscur",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Saule obscur, a Rare evolution of an immobile sentient twisted willow tree with a friendly mysterious carved face and rooted feet, with dark teal drooping leaves, blue glowing bark crevices and crystal roots. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/tree-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-bbc13ca9-daef-45cc-86b5-7bac128f2fa1.png"
+    },
+    {
+      "id": "tree",
+      "rarity": "epic",
+      "name": "Ancêtre des murmures",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Ancêtre des murmures, a Epic evolution of an immobile sentient twisted willow tree with a friendly mysterious carved face and rooted feet, with a majestic violet leaf canopy, ancient silver bark crown and luminous hanging amethyst seeds. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/tree-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-547d067f-a447-4820-8883-e419b166000f.png"
+    },
+    {
+      "id": "vampire",
+      "rarity": "rare",
+      "name": "Aile de velours",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Aile de velours, a Rare evolution of a small noble plum-purple vampire bat with amber eyes, cream chest tuft and tiny fangs, with partially spread wings, a blue crystal collar and small velvet cape. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/vampire-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-1cfbb360-3c0f-4168-9d57-10605c9debc4.png"
+    },
+    {
+      "id": "vampire",
+      "rarity": "epic",
+      "name": "Seigneur des ailes pourpres",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Seigneur des ailes pourpres, a Epic evolution of a small noble plum-purple vampire bat with amber eyes, cream chest tuft and tiny fangs, with magnificent violet and crimson wings, a silver crown and an elaborate aristocratic leaf cape. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/vampire-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-c0b8a382-9ca1-4c33-a035-0c7bce12ca39.png"
+    },
+    {
+      "id": "captain",
+      "rarity": "rare",
+      "name": "Capitaine ailée",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Capitaine ailée, a Rare evolution of a courageous adult woodland warrior woman with braided copper hair and emerald leaf armor, with a blue feathered helm, silver blade and a round wing motif shield. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/captain-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-2331f589-08d4-4ae4-858f-e37e816aa88a.png"
+    },
+    {
+      "id": "captain",
+      "rarity": "epic",
+      "name": "Maréchale des aurores",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Maréchale des aurores, a Epic evolution of a courageous adult woodland warrior woman with braided copper hair and emerald leaf armor, with a magnificent violet petal wing cloak, silver laurel crown, ornate leaf plate armor and radiant blade. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/captain-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-49643421-bd66-4662-ba10-1710998832ec.png"
+    },
+    {
+      "id": "witch",
+      "rarity": "rare",
+      "name": "Sorcière des ombres",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Sorcière des ombres, a Rare evolution of a charming small adult forest witch with silver hair, golden eyes and a plum mushroom cap hat, with a teal and burgundy layered robe, blue glowing cap spots and a crooked mushroom staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with blue teal accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/witch-rare.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-c2ee0904-5059-48d7-946b-91f52e83a248.png"
+    },
+    {
+      "id": "witch",
+      "rarity": "epic",
+      "name": "Matriarche des spores",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent full-body character sprite for the original 2D tactical fantasy forest card game Sylve. Subject: Matriarche des spores, a Epic evolution of a charming small adult forest witch with silver hair, golden eyes and a plum mushroom cap hat, with a magnificent violet bioluminescent mushroom crown, ornate moss silver robes and a branching spore staff. Preserve this creature's woodland species and personality while visibly advancing its equipment and silhouette. Style: polished hand-painted 2D storybook fantasy game art, charming slightly chibi proportions, delicate dark outlines, rich painted natural textures, soft luminous shading, warm moss green cream amber woodland palette with violet amethyst accents. Composition: ONE complete character or building, centered three-quarter view facing slightly right; ENTIRE body, feet, top and every prop visible, subject fills 75% of the canvas with 12% transparent margins on every side, compact silhouette readable at 90 pixels. Constraints: genuinely transparent background, no environment, no scenery, no floor, no shadow plane, no card frame, no border, no text, no letters, no UI, no numbers, no logos or watermark. Original Sylve design.",
+      "path": "apps/web/public/art/characters/evolutions/witch-epic.webp",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-e09daa0b-3867-41e7-9028-e38023c27c94.png"
+    },
+    {
+      "id": "poison",
+      "name": "Poison",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for the original painted woodland fantasy card game Sylve. Subject: a small luminous emerald poison droplet above two curled violet thorn leaves, simple bold recognizable silhouette. Polished hand-painted 2D storybook fantasy, delicate dark outline, subtle gold edging, moss green and amethyst palette, soft glowing shading. One compact centered object, full object within generous transparent margins, readable at 24 pixels. Genuinely transparent background. No frame, no scene, no text, no letters, no numbers, no logo, no watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a16d46-3486-7e82-8561-54e6170786be/exec-045e17ea-b6aa-467a-b5c8-644761c7a197.png",
+      "path": "apps/web/public/art/abilities/poison.webp"
+    }
+  ]
+}
