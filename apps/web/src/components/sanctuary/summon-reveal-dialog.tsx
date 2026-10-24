@@ -86,6 +86,7 @@ export function SummonRevealDialog({
       ).length;
   const complete = revealed === rewards.length;
   const lastRound = result ? round === result.count - 1 : true;
+  const enabled = result ? summonPack(result.packId).enabled : false;
   const offer = result
     ? summonOffer(
         result.packId,
@@ -96,15 +97,18 @@ export function SummonRevealDialog({
     : null;
   const insufficient =
     emeralds == null || (offer != null && emeralds < offer.cost);
-  const repeatHint = !complete
-    ? "Révèle toutes les cartes pour continuer"
-    : !lastRound
-      ? "La suite de ton lot t’attend"
-      : insufficient
-        ? "Émeraudes insuffisantes"
-        : offer && offer.cost < offer.baseCost
-          ? "Remise perdue en quittant ce cercle"
-          : null;
+  const repeatHint =
+    lastRound && !enabled
+      ? "Cet appel est temporairement indisponible."
+      : !complete
+        ? "Révèle toutes les cartes pour continuer"
+        : !lastRound
+          ? "La suite de ton lot t’attend"
+          : insufficient
+            ? "Émeraudes insuffisantes"
+            : offer && offer.cost < offer.baseCost
+              ? "Remise perdue en quittant ce cercle"
+              : null;
   useEffect(() => {
     if (lastFlipped == null) return;
     if (complete) center.current?.focus();
@@ -322,7 +326,7 @@ export function SummonRevealDialog({
                   disabled={
                     !complete ||
                     busy ||
-                    (!lastRound ? false : !ready || insufficient)
+                    (!lastRound ? false : !enabled || !ready || insufficient)
                   }
                   aria-label={
                     !lastRound

@@ -11,7 +11,8 @@ import { ArrowRight, Check, History, LoaderCircle } from "lucide-react";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
 import { RARITIES, RARITY_LABELS, type OwnedCard } from "@sylve/game";
 import {
-  SUMMON_PACKS,
+  ACTIVE_SUMMON_PACKS,
+  summonPack,
   summonOffer,
   summonQuantity,
   mergeSummonProgress,
@@ -152,6 +153,7 @@ export function Sanctuary({
     count: SummonCount,
     repeatToken?: string,
   ) {
+    if (!summonPack(packId).enabled) return;
     const { cost } = summonOffer(
       packId,
       count,
@@ -280,7 +282,7 @@ export function Sanctuary({
               aria-label="Packs d’invocation"
               aria-busy={!!busy}
             >
-              {SUMMON_PACKS.map((pack) => (
+              {ACTIVE_SUMMON_PACKS.map((pack) => (
                 <PackChoice
                   key={pack.id}
                   pack={pack}
@@ -547,14 +549,30 @@ function PackChoice({
       <div className="summon-rates" aria-label={`Taux de ${pack.name}`}>
         {RARITIES.filter((rarity) => pack.rates[rarity] > 0).map((rarity) => {
           const quantity = summonQuantity(pack.id, rarity, peakTrophies);
+          const boosted =
+            pack.id === "ancients" && rarity === "legendary"
+              ? summonQuantity(pack.id, rarity, peakTrophies, 2)
+              : null;
           return (
             <span key={rarity} data-rarity={rarity}>
               <i aria-hidden="true" />
               {RARITY_LABELS[rarity]}
               <strong>{pack.rates[rarity]} %</strong>
-              <small>
+              <small
+                title={
+                  boosted
+                    ? "Les deux lots légendaires garantis ont chacun 50 % de chance d’être renforcés."
+                    : undefined
+                }
+              >
                 ×{quantity.min}
                 {quantity.max !== quantity.min ? `–${quantity.max}` : ""}
+                {boosted && (
+                  <>
+                    {" "}
+                    ou ×{boosted.min}–{boosted.max}
+                  </>
+                )}
               </small>
             </span>
           );

@@ -1,7 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
 import {
-  SUMMON_PACKS,
+  ACTIVE_SUMMON_PACKS,
+  summonPack,
   summonGoldRewards,
   summonLoot,
   summonOffer,
@@ -179,7 +180,7 @@ export const offers = query({
   args: {},
   handler: async (ctx) => {
     await requirePlayer(ctx);
-    return SUMMON_PACKS.flatMap((pack) =>
+    return ACTIVE_SUMMON_PACKS.flatMap((pack) =>
       ([1, 10] as const).map((count) => summonOffer(pack.id, count)),
     );
   },
@@ -236,6 +237,8 @@ export const summon = mutation({
           : {}),
       };
     }
+    if (!summonPack(packId).enabled)
+      throw new ConvexError("Cet appel est temporairement indisponible.");
     let previousCost: number | undefined;
     if (repeatToken !== undefined) {
       const sourceId = ctx.db.normalizeId("summons", repeatToken);

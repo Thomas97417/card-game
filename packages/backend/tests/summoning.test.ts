@@ -3,7 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import {
   WELCOME_DIAMONDS,
-  SUMMON_PACKS,
+  ACTIVE_SUMMON_PACKS,
   summonOffer,
   type SummonResult,
 } from "@sylve/game/summoning";
@@ -139,6 +139,9 @@ describe("sanctuaire autoritaire", () => {
     const t = setup();
     const { client, userId } = await player(t, "alice");
     vi.spyOn(Math, "random").mockReturnValue(0);
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", { ownerId: userId, gold: 0, diamonds: 10000 }),
+    );
     const invocation = await client.mutation(api.sanctuary.summon, {
       packId: "ancients",
       count: 1,
@@ -172,7 +175,7 @@ describe("sanctuaire autoritaire", () => {
     await client.mutation(api.games.surrender, { gameId });
     expect((await client.query(api.collection.league, {})).trophies).toBe(10);
     expect(await client.query(api.collection.diamonds, {})).toBe(
-      WELCOME_DIAMONDS - invocation.cost,
+      10000 - invocation.cost,
     );
     expect(await client.query(api.sanctuary.latest, {})).toEqual(
       history(invocation),
@@ -186,7 +189,10 @@ describe("sanctuaire autoritaire", () => {
 
   it("preserves the four starter cards when the first action is a direct invocation", async () => {
     const t = setup();
-    const { client } = await player(t, "alice");
+    const { client, userId } = await player(t, "alice");
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", { ownerId: userId, gold: 0, diamonds: 10000 }),
+    );
     await client.mutation(api.sanctuary.summon, {
       packId: "ancients",
       count: 1,
@@ -251,7 +257,7 @@ describe("sanctuaire autoritaire", () => {
     ).toHaveLength(1);
   });
 
-  it.each(SUMMON_PACKS)(
+  it.each(ACTIVE_SUMMON_PACKS)(
     "charges $tenPrice and grants $guaranteedLegendaries legendary cards for $id",
     async (pack) => {
       const t = setup();
@@ -264,7 +270,10 @@ describe("sanctuaire autoritaire", () => {
           diamonds: 100_000,
         }),
       );
-      vi.spyOn(Math, "random").mockReturnValue(0);
+      let roll = 0;
+      vi.spyOn(Math, "random").mockImplementation(() =>
+        pack.id === "ancients" && roll++ < 150 ? 0.5 : 0,
+      );
       const result = await client.mutation(api.sanctuary.summon, {
         packId: pack.id,
         count: 10,
@@ -358,13 +367,13 @@ describe("sanctuaire autoritaire", () => {
     );
     vi.spyOn(Math, "random").mockReturnValue(0);
     const request = {
-      packId: "divine" as const,
+      packId: "ancients" as const,
       count: 1 as const,
       requestId: requestId(1),
     };
     const result = await client.mutation(api.sanctuary.summon, request);
     expect(result.reveals.map((item) => item.count)).toEqual([
-      70, 35, 35, 35, 35,
+      140, 140, 70, 70, 70,
     ]);
     await t.run((ctx) =>
       ctx.db.patch(progressId, { trophies: 6000, peakTrophies: 6000 }),
@@ -372,7 +381,7 @@ describe("sanctuaire autoritaire", () => {
     expect(await client.mutation(api.sanctuary.summon, request)).toEqual(
       result,
     );
-    expect(await client.query(api.collection.diamonds, {})).toBe(10000 - 4499);
+    expect(await client.query(api.collection.diamonds, {})).toBe(10000 - 4999);
   });
 
   it.each([1, 10] as const)(
@@ -507,7 +516,7 @@ describe("sanctuaire autoritaire", () => {
       ctx.db.insert("wallets", {
         ownerId: alice.userId,
         gold: 0,
-        diamonds: 4_000,
+        diamonds: 45_100,
       }),
     );
     const outcomes = await Promise.allSettled(
@@ -547,7 +556,7 @@ describe("sanctuaire autoritaire", () => {
   });
 
   it.each(
-    SUMMON_PACKS.flatMap((pack) =>
+    ACTIVE_SUMMON_PACKS.flatMap((pack) =>
       ([1, 10] as const).map((count) => ({ packId: pack.id, count })),
     ),
   )(
@@ -564,7 +573,7 @@ describe("sanctuaire autoritaire", () => {
       );
       vi.spyOn(Math, "random").mockReturnValue(0);
       const before = await client.query(api.sanctuary.offers, {});
-      expect(before).toHaveLength(6);
+      expect(before).toHaveLength(4);
       expect(before.every((offer) => offer.cost === offer.baseCost)).toBe(true);
       const request = { packId, count, requestId: requestId(1) };
       const first = await client.mutation(api.sanctuary.summon, request);
@@ -611,7 +620,13 @@ describe("sanctuaire autoritaire", () => {
         repeatToken: third.repeatToken,
       });
       const cappedCost =
-        packId === "sylve" ? (count === 1 ? 129 : 999) : second.cost;
+        packId === "sylve"
+          ? count === 1
+            ? 129
+            : 999
+          : count === 1
+            ? 4499
+            : 34999;
       expect(third.cost).toBe(cappedCost);
       expect(fourth.cost).toBe(cappedCost);
       expect(await client.mutation(api.sanctuary.summon, thirdRequest)).toEqual(
@@ -858,6 +873,73 @@ describe("sanctuaire autoritaire", () => {
     );
     expect(await client.query(api.collection.list, {})).toEqual([]);
   });
+
+  it.each([1, 10] as const)(
+    "blocks new divine x%s purchases and repeats but preserves paid results and unfinished cards",
+    async (count) => {
+      const t = setup();
+      const { client, userId } = await player(t, "alice");
+      const request = {
+        packId: "divine" as const,
+        count,
+        requestId: requestId(1),
+      };
+      const old = {
+        ...request,
+        cost: count === 1 ? 4499 : 39999,
+        reveals: Array.from({ length: count * 5 }, () => ({
+          variantId: "guardian:legendary",
+          count: 30,
+          isNew: false,
+          level: 1,
+          copies: 30,
+        })),
+        gold: count * 500,
+        goldBySummon: Array(count).fill(500),
+        revealProgress: { round: 0, revealed: [] as number[] },
+        revealCompleted: false,
+      };
+      const repeatToken = await t.run(async (ctx) => {
+        const id = await ctx.db.insert("summons", { ownerId: userId, ...old });
+        await ctx.db.insert("wallets", {
+          ownerId: userId,
+          gold: 725,
+          diamonds: 100000,
+          activeSummonId: id,
+        });
+        return id;
+      });
+      const before = await client.query(api.collection.list, {});
+      for (const token of [undefined, repeatToken])
+        await expect(
+          client.mutation(api.sanctuary.summon, {
+            ...request,
+            requestId: requestId(2),
+            ...(token ? { repeatToken: token } : {}),
+          }),
+        ).rejects.toThrow("temporairement indisponible");
+      expect(
+        (await client.query(api.sanctuary.offers, {})).every(
+          (offer) => offer.packId !== "divine",
+        ),
+      ).toBe(true);
+      expect(await client.query(api.sanctuary.latest, {})).toEqual(old);
+      expect(await client.query(api.sanctuary.unfinished, {})).toEqual(old);
+      expect(await client.mutation(api.sanctuary.summon, request)).toEqual({
+        ...old,
+        repeatToken,
+      });
+      await client.mutation(api.sanctuary.saveRevealProgress, {
+        requestId: request.requestId,
+        round: count - 1,
+        revealed: Array.from({ length: count * 6 }, (_, i) => i),
+      });
+      expect(await client.query(api.sanctuary.unfinished, {})).toBeNull();
+      expect(await client.query(api.collection.diamonds, {})).toBe(100000);
+      expect(await client.query(api.collection.gold, {})).toBe(725);
+      expect(await client.query(api.collection.list, {})).toEqual(before);
+    },
+  );
 
   it.each([1, 10] as const)(
     "persists x%s reveal progress across closure without granting rewards or restoring the discount",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CATALOG, resolveCard } from "./index";
 import {
   SUMMON_PACKS,
+  ACTIVE_SUMMON_PACKS,
   summonGold,
   summonGoldQuantity,
   summonGoldRewards,
@@ -21,10 +22,6 @@ describe("invocations du sanctuaire", () => {
     ["sylve", 0.979999, "epic", 20],
     ["sylve", 0.98, "legendary", 10],
     ["sylve", 0.999999, "legendary", 10],
-    ["ancients", 0, "epic", 20],
-    ["ancients", 0.799999, "epic", 20],
-    ["ancients", 0.8, "legendary", 10],
-    ["ancients", 0.999999, "legendary", 10],
   ] as const)(
     "restores %s boundary %s with league quantities",
     (packId, roll, rarity, count) => {
@@ -46,15 +43,18 @@ describe("invocations du sanctuaire", () => {
         ),
       ).toBe(true);
       expect(
-        summonLoot("ancients", 1, () => 0, trophies).every((item) =>
+        summonLoot("ancients", 1, () => 0.5, trophies).filter((item) =>
           item.variantId.endsWith(":epic"),
-        ),
+        ).length === 3,
       ).toBe(true);
       for (const pack of ["sylve", "ancients"] as const) {
         expect(
-          summonLoot(pack, 1, () => 0.99999, trophies).every((item) =>
-            item.variantId.endsWith(":legendary"),
-          ),
+          summonLoot(
+            pack,
+            1,
+            () => (pack === "ancients" ? 0 : 0.99999),
+            trophies,
+          ).every((item) => item.variantId.endsWith(":legendary")),
         ).toBe(true);
       }
     }
@@ -63,7 +63,12 @@ describe("invocations du sanctuaire", () => {
   it.each(SUMMON_PACKS)(
     "guarantees $guaranteedLegendaries legendaries for $id x10 using the correct quantities",
     (pack) => {
-      const loot = summonLoot(pack.id, 10, () => 0, 5800);
+      const loot = summonLoot(
+        pack.id,
+        10,
+        () => (pack.id === "ancients" ? 0.5 : 0),
+        5800,
+      );
       expect(loot).toHaveLength(50);
       const legendaries = loot.filter((item) =>
         item.variantId.endsWith(":legendary"),
@@ -72,19 +77,24 @@ describe("invocations du sanctuaire", () => {
       expect(
         legendaries.every(
           (item) =>
-            item.count === 1000 ||
+            (pack.id === "ancients"
+              ? item.count >= 150 && item.count <= 159
+              : item.count === 1000) ||
             (pack.id === "divine" && item.count === 2000),
         ),
       ).toBe(true);
       expect(
-        summonLoot(pack.id, 10, () => 0.999999, 5800).every((item) =>
-          item.variantId.endsWith(":legendary"),
-        ),
+        summonLoot(
+          pack.id,
+          10,
+          () => (pack.id === "ancients" ? 0 : 0.999999),
+          5800,
+        ).every((item) => item.variantId.endsWith(":legendary")),
       ).toBe(true);
     },
   );
 
-  it("moves the all-legendary pack and its double bonus to the much more expensive divine offer", () => {
+  it("retains the archived divine rewards while disabling that offer", () => {
     const doubled = summonLoot("divine", 10, () => 0, 6000);
     expect(doubled).toHaveLength(50);
     expect(doubled.every((item) => item.variantId.endsWith(":legendary"))).toBe(
@@ -100,9 +110,10 @@ describe("invocations du sanctuaire", () => {
     expect(summonOffer("sylve", 1, true).cost).toBe(139);
     expect(summonPrice("divine", 1)).toBe(4499);
     expect(summonPrice("divine", 10)).toBe(39999);
-    expect(summonPrice("divine", 1)).toBeGreaterThan(
-      summonPrice("ancients", 1) * 9,
-    );
+    expect(ACTIVE_SUMMON_PACKS.map((pack) => pack.id)).toEqual([
+      "sylve",
+      "ancients",
+    ]);
     expect(summonQuantity("sylve", "common", 0)).toEqual({ min: 20, max: 23 });
     expect(summonQuantity("sylve", "common", 6000)).toEqual({
       min: 1800,
@@ -113,10 +124,85 @@ describe("invocations du sanctuaire", () => {
       max: 1400,
     });
     expect(summonQuantity("ancients", "legendary", 2400)).toEqual({
-      min: 35,
-      max: 35,
+      min: 70,
+      max: 75,
     });
     expect(() => summonQuantity("ancients", "common")).toThrow();
+  });
+
+  it.each([1, 10] as const)(
+    "guarantees two legendaries per Ancients round and limits boosted quantities to those stacks (x%s)",
+    (count) => {
+      const boosted = summonLoot("ancients", count, () => 0);
+      const standard = summonLoot("ancients", count, () => 0.5);
+      for (let round = 0; round < count; round++) {
+        expect(
+          boosted.slice(round * 5, round * 5 + 5).map((item) => item.count),
+        ).toEqual([60, 60, 30, 30, 30]);
+        const group = standard.slice(round * 5, round * 5 + 5);
+        expect(
+          group.filter((item) => item.variantId.endsWith(":legendary")),
+        ).toHaveLength(2);
+        expect(group.map((item) => item.count)).toEqual([
+          32, 32, 112, 112, 112,
+        ]);
+      }
+    },
+  );
+
+  it("uses the S1/S2 league table, a strict 50% boost boundary and 10% extra legendary rolls", () => {
+    expect(summonQuantity("ancients", "epic", 0)).toEqual({
+      min: 108,
+      max: 115,
+    });
+    expect(summonQuantity("ancients", "legendary", 400)).toEqual({
+      min: 34,
+      max: 37,
+    });
+    expect(summonQuantity("ancients", "legendary", 400, 2)).toEqual({
+      min: 68,
+      max: 71,
+    });
+    expect(summonQuantity("ancients", "epic", 6000)).toEqual({
+      min: 378,
+      max: 421,
+    });
+    expect(summonQuantity("ancients", "legendary", 6000, 2)).toEqual({
+      min: 300,
+      max: 309,
+    });
+    const values = [
+      0.499999, 0.999999, 0, 0.5, 0, 0, 0.099999, 0, 0, 0.1, 0, 0, 0.99, 0, 0,
+    ];
+    const loot = summonLoot("ancients", 1, () => values.shift()!);
+    expect(loot.map((item) => item.variantId.split(":")[1])).toEqual([
+      "legendary",
+      "legendary",
+      "legendary",
+      "epic",
+      "epic",
+    ]);
+    expect(loot.map((item) => item.count)).toEqual([63, 30, 30, 108, 108]);
+  });
+
+  it("includes the guaranteed slots in the advertised 46% legendary rate and boosts half of them", () => {
+    let seed = 821;
+    const random = () =>
+      (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+    let legends = 0;
+    let boosts = 0;
+    const total = 5000;
+    for (let index = 0; index < total; index++) {
+      const loot = summonLoot("ancients", 1, random);
+      legends += loot.filter((item) =>
+        item.variantId.endsWith(":legendary"),
+      ).length;
+      boosts += loot.filter(
+        (item) => item.variantId.endsWith(":legendary") && item.count >= 60,
+      ).length;
+    }
+    expect(legends / (total * 5)).toBeCloseTo(0.46, 2);
+    expect(boosts / (total * 2)).toBeCloseTo(0.5, 1);
   });
 
   it("adds one gold card to every invocation without consuming a companion slot and scales it with peak league", () => {
@@ -159,9 +245,13 @@ describe("invocations du sanctuaire", () => {
             ? count === 1
               ? [139, 129, 129, 129]
               : [1149, 999, 999, 999]
-            : Array(4).fill(
-                count === 10 ? pack.repeatTenPrices[0] : pack.repeatPrices[0],
-              );
+            : pack.id === "ancients"
+              ? count === 1
+                ? [4749, 4499, 4499, 4499]
+                : [39999, 34999, 34999, 34999]
+              : Array(4).fill(
+                  count === 10 ? pack.repeatTenPrices[0] : pack.repeatPrices[0],
+                );
         for (const cost of expected) {
           const offer = summonOffer(pack.id, count, true, previousCost);
           expect(offer.cost).toBe(cost);
@@ -177,7 +267,7 @@ describe("invocations du sanctuaire", () => {
   it("retains the original prices and can select every creature", () => {
     for (const [id, price, tenPrice] of [
       ["sylve", 149, 1299],
-      ["ancients", 449, 3899],
+      ["ancients", 4999, 44999],
     ] as const) {
       expect(summonPrice(id, 1)).toBe(price);
       expect(summonPrice(id, 10)).toBe(tenPrice);

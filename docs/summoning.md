@@ -1,6 +1,14 @@
 # Invocations du sanctuaire
 
-Chaque nouvelle invocation donne cinq lots de compagnons et une carte d’or, pour les trois appels. Les taux de rareté et les quantités de compagnons restent ceux rétablis précédemment. L’or est un sixième gain indépendant : entre `500 + 50 × indice de ligue` et `1 000 + 100 × indice de ligue`, selon le record de ligue (indice 0 à 30).
+Chaque nouvelle invocation disponible donne cinq lots de compagnons et une carte d’or. La Sylve conserve ses taux et quantités. L’Appel des anciens suit désormais les règles adaptées ci-dessous. L’Appel des divinités est temporairement masqué dans les offres et ses nouveaux achats sont bloqués côté serveur ; ses tirages déjà payés restent consultables et terminables. L’or est un sixième gain indépendant : entre `500 + 50 × indice de ligue` et `1 000 + 100 × indice de ligue`, selon le record de ligue (indice 0 à 30).
+
+## Appel des anciens
+
+Les taux et les quantités proviennent de la [documentation fournie](https://cwars.miraheze.org/wiki/Goddesses). Chaque invocation donne au moins deux lots légendaires, avec cinq lots de compagnons au total. Chaque étape du ×10 conserve cette garantie, soit au moins vingt lots légendaires par achat groupé et dix cartes d’or. La carte d’or est conservée dans notre adaptation, conformément à la demande, même si la référence l’a supprimée.
+
+Les taux affichés sont de 54 % d’épiques et 46 % de légendaires. Notre adaptation inclut les deux lots garantis dans ce total : les trois autres lots ont chacun 10 % de chance d’être légendaires et 90 % d’être épiques. Cela donne en moyenne `2 + 3 × 0,10 = 2,30` lots légendaires sur cinq, soit 46 %. Les lots garantis ne s’ajoutent donc pas à cinq autres tirages.
+
+Les deux lots légendaires garantis ont chacun 50 % de chance de prendre la taille renforcée S2, valeur choisie par le propriétaire du projet car la source ne précise pas cette probabilité. Les légendaires supplémentaires utilisent toujours S1. Les [quantités S1/S2 par ligue](../packages/game/src/data/ancients-summoning.json) sont reprises du tableau de référence et suivent notre correspondance habituelle entre le record de division et les ligues 30…1, GM. Par exemple, en Fer II : 122–129 exemplaires par lot épique, 34–37 par lot légendaire standard, ou 68–71 pour un lot renforcé. Il s’agit de quantités de la même rareté.
 
 ## Révélation
 
@@ -21,10 +29,9 @@ Les offres du sanctuaire conservent toujours leurs prix de base. Le tarif group�
 | Appel | Sanctuaire ×1 | Bouton central ×1 | Sanctuaire ×10 | Bouton central ×10 |
 | --- | ---: | ---: | ---: | ---: |
 | Sylve | 149 | 139, puis 129 | 1 299 | 1 149, puis 999 |
-| Anciens | 449 | 404 | 3 899 | 3 509 |
-| Divinités | 4 499 | 4 049 | 39 999 | 35 999 |
+| Anciens | 4 999 | 4 749, puis 4 499 | 44 999 | 39 999, puis 34 999 |
 
-Les prix en émeraudes sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. Les tarifs des autres appels restent fixes. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
+Les prix en émeraudes sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Les deux appels disponibles suivent leurs propres paliers et restent à leur dernier prix tant que le cercle reste ouvert. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
 
 ## Illustration et validation
 

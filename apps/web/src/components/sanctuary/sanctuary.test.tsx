@@ -38,14 +38,14 @@ function reward(request: SummonRequest): SummonResult {
     repeatToken: `circle-${request.requestId}`,
     gold: summonGold(request.packId, request.count, () => 0),
     goldBySummon: summonGoldRewards(request.packId, request.count, () => 0),
-    reveals: summonLoot(request.packId, request.count, () => 0).map(
-      (item, index) => ({
-        ...item,
-        isNew: index === 0,
-        level: 1,
-        copies: index,
-      }),
-    ),
+    reveals: summonLoot(request.packId, request.count, () =>
+      request.packId === "ancients" ? 0.5 : 0,
+    ).map((item, index) => ({
+      ...item,
+      isNew: index === 0,
+      level: 1,
+      copies: index,
+    })),
   };
 }
 function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
@@ -192,23 +192,25 @@ describe("le sanctuaire", () => {
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();
     expect(screen.getByText("2 %")).toBeTruthy();
-    expect(screen.getByText("100 %")).toBeTruthy();
+    expect(screen.getByText("54 %")).toBeTruthy();
+    expect(screen.getByText("46 %")).toBeTruthy();
+    expect(screen.getByText("×30–33 ou ×60–63")).toBeTruthy();
     expect(
       within(purchase("Sylve", 10)).getByText("1 compagnon légendaire garanti"),
     ).toBeTruthy();
     expect(
       within(purchase("anciens", 10)).getByText(
-        "2 compagnons légendaires garantis",
+        "20 compagnons légendaires garantis",
       ),
     ).toBeTruthy();
     expect(
-      within(purchase("divinités", 10)).getByText("50 compagnons légendaires"),
-    ).toBeTruthy();
-    expect(purchase("divinités", 1).getAttribute("aria-label")).toContain(
-      "4499 émeraudes",
+      screen.queryByRole("heading", { name: "Appel des divinités" }),
+    ).toBeNull();
+    expect(purchase("anciens", 1).getAttribute("aria-label")).toContain(
+      "4999 émeraudes",
     );
-    expect(purchase("divinités", 10).getAttribute("aria-label")).toContain(
-      "39999 émeraudes",
+    expect(purchase("anciens", 10).getAttribute("aria-label")).toContain(
+      "44999 émeraudes",
     );
     expect(screen.queryByText(/Carte d’or garantie/)).toBeNull();
     expect(screen.queryByText(/5 compagnons par invocation/)).toBeNull();
@@ -255,7 +257,7 @@ describe("le sanctuaire", () => {
           finish = resolve;
         }),
     );
-    setup({ onSummon, emeralds: 3899 });
+    setup({ onSummon, emeralds: 44999 });
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("Sylve", 1));
@@ -292,10 +294,10 @@ describe("le sanctuaire", () => {
       epic += within(dialog).queryAllByText("Épique").length;
       if (round < 10) fireEvent.click(next);
     }
-    expect(legendary).toBe(2);
-    expect(epic).toBe(48);
+    expect(legendary).toBe(20);
+    expect(epic).toBe(30);
     const repeat = within(dialog).getByRole("button", {
-      name: "Réinvoquer ×10, 3509 émeraudes",
+      name: "Réinvoquer ×10, 39999 émeraudes",
     });
     fireEvent.click(repeat);
     fireEvent.click(repeat);
@@ -577,11 +579,13 @@ describe("le sanctuaire", () => {
   });
 
   it.each([
-    { count: 1, prices: [149, 139, 129, 129] },
-    { count: 10, prices: [1299, 1149, 999, 999] },
+    { pack: "Sylve", count: 1, prices: [149, 139, 129, 129] },
+    { pack: "Sylve", count: 10, prices: [1299, 1149, 999, 999] },
+    { pack: "anciens", count: 1, prices: [4999, 4749, 4499, 4499] },
+    { pack: "anciens", count: 10, prices: [44999, 39999, 34999, 34999] },
   ] as const)(
-    "progresses Sylve x$count repeat prices to their floor and resets outside the circle",
-    async ({ count, prices }) => {
+    "progresses $pack x$count repeat prices to their floor and resets outside the circle",
+    async ({ pack, count, prices }) => {
       let purchases = 0;
       const onSummon = vi.fn(async (request: SummonRequest) => ({
         ...reward(request),
@@ -599,7 +603,7 @@ describe("le sanctuaire", () => {
             );
         }
       };
-      fireEvent.click(purchase("Sylve", count));
+      fireEvent.click(purchase(pack, count));
       for (const [index, price] of prices.slice(1).entries()) {
         const dialog = await screen.findByRole("dialog");
         await waitFor(() =>
@@ -638,7 +642,7 @@ describe("le sanctuaire", () => {
         within(last).getByRole("button", { name: "Retour au sanctuaire" }),
       );
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-      expect(purchase("Sylve", count).getAttribute("aria-label")).toContain(
+      expect(purchase(pack, count).getAttribute("aria-label")).toContain(
         `${prices[0]} émeraudes`,
       );
       fireEvent.click(
@@ -802,19 +806,88 @@ describe("le sanctuaire", () => {
     expect(within(dialog).getByText("Émeraudes insuffisantes")).toBeTruthy();
   });
 
-  it("keeps the all-legendary offer distinct and blocks its expensive price until affordable", async () => {
-    const { onSummon } = setup({ emeralds: 4499 });
-    expect(purchase("divinités", 1).disabled).toBe(false);
-    expect(purchase("divinités", 10).disabled).toBe(true);
-    fireEvent.click(purchase("divinités", 1));
-    const dialog = await screen.findByRole("dialog");
-    expect(onSummon).toHaveBeenCalledWith(
-      expect.objectContaining({ packId: "divine", count: 1 }),
+  it.each([1, 10] as const)(
+    "keeps archived divine x%s results readable while blocking another purchase",
+    async (count) => {
+      const latest = reward({
+        packId: "divine",
+        count,
+        requestId: "archived-divine-request",
+      });
+      const { onSummon } = setup({ latest, emeralds: 100000 });
+      expect(
+        screen.queryByRole("heading", { name: "Appel des divinités" }),
+      ).toBeNull();
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dernière invocation" }),
+      );
+      const dialog = await screen.findByRole("dialog");
+      for (let round = 1; round <= count; round++) {
+        expect(
+          within(dialog).queryByRole("button", { name: /^Révéler la carte/ }),
+        ).toBeNull();
+        expect(within(dialog).getAllByText("Légendaire")).toHaveLength(5);
+        if (round < count) {
+          const next = within(dialog).getByRole("button", {
+            name: /^Invocation suivante/,
+          }) as HTMLButtonElement;
+          expect(next.disabled).toBe(false);
+          fireEvent.click(next);
+        }
+      }
+      const repeat = within(dialog).getByRole("button", {
+        name: /^Réinvoquer/,
+      }) as HTMLButtonElement;
+      expect(repeat.disabled).toBe(true);
+      fireEvent.click(repeat);
+      expect(onSummon).not.toHaveBeenCalled();
+      expect(
+        within(dialog).getByText("Cet appel est temporairement indisponible."),
+      ).toBeTruthy();
+    },
+  );
+
+  it("finishes a paid divine batch despite its temporary unavailability without charging again", async () => {
+    const draw: SummonResult = {
+      ...reward({
+        packId: "divine",
+        count: 10,
+        requestId: "unfinished-divine-request",
+      }),
+      revealProgress: {
+        round: 9,
+        revealed: Array.from({ length: 54 }, (_, i) => i),
+      },
+      revealCompleted: false,
+    };
+    const { onSummon, onSaveRevealProgress } = setup({
+      latest: draw,
+      unfinished: draw,
+      emeralds: 100000,
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
     );
-    expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Invocation 10 / 10")).toBeTruthy();
+    expect(
+      within(dialog).getAllByRole("button", { name: /^Révéler la carte/ }),
+    ).toHaveLength(6);
     turnAll(dialog);
-    expect(within(dialog).getAllByText("Légendaire")).toHaveLength(5);
     expect(within(dialog).getByText("Carte d’or")).toBeTruthy();
+    expect(onSaveRevealProgress).toHaveBeenLastCalledWith({
+      requestId: draw.requestId,
+      round: 9,
+      revealed: Array.from({ length: 60 }, (_, i) => i),
+    });
+    expect(
+      (
+        within(dialog).getByRole("button", {
+          name: /^Réinvoquer/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(onSummon).not.toHaveBeenCalled();
   });
 
   it("recovers a lost discounted response with the same identifier even when the wallet is now empty", async () => {

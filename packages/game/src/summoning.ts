@@ -1,7 +1,8 @@
 import { CATALOG, RARITIES, type CardRarity } from "./index";
 import type { LootReveal, LootStack } from "./progression";
 import { leagueAt } from "./leagues";
-import { rewardRow, rollReward } from "./reward-tables";
+import { rewardLeague, rewardRow, rollReward } from "./reward-tables";
+import ancientsReference from "./data/ancients-summoning.json";
 
 export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients" | "divine";
@@ -11,6 +12,7 @@ export const SUMMON_REVEAL_SLOTS = 6;
 
 export interface SummonPack {
   id: SummonPackId;
+  enabled: boolean;
   name: string;
   description: string;
   price: number;
@@ -18,12 +20,15 @@ export interface SummonPack {
   repeatPrices: readonly number[];
   repeatTenPrices: readonly number[];
   guaranteedLegendaries: number;
+  guaranteedPerSummon?: number;
+  legendaryBoostChance?: number;
   rates: Record<CardRarity, number>;
 }
 
 export const SUMMON_PACKS: readonly SummonPack[] = [
   {
     id: "sylve",
+    enabled: true,
     name: "Appel de la Sylve",
     description:
       "Cinq compagnons de toutes les raretés et une carte d’or en bonus.",
@@ -36,18 +41,22 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
   },
   {
     id: "ancients",
+    enabled: true,
     name: "Appel des anciens",
     description:
-      "Cinq compagnons épiques ou légendaires et une carte d’or en bonus.",
-    price: 449,
-    tenPrice: 3_899,
-    repeatPrices: [404],
-    repeatTenPrices: [3_509],
-    guaranteedLegendaries: 2,
-    rates: { common: 0, rare: 0, epic: 80, legendary: 20 },
+      "Cinq compagnons, dont au moins deux légendaires, et une carte d’or en bonus.",
+    price: 4_999,
+    tenPrice: 44_999,
+    repeatPrices: [4_749, 4_499],
+    repeatTenPrices: [39_999, 34_999],
+    guaranteedLegendaries: 20,
+    guaranteedPerSummon: 2,
+    legendaryBoostChance: 0.5,
+    rates: { common: 0, rare: 0, epic: 54, legendary: 46 },
   },
   {
     id: "divine",
+    enabled: false,
     name: "Appel des divinités",
     description:
       "Cinq légendaires, une carte d’or et une chance de doubler un compagnon.",
@@ -59,6 +68,8 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     rates: { common: 0, rare: 0, epic: 0, legendary: 100 },
   },
 ];
+
+export const ACTIVE_SUMMON_PACKS = SUMMON_PACKS.filter((pack) => pack.enabled);
 
 export interface SummonResult {
   requestId: string;
@@ -181,7 +192,18 @@ export function summonQuantity(
   id: SummonPackId,
   rarity: CardRarity,
   peakTrophies = 0,
+  legendarySize: 1 | 2 = 1,
 ) {
+  if (id === "ancients") {
+    if (rarity !== "epic" && rarity !== "legendary")
+      throw new Error("Rareté absente de cette invocation.");
+    const row =
+      ancientsReference.leagues[
+        rewardLeague(peakTrophies) as keyof typeof ancientsReference.leagues
+      ];
+    const range = row[rarity === "epic" ? 0 : legendarySize]!;
+    return { min: range[0]!, max: range[1]! };
+  }
   const common = rarity === "common";
   const column = id === "divine" || common ? 0 : RARITIES.indexOf(rarity) - 1;
   const row = rewardRow(
@@ -225,7 +247,7 @@ export function summonGoldRewards(
   );
 }
 
-/** Base rarity rates apply in every league. Ten-packs upgrade only missing guarantees. */
+/** Published rarity rates include the Ancients' two guaranteed stacks per round. */
 export function summonLoot(
   id: SummonPackId,
   count: SummonCount,
@@ -249,14 +271,32 @@ export function summonLoot(
           random() < 0.5 ? Math.floor(random() * HEROES_PER_SUMMON) : -1,
         )
       : [];
-  const rollStack = (rarity: CardRarity): LootStack => {
-    const range = summonQuantity(id, rarity, peakTrophies);
+  const rollStack = (
+    rarity: CardRarity,
+    legendarySize: 1 | 2 = 1,
+  ): LootStack => {
+    const range = summonQuantity(id, rarity, peakTrophies, legendarySize);
     const copies = rollReward([range.min, range.max], random);
     return {
       variantId: `${CATALOG[Math.floor(random() * CATALOG.length)]!.id}:${rarity}`,
       count: copies,
     };
   };
+  if (id === "ancients") {
+    const guaranteed = pack.guaranteedPerSummon!;
+    // Two fixed legendaries + three 10% rolls yield the advertised 46% overall.
+    const extraLegendaryChance =
+      (pack.rates.legendary * HEROES_PER_SUMMON - guaranteed * 100) /
+      (HEROES_PER_SUMMON - guaranteed) /
+      100;
+    return Array.from({ length: total }, (_, index) => {
+      const fixed = index % HEROES_PER_SUMMON < guaranteed;
+      const rarity =
+        fixed || random() < extraLegendaryChance ? "legendary" : "epic";
+      const size = fixed && random() < pack.legendaryBoostChance! ? 2 : 1;
+      return rollStack(rarity, size);
+    });
+  }
   const loot = Array.from({ length: total }, (_, index) => {
     const stack = rollStack(id === "divine" ? "legendary" : rollRarity());
     if (
