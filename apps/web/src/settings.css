@@ -62,29 +62,13 @@
   padding-top: 10px;
   text-shadow: 0 2px 12px #07180d88;
 }
-.settings-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #dbc18b;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.7px;
-  text-transform: uppercase;
-}
 .settings-sidebar h1 {
-  margin: 16px 0 10px;
+  margin: 0 0 10px;
   color: #fff1cf;
   font:
     400 clamp(36px, 4vw, 48px)/1.1 Georgia,
     serif;
   letter-spacing: -1.5px;
-}
-.settings-intro {
-  max-width: 220px;
-  color: #c4ceb5;
-  font-size: 13px;
-  line-height: 1.8;
 }
 .settings-nav {
   display: flex;
@@ -446,12 +430,8 @@
     padding-top: 0;
   }
   .settings-sidebar h1 {
-    margin: 10px 0 6px;
+    margin: 0 0 6px;
     font-size: 36px;
-  }
-  .settings-intro {
-    max-width: none;
-    font-size: 12px;
   }
   .settings-nav {
     display: grid;

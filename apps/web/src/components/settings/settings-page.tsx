@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Tabs } from "@base-ui/react/tabs";
 import {
   ChevronRight,
-  Crown,
   Monitor,
   ShieldCheck,
   UserRound,
@@ -67,14 +66,7 @@ export function SettingsPage({
           orientation={mobile ? "horizontal" : "vertical"}
         >
           <aside className="settings-sidebar">
-            <span className="settings-eyebrow">
-              <Crown size={16} aria-hidden="true" />
-              Maison des gardiens
-            </span>
             <h1>Paramètres</h1>
-            <p className="settings-intro">
-              Ton profil, tes accès et tes appareils.
-            </p>
             <Tabs.List
               className="settings-nav"
               aria-label="Rubriques des paramètres"
