@@ -31,6 +31,7 @@ function initial() {
     ],
     0,
     random,
+    { field: false },
   );
 }
 function unit(
@@ -105,6 +106,7 @@ describe("début de partie et confidentialité", () => {
         ],
         0,
         random,
+        { field: false },
       ),
     ).toThrow();
     expect(() => playerView(initial(), "eve")).toThrow();
@@ -505,6 +507,7 @@ describe("pioche et cycle des cartes", () => {
       ],
       0,
       random,
+      { field: false },
     );
     const id = "guardian:common";
     const before = [...state.players[0]!.hand];
@@ -557,6 +560,7 @@ describe("pioche et cycle des cartes", () => {
       ],
       0,
       random,
+      { field: false },
     );
     const next = summon(state, 0, deck[0]!, 0, 0, 1, 1, random).state;
     expect(next.players[0]!.hand).toContain("guardian:common");
@@ -623,6 +627,7 @@ describe("pioche et cycle des cartes", () => {
         ],
         0,
         rng,
+        { field: false },
       );
       for (let turn = 0; turn < 200 && state.status === "active"; turn++) {
         const index = state.activePlayer;

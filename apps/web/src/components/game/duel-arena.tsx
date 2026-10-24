@@ -13,6 +13,7 @@ import {
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
+import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
 import {
   AbilityIcon,
@@ -44,6 +45,7 @@ export function DuelArena({
   onPlace,
   onInspectUnit,
   onInspectHero,
+  onInspectField,
 }: {
   mine: Player;
   enemy: Player;
@@ -56,6 +58,12 @@ export function DuelArena({
   onPlace: (cardId: string, row: number, depth: number) => void;
   onInspectUnit: (unit: Player["board"][number], playerIndex: number) => void;
   onInspectHero: (playerIndex: number) => void;
+  onInspectField: (
+    kind: FieldMarkKind,
+    playerIndex: number,
+    row: number,
+    depth: number,
+  ) => void;
 }) {
   function heroFigure(player: Player, index: number, own: boolean) {
     const hit =
@@ -109,6 +117,15 @@ export function DuelArena({
           const rune = player.runes?.find(
             (r) => r.row === row && r.depth === depth,
           );
+          const pentagram = player.pentagrams?.find(
+            (p) => p.row === row && p.depth === depth,
+          );
+          const mark = rune ? "rune" : pentagram ? "pentagram" : null;
+          const markLabel = rune
+            ? `Rune de vie : +${rune.health} PV à la prochaine unité`
+            : pentagram
+              ? `Pentagramme de puissance : +${pentagram.attack} attaque à la prochaine unité`
+              : "";
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
           const legal =
@@ -147,7 +164,7 @@ export function DuelArena({
           return (
             <div
               key={`${row}-${depth}`}
-              className={`projected-cell ${unit ? "occupied" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
+              className={`projected-cell ${unit ? "occupied" : ""} ${mark && !unit ? "marked-cell" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
               style={{ ...cell.bounds, zIndex: row + 1 }}
             >
               <button
@@ -157,24 +174,22 @@ export function DuelArena({
                 data-own-cell={own && !unit ? "true" : undefined}
                 data-row={row}
                 data-depth={depth}
-                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}` : ", vide"}`}
-                aria-disabled={!legal && !unit}
-                aria-haspopup={unit ? "dialog" : undefined}
+                aria-label={`${own ? "Ton camp" : "Camp adverse"}, ligne ${row + 1}, colonne ${DEPTHS - depth}, zone ${zone}${unit ? `, ${unit.fieldObject ? "bâtiment neutre, " : ""}${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}` : mark ? `, ${markLabel}` : ", vide"}`}
+                title={!unit && mark ? markLabel : undefined}
+                aria-disabled={!legal && !unit && !mark}
+                aria-haspopup={unit || (mark && !legal) ? "dialog" : undefined}
                 tabIndex={unit ? -1 : 0}
                 onClick={() => {
                   if (legal && selected) onPlace(selected, row, depth);
                   else if (unit) onInspectUnit(unit, playerIndex);
+                  else if (mark) onInspectField(mark, playerIndex, row, depth);
                 }}
               >
-                {!unit && rune && (
-                  <span
-                    className="board-rune"
-                    title={`Rune de vie : +${rune.health} PV`}
-                    aria-label={`Rune de vie : +${rune.health} PV`}
-                  >
-                    <AbilityIcon kind="life-rune" />
-                    <strong>+{rune.health}</strong>
-                  </span>
+                {!unit && mark && (
+                  <FieldMark
+                    kind={mark}
+                    amount={rune?.health ?? pentagram!.attack}
+                  />
                 )}
                 {legal && (
                   <span className="placement-hint" aria-hidden="true">
@@ -187,21 +202,24 @@ export function DuelArena({
                   type="button"
                   className="board-unit-control"
                   style={cell.unit}
-                  aria-label={`${unit.card.name}, ${combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
+                  aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
                   onClick={() => onInspectUnit(unit, playerIndex)}
                 >
                   <div
-                    className={`board-unit ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
+                    data-field-object={unit.fieldObject}
+                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
                   >
                     <span className="unit-shadow" />
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
-                      <StatBadge
-                        kind="attack"
-                        value={unit.card.attack}
-                        combatType={getCombatType(unit.card)}
-                      />
+                      {!unit.fieldObject && (
+                        <StatBadge
+                          kind="attack"
+                          value={unit.card.attack}
+                          combatType={getCombatType(unit.card)}
+                        />
+                      )}
                       <StatBadge
                         kind="health"
                         value={unit.hp}
@@ -304,7 +322,7 @@ function CombatEffects({
     if (
       !event ||
       (event.type !== "attack" &&
-        (event.type !== "ability" || event.runes) &&
+        (event.type !== "ability" || (event.runes && !event.unit)) &&
         (event.type !== "summon" || !event.ability))
     )
       return;

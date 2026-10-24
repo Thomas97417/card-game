@@ -1,4 +1,6 @@
 export * from "./cards";
+export * from "./field";
+import { populateField, type FieldBuildingKind } from "./field";
 import {
   GameError,
   resolveCard,
@@ -79,13 +81,20 @@ export interface Unit {
   regeneration?: number;
   shield?: boolean;
   temporaryAttack?: number;
-  /** Summoned tokens never enter the reusable deck or collection. */
+  /** Definitions for summoned tokens and scenery outside the collectible deck. */
   definition?: CardDefinition;
+  /** Neutral scenery present at creation; cannot be voluntarily withdrawn. */
+  fieldObject?: FieldBuildingKind;
 }
 export interface Rune {
   row: number;
   depth: number;
   health: number;
+}
+export interface Pentagram {
+  row: number;
+  depth: number;
+  attack: number;
 }
 export function unitCard(
   unit: Unit,
@@ -134,6 +143,7 @@ export interface PlayerState {
   discard: string[];
   board: Unit[];
   runes?: Rune[];
+  pentagrams?: Pentagram[];
 }
 export interface GameState {
   players: PlayerState[];
@@ -169,6 +179,7 @@ export interface GameEvent {
   amount?: number;
   unit?: Unit;
   runes?: Rune[];
+  pentagrams?: Pentagram[];
 }
 export interface Transition {
   state: GameState;
@@ -194,6 +205,9 @@ function cloneGame(input: GameState): GameState {
         ...(unit.definition ? { definition: cloneCard(unit.definition) } : {}),
       })),
       ...(player.runes ? { runes: player.runes.map((r) => ({ ...r })) } : {}),
+      ...(player.pentagrams
+        ? { pentagrams: player.pentagrams.map((p) => ({ ...p })) }
+        : {}),
     })),
   };
 }
@@ -228,6 +242,7 @@ export function createGame(
   players: PlayerInput[],
   now: number,
   random: () => number,
+  options: { field?: boolean } = {},
 ): GameState {
   if (players.length !== 2 || players[0]!.userId === players[1]!.userId)
     throw new GameError("Il faut deux joueurs différents.");
@@ -253,6 +268,7 @@ export function createGame(
     sequence: 0,
   };
   for (const player of state.players) refill(player, random);
+  if (options.field !== false) populateField(state.players, random);
   return state;
 }
 
@@ -353,6 +369,10 @@ export function withdraw(
     throw new GameError("Choisis la créature à retirer sur le terrain.");
   const unit = matches[0];
   if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
+  if (unit.fieldObject)
+    throw new GameError(
+      "Un bâtiment neutre doit être détruit pour libérer sa case.",
+    );
   player.board = player.board.filter((entry) => entry !== unit);
   player.discard = [];
   const events: GameEvent[] = [];
@@ -575,6 +595,27 @@ function appeared(
     );
     events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
   }
+  const pentagram = owner.pentagrams?.find(
+    (p) => p.row === unit.row && p.depth === unit.depth,
+  );
+  if (pentagram) {
+    unit.attack =
+      (unit.attack ?? unitCard(unit, owner.cards).attack) + pentagram.attack;
+    owner.pentagrams = owner.pentagrams!.filter((p) => p !== pentagram);
+    effectEvent(
+      state,
+      events,
+      player,
+      unit,
+      "Pentagramme de puissance",
+      player,
+      unit,
+      pentagram.attack,
+    );
+    events[events.length - 1]!.pentagrams = owner.pentagrams.map((p) => ({
+      ...p,
+    }));
+  }
 }
 function applyAbilities(
   state: GameState,
@@ -630,6 +671,9 @@ function applyAbilities(
           ) &&
           !owner.runes?.some(
             (r) => r.row === cell.row && r.depth === cell.depth,
+          ) &&
+          !owner.pentagrams?.some(
+            (p) => p.row === cell.row && p.depth === cell.depth,
           ),
       );
       const cell = pick(cells, random)[0];
@@ -1015,6 +1059,7 @@ export function playerView(state: GameState, userId: string) {
       // Deck composition is public; hand contents and draw order stay private.
       deck: player.cards.map((card) => ({ ...card })),
       runes: player.runes?.map((r) => ({ ...r })),
+      pentagrams: player.pentagrams?.map((p) => ({ ...p })),
       board: player.board.map((unit) => ({
         ...unit,
         card: {

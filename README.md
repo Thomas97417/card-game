@@ -58,6 +58,8 @@ Chaque camp possède quatre lignes et trois colonnes. La colonne centrale est pa
 
 Avant de jouer sa carte, on peut retirer une créature pour libérer sa case sans modifier la main. La case permet de sélectionner un exemplaire précis lorsque plusieurs créatures partagent une variante ; les dégâts et animations ciblent aussi cet exemplaire. Les morts et retraits ne consomment aucune carte du deck ni exemplaire de la collection. Les règles et les paramètres de progression sont centralisés dans `packages/game`. Convex valide les actions, les possessions, les récompenses, les délais et les améliorations.
 
+Les nouvelles parties commencent avec un **terrain symétrique aléatoire** : deux bâtiments neutres par camp, une **rune de vie +3 PV** et un **pentagramme de puissance +2 attaque**. Les pieux de ronces ripostent avec Épines 1, l’arbre sombre régénère 1 PV et le rocher moussu sert d’obstacle. Ces bâtiments possèdent des illustrations originales et doivent être détruits pour libérer leur case. Les sceaux se consomment à l’apparition d’une unité ; leur bonus reste jusqu’à son départ. Cliquer sur un élément ouvre sa fiche. Les anciennes parties gardent leur terrain. Les [règles du terrain](docs/field.md) détaillent le placement et les effets.
+
 Les [règles de progression](docs/progression.md) détaillent les probabilités et les garanties des coffres. Les [notes sur les illustrations](docs/art.md) documentent les images et leurs prompts.
 
 ## Vérifier le jeu

@@ -45,7 +45,7 @@ async function player(t: Test, name: string) {
   });
   return t.withIdentity({ subject: user._id, sessionId: session._id });
 }
-async function match() {
+async function match({ field = true } = {}) {
   const t = setup();
   const alice = await player(t, "alice");
   const bob = await player(t, "bob");
@@ -57,6 +57,16 @@ async function match() {
   await bob.mutation(api.games.joinPrivate, {
     code: invitation.code,
     deckId: bDeck,
+  });
+  if (!field) await t.run(async (ctx) => {
+    const game = (await ctx.db.get(invitation.gameId))!;
+    const state = game.state!;
+    for (const owner of state.players) {
+      owner.board = [];
+      owner.runes = [];
+      owner.pentagrams = [];
+    }
+    await ctx.db.patch(invitation.gameId, { state });
   });
   return { t, alice, bob, aDeck, bDeck, gameId: invitation.gameId };
 }
@@ -311,9 +321,65 @@ describe("invitations et synchronisation", () => {
     expect(game!.state!.players).toHaveLength(2);
   });
 });
+describe("terrain autoritaire", () => {
+  it("persists mirrored scenery and shows the same field to both players", async () => {
+    const { t, alice, bob, gameId } = await match();
+    const a = await alice.query(api.games.get, { gameId });
+    const b = await bob.query(api.games.get, { gameId });
+    expect(a.players[0]!.board).toEqual(a.players[1]!.board);
+    expect(a.players[0]!.board).toHaveLength(2);
+    expect(a.players[0]!.runes).toEqual(a.players[1]!.runes);
+    expect(a.players[0]!.pentagrams).toEqual(a.players[1]!.pentagrams);
+    expect(a.players.map((owner) => owner.board)).toEqual(b.players.map((owner) => owner.board));
+    const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
+    expect(stored.state!.players[0]!.pentagrams).toEqual(a.players[0]!.pentagrams);
+    expect(a.players.every((owner) => owner.deck.every((card) => card.kind !== "field-building"))).toBe(true);
+  });
+
+  it("rejects attempts to occupy or withdraw a neutral obstacle without changing the turn", async () => {
+    const { alice, bob, gameId } = await match();
+    const view = await alice.query(api.games.get, { gameId });
+    const active = view.activePlayer === 0 ? alice : bob;
+    const owner = view.players[view.activePlayer]!;
+    const obstacle = owner.board[0]!;
+    const own = await active.query(api.games.get, { gameId });
+    await expect(active.mutation(api.games.playCard, {
+      gameId, cardId: own.players[own.me]!.hand[0]!.id,
+      row: obstacle.row, depth: obstacle.depth, expectedTurn: 1,
+    })).rejects.toThrow("occupée");
+    await expect(active.mutation(api.games.withdrawCard, {
+      gameId, cardId: obstacle.cardId, position: { row: obstacle.row, depth: obstacle.depth }, expectedTurn: 1,
+    })).rejects.toThrow("bâtiment neutre");
+    expect(await active.query(api.games.get, { gameId })).toEqual(own);
+  });
+
+  it("persists consumed marks, boosted unit stats and events for reconnecting players", async () => {
+    const { alice, bob, gameId } = await match();
+    const first = await alice.query(api.games.get, { gameId });
+    const active = first.activePlayer === 0 ? alice : bob;
+    const inactive = first.activePlayer === 0 ? bob : alice;
+    const view = await active.query(api.games.get, { gameId });
+    const owner = view.players[view.me]!;
+    const pentagram = owner.pentagrams![0]!;
+    const card = owner.hand[0]!;
+    await active.mutation(api.games.playCard, {
+      gameId, cardId: card.id, row: pentagram.row, depth: pentagram.depth, expectedTurn: 1,
+    });
+    const other = await inactive.query(api.games.get, { gameId });
+    const boosted = other.players[view.me]!;
+    expect(boosted.pentagrams).toEqual([]);
+    expect(boosted.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 2);
+    expect(other.events.find((event) => event.ability === "Pentagramme de puissance")).toMatchObject({ amount: 2, pentagrams: [] });
+    expect(other.players[view.me]!.hand).toEqual([]);
+    const reconnected = await active.query(api.games.get, { gameId });
+    expect(reconnected.players[view.me]!.pentagrams).toEqual([]);
+    expect(reconnected.players[view.me]!.deck.find((entry) => entry.id === card.id)!.attack).toBe(card.attack);
+  });
+});
+
 describe("tours autoritaires", () => {
   it("redraws a deployed variant and withdraws only the selected duplicate", async () => {
-    const { alice, bob, gameId } = await match();
+    const { alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -371,7 +437,7 @@ describe("tours autoritaires", () => {
     expect(after.players[own.me]!.hand).toEqual(deployed.players[own.me]!.hand);
   });
   it("synchronizes withdrawals before playing and protects ownership", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -446,7 +512,7 @@ describe("tours autoritaires", () => {
     expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("synchronizes placement, combat and the next turn, rejecting invalid zones and stale plays", async () => {
-    const { alice, bob, gameId } = await match();
+    const { alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const inactive = initial.activePlayer === 0 ? bob : alice;
@@ -512,7 +578,7 @@ describe("tours autoritaires", () => {
     expect((await inactive.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("ignores the old deadline after a card is played and schedules the next player's deadline", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
     const own = await active.query(api.games.get, { gameId });
@@ -534,13 +600,13 @@ describe("tours autoritaires", () => {
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(3);
   });
   it("advances disconnected players at the server deadline", async () => {
-    const { t, alice, gameId } = await match();
+    const { t, alice, gameId } = await match({ field: false });
     await vi.advanceTimersByTimeAsync(60_000);
     await t.finishInProgressScheduledFunctions();
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(2);
   });
   it("surrender ends the game, releases both players and makes old deadlines harmless", async () => {
-    const { t, alice, bob, gameId } = await match();
+    const { t, alice, bob, gameId } = await match({ field: false });
     await alice.mutation(api.games.surrender, { gameId });
     expect((await bob.query(api.games.get, { gameId })).winner).toBe(1);
     expect((await bob.query(api.games.activity, {})).gameId).toBeNull();

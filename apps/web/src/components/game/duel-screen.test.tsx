@@ -38,6 +38,7 @@ function matchData(): DuelData {
     ],
     Date.now(),
     () => 0.25,
+    { field: false },
   );
   state.activePlayer = 0;
   for (const [index, id, hp] of [
@@ -67,6 +68,60 @@ function setup(data = matchData()) {
   const result = render(<DuelScreen data={data} {...actions} practice />);
   return { ...result, data, actions };
 }
+
+function fieldData(): DuelData {
+  const cards = validateDeck(DEFAULT_DECK);
+  const state = createGame([
+    { userId: "alice", name: "Alice", cards },
+    { userId: "bob", name: "Bob", cards },
+  ], Date.now(), () => 0.25);
+  state.activePlayer = 0;
+  return { ...playerView(state, "alice"), events: [] };
+}
+
+describe("éléments du terrain", () => {
+  it("renders original scenery art and inspects a neutral building without offering withdrawal", async () => {
+    const data = fieldData();
+    const { actions } = setup(data);
+    const obstacle = data.players[0]!.board[0]!;
+    expect(document.querySelectorAll(".neutral-building")).toHaveLength(4);
+    expect(document.querySelectorAll(".field-mark-rune")).toHaveLength(2);
+    expect(document.querySelectorAll(".field-mark-pentagram")).toHaveLength(2);
+    expect(document.querySelector(`.neutral-building[data-field-object="${obstacle.fieldObject}"] img`)?.getAttribute("src")).toBe(`/art/field/${obstacle.fieldObject}.webp`);
+    fireEvent.click(screen.getAllByRole("button", { name: `${obstacle.card.name}, bâtiment neutre, puissance 0, ${obstacle.hp} PV, voir les informations` })[0]!);
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByText("BÂTIMENT NEUTRE")).toBeTruthy();
+    expect(dialog.getByText("Élément du terrain · Destructible")).toBeTruthy();
+    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
+    expect(actions.onWithdrawCard).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["Rune de vie", "+3 PV actuels et maximum"],
+    ["Pentagramme de puissance", "+2 attaque"],
+  ])("explains the single-use bonus of %s", async (name, bonus) => {
+    setup(fieldData());
+    fireEvent.click(await screen.findByRole("button", { name: new RegExp(`^Ton camp.*${name}`) }));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByRole("heading", { name })).toBeTruthy();
+    expect(dialog.getByText(bonus)).toBeTruthy();
+    expect(dialog.getByText(/Le sceau disparaît après utilisation/)).toBeTruthy();
+  });
+
+  it("allows deployment on a pentagram while keeping an obstacle occupied", async () => {
+    const data = fieldData();
+    const { actions } = setup(data);
+    const { card, dialog } = await openHandCard(data);
+    fireEvent.click(dialog.getByRole("button", { name: "Choisir une case" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    const obstacle = data.players[0]!.board[0]!;
+    const blocked = document.querySelector(`.board-half.own .board-cell[data-row="${obstacle.row}"][data-depth="${obstacle.depth}"]`)!;
+    expect(blocked.classList.contains("legal-placement")).toBe(false);
+    const pentagram = data.players[0]!.pentagrams![0]!;
+    fireEvent.click(screen.getByRole("button", { name: /^Ton camp.*Pentagramme de puissance/ }));
+    expect(actions.onPlayCard).toHaveBeenCalledWith(card.id, pentagram.row, pentagram.depth, data.turn);
+  });
+});
 
 async function openHandCard(data: DuelData) {
   const card = data.players[data.me]!.hand[0]!;

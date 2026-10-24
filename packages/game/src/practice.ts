@@ -135,6 +135,9 @@ function visibleState(view: GameView): GameState {
       discard: [],
       board: player.board.map(({ card: _card, ...unit }) => ({ ...unit })),
       ...(player.runes ? { runes: player.runes.map((r) => ({ ...r })) } : {}),
+      ...(player.pentagrams
+        ? { pentagrams: player.pentagrams.map((p) => ({ ...p })) }
+        : {}),
     })),
   };
 }

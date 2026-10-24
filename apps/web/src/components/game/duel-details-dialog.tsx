@@ -23,9 +23,16 @@ import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
 import { UnitEffectIcons } from "./ability-icons";
+import { FieldMark, type FieldMarkKind } from "./field-mark";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
+  | {
+      type: "field";
+      kind: FieldMarkKind;
+      playerIndex: number;
+      position: UnitPosition;
+    }
   | ({
       type: "card";
       card: CardDefinition;
@@ -69,6 +76,21 @@ export function DuelDetailsDialog({
         )
       : undefined;
   const card = unit?.card ?? inspectedCard;
+  const neutral = card?.kind === "field-building";
+  const fieldMark =
+    inspection?.type === "field"
+      ? inspection.kind === "rune"
+        ? player?.runes?.find(
+            (mark) =>
+              mark.row === inspection.position.row &&
+              mark.depth === inspection.position.depth,
+          )
+        : player?.pentagrams?.find(
+            (mark) =>
+              mark.row === inspection.position.row &&
+              mark.depth === inspection.position.depth,
+          )
+      : undefined;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
   const hasPlacement =
     !!card && !!player && legalPlacements(card, player.board).length > 0;
@@ -99,7 +121,52 @@ export function DuelDetailsDialog({
       >
         {inspection && player && (
           <>
-            {card ? (
+            {inspection.type === "field" ? (
+              <>
+                <span className="eyebrow">SCEAU DU TERRAIN · USAGE UNIQUE</span>
+                <DialogTitle ref={titleRef} tabIndex={-1}>
+                  {inspection.kind === "rune"
+                    ? "Rune de vie"
+                    : "Pentagramme de puissance"}
+                </DialogTitle>
+                <DialogDescription>
+                  {inspection.kind === "rune"
+                    ? "La sève des anciens protège ce lieu."
+                    : "Une force oubliée attend son prochain porteur."}
+                </DialogDescription>
+                {fieldMark ? (
+                  <>
+                    <div className="field-mark-preview">
+                      <FieldMark
+                        kind={inspection.kind}
+                        amount={
+                          "health" in fieldMark
+                            ? fieldMark.health
+                            : fieldMark.attack
+                        }
+                      />
+                    </div>
+                    <p className="details-note">
+                      La prochaine unité invoquée ou apparue sur cette case
+                      gagne{" "}
+                      <strong>
+                        {"health" in fieldMark
+                          ? `+${fieldMark.health} PV actuels et maximum`
+                          : `+${fieldMark.attack} attaque`}
+                      </strong>.
+                      Le sceau disparaît après utilisation. Le bonus reste
+                      jusqu’à ce que l’unité quitte le terrain.
+                    </p>
+                    <p className="details-note">
+                      Ce bonus s’applique après les capacités d’arrivée de
+                      l’unité. La case reste libre pour l’invocation.
+                    </p>
+                  </>
+                ) : (
+                  <p className="details-note">Ce sceau a été utilisé.</p>
+                )}
+              </>
+            ) : card ? (
               <>
                 {source === "deck" && (
                   <button
@@ -119,13 +186,15 @@ export function DuelDetailsDialog({
                 <span className="eyebrow">
                   {source === "deck"
                     ? `DECK DE ${player.name}`
-                    : unit
-                      ? own
-                        ? "TON COMPAGNON"
-                        : "CRÉATURE ADVERSE"
-                      : source === "hand"
-                        ? "DANS TA MAIN"
-                        : "FICHE DE CRÉATURE"}
+                    : neutral
+                      ? "BÂTIMENT NEUTRE"
+                      : unit
+                        ? own
+                          ? "TON COMPAGNON"
+                          : "CRÉATURE ADVERSE"
+                        : source === "hand"
+                          ? "DANS TA MAIN"
+                          : "FICHE DE CRÉATURE"}
                 </span>
                 <DialogTitle ref={titleRef} tabIndex={-1}>
                   {card.name}
@@ -135,16 +204,19 @@ export function DuelDetailsDialog({
                   className="rarity-label"
                   data-rarity={card.rarity ?? "common"}
                 >
-                  {RARITY_LABELS[card.rarity ?? "common"]} · Niveau{" "}
-                  {card.level ?? 1}
+                  {neutral
+                    ? "Élément du terrain · Destructible"
+                    : `${RARITY_LABELS[card.rarity ?? "common"]} · Niveau ${card.level ?? 1}`}
                 </span>
                 <p className="details-note card-details-role">
                   {combatTypeLabel(card)} ·{" "}
-                  {getCombatType(card) === "melee"
-                    ? "Déploiement au milieu ou vers l’ennemi."
-                    : getCombatType(card) === "building"
-                      ? "Déploiement sur toute case libre. N’attaque pas."
-                      : "Déploiement au milieu ou vers ton héros."}
+                  {neutral
+                    ? "Présent dès le début du combat. N’attaque pas."
+                    : getCombatType(card) === "melee"
+                      ? "Déploiement au milieu ou vers l’ennemi."
+                      : getCombatType(card) === "building"
+                        ? "Déploiement sur toute case libre. N’attaque pas."
+                        : "Déploiement au milieu ou vers ton héros."}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
                 </p>
                 <div className="card-details-layout">
@@ -185,9 +257,11 @@ export function DuelDetailsDialog({
                       </p>
                     )}
                     <p className="details-note">
-                      {getCombatType(card) === "building"
-                        ? "Ce bâtiment soutient l’alliance avec ses capacités."
-                        : `Inflige ${card.attack} dégâts au premier ennemi de la rangée, sinon au héros.`}
+                      {neutral
+                        ? "Bloque sa case et intercepte les attaques de sa ligne. Sa destruction libère la case. Il ne fait pas partie du deck et ne peut pas être retiré."
+                        : getCombatType(card) === "building"
+                          ? "Ce bâtiment soutient l’alliance avec ses capacités."
+                          : `Inflige ${card.attack} dégâts au premier ennemi de la rangée, sinon au héros.`}
                     </p>
                     {getCombatType(card) === "melee" && (
                       <p className="details-note">
@@ -231,7 +305,7 @@ export function DuelDetailsDialog({
                     </button>
                   </div>
                 )}
-                {own && unit && (
+                {own && unit && !neutral && (
                   <div className="details-actions">
                     <p className="details-note">
                       Libère sa case avant d’invoquer. Ta main ne change pas et

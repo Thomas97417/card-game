@@ -89,6 +89,7 @@ export function useCombatPlayback(latest: View | undefined) {
                 return {
                   ...player,
                   ...(entry.runes ? { runes: entry.runes } : {}),
+                  ...(entry.pentagrams ? { pentagrams: entry.pentagrams } : {}),
                   ...(entry.unit
                     ? {
                         board: player.board.map((unit) =>

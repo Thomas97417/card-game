@@ -1,5 +1,19 @@
 # Illustrations de Sylve
 
+## Éléments du terrain
+
+Trois bâtiments neutres originaux ont été créés le 24 octobre 2026 avec **ImageGen intégré**, par trois appels distincts avec transparence :
+
+- `apps/web/public/art/field/spikes.webp` : pieux de ronces en bois et bronze, liés par des lianes épineuses.
+- `apps/web/public/art/field/dark-tree.webp` : arbre sombre creux, racines noueuses, fissures violettes et lueur d’ambre.
+- `apps/web/public/art/field/mossy-rock.webp` : rocher calcaire moussu, petites fougères et gravure ancienne.
+
+Les images finales sont encodées en WebP sur un canevas transparent de 512 × 512 px, avec conservation de l’alpha généré et de leurs proportions. Les PNG originaux restent dans le répertoire local de génération. Les [prompts complets](art-prompts-field.json) conservent les sources et les chemins finaux ; aucun fallback CLI n’a été utilisé.
+
+Le style reprend les textures peintes, les contours fins, le vert mousse et l’ambre des compagnons de Sylve. Les bâtiments apparaissent directement dans l’arène et dans leur fiche. Les runes de vie vertes et les pentagrammes violets sont dessinés en SVG dans `FieldMark`, pour garder les symboles et leurs bonus lisibles sur toutes les tailles d’écran.
+
+La page [Field de Mighty Party](https://mightyparty.fandom.com/wiki/Field) sert de référence pour la présence de bâtiments, de runes et de pentagrammes au début du combat. Les illustrations et les effets chiffrés sont des adaptations originales pour Sylve ; ils ne reproduisent pas les statistiques de Mighty Party. Les règles retenues sont décrites dans [field.md](field.md).
+
 ## Trophées et ligues
 
 Onze nouveaux visuels originaux ont été créés avec **ImageGen intégré**, chacun par un appel distinct avec transparence : `apps/web/public/art/ui/trophy.webp` et les dix écussons `apps/web/public/art/leagues/{iron,bronze,silver,gold,platinum,emerald,diamond,master,grandmaster,challenger}.webp`. Les images ont été encodées en WebP de 384 × 384 px avec alpha conservé. Le trophée est utilisé dans l’arène et les résultats ; les écussons figurent dans l’arène, l’atelier, les promotions et le parcours des ligues. Les chiffres romains IV, III, II et I sont superposés en HTML par `LeagueBadge`, sur la plaque sombre de l’illustration. Les trois dernières ligues de prestige portent I.

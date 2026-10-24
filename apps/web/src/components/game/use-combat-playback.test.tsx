@@ -21,6 +21,7 @@ function summonViews() {
     ],
     0,
     () => 0.25,
+    { field: false },
   );
   const card = state.players[0]!.cards[0]!;
   const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
@@ -40,6 +41,30 @@ function summonViews() {
 }
 
 describe("réactivité du placement", () => {
+  it("consumes a pentagram at the ability impact and shows its attack bonus before combat", () => {
+    vi.useFakeTimers();
+    const state = createGame([
+      { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
+      { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+    ], 0, () => 0.25, { field: false });
+    const owner = state.players[0]!;
+    owner.pentagrams = [{ row: 0, depth: 0, attack: 2 }];
+    const card = owner.cards[0]!;
+    const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
+    const transition = summon(state, 0, card.id, 0, 0, 1, 1, () => 0.25);
+    const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
+    const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), { initialProps: { view: initial } });
+    rerender({ view: confirmed });
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon + COMBAT_TIMING.abilityImpact - 1));
+    expect(result.current.display!.players[0]!.pentagrams).toHaveLength(1);
+    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack);
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.display!.players[0]!.pentagrams).toEqual([]);
+    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack + 2);
+    expect(result.current.display!.players[1]!.heroHp).toBe(30);
+    act(() => vi.runAllTimers());
+    expect(result.current.display).toEqual(confirmed);
+  });
   it("renders a summon at the start of its animation and keeps damage at impact", () => {
     vi.useFakeTimers();
     const { initial, confirmed, card } = summonViews();
@@ -128,6 +153,7 @@ describe("animations des créatures répétées", () => {
       ],
       0,
       () => 0.25,
+      { field: false },
     );
     const initial = {
       ...playerView(state, "alice"),
@@ -172,6 +198,7 @@ describe("animations des créatures répétées", () => {
       ],
       0,
       () => 0.25,
+      { field: false },
     );
     state.players[0]!.board = [
       { cardId: "guardian:common", row: 0, depth: 0, hp: 8 },
@@ -215,6 +242,7 @@ describe("animations des créatures répétées", () => {
       ],
       0,
       () => 0.25,
+      { field: false },
     );
     state.players[1]!.board = [
       { cardId: "guardian:common", row: 0, depth: 0, hp: 2 },

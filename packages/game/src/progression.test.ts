@@ -90,6 +90,7 @@ describe("variantes et progression", () => {
         ],
         0,
         random,
+        { field: false },
       );
       for (let i = 0; i < 250 && state.status === "active"; i++) {
         const player = state.players[state.activePlayer]!;

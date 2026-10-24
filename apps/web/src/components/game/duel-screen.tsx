@@ -5,6 +5,7 @@ import {
   DECK_SIZE,
   MIN_DECK_SIZE,
   HAND_SIZE,
+  FIELD_BUILDINGS,
   isDeploymentDepth,
   legalPlacements,
   type CardDefinition,
@@ -138,6 +139,7 @@ export function DuelScreen({
     display.players
       .flatMap((player) => player.board)
       .find((unit) => unit.cardId === id)?.card.name ??
+    Object.values(FIELD_BUILDINGS).find((card) => card.id === id)?.name ??
     data.events.find((e) => e.cardId === id && e.unit?.definition)?.unit
       ?.definition?.name ??
     "une créature";
@@ -359,6 +361,9 @@ export function DuelScreen({
           });
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
+        onInspectField={(kind, playerIndex, row, depth) =>
+          inspect({ type: "field", kind, playerIndex, position: { row, depth } })
+        }
       />
       <section className="hand-area" aria-label="Ta main">
         <button
@@ -604,6 +609,15 @@ export function DuelScreen({
           Les bâtiments occupent une case de n’importe quelle colonne et
           n’attaquent pas. Les capacités actives sur la fiche de chaque carte
           peuvent soigner, renforcer, protéger ou invoquer des renforts.
+        </p>
+        <p>
+          Au début du combat, les deux camps reçoivent le même terrain, avec
+          deux bâtiments neutres, une rune de vie (+3 PV) et un pentagramme de
+          puissance (+2 attaque). Les bâtiments bloquent leur case et doivent
+          être détruits ; ils ne peuvent pas être retirés. Les sceaux sont
+          consommés par la prochaine unité qui apparaît dessus, après ses
+          capacités d’arrivée. Leur bonus dure tant que cette unité reste en jeu.
+          Sélectionne un bâtiment ou un sceau pour voir ses effets.
         </p>
         <p>
           Pas de déplacement. Ton deck contient de {MIN_DECK_SIZE} à {DECK_SIZE}{" "}

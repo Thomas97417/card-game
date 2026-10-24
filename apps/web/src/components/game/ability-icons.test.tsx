@@ -165,6 +165,7 @@ describe("icônes des capacités et états", () => {
       ],
       0,
       () => 0.25,
+      { field: false },
     );
     state.players[0]!.board = [
       { cardId: "guardian:common", row: 0, depth: 0, hp: 8 },
@@ -200,6 +201,7 @@ describe("icônes des capacités et états", () => {
             onPlace={() => {}}
             onInspectUnit={() => {}}
             onInspectHero={() => {}}
+            onInspectField={() => {}}
           />
         )
       );

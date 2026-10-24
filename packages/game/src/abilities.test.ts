@@ -27,6 +27,7 @@ function fresh(levels: Record<string, number> = {}) {
     ],
     0,
     random,
+    { field: false },
   );
 }
 function put(
