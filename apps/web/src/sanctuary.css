@@ -566,20 +566,33 @@
 }
 /* The same neutral back conceals every reward until the player turns it. */
 .game-dialog.summon-reveal-dialog[data-slot="dialog-content"] {
-  width: min(880px, calc(100vw - 32px));
+  width: min(1180px, calc(100vw - 48px));
+  height: min(880px, calc(100svh - 48px));
+  max-height: calc(100svh - 48px);
   background:
     radial-gradient(ellipse at 50% 48%, #36543a77, transparent 65%),
     linear-gradient(145deg, #203e30, #0e251e 85%);
 }
 .summon-reveal-dialog > [data-slot="dialog-body"] {
-  padding: 22px 30px 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  padding: 26px 32px 20px;
+}
+.summon-reveal-dialog [data-slot="dialog-close"] {
+  top: 24px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
 }
 .summon-reveal-heading {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-right: 34px;
+  padding-right: 46px;
 }
 .summon-reveal-eyebrow {
   color: #d6bd83;
@@ -589,7 +602,7 @@
 }
 .summon-reveal-dialog [data-slot="dialog-title"] {
   padding: 3px 0 0;
-  font-size: clamp(22px, 3.5vw, 30px);
+  font-size: clamp(22px, 3.5vw, 34px);
 }
 .summon-round-counter {
   flex-shrink: 0;
@@ -599,10 +612,11 @@
 }
 .summon-circle-stage {
   position: relative;
-  width: min(740px, 100%);
-  height: min(540px, calc(100svh - 250px));
-  min-height: 430px;
-  margin: 8px auto 0;
+  flex: 1;
+  width: min(1040px, 100%);
+  min-height: 360px;
+  margin: 12px auto 0;
+  container-type: size;
   isolation: isolate;
 }
 .summon-circle-ring {
@@ -632,13 +646,13 @@
 }
 .summon-circle {
   position: absolute;
-  inset: 0;
+  inset: 12px 0 26px;
 }
 .summon-circle-slot {
   position: absolute;
   left: var(--card-x);
   top: var(--card-y);
-  width: clamp(72px, 17vw, 126px);
+  width: min(180px, 18cqw, 28cqh);
   aspect-ratio: 5 / 7;
   transform: translate(-50%, -50%);
   container-type: inline-size;
@@ -699,39 +713,39 @@
   right: -5px;
 }
 .summon-card-front .workshop-card .stat-badge {
-  width: clamp(20px, 24cqw, 32px);
-  height: clamp(20px, 24cqw, 32px);
+  width: clamp(20px, 24cqw, 42px);
+  height: clamp(20px, 24cqw, 42px);
 }
 .summon-card-front .workshop-card .stat-badge strong {
-  font-size: clamp(12px, 16cqw, 19px);
+  font-size: clamp(12px, 16cqw, 26px);
 }
 .summon-card-front .workshop-card-name {
-  font-size: clamp(8px, 9cqw, 12px);
+  font-size: clamp(8px, 9cqw, 16px);
 }
 .summon-card-front .workshop-card-caption {
-  padding: 15px 3px 7px;
-  gap: 3px;
+  padding: 15px clamp(3px, 4cqw, 7px) clamp(7px, 7cqw, 12px);
+  gap: clamp(3px, 3cqw, 5px);
 }
 .summon-card-front .workshop-card-abilities {
-  --ability-size: clamp(13px, 15cqw, 19px);
-  top: 26px;
+  --ability-size: clamp(13px, 15cqw, 26px);
+  top: clamp(26px, 21cqw, 38px);
   left: 3px;
 }
 .summon-card-front .card-level {
   top: 5px;
   padding: 2px 4px;
-  font-size: 7px;
+  font-size: clamp(7px, 5.5cqw, 10px);
 }
 .summon-card-front .workshop-card-type,
 .summon-card-front .workshop-copies {
-  font-size: 7px;
+  font-size: clamp(7px, 5.5cqw, 10px);
 }
 .summon-gold-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: clamp(7px, 6cqw, 11px);
   width: 100%;
   height: 100%;
   padding: 10px 5px;
@@ -746,7 +760,7 @@
     0 5px 12px #0005;
 }
 .summon-gold-eyebrow {
-  font-size: clamp(5px, 6cqw, 8px);
+  font-size: clamp(5px, 6cqw, 10px);
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -755,11 +769,11 @@
   height: auto;
 }
 .summon-gold-card strong {
-  font-size: clamp(15px, 20cqw, 24px);
+  font-size: clamp(15px, 20cqw, 34px);
   font-variant-numeric: tabular-nums;
 }
 .summon-gold-card > span:last-child {
-  font-size: clamp(7px, 8cqw, 10px);
+  font-size: clamp(7px, 8cqw, 12px);
 }
 .summon-reward-caption {
   position: absolute;
@@ -777,11 +791,11 @@
 }
 .summon-reward-caption .rarity-label {
   margin: 0;
-  font-size: 8px;
+  font-size: clamp(8px, 6cqw, 10px);
   letter-spacing: 0.6px;
 }
 .summon-reward-caption small {
-  font-size: 9px;
+  font-size: clamp(9px, 6cqw, 11px);
   white-space: nowrap;
 }
 .summon-reward-caption .summon-new {
@@ -796,7 +810,7 @@
   flex-direction: column;
   align-items: center;
   gap: 9px;
-  width: min(220px, 44%);
+  width: min(240px, 40%);
   text-align: center;
   color: #e0cb94;
 }
@@ -842,6 +856,7 @@
 }
 .summon-reveal-actions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -875,6 +890,20 @@
 @media (min-width: 900px) and (min-height: 850px) {
   .summon-pack {
     padding-block: 24px 20px;
+  }
+}
+@media (max-width: 600px) {
+  .game-dialog.summon-reveal-dialog[data-slot="dialog-content"] {
+    width: calc(100vw - 16px);
+    height: calc(100svh - 24px);
+    max-height: calc(100svh - 24px);
+    border-radius: 12px;
+  }
+}
+@media (max-height: 600px) and (min-width: 601px) {
+  .game-dialog.summon-reveal-dialog[data-slot="dialog-content"] {
+    height: calc(100svh - 16px);
+    max-height: calc(100svh - 16px);
   }
 }
 @media (max-width: 760px) {
@@ -945,9 +974,6 @@
   .summon-button-label {
     font-size: 12px;
   }
-  .game-dialog.summon-reveal-dialog[data-slot="dialog-content"] {
-    width: calc(100vw - 16px);
-  }
   .summon-reveal-dialog > [data-slot="dialog-body"] {
     padding: 18px 10px 12px;
   }
@@ -962,10 +988,11 @@
     right: 12px;
   }
   .summon-circle-stage {
+    min-height: 430px;
     margin-top: 4px;
   }
   .summon-circle-slot {
-    width: clamp(66px, 20vw, 100px);
+    width: min(112px, 25cqw, 19cqh);
   }
   .summon-card-front .workshop-card-type,
   .summon-card-front .workshop-copies {

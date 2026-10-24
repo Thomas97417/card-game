@@ -188,7 +188,7 @@ export function SummonRevealDialog({
                       style={
                         {
                           "--card-x": `${50 + Math.cos(angle) * 37}%`,
-                          "--card-y": `${50 + Math.sin(angle) * 39}%`,
+                          "--card-y": `${50 + Math.sin(angle) * 34}%`,
                         } as CSSProperties
                       }
                     >
