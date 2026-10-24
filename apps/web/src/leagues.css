@@ -328,7 +328,7 @@
 }
 .workshop-header .league-panel.is-compact,
 .workshop-header .currency-balances .gold-balance,
-.workshop-header .currency-balances .diamond-balance {
+.workshop-header .currency-balances .emerald-balance {
   height: var(--workshop-status-height);
   min-height: var(--workshop-status-height);
 }
@@ -452,17 +452,17 @@
     gap: 4px;
   }
   .workshop-header .currency-balances .gold-balance,
-  .workshop-header .currency-balances .diamond-balance {
+  .workshop-header .currency-balances .emerald-balance {
     min-height: 32px;
     padding: 2px 8px 2px 3px;
     font-size: 11px;
   }
   .workshop-header .currency-balances .gold-amount,
-  .workshop-header .currency-balances .diamond-amount {
+  .workshop-header .currency-balances .emerald-amount {
     gap: 3px;
   }
   .workshop-header .currency-balances .gold-icon,
-  .workshop-header .currency-balances .diamond-icon {
+  .workshop-header .currency-balances .emerald-icon {
     width: 25px;
     height: 25px;
   }

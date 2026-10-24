@@ -272,7 +272,7 @@ describe("sanctuaire autoritaire", () => {
         count: 10,
         requestId: requestId(3),
       }),
-    ).rejects.toThrow("assez de diamants");
+    ).rejects.toThrow("assez d’émeraudes");
     expect(await alice.client.query(api.collection.list, {})).toEqual(before);
     expect(await alice.client.query(api.collection.gold, {})).toBe(0);
     expect(await bob.client.query(api.collection.diamonds, {})).toBe(0);

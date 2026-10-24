@@ -9,11 +9,12 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { showGameError } from "@/components/game/shared";
 
-export const DiamondContext = createContext<number | null | undefined>(null);
+export const EmeraldContext = createContext<number | null | undefined>(null);
 
-export function DiamondProvider({ children }: { children: ReactNode }) {
+export function EmeraldProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useConvexAuth();
-  const diamonds = useQuery(
+  // Retain the existing wallet endpoint so players keep their currency balance.
+  const emeralds = useQuery(
     api.collection.diamonds,
     isAuthenticated ? {} : "skip",
   );
@@ -34,23 +35,23 @@ export function DiamondProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, ensureWallet]);
   return (
-    <DiamondContext.Provider
-      value={isAuthenticated ? (ready ? diamonds : undefined) : null}
+    <EmeraldContext.Provider
+      value={isAuthenticated ? (ready ? emeralds : undefined) : null}
     >
       {children}
-    </DiamondContext.Provider>
+    </EmeraldContext.Provider>
   );
 }
 
-export function useDiamondBalance() {
-  return useContext(DiamondContext);
+export function useEmeraldBalance() {
+  return useContext(EmeraldContext);
 }
 
-export function DiamondIcon({ className = "" }: { className?: string }) {
+export function EmeraldIcon({ className = "" }: { className?: string }) {
   return (
     <img
-      className={`diamond-icon ${className}`}
-      src="/art/ui/diamonds.webp"
+      className={`emerald-icon ${className}`}
+      src="/art/ui/emerald.webp"
       alt=""
       aria-hidden="true"
       width={40}
@@ -60,33 +61,33 @@ export function DiamondIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export function DiamondAmount({ amount }: { amount: number }) {
+export function EmeraldAmount({ amount }: { amount: number }) {
   return (
-    <span className="diamond-amount">
-      <DiamondIcon />
+    <span className="emerald-amount">
+      <EmeraldIcon />
       <span>{amount.toLocaleString("fr-FR")}</span>
-      <span className="sr-only">diamants</span>
+      <span className="sr-only">émeraudes</span>
     </span>
   );
 }
 
-export function DiamondBalance() {
-  const diamonds = useDiamondBalance();
-  if (diamonds === null) return null;
+export function EmeraldBalance() {
+  const emeralds = useEmeraldBalance();
+  if (emeralds === null) return null;
   return (
     <div
-      className="diamond-balance"
+      className="emerald-balance"
       role="status"
-      aria-label="Solde de diamants"
+      aria-label="Solde d’émeraudes"
     >
-      {diamonds === undefined ? (
+      {emeralds === undefined ? (
         <>
-          <DiamondIcon />
+          <EmeraldIcon />
           <span aria-hidden="true">—</span>
-          <span className="sr-only">Chargement des diamants…</span>
+          <span className="sr-only">Chargement des émeraudes…</span>
         </>
       ) : (
-        <DiamondAmount amount={diamonds} />
+        <EmeraldAmount amount={emeralds} />
       )}
     </div>
   );
