@@ -516,7 +516,7 @@ function PackChoice({
     ? ["legendary", "legendary", "legendary"]
     : premium
       ? ["epic", "legendary", "epic"]
-      : ["common", "rare", "legendary", "epic"];
+      : ["rare", "legendary", "epic"];
   return (
     <article
       className={`summon-pack ${premium ? "summon-pack-premium" : ""} ${divine ? "summon-pack-divine" : ""}`}

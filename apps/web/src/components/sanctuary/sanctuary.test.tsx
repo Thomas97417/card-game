@@ -192,6 +192,14 @@ describe("le sanctuaire", () => {
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();
     expect(screen.getByText("2 %")).toBeTruthy();
+    const sylve = screen.getByRole("article", { name: "Appel de la Sylve" });
+    expect(within(sylve).getByText("82 %")).toBeTruthy();
+    expect(within(sylve).getByText("16 %")).toBeTruthy();
+    expect(within(sylve).queryByText("Commune")).toBeNull();
+    expect(within(sylve).getByText("×30")).toBeTruthy();
+    expect(within(sylve).getByText("×20")).toBeTruthy();
+    expect(within(sylve).getByText("×10")).toBeTruthy();
+    expect(sylve.querySelector('img[src*="rarity-common"]')).toBeNull();
     expect(screen.getByText("54 %")).toBeTruthy();
     expect(screen.getByText("46 %")).toBeTruthy();
     expect(screen.getByText("×30–33 ou ×60–63")).toBeTruthy();
@@ -418,6 +426,10 @@ describe("le sanctuaire", () => {
       count: 1,
       requestId: "saved-summon-request",
     });
+    latest.reveals = latest.reveals.map((item) => ({
+      ...item,
+      variantId: `${CATALOG[0]!.id}:common`,
+    }));
     const card = variantCard(CATALOG[0]!.id, "common", 2);
     const { onUpgrade } = setup({
       latest,
@@ -447,7 +459,7 @@ describe("le sanctuaire", () => {
     fireEvent.click(purchase("Sylve", 10));
     const reveal = await screen.findByRole("dialog");
     turnAll(reveal);
-    const card = resolveCard(`${CATALOG[0]!.id}:common`);
+    const card = resolveCard(`${CATALOG[0]!.id}:rare`);
     fireEvent.click(
       within(reveal).getAllByRole("button", {
         name: new RegExp(`^${card.name},`),

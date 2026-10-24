@@ -320,6 +320,12 @@ describe("sanctuaire autoritaire", () => {
         )
         .unique())!;
       await ctx.db.patch(card._id, { level: 4, copies: 12 });
+      await ctx.db.insert("collection", {
+        ownerId: userId,
+        variantId: "guardian:rare",
+        level: 4,
+        copies: 12,
+      });
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
     const request = {
@@ -333,11 +339,21 @@ describe("sanctuaire autoritaire", () => {
     ]);
     expect(results[0]).toEqual(results[1]);
     expect(results[0]!.reveals[0]).toMatchObject({
-      variantId: "guardian:common",
+      variantId: "guardian:rare",
       isNew: false,
       level: 4,
-      copies: 32,
+      copies: 42,
     });
+    expect(
+      (await client.query(api.collection.list, {})).find(
+        (entry) => entry.card.id === "guardian:common",
+      ),
+    ).toMatchObject({ copies: 12, card: { level: 4 } });
+    expect(
+      results[0]!.reveals.every(
+        (item) => item.variantId.endsWith(":rare") && item.count === 30,
+      ),
+    ).toBe(true);
     expect(await client.query(api.collection.diamonds, {})).toBe(
       WELCOME_DIAMONDS - 149,
     );
@@ -352,37 +368,43 @@ describe("sanctuaire autoritaire", () => {
     ).rejects.toThrow("autre pack");
   });
 
-  it("uses peak league quantities after demotion and freezes the retried result after promotion", async () => {
-    const t = setup();
-    const { client, userId } = await player(t, "alice");
-    const progressId = await t.run((ctx) =>
-      ctx.db.insert("leagueProgress", {
-        ownerId: userId,
-        trophies: 0,
-        peakTrophies: 2400,
-      }),
-    );
-    await t.run((ctx) =>
-      ctx.db.insert("wallets", { ownerId: userId, gold: 0, diamonds: 10000 }),
-    );
-    vi.spyOn(Math, "random").mockReturnValue(0);
-    const request = {
-      packId: "ancients" as const,
-      count: 1 as const,
-      requestId: requestId(1),
-    };
-    const result = await client.mutation(api.sanctuary.summon, request);
-    expect(result.reveals.map((item) => item.count)).toEqual([
-      140, 140, 70, 70, 70,
-    ]);
-    await t.run((ctx) =>
-      ctx.db.patch(progressId, { trophies: 6000, peakTrophies: 6000 }),
-    );
-    expect(await client.mutation(api.sanctuary.summon, request)).toEqual(
-      result,
-    );
-    expect(await client.query(api.collection.diamonds, {})).toBe(10000 - 4999);
-  });
+  it.each([
+    { packId: "sylve", expected: [46, 46, 46, 46, 46], price: 149 },
+    { packId: "ancients", expected: [140, 140, 70, 70, 70], price: 4999 },
+  ] as const)(
+    "uses $packId peak league quantities after demotion and freezes the retried result after promotion",
+    async ({ packId, expected, price }) => {
+      const t = setup();
+      const { client, userId } = await player(t, "alice");
+      const progressId = await t.run((ctx) =>
+        ctx.db.insert("leagueProgress", {
+          ownerId: userId,
+          trophies: 0,
+          peakTrophies: 2400,
+        }),
+      );
+      await t.run((ctx) =>
+        ctx.db.insert("wallets", { ownerId: userId, gold: 0, diamonds: 10000 }),
+      );
+      vi.spyOn(Math, "random").mockReturnValue(0);
+      const request = {
+        packId,
+        count: 1 as const,
+        requestId: requestId(1),
+      };
+      const result = await client.mutation(api.sanctuary.summon, request);
+      expect(result.reveals.map((item) => item.count)).toEqual(expected);
+      await t.run((ctx) =>
+        ctx.db.patch(progressId, { trophies: 6000, peakTrophies: 6000 }),
+      );
+      expect(await client.mutation(api.sanctuary.summon, request)).toEqual(
+        result,
+      );
+      expect(await client.query(api.collection.diamonds, {})).toBe(
+        10000 - price,
+      );
+    },
+  );
 
   it.each([1, 10] as const)(
     "credits the Sylve gold bonus once with %s summons, including concurrent retries",
@@ -485,7 +507,13 @@ describe("sanctuaire autoritaire", () => {
       packId: "sylve" as const,
       count: 1 as const,
       cost: 149,
-      reveals: [],
+      reveals: Array.from({ length: 5 }, (_, index) => ({
+        variantId: "guardian:common",
+        count: 20,
+        copies: 20 * (index + 1),
+        level: 1,
+        isNew: index === 0,
+      })),
     };
     await t.run(async (ctx) => {
       await ctx.db.insert("wallets", {

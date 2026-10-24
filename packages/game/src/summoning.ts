@@ -3,6 +3,7 @@ import type { LootReveal, LootStack } from "./progression";
 import { leagueAt } from "./leagues";
 import { rewardLeague, rewardRow, rollReward } from "./reward-tables";
 import ancientsReference from "./data/ancients-summoning.json";
+import sylveReference from "./data/sylve-summoning.json";
 
 export const WELCOME_DIAMONDS = 3_000;
 export type SummonPackId = "sylve" | "ancients" | "divine";
@@ -31,13 +32,13 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     enabled: true,
     name: "Appel de la Sylve",
     description:
-      "Cinq compagnons de toutes les raretés et une carte d’or en bonus.",
+      "Cinq compagnons rares, épiques ou légendaires et une carte d’or en bonus.",
     price: 149,
     tenPrice: 1_299,
     repeatPrices: [139, 129],
     repeatTenPrices: [1_149, 999],
     guaranteedLegendaries: 1,
-    rates: { common: 65, rare: 25, epic: 8, legendary: 2 },
+    rates: { common: 0, rare: 82, epic: 16, legendary: 2 },
   },
   {
     id: "ancients",
@@ -194,6 +195,16 @@ export function summonQuantity(
   peakTrophies = 0,
   legendarySize: 1 | 2 = 1,
 ) {
+  if (summonPack(id).rates[rarity] === 0)
+    throw new Error("Rareté absente de cette invocation.");
+  if (id === "sylve") {
+    const row =
+      sylveReference.leagues[
+        rewardLeague(peakTrophies) as keyof typeof sylveReference.leagues
+      ];
+    const range = row[RARITIES.indexOf(rarity) - 1]!;
+    return { min: range[0]!, max: range[1] ?? range[0]! };
+  }
   if (id === "ancients") {
     if (rarity !== "epic" && rarity !== "legendary")
       throw new Error("Rareté absente de cette invocation.");
@@ -204,15 +215,7 @@ export function summonQuantity(
     const range = row[rarity === "epic" ? 0 : legendarySize]!;
     return { min: range[0]!, max: range[1]! };
   }
-  const common = rarity === "common";
-  const column = id === "divine" || common ? 0 : RARITIES.indexOf(rarity) - 1;
-  const row = rewardRow(
-    id === "divine" ? "gods" : common ? "mercenaries" : "demigods",
-    peakTrophies,
-  );
-  const range = row[column];
-  if (!range || summonPack(id).rates[rarity] === 0)
-    throw new Error("Rareté absente de cette invocation.");
+  const range = rewardRow("gods", peakTrophies)[0]!;
   return { min: range[0]!, max: range[1] ?? range[0]! };
 }
 

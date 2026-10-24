@@ -14,16 +14,14 @@ import {
 
 describe("invocations du sanctuaire", () => {
   it.each([
-    ["sylve", 0, "common", 20],
-    ["sylve", 0.649999, "common", 20],
-    ["sylve", 0.65, "rare", 30],
-    ["sylve", 0.899999, "rare", 30],
-    ["sylve", 0.9, "epic", 20],
+    ["sylve", 0, "rare", 30],
+    ["sylve", 0.819999, "rare", 30],
+    ["sylve", 0.82, "epic", 20],
     ["sylve", 0.979999, "epic", 20],
     ["sylve", 0.98, "legendary", 10],
     ["sylve", 0.999999, "legendary", 10],
   ] as const)(
-    "restores %s boundary %s with league quantities",
+    "applies %s rarity boundary %s with the new league quantities",
     (packId, roll, rarity, count) => {
       let call = 0;
       const loot = summonLoot(packId, 1, () => (call++ === 0 ? roll : 0));
@@ -39,7 +37,7 @@ describe("invocations du sanctuaire", () => {
     for (const trophies of [0, 2000, 6000]) {
       expect(
         summonLoot("sylve", 1, () => 0, trophies).every((item) =>
-          item.variantId.endsWith(":common"),
+          item.variantId.endsWith(":rare"),
         ),
       ).toBe(true);
       expect(
@@ -79,7 +77,9 @@ describe("invocations du sanctuaire", () => {
           (item) =>
             (pack.id === "ancients"
               ? item.count >= 150 && item.count <= 159
-              : item.count === 1000) ||
+              : pack.id === "sylve"
+                ? item.count >= 25 && item.count <= 27
+                : item.count === 1000) ||
             (pack.id === "divine" && item.count === 2000),
         ),
       ).toBe(true);
@@ -114,14 +114,12 @@ describe("invocations du sanctuaire", () => {
       "sylve",
       "ancients",
     ]);
-    expect(summonQuantity("sylve", "common", 0)).toEqual({ min: 20, max: 23 });
-    expect(summonQuantity("sylve", "common", 6000)).toEqual({
-      min: 1800,
-      max: 1800,
-    });
+    expect(() => summonQuantity("sylve", "common", 0)).toThrow(
+      "Rareté absente",
+    );
     expect(summonQuantity("sylve", "rare", 6000)).toEqual({
-      min: 1400,
-      max: 1400,
+      min: 66,
+      max: 70,
     });
     expect(summonQuantity("ancients", "legendary", 2400)).toEqual({
       min: 70,
@@ -129,6 +127,46 @@ describe("invocations du sanctuaire", () => {
     });
     expect(() => summonQuantity("ancients", "common")).toThrow();
   });
+
+  it.each([
+    [0, [30, 30], [20, 20], [10, 10]],
+    [400, [32, 32], [22, 22], [10, 10]],
+    [1800, [42, 44], [25, 26], [15, 15]],
+    [2000, [43, 45], [26, 27], [15, 15]],
+    [5200, [63, 67], [34, 38], [22, 23]],
+    [5800, [66, 70], [35, 39], [25, 27]],
+    [6000, [66, 70], [35, 39], [25, 27]],
+  ] as const)(
+    "maps the supplied Sylve table to the peak division at %s trophies and rolls both range endpoints",
+    (trophies, rare, epic, legendary) => {
+      for (const [rarity, range, roll] of [
+        ["rare", rare, 0],
+        ["epic", epic, 0.82],
+        ["legendary", legendary, 0.98],
+      ] as const) {
+        expect(summonQuantity("sylve", rarity, trophies)).toEqual({
+          min: range[0],
+          max: range[1],
+        });
+        for (const endpoint of [0, 1] as const) {
+          let call = 0;
+          const loot = summonLoot(
+            "sylve",
+            1,
+            () => (call++ % 3 === 0 ? roll : endpoint === 0 ? 0 : 0.999999),
+            trophies,
+          );
+          expect(
+            loot.every(
+              (item) =>
+                item.variantId.endsWith(`:${rarity}`) &&
+                item.count === range[endpoint],
+            ),
+          ).toBe(true);
+        }
+      }
+    },
+  );
 
   it.each([1, 10] as const)(
     "guarantees two legendaries per Ancients round and limits boosted quantities to those stacks (x%s)",
@@ -278,7 +316,7 @@ describe("invocations du sanctuaire", () => {
       const values = [0, 0, (index + 0.5) / CATALOG.length];
       expect(
         summonLoot("sylve", 1, () => values.shift() ?? 0)[0]!.variantId,
-      ).toBe(`${base.id}:common`);
+      ).toBe(`${base.id}:rare`);
     }
     let seed = 42;
     const random = () =>

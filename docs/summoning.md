@@ -1,6 +1,12 @@
 # Invocations du sanctuaire
 
-Chaque nouvelle invocation disponible donne cinq lots de compagnons et une carte d’or. La Sylve conserve ses taux et quantités. L’Appel des anciens suit désormais les règles adaptées ci-dessous. L’Appel des divinités est temporairement masqué dans les offres et ses nouveaux achats sont bloqués côté serveur ; ses tirages déjà payés restent consultables et terminables. L’or est un sixième gain indépendant : entre `500 + 50 × indice de ligue` et `1 000 + 100 × indice de ligue`, selon le record de ligue (indice 0 à 30).
+Chaque nouvelle invocation disponible donne cinq lots de compagnons et une carte d’or. La Sylve et l’Appel des anciens suivent les règles adaptées ci-dessous. L’Appel des divinités est temporairement masqué dans les offres et ses nouveaux achats sont bloqués côté serveur ; ses tirages déjà payés restent consultables et terminables. L’or est un sixième gain indépendant : entre `500 + 50 × indice de ligue` et `1 000 + 100 × indice de ligue`, selon le record de ligue (indice 0 à 30).
+
+## Appel de la Sylve
+
+Les nouvelles invocations donnent 0 % de communes, 82 % de rares, 16 % d’épiques et 2 % de légendaires. Les [quantités par ligue](../packages/game/src/data/sylve-summoning.json) reprennent le tableau fourni en image le 25 octobre 2026. Le record de division correspond toujours aux ligues 30…1, GM. Par exemple, en Fer II : 32 exemplaires par lot rare, 22 par lot épique et 10 par lot légendaire ; au sommet : 66–70, 35–39 et 25–27 respectivement.
+
+Le lot ×10 conserve sa garantie d’au moins un légendaire : il ne remplace un lot existant que si aucun des cinquante lots n’est légendaire. Les taux indiqués s’appliquent aux tirages avant cette garantie. Le format de six cartes, la carte d’or et les paliers de prix restent identiques. Les récompenses enregistrées avant cette modification restent figées et leurs révélations peuvent être reprises.
 
 ## Appel des anciens
 
