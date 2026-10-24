@@ -22,6 +22,8 @@ import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
+import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import {
   Dialog,
   DialogClose,
@@ -69,6 +71,9 @@ export function Sanctuary({
   const [unlockedMessage, setUnlockedMessage] = useState<string | null>(null);
   const lock = useRef(false);
   const pending = useRef<SummonRequest | null>(null);
+  const offersRow = useRef<HTMLDivElement>(null);
+  const { isDragging, dragHandlers } = useHorizontalDrag(true);
+  useHorizontalWheel(offersRow);
   const previous = lastResult ?? latest;
 
   async function invoke(packId: SummonPackId, count: SummonCount) {
@@ -148,111 +153,116 @@ export function Sanctuary({
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
-          <section
-            className="summon-packs"
-            aria-label="Packs d’invocation"
-            aria-busy={!!busy}
+          <div
+            ref={offersRow}
+            className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}
+            role="region"
+            aria-label="Invocations et clés, défilement horizontal"
+            tabIndex={0}
+            {...dragHandlers}
           >
-            {SUMMON_PACKS.map((pack) => (
-              <PackChoice
-                key={pack.id}
-                pack={pack}
-                emeralds={emeralds}
-                ready={ready && busyKey === null}
-                busy={busy}
-                onInvoke={invoke}
-              />
-            ))}
-          </section>
-          <section
-            className="sanctuary-chest-keys"
-            id="chest-keys"
-            aria-labelledby="chest-keys-title"
-            aria-busy={busyKey !== null}
-          >
-            <div className="sanctuary-keys-heading">
-              <h2 id="chest-keys-title">Clés de coffre</h2>
-              <p>Plus de place pour tes trésors. Un déblocage pour toujours.</p>
-            </div>
-            <div className="sanctuary-key-grid">
-              {CHEST_SLOT_KEYS.map((key) => {
-                const owned =
-                  purchasedChestSlots.includes(key.slot) ||
-                  unlockedKeys.includes(key.slot);
-                const insufficient = emeralds != null && emeralds < key.price;
-                const working = busyKey === key.slot;
-                return (
-                  <article
-                    className={`sanctuary-key-card ${owned ? "is-owned" : ""}`}
-                    key={key.slot}
-                    aria-labelledby={`key-${key.slot}`}
-                  >
-                    <span className="sanctuary-key-tag">
-                      {owned ? "Acquis" : "Achat unique"}
-                    </span>
-                    <img
-                      className="sanctuary-key-art"
-                      src={key.image}
-                      alt=""
-                      width={512}
-                      height={512}
-                      draggable={false}
-                    />
-                    <div className="sanctuary-key-copy">
-                      <h3 id={`key-${key.slot}`}>{key.name}</h3>
-                      <p>
-                        Déverrouille l’emplacement de coffre{" "}
-                        {String(key.slot + 2).padStart(2, "0")}.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="sanctuary-key-button"
-                      disabled={
-                        !ready ||
-                        !!busy ||
-                        busyKey !== null ||
-                        emeralds == null ||
-                        insufficient ||
-                        owned
-                      }
-                      aria-label={
-                        owned
-                          ? `Emplacement ${key.slot + 2} déjà débloqué`
-                          : `Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`
-                      }
-                      title={
-                        !owned && insufficient
-                          ? `Il te manque ${(key.price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                          : undefined
-                      }
-                      onClick={() => void unlockSlot(key.slot)}
+            <section
+              className="summon-packs"
+              aria-label="Packs d’invocation"
+              aria-busy={!!busy}
+            >
+              {SUMMON_PACKS.map((pack) => (
+                <PackChoice
+                  key={pack.id}
+                  pack={pack}
+                  emeralds={emeralds}
+                  ready={ready && busyKey === null}
+                  busy={busy}
+                  onInvoke={invoke}
+                />
+              ))}
+            </section>
+            <section
+              className="sanctuary-chest-keys"
+              id="chest-keys"
+              aria-label="Clés de coffre"
+              aria-busy={busyKey !== null}
+            >
+              <div className="sanctuary-key-grid">
+                {CHEST_SLOT_KEYS.map((key) => {
+                  const owned =
+                    purchasedChestSlots.includes(key.slot) ||
+                    unlockedKeys.includes(key.slot);
+                  const insufficient = emeralds != null && emeralds < key.price;
+                  const working = busyKey === key.slot;
+                  return (
+                    <article
+                      className={`sanctuary-key-card ${owned ? "is-owned" : ""}`}
+                      key={key.slot}
+                      aria-labelledby={`key-${key.slot}`}
                     >
-                      {owned ? (
-                        <>
-                          <Check size={16} />
-                          Emplacement débloqué
-                        </>
-                      ) : (
-                        <>
-                          <span>
-                            {working ? (
-                              <LoaderCircle
-                                className="animate-spin"
-                                size={15}
-                              />
-                            ) : null}
-                            Déverrouiller
-                          </span>
-                          <EmeraldAmount amount={key.price} />
-                        </>
-                      )}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
+                      <span className="sanctuary-key-tag">
+                        {owned ? "Acquis" : "Achat unique"}
+                      </span>
+                      <img
+                        className="sanctuary-key-art"
+                        src={key.image}
+                        alt=""
+                        width={512}
+                        height={512}
+                        draggable={false}
+                      />
+                      <div className="sanctuary-key-copy">
+                        <h2 id={`key-${key.slot}`}>{key.name}</h2>
+                        <p>
+                          Déverrouille l’emplacement de coffre{" "}
+                          {String(key.slot + 2).padStart(2, "0")}.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="sanctuary-key-button"
+                        disabled={
+                          !ready ||
+                          !!busy ||
+                          busyKey !== null ||
+                          emeralds == null ||
+                          insufficient ||
+                          owned
+                        }
+                        aria-label={
+                          owned
+                            ? `Emplacement ${key.slot + 2} déjà débloqué`
+                            : `Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`
+                        }
+                        title={
+                          !owned && insufficient
+                            ? `Il te manque ${(key.price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                            : undefined
+                        }
+                        onClick={() => void unlockSlot(key.slot)}
+                      >
+                        {owned ? (
+                          <>
+                            <Check size={16} />
+                            Emplacement débloqué
+                          </>
+                        ) : (
+                          <>
+                            <span>
+                              {working ? (
+                                <LoaderCircle
+                                  className="animate-spin"
+                                  size={15}
+                                />
+                              ) : null}
+                              Déverrouiller
+                            </span>
+                            <EmeraldAmount amount={key.price} />
+                          </>
+                        )}
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
           <nav
             className="sanctuary-navigation"
             aria-label="Explorer le sanctuaire"
