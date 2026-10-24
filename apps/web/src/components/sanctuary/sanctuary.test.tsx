@@ -214,7 +214,9 @@ describe("le sanctuaire", () => {
         within(details).getByRole("region", { name: "Caractéristiques" }),
       ).toBeTruthy();
       expect(
-        within(details).queryByRole("complementary", { name: "Actions du deck" }),
+        within(details).queryByRole("complementary", {
+          name: "Actions du deck",
+        }),
       ).toBeNull();
       fireEvent.click(
         within(details).getByRole("button", { name: "Fermer la fenêtre" }),
@@ -309,13 +311,17 @@ describe("le sanctuaire", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
     const dialog = await screen.findByRole("dialog");
-    const rarity = within(dialog).getByRole("combobox", {
-      name: /Rareté de la carte/,
-    });
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Gardien de pierre",
+      }),
+    );
     const level = within(dialog).getByRole("combobox", {
       name: /Niveau de la carte/,
     });
-    fireEvent.change(rarity, { target: { value: "rare" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme rare/ }),
+    );
     expect(within(level).getAllByRole("option")).toHaveLength(31);
     expect(
       within(dialog).getByRole("heading", { name: "Gardien des runes" }),
@@ -326,12 +332,16 @@ describe("le sanctuaire", () => {
         .getAttribute("src"),
     ).toBe("/art/characters/evolutions/guardian-rare.webp");
     fireEvent.change(level, { target: { value: "31" } });
-    fireEvent.change(rarity, { target: { value: "epic" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme épique/ }),
+    );
     expect(
       within(dialog).getByRole("heading", { name: "Colosse du serment" }),
     ).toBeTruthy();
     expect((level as HTMLSelectElement).value).toBe("31");
-    fireEvent.change(rarity, { target: { value: "common" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Voir la forme commune/ }),
+    );
     expect((level as HTMLSelectElement).value).toBe("26");
     expect(
       within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
@@ -344,10 +354,15 @@ describe("le sanctuaire", () => {
     const rarity = within(dialog).getByRole("combobox", {
       name: /Rareté de la carte/,
     });
+    fireEvent.change(rarity, { target: { value: "legendary" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Gardien du serment éternel",
+      }),
+    );
     const level = within(dialog).getByRole("combobox", {
       name: /Niveau de la carte/,
     });
-    fireEvent.change(rarity, { target: { value: "legendary" } });
     expect(within(level).getAllByRole("option")).toHaveLength(31);
     expect(
       within(dialog).getByRole("heading", {
@@ -356,18 +371,31 @@ describe("le sanctuaire", () => {
     ).toBeTruthy();
     fireEvent.change(level, { target: { value: "31" } });
     fireEvent.click(
+      within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
+    );
+    fireEvent.click(
       within(dialog).getByRole("button", {
         name: "Découvrir Totem de l’aurore",
       }),
     );
-    expect((level as HTMLSelectElement).value).toBe("26");
-    expect(within(level).getAllByRole("option")).toHaveLength(26);
+    const buildingLevel = within(dialog).getByRole("combobox", {
+      name: "Niveau de la carte",
+    });
+    expect((buildingLevel as HTMLSelectElement).value).toBe("26");
+    expect(within(buildingLevel).getAllByRole("option")).toHaveLength(26);
     expect(within(dialog).getByText(/Création Sylve/)).toBeTruthy();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
+    );
     fireEvent.click(
       within(dialog).getByRole("button", {
         name: "Découvrir Gardien du serment éternel",
       }),
     );
-    expect(within(level).getAllByRole("option")).toHaveLength(31);
+    expect(
+      within(
+        within(dialog).getByRole("combobox", { name: "Niveau de la carte" }),
+      ).getAllByRole("option"),
+    ).toHaveLength(31);
   });
 });

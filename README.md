@@ -38,6 +38,8 @@ Une invocation donne un exemplaire d’une variante. Le premier la débloque ; l
 
 Le serveur vérifie les émeraudes, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
 
+Le bestiaire s’ouvre dans une galerie avec recherche par nom (y compris les noms des évolutions), filtres de combat et choix de rareté. Cliquer sur une carte ouvre sa fiche dans la même fenêtre : caractéristiques, capacités, exploration des niveaux et quatre formes de la lignée. Les flèches parcourent les créatures filtrées ; le retour à la galerie retrouve la recherche et la position de départ. Les formes de rareté restent des variantes à collectionner séparément.
+
 ### Collection et deck
 
 Le départ comprend quatre cartes **communes niveau 1** : Gardien de pierre, Tortue millénaire, Sentinelle mousse et Esprit des sources. Les **22 cartes** existent chacune en quatre raretés, soit **88 variantes indépendantes** : 11 créatures de mêlée, 9 à distance et 2 bâtiments. Les communes n’ont pas de contour de rareté ; les rares ont un contour bleu, les épiques violet et les légendaires doré.

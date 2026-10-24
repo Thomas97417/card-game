@@ -13,9 +13,11 @@ import { GameIcon } from "@/components/game/game-icon";
 export function CardArtwork({
   card,
   copies = 0,
+  showCopies = true,
 }: {
   card: CardDefinition;
   copies?: number;
+  showCopies?: boolean;
 }) {
   const type = getCombatType(card);
   return (
@@ -36,11 +38,13 @@ export function CardArtwork({
           <GameIcon kind={type} size={15} />
           {combatTypeLabel(card)}
         </span>
-        <span className="workshop-copies">
-          {(card.level ?? 1) >= maxCardLevel(card.rarity, card.baseId)
-            ? `${copies} · MAX`
-            : `${copies} / ${upgradeCost(card.level ?? 1, card.rarity)}`}
-        </span>
+        {showCopies && (
+          <span className="workshop-copies">
+            {(card.level ?? 1) >= maxCardLevel(card.rarity, card.baseId)
+              ? `${copies} · MAX`
+              : `${copies} / ${upgradeCost(card.level ?? 1, card.rarity)}`}
+          </span>
+        )}
       </span>
     </>
   );

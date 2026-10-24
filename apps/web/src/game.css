@@ -2167,26 +2167,6 @@ button:disabled {
   padding-top: 5px;
   border-top: 1px solid #b6c79e88;
 }
-.bestiary-level {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-  color: #52654b;
-  font-size: 12px;
-}
-.bestiary-level select {
-  padding: 5px 10px;
-  border: 1px solid #a9bb8e;
-  border-radius: 7px;
-  background: #fffdf4;
-  color: #304c37;
-}
-.bestiary-level > span {
-  font-size: 11px;
-  color: #7b8271;
-}
 .unit-statuses {
   position: absolute;
   top: 31px;
@@ -2484,10 +2464,6 @@ button:disabled {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-}
-.bestiary-card-abilities {
-  margin-top: 5px;
-  --ability-size: 20px;
 }
 .effect-word {
   font-size: 12px;
