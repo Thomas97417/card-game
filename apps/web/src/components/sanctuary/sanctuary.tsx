@@ -18,7 +18,7 @@ import {
   type SummonPackId,
   type SummonResult,
 } from "@sylve/game/summoning";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
@@ -144,37 +144,7 @@ export function Sanctuary({
         />
         <div className="sanctuary-shade" />
       </div>
-      <header className="sanctuary-header">
-        <Link
-          to="/hub"
-          className="workshop-back"
-          aria-label="Retour au refuge"
-          draggable={false}
-        >
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <div className="sanctuary-header-tools">
-          {previous && (
-            <button
-              type="button"
-              className="sanctuary-history-button"
-              aria-label="Dernière invocation"
-              title="Dernière invocation"
-              disabled={!!busy || busyKey !== null}
-              onClick={() => setResult(previous)}
-            >
-              <History size={17} />
-            </button>
-          )}
-          <CurrencyBalances />
-        </div>
-      </header>
+      <GameHeader />
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
@@ -287,6 +257,17 @@ export function Sanctuary({
             className="sanctuary-navigation"
             aria-label="Explorer le sanctuaire"
           >
+            {previous && (
+              <button
+                type="button"
+                className="sanctuary-text-button"
+                disabled={!!busy || busyKey !== null}
+                onClick={() => setResult(previous)}
+              >
+                <History size={17} />
+                Dernière invocation
+              </button>
+            )}
             <BestiaryDialog />
             <Link to="/decks" className="sanctuary-text-button">
               Ma collection

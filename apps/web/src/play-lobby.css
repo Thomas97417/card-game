@@ -36,21 +36,6 @@
     #120f0ce8
   );
 }
-.play-header {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 28px;
-  min-height: clamp(90px, 12svh, 135px);
-  padding: 16px clamp(20px, 3vw, 56px);
-}
-.play-header h1 {
-  font:
-    400 clamp(22px, 2.3vw, 35px)/1.15 Georgia,
-    serif;
-  letter-spacing: -0.6px;
-  text-shadow: 0 2px 10px #0a1b13;
-}
 .play-main {
   display: flex;
   justify-content: space-between;
@@ -130,9 +115,6 @@
   max-width: 490px;
   padding-block: 12px;
   text-shadow: 0 2px 8px #18291cb3;
-}
-.play-battles > .league-panel {
-  margin-bottom: 19px;
 }
 .play-eyebrow {
   display: block;
@@ -508,19 +490,6 @@
   background: #eff0e5;
 }
 @media (max-width: 760px) {
-  .play-header {
-    min-height: 88px;
-    padding: 14px 18px;
-    gap: 13px;
-  }
-  .play-header h1 {
-    max-width: 190px;
-    font-size: 22px;
-  }
-  .play-header .workshop-back {
-    width: 52px;
-    height: 42px;
-  }
   .play-main {
     min-height: 370px;
     gap: 12px;
@@ -638,10 +607,6 @@
   }
 }
 @media (max-height: 750px) and (min-width: 761px) {
-  .play-header {
-    min-height: 74px;
-    padding-block: 10px;
-  }
   .play-main {
     min-height: 330px;
     padding-bottom: 6px;

@@ -1,0 +1,13 @@
+{
+  "tool": "Built-in ImageGen",
+  "transparentBackground": false,
+  "assets": [
+    {
+      "path": "apps/web/public/art/guardian-house.webp",
+      "width": 1672,
+      "height": 941,
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16e7c-619b-7d42-bee9-c542102ace9b/exec-3f58555e-4a0d-446e-9f26-4b168f96e0d5.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: production full-screen background illustration for the account settings page inside the Maison des gardiens in Sylve, a premium hand-painted woodland fantasy card game.\nPrimary request: the welcoming interior of the guardians' forest house, a quiet personal retreat with ancient walnut timber arches, cream stone walls, brass lanterns, deep emerald accents and broad arched windows looking out into a misty enchanted woodland village.\nComposition/framing: wide 16:9 landscape, edge-to-edge scenic illustration. A spacious room seen from a slightly elevated, almost front-on camera. Architectural details and props stay on the outer edges: a cozy small stone fireplace with a warm ember glow at the far left, carved wooden shelves and a few closed green books at the extreme right, leafy window frames near the corners. The central 75 percent of the composition is calm, uncluttered and softly shadowed, with a broad dark walnut desk surface at the bottom and hazy emerald forest through windows behind it, providing a legible backdrop for HTML account panels. Do not paint interface panels or text. The upper 15 percent contains simple timber rafters and subtle shadows so the shared game header remains readable. Keep the atmosphere graceful and spacious.\nStyle/medium: polished painterly 2D storybook fantasy, rich natural wood grain, mossy stone, muted jade leaves, aged brass fittings. Same world as an isometric woodland guardian village and a lantern-lit card workshop. Soft honey light from the left and cool forest teal ambient shadows. Natural materials, fine painterly detail, premium cozy game atmosphere.\nConstraints: scenery only, opaque background. No people, no characters, no portraits, no cards, no interface, no panels, no buttons, no settings icons, no lettering, no numbers, no logos, no watermark, no modern technology. Deliver one continuous background landscape."
+    }
+  ]
+}

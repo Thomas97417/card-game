@@ -14,7 +14,8 @@ import {
   SettingsCardHeader,
 } from "./settings-card";
 import { Label } from "../ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserRound } from "lucide-react";
+import { settingsError } from "./settings-error";
 
 export default function UpdateNameCard({ name }: { name: string }) {
   const form = useForm({
@@ -24,23 +25,33 @@ export default function UpdateNameCard({ name }: { name: string }) {
         { name: value.name },
         {
           onSuccess: () => {
-            toast.success("Name updated successfully.");
+            toast.success("Ton nom de gardien a été enregistré.");
           },
           onError: (error) => {
-            toast.error(error.error.message);
+            toast.error(
+              settingsError(
+                error.error,
+                "Ton nom n’a pas pu être enregistré. Réessaie.",
+              ),
+            );
           },
         },
       );
     },
     validators: {
       onSubmit: z.object({
-        name: z.string().min(2, "Name must be at least 2 characters."),
+        name: z
+          .string()
+          .trim()
+          .min(2, "Le nom doit contenir au moins 2 caractères.")
+          .max(32, "Le nom ne peut pas dépasser 32 caractères."),
       }),
     },
   });
 
   return (
     <form
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -50,25 +61,32 @@ export default function UpdateNameCard({ name }: { name: string }) {
       <SettingsCard>
         <SettingsCardContent>
           <SettingsCardHeader
-            title="Your Name"
-            description="This is the name displayed on your profile."
+            icon={UserRound}
+            title="Nom de gardien"
+            description="Le nom que les autres gardiens voient dans le jeu."
           />
           <form.Field
             name="name"
             children={(field) => (
               <div className="flex flex-col gap-1">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="guardianName">Ton nom</Label>
                 <Input
-                  placeholder="Name"
-                  autoComplete="off"
+                  id="guardianName"
+                  placeholder="Ton nom de gardien"
+                  autoComplete="nickname"
+                  maxLength={32}
+                  aria-invalid={field.state.meta.errors.length > 0}
                   required
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  className="w-80 bg-transparent"
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
+                  <p
+                    key={error?.message}
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
                     {error?.message}
                   </p>
                 ))}
@@ -78,7 +96,7 @@ export default function UpdateNameCard({ name }: { name: string }) {
         </SettingsCardContent>
         <SettingsCardFooter>
           <p className="text-sm text-muted-foreground">
-            Please use 32 characters at maximum.
+            Entre 2 et 32 caractères.
           </p>
           <form.Subscribe>
             {(state) => (
@@ -88,9 +106,12 @@ export default function UpdateNameCard({ name }: { name: string }) {
                 disabled={!state.canSubmit || state.isSubmitting}
               >
                 {state.isSubmitting ? (
-                  <Loader2 className="animate-spin" />
+                  <>
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                    Enregistrement…
+                  </>
                 ) : (
-                  "Save"
+                  "Enregistrer"
                 )}
               </Button>
             )}

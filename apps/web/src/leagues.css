@@ -323,42 +323,6 @@
 .duel-league-reward.is-loss small {
   color: #dfc3aa;
 }
-.workshop-header .league-panel {
-  margin-left: auto;
-}
-.workshop-header .league-panel.is-compact,
-.workshop-header .currency-balances .gold-balance,
-.workshop-header .currency-balances .emerald-balance {
-  height: var(--workshop-status-height);
-  min-height: var(--workshop-status-height);
-}
-.workshop-header .league-panel > .league-badge {
-  width: calc(var(--workshop-status-height) - 8px) !important;
-  height: calc(var(--workshop-status-height) - 8px) !important;
-}
-.workshop-header .league-panel.is-compact .league-panel-heading {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-.workshop-header .league-panel.is-compact .league-panel-heading > strong {
-  font-size: 15px;
-}
-.workshop-header .league-panel .trophy-amount {
-  font-size: 11px;
-  line-height: 1;
-}
-.workshop-header .league-panel .trophy-icon {
-  width: 14px;
-  height: 14px;
-}
-.workshop-header .league-division {
-  font-size: 10px;
-}
-.workshop-header .league-panel + .currency-balances {
-  margin-left: 0;
-  flex-shrink: 0;
-}
 .workshop-locked-slot {
   position: relative;
   display: flex;
@@ -404,89 +368,6 @@
   }
   .league-panel {
     gap: 6px;
-  }
-  .play-battles .league-panel {
-    padding: 8px;
-  }
-  .play-battles .league-panel > .league-badge {
-    width: 52px !important;
-    height: 52px !important;
-  }
-  .play-battles .league-panel-heading {
-    gap: 6px;
-  }
-  .play-battles .league-panel-heading > strong {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 18px;
-  }
-  .play-battles .league-panel .trophy-icon {
-    width: 21px;
-    height: 21px;
-  }
-  .play-battles .league-panel .trophy-amount {
-    gap: 3px;
-    font-size: 12px;
-  }
-  .play-battles .league-panel-next {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 9px;
-    line-height: 1.5;
-  }
-  .play-battles .league-division {
-    font-size: 11px;
-  }
-  .workshop-header {
-    --workshop-status-height: 32px;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 10px;
-    padding-block: 12px;
-  }
-  .workshop-header .currency-balances {
-    flex-direction: column;
-    gap: 4px;
-  }
-  .workshop-header .currency-balances .gold-balance,
-  .workshop-header .currency-balances .emerald-balance {
-    min-height: 32px;
-    padding: 2px 8px 2px 3px;
-    font-size: 11px;
-  }
-  .workshop-header .currency-balances .gold-amount,
-  .workshop-header .currency-balances .emerald-amount {
-    gap: 3px;
-  }
-  .workshop-header .currency-balances .gold-icon,
-  .workshop-header .currency-balances .emerald-icon {
-    width: 25px;
-    height: 25px;
-  }
-  .workshop-header .league-panel {
-    padding-right: 5px;
-  }
-  .workshop-header .league-panel > svg {
-    display: none;
-  }
-  .workshop-header .league-panel.is-compact .league-panel-heading > strong {
-    font-size: 12px;
-  }
-  .workshop-header .league-panel.is-compact .league-panel-heading {
-    gap: 5px;
-  }
-  .workshop-header .league-panel .trophy-amount {
-    font-size: 10px;
-  }
-  .workshop-header .league-panel .trophy-icon {
-    width: 12px;
-    height: 12px;
-  }
-  .workshop-header .league-division {
-    font-size: 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -18,25 +18,18 @@ import type {
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { CardArtwork } from "./card-artwork";
-import {
-  ArrowRightLeft,
-  Check,
-  Leaf,
-  ListFilter,
-  X,
-} from "lucide-react";
+import { ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
+import { GameHeader } from "@/components/game-header";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
-import { CurrencyBalances } from "@/components/currency-balances";
 import {
   DECK_SLOT_UNLOCKS,
   leagueAt,
   leagueProgress,
   type LeagueProgress,
 } from "@sylve/game/leagues";
-import { LeaguePanel } from "@/components/leagues/league-progress";
 
 export interface WorkshopDeck {
   _id: Id<"decks">;
@@ -348,24 +341,7 @@ export function DeckWorkshop({
       />
       <div className="workshop-shade" />
 
-      <header className="workshop-header">
-        <Link
-          to="/hub"
-          className="workshop-back"
-          aria-label="Retour au refuge"
-          draggable={false}
-        >
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <LeaguePanel progress={league} compact />
-        <CurrencyBalances />
-      </header>
+      <GameHeader league={ready ? league : undefined} />
 
       <div className="workshop-content">
         <section

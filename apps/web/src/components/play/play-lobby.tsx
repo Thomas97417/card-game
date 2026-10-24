@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from "react";
-import { CurrencyBalances } from "@/components/currency-balances";
+import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
@@ -21,7 +21,6 @@ import {
   TROPHIES_PER_LOSS,
   type LeagueProgress,
 } from "@sylve/game/leagues";
-import { LeaguePanel } from "@/components/leagues/league-progress";
 import {
   CHEST_LABELS,
   CHEST_SLOT_KEYS,
@@ -104,18 +103,7 @@ export function PlayLobby({
         draggable={false}
       />
       <div className="play-shade" />
-      <header className="play-header">
-        <Link to="/hub" className="workshop-back" aria-label="Retour au refuge">
-          <img
-            src="/art/ui/back-arrow.webp"
-            alt=""
-            width={288}
-            height={157}
-            draggable={false}
-          />
-        </Link>
-        <CurrencyBalances />
-      </header>
+      <GameHeader league={ready ? league : undefined} />
       <div className="play-main">
         <Link
           className="play-hero"
@@ -141,7 +129,6 @@ export function PlayLobby({
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
-          {ready && <LeaguePanel progress={league} showNextUnlock={false} />}
           <button
             type="button"
             className="play-battle-button play-solo"

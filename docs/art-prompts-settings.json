@@ -1,0 +1,13 @@
+{
+  "tool": "Built-in ImageGen",
+  "transparentBackground": true,
+  "assets": [
+    {
+      "path": "apps/web/public/art/ui/settings-gear.webp",
+      "width": 384,
+      "height": 384,
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16e7c-619b-7d42-bee9-c542102ace9b/exec-e3d2abc6-a431-4aa7-9b18-1a6954840fec.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: one production transparent settings menu trigger icon for Sylve, a premium hand-painted woodland fantasy card game.\nPrimary request: a single unmistakable round eight-tooth settings cogwheel, crafted from warm dark walnut wood with a beveled aged golden brass rim and a small deep emerald green central inset. Tiny restrained carved leaf details integrated into the wood. Match a hand-painted wooden return-arrow game asset with honey gold metal edging and jade leaf inlays.\nStyle/medium: polished painterly 2D storybook fantasy game asset, tactile wood grain and slightly worn brass, broad readable shapes, fine dark contour, subtle depth. Front-facing orthographic view with a perfectly circular silhouette.\nComposition/framing: square canvas, exactly one isolated centered cogwheel filling 88 percent of the canvas, all eight broad teeth fully visible, compact silhouette recognizable at 40 to 48 pixels. No extra backing plate. Clear simple gear silhouette with broad gaps between the teeth.\nLighting/mood: warm lantern highlights from upper left, soft deep forest green shadows and a few restrained gold edge glints.\nConstraints: genuine alpha-transparent background all around the icon and in open gaps. Deliver only the single finished gear. No scene, no panel, no square button, no text, no letters, no numbers, no logo, no watermark, no floating particles, no duplicate gear, no photorealism, no plastic 3D."
+    }
+  ]
+}

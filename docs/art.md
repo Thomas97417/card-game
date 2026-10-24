@@ -1,5 +1,23 @@
 # Illustrations de Sylve
 
+## En-tête et menu des paramètres
+
+L’icône `apps/web/public/art/ui/settings-gear.webp` a été créée avec **ImageGen intégré** : un engrenage de noyer sculpté, bordé de laiton doré, avec des incrustations de feuilles et un centre émeraude. Le WebP de 384 × 384 px conserve l’alpha généré et mesure environ 52 Ko. Le [prompt complet](art-prompts-settings.json) conserve aussi le chemin du PNG original.
+
+Elle ouvre le menu utilisateur, assorti aux panneaux vert forêt et aux bordures dorées du jeu. Le refuge, l’atelier, le salon, le sanctuaire et l’en-tête général partagent désormais la ligue, les deux monnaies et ce bouton. La progression dans la division remplit le fond du panneau de ligue ; le survol et le libellé accessible précisent les trophées restants. Les écrans de combat conservent leur interface. Le sélecteur de thème a été retiré.
+
+Le rendu de l’en-tête partagé est conservé sur [ordinateur](header-desktop-validation.webp) à 1280 × 720 px et sur [mobile](header-mobile-validation.webp) à 390 × 844 px. Le sanctuaire et les paramètres ont également été vérifiés à 320 px, ainsi que la navigation du menu au clavier.
+
+## Maison des gardiens et paramètres
+
+Le décor `apps/web/public/art/guardian-house.webp` a été créé avec **ImageGen intégré** : un intérieur de bois sculpté et de pierre claire, une cheminée, des lanternes en laiton et de grandes fenêtres ouvertes sur le village forestier. Le WebP de 1672 × 941 px, encodé en qualité 88, couvre tout l’écran de `/settings`. Le [prompt complet et le PNG source](art-prompts-guardian-house.json) sont conservés dans le manifeste.
+
+La Maison des gardiens du refuge ouvre directement les paramètres. Les rubriques Profil, Sécurité et Appareils, leurs formulaires, validations, notifications et confirmations sont en français. Les panneaux reprennent le vert forêt et les dorures du jeu. Le défilement se limite au contenu de la page ; les saisies restent conservées entre les rubriques.
+
+`GameHeader` est partagé par le refuge, les decks, le salon, le sanctuaire et les paramètres. Sa hauteur vaut 100 px sur ordinateur et 88 px sur mobile. Les mesures dans le navigateur donnent les mêmes positions pour les cinq pages : ligue et or à 28 px du haut sur ordinateur, puis à 12 px sur mobile ; bouton des paramètres à 24 px puis 22 px. L’historique des invocations est regroupé avec les raccourcis du sanctuaire pour conserver cette géométrie.
+
+Les aperçus finaux des paramètres sont conservés sur [ordinateur](settings-desktop-validation.webp) et sur [mobile](settings-mobile-validation.webp). Les onglets et confirmations ont aussi été vérifiés au clavier et à 320 px de large.
+
 ## Éléments du terrain
 
 Trois bâtiments neutres originaux ont été créés le 24 octobre 2026 avec **ImageGen intégré**, par trois appels distincts avec transparence :

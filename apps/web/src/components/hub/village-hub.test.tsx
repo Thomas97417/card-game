@@ -11,7 +11,6 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 vi.mock("@/components/user-menu", () => ({ default: () => null }));
-vi.mock("@/components/mode-toggle", () => ({ ModeToggle: () => null }));
 vi.mock("@/components/currency-balances", () => ({
   CurrencyBalances: () => null,
 }));
@@ -47,5 +46,10 @@ describe("le refuge", () => {
     expect(
       screen.getByRole("link", { name: /L’arène/ }).getAttribute("href"),
     ).toBe("/arena");
+    expect(
+      screen
+        .getByRole("link", { name: /Maison des gardiens/ })
+        .getAttribute("href"),
+    ).toBe("/settings");
   });
 });
