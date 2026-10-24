@@ -16,6 +16,7 @@ import { Route as PlayRouteImport } from './routes/play'
 import { Route as HubRouteImport } from './routes/hub'
 import { Route as DecksRouteImport } from './routes/decks'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameGameIdRouteImport } from './routes/game.$gameId'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
@@ -58,6 +59,11 @@ const DecksRoute = DecksRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArenaRoute = ArenaRouteImport.update({
+  id: '/arena',
+  path: '/arena',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -103,6 +109,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/hub': typeof HubRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/hub': typeof HubRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/hub': typeof HubRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/arena'
     | '/dashboard'
     | '/decks'
     | '/hub'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/arena'
     | '/dashboard'
     | '/decks'
     | '/hub'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/arena'
     | '/dashboard'
     | '/decks'
     | '/hub'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArenaRoute: typeof ArenaRoute
   DashboardRoute: typeof DashboardRoute
   DecksRoute: typeof DecksRoute
   HubRoute: typeof HubRoute
@@ -276,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/arena': {
+      id: '/arena'
+      path: '/arena'
+      fullPath: '/arena'
+      preLoaderRoute: typeof ArenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -337,6 +357,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArenaRoute: ArenaRoute,
   DashboardRoute: DashboardRoute,
   DecksRoute: DecksRoute,
   HubRoute: HubRoute,

@@ -178,7 +178,7 @@ Constraints: actual alpha-transparent background, including inside the bow. No c
 
 ## Salon et coffres de progression
 
-Le salon `/play` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
+L’arène `/arena` utilise `apps/web/public/art/play-lobby.webp`, un hall d’arène forestier original généré avec l’outil intégré **ImageGen**. Le décor couvre toute la fenêtre ; le héros réutilise `hero-sylve.webp`. Les boutons et les sept emplacements de trésors sont des éléments HTML superposés.
 
 Les quatre sprites `apps/web/public/art/chests/{common,rare,epic,legendary}.webp` ont chacun été générés séparément avec ImageGen et une transparence demandée. Ils partagent une vue de trois quarts : bois et fer, métal bleu, cristaux violets puis or lumineux. Le canal alpha des quatre WebP a été vérifié avec `webpinfo`. Les coffres sont encodés à 512 × 512 px, qualité 90 ; le décor à 1672 × 941 px, qualité 88, avec `cwebp`. Aucun fallback CLI de génération n’a été utilisé.
 

@@ -26,9 +26,9 @@ export default function Header() {
                 Le refuge
               </Link>
             </Authenticated>
-            <Link to="/play" className={linkStyles}>
+            <Link to="/arena" className={linkStyles}>
               <Swords size={15} />
-              Jouer
+              Arène
             </Link>
             <Link to="/decks" className={linkStyles}>
               Mon deck

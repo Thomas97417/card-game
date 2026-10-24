@@ -304,7 +304,7 @@ export function Sanctuary({
           <p className="sanctuary-feedback sanctuary-key-success" role="status">
             <Check size={16} />
             {unlockedMessage}
-            <Link to="/play">
+            <Link to="/arena">
               Voir mes coffres <ArrowRight size={15} />
             </Link>
           </p>
