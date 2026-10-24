@@ -98,7 +98,9 @@ export function SummonRevealDialog({
   ).length;
   const complete = revealed === rewards.length;
   const lastRound = result ? round === result.count - 1 : true;
-  const offer = result ? summonOffer(result.packId, result.count, true) : null;
+  const offer = result
+    ? summonOffer(result.packId, result.count, !!result.repeatToken)
+    : null;
   const insufficient =
     emeralds == null || (offer != null && emeralds < offer.cost);
   useEffect(() => {
@@ -305,10 +307,12 @@ export function SummonRevealDialog({
                 <p className="summon-flipped-counter" role="status">
                   {revealed} / {rewards.length} cartes révélées
                 </p>
-                <span className="summon-repeat-badge">
-                  −{offer.discountPercent} % au prochain{" "}
-                  {result.count === 10 ? "lot ×10" : "appel"}
-                </span>
+                {offer.discountPercent > 0 && (
+                  <span className="summon-repeat-badge">
+                    −{offer.discountPercent} % au prochain{" "}
+                    {result.count === 10 ? "lot ×10" : "appel"}
+                  </span>
+                )}
                 <button
                   ref={center}
                   type="button"
@@ -321,7 +325,7 @@ export function SummonRevealDialog({
                   aria-label={
                     !lastRound
                       ? `Invocation suivante — ${round + 2} sur ${result.count}`
-                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes, remise de ${offer.discountPercent} %`
+                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes${offer.discountPercent ? `, remise de ${offer.discountPercent} %` : ""}`
                   }
                   onClick={() => {
                     if (!lastRound) {
@@ -358,7 +362,9 @@ export function SummonRevealDialog({
                       ? "La suite de ton lot t’attend"
                       : insufficient
                         ? "Émeraudes insuffisantes"
-                        : "Remise conservée pour ce pack et ce format"}
+                        : offer.discountPercent
+                          ? "Remise perdue en quittant ce cercle"
+                          : "Un nouvel appel ouvrira un nouveau cercle"}
                 </small>
               </div>
             </div>

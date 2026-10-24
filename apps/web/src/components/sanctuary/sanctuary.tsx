@@ -1,4 +1,10 @@
-import { useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
 import { ArrowRight, Check, History, LoaderCircle } from "lucide-react";
@@ -7,7 +13,6 @@ import { RARITIES, RARITY_LABELS, type OwnedCard } from "@sylve/game";
 import {
   SUMMON_PACKS,
   summonOffer,
-  type SummonOffer,
   summonQuantity,
   summonGoldQuantity,
   type SummonCount,
@@ -28,6 +33,7 @@ export interface SummonRequest {
   packId: SummonPackId;
   count: SummonCount;
   requestId: string;
+  repeatToken?: string;
 }
 
 interface SanctuaryProps {
@@ -35,10 +41,10 @@ interface SanctuaryProps {
   ready: boolean;
   peakTrophies?: number;
   latest?: SummonResult | null;
-  offers?: readonly SummonOffer[];
   collection: OwnedCard[] | undefined;
   purchasedChestSlots?: readonly number[];
   onSummon: (request: SummonRequest) => Promise<SummonResult>;
+  onCloseCircle: (repeatToken: string) => Promise<unknown>;
   onUnlockChestSlot: (slot: number) => Promise<unknown>;
   onUpgrade: (variantId: string) => Promise<unknown>;
 }
@@ -48,10 +54,10 @@ export function Sanctuary({
   ready,
   peakTrophies = 0,
   latest,
-  offers = [],
   collection,
   purchasedChestSlots = [],
   onSummon,
+  onCloseCircle,
   onUnlockChestSlot,
   onUpgrade,
 }: SanctuaryProps) {
@@ -68,26 +74,48 @@ export function Sanctuary({
   const lock = useRef(false);
   const pending = useRef<SummonRequest | null>(null);
   const offersRow = useRef<HTMLDivElement>(null);
+  const activeCircle = useRef<string | null>(null);
+  const circleEpoch = useRef(0);
+  const mounted = useRef(true);
+  const closeCircle = useRef(onCloseCircle);
+  closeCircle.current = onCloseCircle;
+
+  const releaseCircle = useCallback(() => {
+    circleEpoch.current++;
+    const token = activeCircle.current;
+    activeCircle.current = null;
+    if (pending.current?.repeatToken) pending.current = null;
+    // Discard the local permission even if navigation interrupts the connection.
+    if (token) void closeCircle.current(token).catch(() => undefined);
+  }, []);
+  const closeResult = useCallback(() => {
+    releaseCircle();
+    setResult(null);
+    setError(null);
+  }, [releaseCircle]);
+  useEffect(() => {
+    mounted.current = true;
+    window.addEventListener("pagehide", closeResult);
+    return () => {
+      mounted.current = false;
+      window.removeEventListener("pagehide", closeResult);
+      releaseCircle();
+    };
+  }, [closeResult, releaseCircle]);
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
   useHorizontalWheel(offersRow);
   const previous = lastResult ?? latest;
 
-  function offerFor(packId: SummonPackId, count: SummonCount) {
-    // Also show the earned discount immediately while the live query catches up.
-    const purchased = [lastResult, latest].some(
-      (item) => item?.packId === packId && item.count === count,
-    );
-    return purchased
-      ? summonOffer(packId, count, true)
-      : (offers.find(
-          (offer) => offer.packId === packId && offer.count === count,
-        ) ?? summonOffer(packId, count));
-  }
-
-  async function invoke(packId: SummonPackId, count: SummonCount) {
-    const { cost } = offerFor(packId, count);
+  async function invoke(
+    packId: SummonPackId,
+    count: SummonCount,
+    repeatToken?: string,
+  ) {
+    const { cost } = summonOffer(packId, count, !!repeatToken);
     const retry =
-      pending.current?.packId === packId && pending.current.count === count;
+      pending.current?.packId === packId &&
+      pending.current.count === count &&
+      pending.current.repeatToken === repeatToken;
     if (
       lock.current ||
       !ready ||
@@ -95,24 +123,38 @@ export function Sanctuary({
     )
       return;
     lock.current = true;
+    const epoch = circleEpoch.current;
     setBusy({ packId, count });
     setError(null);
     setUnlockedMessage(null);
     try {
-      if (pending.current?.packId !== packId || pending.current.count !== count)
-        pending.current = { packId, count, requestId: crypto.randomUUID() };
+      if (!retry || !pending.current)
+        pending.current = {
+          packId,
+          count,
+          requestId: crypto.randomUUID(),
+          ...(repeatToken ? { repeatToken } : {}),
+        };
       const reward = await onSummon(pending.current);
-      setResult(reward);
-      setLastResult(reward);
+      const saved = { ...reward };
+      delete saved.repeatToken;
+      if (mounted.current) setLastResult(saved);
+      if (mounted.current && epoch === circleEpoch.current) {
+        activeCircle.current = reward.repeatToken ?? null;
+        setResult(reward);
+      } else if (reward.repeatToken) {
+        void closeCircle.current(reward.repeatToken).catch(() => undefined);
+      }
       pending.current = null;
     } catch (cause) {
+      if (!mounted.current || epoch !== circleEpoch.current) return;
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
           : "L’invocation n’a pas pu aboutir. Réessaie pour retrouver ton tirage sans double débit.",
       );
     } finally {
-      setBusy(null);
+      if (mounted.current) setBusy(null);
       lock.current = false;
     }
   }
@@ -188,9 +230,6 @@ export function Sanctuary({
                   emeralds={emeralds}
                   ready={ready && busyKey === null}
                   busy={busy}
-                  offers={([1, 10] as const).map((count) =>
-                    offerFor(pack.id, count),
-                  )}
                   onInvoke={invoke}
                 />
               ))}
@@ -290,7 +329,9 @@ export function Sanctuary({
                 type="button"
                 className="sanctuary-text-button"
                 disabled={!!busy || busyKey !== null}
-                onClick={() => setResult(previous)}
+                onClick={() =>
+                  setResult({ ...previous, repeatToken: undefined })
+                }
               >
                 <History size={17} />
                 Dernière invocation
@@ -328,7 +369,12 @@ export function Sanctuary({
                 disabled={!!busy}
                 onClick={() => {
                   const request = pending.current;
-                  if (request) void invoke(request.packId, request.count);
+                  if (request)
+                    void invoke(
+                      request.packId,
+                      request.count,
+                      request.repeatToken,
+                    );
                 }}
               >
                 Retrouver mon invocation
@@ -346,17 +392,23 @@ export function Sanctuary({
         busy={!!busy}
         error={error}
         onRepeat={() => {
-          if (result) void invoke(result.packId, result.count);
+          if (result)
+            void invoke(result.packId, result.count, result.repeatToken);
         }}
         onRetry={
           pending.current
             ? () => {
                 const request = pending.current;
-                if (request) void invoke(request.packId, request.count);
+                if (request)
+                  void invoke(
+                    request.packId,
+                    request.count,
+                    request.repeatToken,
+                  );
               }
             : undefined
         }
-        onClose={() => setResult(null)}
+        onClose={closeResult}
         onUpgrade={onUpgrade}
       />
     </main>
@@ -369,7 +421,6 @@ function PackChoice({
   emeralds,
   ready,
   busy,
-  offers,
   onInvoke,
 }: {
   pack: SummonPack;
@@ -377,7 +428,6 @@ function PackChoice({
   emeralds: number | null | undefined;
   ready: boolean;
   busy: { packId: SummonPackId; count: SummonCount } | null;
-  offers: SummonOffer[];
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
   const premium = pack.id !== "sylve";
@@ -454,8 +504,7 @@ function PackChoice({
       </p>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
-          const offer = offers.find((offer) => offer.count === count)!;
-          const price = offer.cost;
+          const price = count === 10 ? pack.tenPrice : pack.price;
           const working = busy?.packId === pack.id && busy.count === count;
           const insufficient = emeralds != null && emeralds < price;
           return (
@@ -482,9 +531,7 @@ function PackChoice({
                   id={`pack-${pack.id}-offer`}
                   className="summon-offer-ribbon"
                 >
-                  {offer.discountPercent
-                    ? `−${offer.discountPercent} % · ×10`
-                    : "Offre ×10"}
+                  Offre ×10
                 </span>
               )}
               <span className="summon-button-label">
@@ -492,23 +539,13 @@ function PackChoice({
                 {count === 1 ? "Invoquer ×1" : "Invoquer ×10"}
               </span>
               <span className="summon-button-price">
-                {(count === 10 || offer.discountPercent > 0) && (
-                  <del
-                    aria-label={`Au lieu de ${offer.discountPercent ? offer.baseCost : pack.price * 10} émeraudes`}
-                  >
-                    {(offer.discountPercent
-                      ? offer.baseCost
-                      : pack.price * 10
-                    ).toLocaleString("fr-FR")}
+                {count === 10 && (
+                  <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
+                    {(pack.price * 10).toLocaleString("fr-FR")}
                   </del>
                 )}
                 <EmeraldAmount amount={price} />
               </span>
-              {count === 1 && offer.discountPercent > 0 && (
-                <span className="summon-button-guarantee">
-                  −{offer.discountPercent} % · Prochain appel
-                </span>
-              )}
               {count === 10 && (
                 <span
                   id={`pack-${pack.id}-guarantee`}

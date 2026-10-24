@@ -61,6 +61,8 @@ export interface SummonResult {
   gold?: number;
   /** One frozen gold reward for each invocation, in reveal order. */
   goldBySummon?: number[];
+  /** Ephemeral permission returned only to the purchase's open reveal circle. */
+  repeatToken?: string;
 }
 
 export interface SummonOffer {
@@ -84,7 +86,7 @@ export function summonPrice(id: SummonPackId, count: SummonCount): number {
   return count === 10 ? pack.tenPrice : pack.price;
 }
 
-/** A purchase earns a non-stacking discount for the next identical pack/format. */
+/** Only an active reveal circle can offer the repeat discount. */
 export function summonOffer(
   packId: SummonPackId,
   count: SummonCount,

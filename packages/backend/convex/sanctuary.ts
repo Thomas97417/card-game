@@ -9,7 +9,7 @@ import {
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
-import { grantLoot, playerLeague } from "./lib/progression";
+import { grantLoot, playerLeague, playerWallet } from "./lib/progression";
 import { ensureEmeralds } from "./lib/wallet";
 import { summonCountValidator, summonPackValidator } from "./lib/validators";
 
@@ -76,20 +76,21 @@ export const latest = query({
 export const offers = query({
   args: {},
   handler: async (ctx) => {
-    const { userId } = await requirePlayer(ctx);
-    return Promise.all(
-      SUMMON_PACKS.flatMap((pack) =>
-        ([1, 10] as const).map(async (count) => {
-          const previous = await ctx.db
-            .query("summons")
-            .withIndex("by_owner_pack_count", (q) =>
-              q.eq("ownerId", userId).eq("packId", pack.id).eq("count", count),
-            )
-            .first();
-          return summonOffer(pack.id, count, !!previous);
-        }),
-      ),
+    await requirePlayer(ctx);
+    return SUMMON_PACKS.flatMap((pack) =>
+      ([1, 10] as const).map((count) => summonOffer(pack.id, count)),
     );
+  },
+});
+
+export const closeCircle = mutation({
+  args: { repeatToken: v.string() },
+  handler: async (ctx, { repeatToken }) => {
+    const { userId } = await requirePlayer(ctx);
+    const wallet = await playerWallet(ctx, userId);
+    // Closing an earlier circle must never revoke a newer purchase's offer.
+    if (wallet?.activeSummonId === repeatToken)
+      await ctx.db.patch(wallet._id, { activeSummonId: undefined });
   },
 });
 
@@ -98,8 +99,9 @@ export const summon = mutation({
     packId: summonPackValidator,
     count: summonCountValidator,
     requestId: v.string(),
+    repeatToken: v.optional(v.string()),
   },
-  handler: async (ctx, { packId, count, requestId }) => {
+  handler: async (ctx, { packId, count, requestId, repeatToken }) => {
     const { userId } = await requirePlayer(ctx);
     if (!/^[a-zA-Z0-9-]{16,80}$/.test(requestId))
       throw new ConvexError("Identifiant d’invocation invalide.");
@@ -112,6 +114,7 @@ export const summon = mutation({
     if (previous) {
       if (previous.packId !== packId || previous.count !== count)
         throw new ConvexError("Cette invocation correspond à un autre pack.");
+      const wallet = await playerWallet(ctx, userId);
       return {
         requestId,
         packId,
@@ -122,16 +125,27 @@ export const summon = mutation({
         ...(previous.goldBySummon
           ? { goldBySummon: previous.goldBySummon }
           : {}),
+        ...(wallet?.activeSummonId === previous._id
+          ? { repeatToken: previous._id }
+          : {}),
       };
     }
-    const lastPurchase = await ctx.db
-      .query("summons")
-      .withIndex("by_owner_pack_count", (q) =>
-        q.eq("ownerId", userId).eq("packId", packId).eq("count", count),
+    if (repeatToken !== undefined) {
+      const sourceId = ctx.db.normalizeId("summons", repeatToken);
+      const source = sourceId ? await ctx.db.get(sourceId) : null;
+      const wallet = await playerWallet(ctx, userId);
+      if (
+        !source ||
+        source.ownerId !== userId ||
+        source.packId !== packId ||
+        source.count !== count ||
+        wallet?.activeSummonId !== source._id
       )
-      .first();
-    // The server determines the discount. Replays above keep their original price.
-    const { cost } = summonOffer(packId, count, !!lastPurchase);
+        throw new ConvexError(
+          "Cette remise n’est plus disponible. Relance un appel depuis le sanctuaire.",
+        );
+    }
+    const { cost } = summonOffer(packId, count, repeatToken !== undefined);
     const wallet = await ensureEmeralds(ctx, userId);
     if (wallet.diamonds! < cost)
       throw new ConvexError(
@@ -151,10 +165,6 @@ export const summon = mutation({
       league.peakTrophies,
     );
     const gold = goldBySummon.reduce((sum, amount) => sum + amount, 0);
-    await ctx.db.patch(wallet._id, {
-      diamonds: wallet.diamonds! - cost,
-      gold: wallet.gold + gold,
-    });
     const result = {
       requestId,
       packId,
@@ -164,7 +174,15 @@ export const summon = mutation({
       gold,
       goldBySummon,
     };
-    await ctx.db.insert("summons", { ownerId: userId, ...result });
-    return result;
+    const invocationId = await ctx.db.insert("summons", {
+      ownerId: userId,
+      ...result,
+    });
+    await ctx.db.patch(wallet._id, {
+      diamonds: wallet.diamonds! - cost,
+      gold: wallet.gold + gold,
+      activeSummonId: invocationId,
+    });
+    return { ...result, repeatToken: invocationId };
   },
 });

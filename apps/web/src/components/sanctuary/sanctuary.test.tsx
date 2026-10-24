@@ -12,7 +12,6 @@ import { CATALOG, resolveCard, variantCard } from "@sylve/game";
 import {
   summonGold,
   summonGoldRewards,
-  summonOffer,
   summonLoot,
   summonPrice,
   type SummonResult,
@@ -33,7 +32,11 @@ vi.mock("@tanstack/react-router", () => ({
 function reward(request: SummonRequest): SummonResult {
   return {
     ...request,
-    cost: summonPrice(request.packId, request.count),
+    cost: Math.floor(
+      summonPrice(request.packId, request.count) *
+        (request.repeatToken ? 0.9 : 1),
+    ),
+    repeatToken: `circle-${request.requestId}`,
     gold: summonGold(request.packId, request.count, () => 0),
     goldBySummon: summonGoldRewards(request.packId, request.count, () => 0),
     reveals: summonLoot(request.packId, request.count, () => 0).map(
@@ -50,6 +53,7 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
   const onSummon = vi.fn(async (request: SummonRequest) => reward(request));
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
   const onUnlockChestSlot = vi.fn().mockResolvedValue(undefined);
+  const onCloseCircle = vi.fn().mockResolvedValue(undefined);
   const props = {
     emeralds: 3_000,
     ready: true,
@@ -57,16 +61,28 @@ function setup(overrides: Partial<Parameters<typeof Sanctuary>[0]> = {}) {
     onSummon,
     onUpgrade,
     onUnlockChestSlot,
+    onCloseCircle,
     ...overrides,
   };
-  const result = render(
+  const view = (next: Parameters<typeof Sanctuary>[0]) => (
     <GoldContext.Provider value={500}>
-      <EmeraldContext.Provider value={props.emeralds}>
-        <Sanctuary {...props} />
+      <EmeraldContext.Provider value={next.emeralds}>
+        <Sanctuary {...next} />
       </EmeraldContext.Provider>
-    </GoldContext.Provider>,
+    </GoldContext.Provider>
   );
-  return { ...result, onSummon, onUpgrade, onUnlockChestSlot };
+  const result = render(view(props));
+  return {
+    ...result,
+    onSummon,
+    onUpgrade,
+    onUnlockChestSlot,
+    onCloseCircle,
+    update: (changes: Partial<Parameters<typeof Sanctuary>[0]>) => {
+      Object.assign(props, changes);
+      result.rerender(view(props));
+    },
+  };
 }
 const purchase = (pack: "Sylve" | "anciens" | "divinités", count: 1 | 10) =>
   screen.getByRole("button", {
@@ -462,7 +478,7 @@ describe("le sanctuaire", () => {
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
-      "134 émeraudes",
+      "149 émeraudes",
     );
     expect(purchase("Sylve", 10).getAttribute("aria-label")).toContain(
       "1299 émeraudes",
@@ -494,6 +510,7 @@ describe("le sanctuaire", () => {
     expect(onSummon.mock.calls[1]![0]).toMatchObject({
       packId: "sylve",
       count: 1,
+      repeatToken: reward(onSummon.mock.calls[0]![0]).repeatToken,
     });
     expect(onSummon.mock.calls[1]![0].requestId).not.toBe(
       onSummon.mock.calls[0]![0].requestId,
@@ -505,23 +522,157 @@ describe("le sanctuaire", () => {
     ).toHaveLength(6);
   });
 
-  it("uses saved discounted offers for affordability and blocks an unaffordable central repeat", async () => {
-    setup({ emeralds: 134, offers: [summonOffer("sylve", 1, true)] });
-    expect(purchase("Sylve", 1).disabled).toBe(false);
+  it("keeps shop prices at their base amounts even when old purchases exist", () => {
+    setup({
+      emeralds: 134,
+      latest: reward({
+        packId: "sylve",
+        count: 1,
+        requestId: "old-paid-sylve-call",
+      }),
+    });
+    expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
+      "149 émeraudes",
+    );
+    expect(purchase("Sylve", 1).disabled).toBe(true);
+    expect(purchase("Sylve", 10).getAttribute("aria-label")).toContain(
+      "1299 émeraudes",
+    );
+    expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10)).getByLabelText("Au lieu de 1490 émeraudes"),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Prochain appel/)).toBeNull();
+  });
+
+  it("allows exactly affordable discounted repeats only inside a newly purchased circle", async () => {
+    const { update } = setup({ emeralds: 149 });
     fireEvent.click(purchase("Sylve", 1));
     const dialog = await screen.findByRole("dialog");
+    update({ emeralds: 134 });
     turnAll(dialog);
-    // The exact discounted price remains affordable in this controlled wallet.
     expect(
       (
         within(dialog).getByRole("button", {
-          name: /^Réinvoquer/,
+          name: "Réinvoquer ×1, 134 émeraudes, remise de 10 %",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(false);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(purchase("Sylve", 1).disabled).toBe(true);
   });
 
-  it("keeps history viewable when the discounted repeat is unaffordable", async () => {
+  it.each([1, 10] as const)(
+    "forgets the x%s circle's discount on close and when revisiting history",
+    async (count) => {
+      const { onCloseCircle, onSummon } = setup();
+      fireEvent.click(purchase("Sylve", count));
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText(/−10 % au prochain/)).toBeTruthy();
+      fireEvent.click(
+        within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+      );
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+      expect(onCloseCircle).toHaveBeenCalledExactlyOnceWith(
+        reward(onSummon.mock.calls[0]![0]).repeatToken,
+      );
+      expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
+        "149 émeraudes",
+      );
+      expect(purchase("Sylve", 10).getAttribute("aria-label")).toContain(
+        "1299 émeraudes",
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: "Dernière invocation" }),
+      );
+      const history = await screen.findByRole("dialog");
+      expect(within(history).queryByText(/% au prochain/)).toBeNull();
+      for (let round = 0; round < count; round++) {
+        turnAll(history);
+        if (round < count - 1)
+          fireEvent.click(
+            within(history).getByRole("button", {
+              name: /^Invocation suivante/,
+            }),
+          );
+      }
+      const baseCost = summonPrice("sylve", count);
+      expect(
+        within(history).getByRole("button", {
+          name: `Réinvoquer ×${count}, ${baseCost} émeraudes`,
+        }),
+      ).toBeTruthy();
+      fireEvent.click(
+        within(history).getByRole("button", {
+          name: `Réinvoquer ×${count}, ${baseCost} émeraudes`,
+        }),
+      );
+      await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(2));
+      expect(onSummon.mock.calls[1]![0].repeatToken).toBeUndefined();
+    },
+  );
+
+  it.each(["Escape", "collection", "pagehide", "unmount"])(
+    "revokes the discount on %s",
+    async (exit) => {
+      const { onCloseCircle, onSummon, unmount } = setup();
+      fireEvent.click(purchase("Sylve", 1));
+      const dialog = await screen.findByRole("dialog");
+      if (exit === "Escape") fireEvent.keyDown(dialog, { key: "Escape" });
+      else if (exit === "collection")
+        fireEvent.click(
+          within(dialog).getByRole("link", { name: "Ma collection" }),
+        );
+      else if (exit === "pagehide") fireEvent(window, new Event("pagehide"));
+      else unmount();
+      await waitFor(() =>
+        expect(onCloseCircle).toHaveBeenCalledExactlyOnceWith(
+          reward(onSummon.mock.calls[0]![0]).repeatToken,
+        ),
+      );
+    },
+  );
+
+  it("keeps a circle closed if a pending discounted purchase finishes after leaving", async () => {
+    let finish!: (value: SummonResult) => void;
+    const onSummon = vi
+      .fn<(request: SummonRequest) => Promise<SummonResult>>()
+      .mockImplementationOnce(async (request) => reward(request))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      );
+    const { onCloseCircle } = setup({ onSummon });
+    fireEvent.click(purchase("Sylve", 1));
+    const dialog = await screen.findByRole("dialog");
+    turnAll(dialog);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: /^Réinvoquer/ }),
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Retour au sanctuaire" }),
+    );
+    const next = reward(onSummon.mock.calls[1]![0]);
+    await act(async () => finish(next));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onCloseCircle).toHaveBeenCalledWith(next.repeatToken);
+    expect(purchase("Sylve", 1).getAttribute("aria-label")).toContain(
+      "149 émeraudes",
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog")).queryByText(/% au prochain/),
+    ).toBeNull();
+  });
+
+  it("keeps history viewable at its base price without restoring a discount", async () => {
     const latest = reward({
       packId: "sylve",
       count: 1,
@@ -564,7 +715,7 @@ describe("le sanctuaire", () => {
         ...reward(request),
         cost: 134,
       }));
-    const { rerender } = setup({ onSummon });
+    const { update } = setup({ onSummon });
     fireEvent.click(purchase("Sylve", 1));
     const dialog = await screen.findByRole("dialog");
     turnAll(dialog);
@@ -573,29 +724,17 @@ describe("le sanctuaire", () => {
     );
     expect(await screen.findByRole("alert")).toBeTruthy();
     expect(within(dialog).getByText("6 / 6 cartes révélées")).toBeTruthy();
-    rerender(
-      <GoldContext.Provider value={500}>
-        <EmeraldContext.Provider value={0}>
-          <Sanctuary
-            emeralds={0}
-            ready
-            collection={undefined}
-            onSummon={onSummon}
-            onUpgrade={async () => {}}
-            onUnlockChestSlot={async () => {}}
-          />
-        </EmeraldContext.Provider>
-      </GoldContext.Provider>,
-    );
+    update({ emeralds: 0 });
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Retrouver mon invocation" }),
     );
     await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(3));
     expect(onSummon.mock.calls[1]![0]).toEqual(onSummon.mock.calls[2]![0]);
-    const recovered = await screen.findByRole("dialog");
-    expect(
-      within(recovered).getAllByRole("button", { name: /^Révéler la carte/ }),
-    ).toHaveLength(6);
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: /^Révéler la carte/ }),
+      ).toHaveLength(6),
+    );
     expect(screen.queryByRole("alert")).toBeNull();
   });
 

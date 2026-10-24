@@ -10,18 +10,22 @@ Un lot ×10 est acheté et crédité une seule fois. Il se révèle en dix cercl
 
 ## Remise de réinvocation
 
-Un achat donne 10 % de remise sur le prochain achat du même appel et du même format. La remise persiste après fermeture ou rechargement, s’applique aussi aux boutons de la boutique et ne se cumule pas. Chaque nouvel achat renouvelle cette même remise. Un achat ×1 ne débloque pas la remise ×10 et les trois appels ont leurs remises séparées. Les anciens achats enregistrés débloquent également leur remise correspondante.
+La remise de 10 % s’applique uniquement au bouton central du cercle ouvert après un achat, pour le même appel et le même format. Fermer le cercle, quitter la page ou la recharger annule la remise. Rouvrir l’historique ne la réactive pas. Chaque réinvocation effectuée dans le cercle ouvre le tirage suivant avec sa propre remise, sans cumul.
 
-| Appel | Premier ×1 | Prochain ×1 | Premier ×10 | Prochain ×10 |
+Les offres du sanctuaire conservent toujours leurs prix de base. Le tarif groupé du ×10 reste permanent et indépendant de cette remise temporaire.
+
+| Appel | Sanctuaire ×1 | Bouton central ×1 | Sanctuaire ×10 | Bouton central ×10 |
 | --- | ---: | ---: | ---: | ---: |
 | Sylve | 149 | 134 | 1 299 | 1 169 |
 | Anciens | 449 | 404 | 3 899 | 3 509 |
 | Divinités | 4 499 | 4 049 | 39 999 | 35 999 |
 
-Les prix sont en émeraudes, arrondis à l’entier inférieur après remise. Le serveur détermine seul le prix à partir des achats du joueur. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
+Les prix sont en émeraudes, arrondis à l’entier inférieur après remise. Le serveur valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
 
 ## Illustration et validation
 
 Le [dos commun](../apps/web/public/art/ui/summon-card-back.webp) a été généré avec ImageGen intégré, puis exporté en WebP transparent de 400 × 560 px. Son [prompt complet](art-prompts-summon-card-back.json) est conservé avec la référence de style.
 
 Les captures proviennent des composants réels dans un aperçu local avec portefeuille et récompenses de démonstration : [cercle caché sur ordinateur](summon-circle-hidden-desktop.webp), [cartes révélées](summon-circle-revealed-desktop.webp), [fin de lot ×10 et remise](summon-circle-ten-complete.webp), [cercle caché à 320 px](summon-circle-hidden-mobile.webp) et [cartes révélées à 320 px](summon-circle-revealed-mobile.webp). Le parcours des dix tirages, la réinvocation et l’adaptation à 390 px ont aussi été contrôlés dans le navigateur.
+
+Après correction du périmètre de la remise, les [tarifs du sanctuaire hors du cercle](summon-discount-circle-only.webp) et la réouverture de l’historique sans remise ont été vérifiés dans le jeu connecté. Les tests couvrent aussi l’annulation par fermeture, Échap, navigation ou rechargement, les achats concurrents et une réponse reçue après avoir quitté le cercle.

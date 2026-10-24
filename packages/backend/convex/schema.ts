@@ -22,6 +22,7 @@ export default defineSchema({
     ownerId: v.string(),
     gold: v.number(),
     diamonds: v.optional(v.number()),
+    activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
   chestSlotUnlocks: defineTable({
     ownerId: v.string(),
@@ -41,7 +42,6 @@ export default defineSchema({
     goldBySummon: v.optional(v.array(v.number())),
   })
     .index("by_owner_request", ["ownerId", "requestId"])
-    .index("by_owner_pack_count", ["ownerId", "packId", "count"])
     .index("by_owner", ["ownerId"]),
   victoryChests: defineTable({
     ownerId: v.string(),
