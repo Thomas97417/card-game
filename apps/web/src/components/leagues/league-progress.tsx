@@ -66,9 +66,11 @@ export function LeagueBadge({
         height={size}
         draggable={false}
       />
-      <span className="league-division" aria-hidden="true">
-        {league.division}
-      </span>
+      {league.division && (
+        <span className="league-division" aria-hidden="true">
+          {league.division}
+        </span>
+      )}
     </span>
   );
 }

@@ -51,7 +51,7 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("3 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
-    expect(dialog.getByText("Challenger I")).toBeTruthy();
+    expect(dialog.getByRole("button", { name: /^Challenger,/ })).toBeTruthy();
     expect(dialog.getByText("2 %")).toBeTruthy();
     expect(
       dialog
@@ -168,7 +168,7 @@ describe("le parcours des ligues", () => {
     expect(document.activeElement).toBe(second);
 
     fireEvent.keyDown(second, { key: "End" });
-    const last = dialog.getByRole("button", { name: /^Challenger I,/ });
+    const last = dialog.getByRole("button", { name: /^Challenger,/ });
     expect(document.activeElement).toBe(last);
     expect(
       dialog
