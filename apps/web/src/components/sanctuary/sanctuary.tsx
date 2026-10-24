@@ -416,12 +416,6 @@ export function Sanctuary({
             </Link>
           </nav>
         </div>
-        {busy && (
-          <p className="sanctuary-feedback" role="status">
-            <LoaderCircle className="animate-spin" size={16} />
-            Les esprits répondent à ton appel…
-          </p>
-        )}
         {unlockedMessage && (
           <p className="sanctuary-feedback sanctuary-key-success" role="status">
             <Check size={16} />
@@ -589,6 +583,7 @@ function PackChoice({
               type="button"
               className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
               disabled={!ready || !!busy || emeralds == null || insufficient}
+              aria-busy={working || undefined}
               aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
               aria-describedby={
                 count === 10

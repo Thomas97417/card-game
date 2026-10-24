@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, LoaderCircle, RotateCw } from "lucide-react";
+import { ArrowRight, RotateCw } from "lucide-react";
 import {
   combatTypeLabel,
   RARITY_LABELS,
@@ -323,6 +323,7 @@ export function SummonRevealDialog({
                   ref={center}
                   type="button"
                   className="summon-repeat-button"
+                  aria-busy={busy || undefined}
                   disabled={
                     !complete ||
                     busy ||
@@ -347,19 +348,16 @@ export function SummonRevealDialog({
                     } else onRepeat();
                   }}
                 >
-                  {busy ? (
-                    <LoaderCircle className="animate-spin" size={16} />
-                  ) : lastRound ? (
-                    <RotateCw size={15} />
+                  {lastRound ? (
+                    <RotateCw
+                      className={busy ? "animate-spin" : undefined}
+                      size={15}
+                    />
                   ) : (
                     <ArrowRight size={15} />
                   )}
                   <span>
-                    {busy
-                      ? "Invocation…"
-                      : lastRound
-                        ? `Réinvoquer ×${result.count}`
-                        : "Suivante"}
+                    {lastRound ? `Réinvoquer ×${result.count}` : "Suivante"}
                   </span>
                   {lastRound && <EmeraldAmount amount={offer.cost} />}
                 </button>

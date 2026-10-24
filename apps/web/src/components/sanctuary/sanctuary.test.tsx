@@ -266,10 +266,14 @@ describe("le sanctuaire", () => {
         }),
     );
     setup({ onSummon, emeralds: 44999 });
+    const purchaseButton = purchase("anciens", 10);
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("anciens", 10));
     fireEvent.click(purchase("Sylve", 1));
     expect(onSummon).toHaveBeenCalledOnce();
+    expect(purchaseButton.getAttribute("aria-busy")).toBe("true");
+    expect(purchaseButton.querySelector(".animate-spin")).toBeTruthy();
+    expect(screen.queryByText("Les esprits répondent à ton appel…")).toBeNull();
     const request = onSummon.mock.calls[0]![0];
     expect(request).toMatchObject({ packId: "ancients", count: 10 });
     expect(request.requestId.length).toBeGreaterThan(15);
@@ -277,6 +281,8 @@ describe("le sanctuaire", () => {
       expect((button as HTMLButtonElement).disabled).toBe(true);
     await act(async () => finish(reward(request)));
     const dialog = await screen.findByRole("dialog");
+    expect(purchaseButton.getAttribute("aria-busy")).toBeNull();
+    expect(dialog.querySelector(".animate-spin")).toBeNull();
     let legendary = 0;
     let epic = 0;
     for (let round = 1; round <= 10; round++) {
@@ -307,9 +313,16 @@ describe("le sanctuaire", () => {
     const repeat = within(dialog).getByRole("button", {
       name: "Réinvoquer ×10, 39999 émeraudes",
     });
+    const repeatIcon = repeat.querySelector(".lucide-rotate-cw");
+    expect(repeatIcon?.classList.contains("animate-spin")).toBe(false);
     fireEvent.click(repeat);
     fireEvent.click(repeat);
     expect(onSummon).toHaveBeenCalledTimes(2);
+    expect(repeat.getAttribute("aria-busy")).toBe("true");
+    expect(repeat.querySelector(".lucide-rotate-cw")).toBe(repeatIcon);
+    expect(repeatIcon?.classList.contains("animate-spin")).toBe(true);
+    expect(within(repeat).getByText("Réinvoquer ×10")).toBeTruthy();
+    expect(screen.queryByText("Les esprits répondent à ton appel…")).toBeNull();
     const nextRequest = onSummon.mock.calls[1]![0];
     expect(nextRequest).toMatchObject({ packId: "ancients", count: 10 });
     expect(nextRequest.requestId).not.toBe(request.requestId);
