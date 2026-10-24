@@ -619,6 +619,8 @@
   margin: 12px auto 0;
   container-type: size;
   isolation: isolate;
+  overflow: clip;
+  overflow-clip-margin: 12px;
 }
 .summon-circle-ring {
   position: absolute;
@@ -661,6 +663,7 @@
 }
 .summon-flip {
   position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
@@ -778,6 +781,7 @@
 }
 .summon-reward-caption {
   position: absolute;
+  z-index: 2;
   top: calc(100% + 5px);
   width: 140%;
   left: -20%;
@@ -801,6 +805,233 @@
 }
 .summon-reward-caption .summon-new {
   color: #c5e99a;
+}
+.summon-circle-slot.is-legendary-revealing {
+  z-index: 4;
+  animation: summon-legendary-lift 2400ms ease-out both;
+}
+.is-legendary-revealing .summon-flip {
+  transition-duration: 850ms;
+  transition-timing-function: cubic-bezier(0.18, 0.7, 0.2, 1);
+}
+.summon-legendary-ambience {
+  position: absolute;
+  z-index: -1;
+  inset: -4% -2%;
+  background: radial-gradient(
+    ellipse,
+    #eab74624,
+    #ba7c2110 45%,
+    transparent 75%
+  );
+  pointer-events: none;
+  animation: summon-legendary-atmosphere 2400ms ease-out both;
+}
+.summon-legendary-effects {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.summon-legendary-aura,
+.summon-legendary-rays {
+  position: absolute;
+  inset: -65% -90%;
+  border-radius: 50%;
+}
+.summon-legendary-aura {
+  background: radial-gradient(
+    ellipse,
+    #fff4cdbb,
+    #ffd46a66 25%,
+    #efb43b22 45%,
+    transparent 70%
+  );
+  animation: summon-legendary-bloom 2100ms 180ms ease-out both;
+}
+.summon-legendary-rays {
+  background: repeating-conic-gradient(
+    from 15deg,
+    transparent 0deg 16deg,
+    #ffe5a180 17deg 19deg,
+    transparent 20deg 30deg
+  );
+  mask-image: radial-gradient(
+    ellipse,
+    transparent 10%,
+    #000 30%,
+    transparent 70%
+  );
+  animation: summon-legendary-radiance 2100ms 200ms ease-out both;
+}
+.summon-legendary-wave {
+  position: absolute;
+  inset: -8% -15%;
+  border: 2px solid #ffe8a9;
+  border-radius: 50%;
+  box-shadow:
+    0 0 18px #ffd36299,
+    inset 0 0 14px #ffd36255;
+  animation: summon-legendary-wave 1100ms 360ms ease-out both;
+}
+.summon-legendary-wave.is-delayed {
+  border-width: 1px;
+  animation-delay: 620ms;
+}
+.summon-legendary-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(3px, 3cqw, 6px);
+  height: clamp(6px, 6cqw, 11px);
+  border-radius: 2px;
+  background: linear-gradient(#fff9dc, #f7bf4f);
+  box-shadow: 0 0 12px #ffd36d;
+  animation: summon-legendary-particle 1500ms var(--particle-delay) ease-out
+    both;
+}
+.is-legendary-revealing .summon-card-front::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(
+    110deg,
+    transparent 36%,
+    #fff8d999 49%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  pointer-events: none;
+  animation: summon-legendary-shine 1200ms 420ms ease-out both;
+}
+.is-legendary-revealing .summon-card-front .workshop-card {
+  animation: summon-legendary-glow 2000ms 250ms ease-out both;
+}
+.is-legendary-revealing .summon-reward-caption {
+  animation: summon-legendary-caption 1900ms 400ms ease-out both;
+}
+@keyframes summon-legendary-lift {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  25%,
+  45% {
+    transform: translate(-50%, calc(-50% - 8px)) scale(1.06);
+  }
+}
+@keyframes summon-legendary-atmosphere {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  25%,
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes summon-legendary-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+@keyframes summon-legendary-radiance {
+  0% {
+    opacity: 0;
+    transform: rotate(-12deg) scale(0.65);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(20deg) scale(1.2);
+  }
+}
+@keyframes summon-legendary-wave {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  15% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+@keyframes summon-legendary-particle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-turn)) scale(0.3);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--particle-x)),
+        calc(-50% + var(--particle-y))
+      )
+      rotate(calc(var(--particle-turn) + 100deg)) scale(0.2);
+  }
+}
+@keyframes summon-legendary-shine {
+  0% {
+    opacity: 0;
+    background-position: 150% 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    background-position: -50% 0;
+  }
+}
+@keyframes summon-legendary-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 5px 10px #08130f77,
+      0 0 12px #f7cb5938,
+      inset 0 0 0 1px #f7cb594d;
+  }
+  25%,
+  50% {
+    box-shadow:
+      0 0 20px #ffe3a4cc,
+      0 0 55px #e9ad3b80,
+      inset 0 0 0 1px #fff2c8;
+  }
+}
+@keyframes summon-legendary-caption {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  25%,
+  55% {
+    opacity: 1;
+    text-shadow: 0 0 10px #ffc85b;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    text-shadow: none;
+  }
 }
 .summon-circle-center {
   position: absolute;
@@ -1038,7 +1269,21 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .summon-circle-slot.is-legendary-revealing,
+  .is-legendary-revealing .summon-card-front .workshop-card,
+  .is-legendary-revealing .summon-reward-caption {
+    animation: none;
+  }
+  .summon-legendary-effects,
+  .summon-legendary-ambience,
+  .is-legendary-revealing .summon-card-front::after {
+    display: none;
+  }
+  .is-legendary-revealing .summon-card-front .workshop-card {
+    box-shadow: 0 0 24px #f7cb5970;
+  }
   .summon-flip,
+  .is-legendary-revealing .summon-flip,
   .summon-card-back {
     transition: none;
   }

@@ -15,6 +15,7 @@ import {
   summonLoot,
   summonPrice,
   summonOffer,
+  summonRoundRewards,
   type SummonResult,
 } from "@sylve/game/summoning";
 import { Sanctuary, type SummonRequest } from "./sanctuary";
@@ -551,6 +552,112 @@ describe("le sanctuaire", () => {
         name: "Carte d’or : 500 pièces d’or",
       }),
     ).toBeTruthy();
+    expect(onSummon).toHaveBeenCalledOnce();
+  });
+
+  it("celebrates only newly flipped legendary cards and finishes overlapping effects independently", async () => {
+    const { onSummon, onSaveRevealProgress } = setup({ emeralds: 4_999 });
+    fireEvent.click(purchase("anciens", 1));
+    const dialog = await screen.findByRole("dialog");
+    const slots = within(dialog).getAllByRole("listitem");
+    const rewards = summonRoundRewards(reward(onSummon.mock.calls[0]![0]), 0);
+    const legendary = rewards.flatMap((item, index) =>
+      item.kind === "hero" &&
+      resolveCard(item.item.variantId).rarity === "legendary"
+        ? [index]
+        : [],
+    );
+    const backs = slots.map((slot) =>
+      within(slot).getByRole("button", { name: /^Révéler la carte/ }),
+    );
+    expect(legendary).toHaveLength(2);
+    expect(dialog.querySelector(".summon-legendary-effects")).toBeNull();
+    expect(dialog.querySelector(".is-legendary-revealing")).toBeNull();
+    expect(dialog.querySelector("[data-rarity]")).toBeNull();
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(backs[legendary[0]!]!);
+      expect(
+        slots[legendary[0]!]!.querySelector(
+          ".summon-legendary-effects",
+        )?.getAttribute("aria-hidden"),
+      ).toBe("true");
+      for (let index = 0; index < rewards.length; index++)
+        if (!legendary.includes(index)) fireEvent.click(backs[index]!);
+      expect(dialog.querySelectorAll(".summon-legendary-effects")).toHaveLength(
+        1,
+      );
+      act(() => vi.advanceTimersByTime(600));
+      fireEvent.click(backs[legendary[1]!]!);
+      fireEvent.click(backs[legendary[0]!]!);
+      expect(dialog.querySelectorAll(".summon-legendary-effects")).toHaveLength(
+        2,
+      );
+      expect(onSaveRevealProgress).toHaveBeenCalledTimes(6);
+      expect(onSummon).toHaveBeenCalledOnce();
+      act(() => vi.advanceTimersByTime(1_800));
+      expect(
+        slots[legendary[0]!]!.querySelector(".summon-legendary-effects"),
+      ).toBeNull();
+      expect(
+        slots[legendary[1]!]!.querySelector(".summon-legendary-effects"),
+      ).toBeTruthy();
+      act(() => vi.advanceTimersByTime(600));
+      expect(dialog.querySelector(".summon-legendary-effects")).toBeNull();
+      expect(dialog.querySelector(".summon-legendary-ambience")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not replay a legendary celebration on resume or in the saved history", async () => {
+    const { onSummon } = setup({ emeralds: 4_999 });
+    fireEvent.click(purchase("anciens", 1));
+    const dialog = await screen.findByRole("dialog");
+    const rewards = summonRoundRewards(reward(onSummon.mock.calls[0]![0]), 0);
+    const legendary = rewards.flatMap((item, index) =>
+      item.kind === "hero" &&
+      resolveCard(item.item.variantId).rarity === "legendary"
+        ? [index]
+        : [],
+    );
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: `Révéler la carte ${legendary[0]! + 1}`,
+      }),
+    );
+    expect(dialog.querySelector(".summon-legendary-effects")).toBeTruthy();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(resumed.querySelector(".summon-legendary-effects")).toBeNull();
+    expect(
+      within(resumed).queryByRole("button", {
+        name: `Révéler la carte ${legendary[0]! + 1}`,
+      }),
+    ).toBeNull();
+    fireEvent.click(
+      within(resumed).getByRole("button", {
+        name: `Révéler la carte ${legendary[1]! + 1}`,
+      }),
+    );
+    expect(resumed.querySelector(".summon-legendary-effects")).toBeTruthy();
+    turnAll(resumed);
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: "Fermer la fenêtre" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Dernière invocation" }),
+    );
+    const history = await screen.findByRole("dialog");
+    expect(history.querySelector(".summon-legendary-effects")).toBeNull();
+    expect(within(history).getAllByText("Légendaire")).toHaveLength(2);
     expect(onSummon).toHaveBeenCalledOnce();
   });
 

@@ -58,6 +58,8 @@ export function SummonRevealDialog({
   const flippedRef = useRef(flipped);
   const [inspected, setInspected] = useState<string | null>(null);
   const [lastFlipped, setLastFlipped] = useState<number | null>(null);
+  const [celebrating, setCelebrating] = useState<Set<number>>(() => new Set());
+  const celebrationTimers = useRef(new Set<ReturnType<typeof setTimeout>>());
   const popup = useRef<HTMLDivElement>(null);
   const center = useRef<HTMLButtonElement>(null);
   const fronts = useRef(new Map<number, HTMLDivElement>());
@@ -79,6 +81,9 @@ export function SummonRevealDialog({
         flipped.has(round * SUMMON_REVEAL_SLOTS + index),
       ).length;
   const complete = revealed === rewards.length;
+  const celebratingRound = rewards.some((_, index) =>
+    celebrating.has(round * SUMMON_REVEAL_SLOTS + index),
+  );
   const lastRound = result ? round === result.count - 1 : true;
   const enabled = result ? summonPack(result.packId).enabled : false;
   const offer = result
@@ -99,6 +104,12 @@ export function SummonRevealDialog({
         : insufficient
           ? "Émeraudes insuffisantes"
           : null;
+  useEffect(() => {
+    const timers = celebrationTimers.current;
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, []);
   useEffect(() => {
     if (lastFlipped == null) return;
     if (complete) center.current?.focus();
@@ -128,6 +139,22 @@ export function SummonRevealDialog({
     flippedRef.current = next;
     setLastFlipped(index);
     setFlipped(next);
+    const reward = rewards[index];
+    if (
+      reward?.kind === "hero" &&
+      resolveCard(reward.item.variantId).rarity === "legendary"
+    ) {
+      setCelebrating((current) => new Set(current).add(marker));
+      const timer = setTimeout(() => {
+        celebrationTimers.current.delete(timer);
+        setCelebrating((current) => {
+          const active = new Set(current);
+          active.delete(marker);
+          return active;
+        });
+      }, 2_400);
+      celebrationTimers.current.add(timer);
+    }
     onProgress?.({ round, revealed: [...next].sort((a, b) => a - b) });
   }
 
@@ -163,6 +190,9 @@ export function SummonRevealDialog({
             </header>
             <div className="summon-circle-stage">
               <div className="summon-circle-ring" aria-hidden="true" />
+              {celebratingRound && (
+                <div className="summon-legendary-ambience" aria-hidden="true" />
+              )}
               <div
                 className="summon-circle"
                 role="list"
@@ -170,13 +200,16 @@ export function SummonRevealDialog({
                 key={round}
               >
                 {rewards.map((reward, index) => {
+                  const isCelebrating = celebrating.has(
+                    round * SUMMON_REVEAL_SLOTS + index,
+                  );
                   const isFlipped =
                     history || flipped.has(round * SUMMON_REVEAL_SLOTS + index);
                   const angle =
                     ((-120 + (index * 360) / rewards.length) * Math.PI) / 180;
                   return (
                     <div
-                      className="summon-circle-slot"
+                      className={`summon-circle-slot${isCelebrating ? " is-legendary-revealing" : ""}`}
                       role="listitem"
                       key={index}
                       style={
@@ -186,6 +219,7 @@ export function SummonRevealDialog({
                         } as CSSProperties
                       }
                     >
+                      {isCelebrating && <LegendaryRevealEffects />}
                       <div
                         className={`summon-flip ${isFlipped ? "is-revealed" : ""}`}
                       >
@@ -380,5 +414,34 @@ export function SummonRevealDialog({
         onUpgrade={onUpgrade}
       />
     </Dialog>
+  );
+}
+
+function LegendaryRevealEffects() {
+  return (
+    <div className="summon-legendary-effects" aria-hidden="true">
+      <span className="summon-legendary-aura" />
+      <span className="summon-legendary-rays" />
+      <span className="summon-legendary-wave" />
+      <span className="summon-legendary-wave is-delayed" />
+      {Array.from({ length: 18 }, (_, index) => {
+        const angle = (index / 18) * Math.PI * 2;
+        const distance = 70 + (index % 3) * 20;
+        return (
+          <i
+            className="summon-legendary-particle"
+            key={index}
+            style={
+              {
+                "--particle-x": `${Math.cos(angle) * distance}cqw`,
+                "--particle-y": `${Math.sin(angle) * distance}cqw`,
+                "--particle-delay": `${380 + (index % 4) * 55}ms`,
+                "--particle-turn": `${index * 37}deg`,
+              } as CSSProperties
+            }
+          />
+        );
+      })}
+    </div>
   );
 }
