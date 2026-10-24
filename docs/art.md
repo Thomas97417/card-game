@@ -186,13 +186,15 @@ La fiche a été vérifiée dans un aperçu local avec des données de démonstr
 
 Aperçus : [fiche ordinateur](ui-card-dialog-validation.jpg), [fiche mobile](ui-card-mobile-validation.jpg), [coffre ordinateur](ui-chest-dialog-validation.jpg), [coffre mobile](ui-chest-mobile-validation.jpg).
 
-## Sanctuaire et diamants
+## Sanctuaire et émeraudes
 
 `apps/web/public/art/sanctuary.webp` représente un temple forestier ouvert, enchâssé dans un arbre ancien, avec un autel de pierre et une fontaine d’invocation turquoise. L’image a été générée avec l’outil intégré **ImageGen**, puis encodée avec `cwebp` en WebP de 1672 × 941 px, qualité 88, environ 487 Ko. Le décor couvre toute la page `/sanctuary` ; le titre, les taux, les prix et les commandes sont des éléments HTML. Les éventails des packs réutilisent les dos de cartes illustrés existants.
 
-`apps/web/public/art/ui/diamonds.webp` est un groupe de trois diamants bleus créé séparément avec **ImageGen**, sur un fond réellement transparent. Le canal alpha du WebP final a été vérifié avec `webpinfo`. L’image mesure 384 × 384 px, qualité 90, environ 42 Ko. Elle accompagne le solde en haut des pages connectées hors combat et les prix des invocations, à côté des pièces d’or.
+`apps/web/public/art/ui/emerald.webp` représente **une seule grosse émeraude verte**, taillée à pans coupés, créée avec **ImageGen intégré**, sur un fond réellement transparent. Elle remplace l’ancien groupe de trois diamants bleus. L’image finale mesure 384 × 384 px, qualité 90, avec son canal alpha conservé. Elle accompagne le solde en haut des pages connectées hors combat et les prix des invocations, à côté des pièces d’or. Les libellés accessibles, les messages de solde insuffisant et les accents du portefeuille utilisent aussi les émeraudes.
 
-Les deux prompts exacts, les chemins des PNG sources et les chemins finaux sont conservés dans [art-prompts-sanctuary.json](art-prompts-sanctuary.json). Les PNG originaux restent dans le dossier local de génération ; les deux images consommées par le jeu sont dans le dépôt. L’outil intégré a été utilisé pour les deux générations.
+Le prompt exact du décor et son chemin source restent dans [art-prompts-sanctuary.json](art-prompts-sanctuary.json). Le prompt exact de l’émeraude, son chemin source et le chemin final sont conservés dans [art-prompts-currency.json](art-prompts-currency.json), avec les pièces d’or. Les PNG originaux restent dans le dossier local de génération ; les images consommées par le jeu sont dans le dépôt.
+
+Le remplacement par les émeraudes a été vérifié dans le sanctuaire à 1280 × 720 px : une seule pierre dans le solde et chaque prix, transparence conservée (contrôlée avec `webpinfo`), solde existant préservé et aucune erreur de console. Aucune invocation n’a été achetée pour ce contrôle. TypeScript, la compilation de production et les 25 tests ciblés du portefeuille et du sanctuaire passent. [Aperçu avec les émeraudes](emerald-currency-validation.webp).
 
 Le parcours hub → sanctuaire a été vérifié sur le backend de développement et à 320 × 800 px. La page a aussi été contrôlée à 1280 × 720 et 390 × 844 px. Les révélations ont été testées dans un aperçu isolé avec des données de démonstration : dix cartes, minimum de deux légendaires pour le pack des anciens, débit du solde, désactivation des achats trop chers et ouverture du dialogue en haut de la liste sur mobile. Aucun diamant du compte connecté n’a été dépensé pour ces contrôles. Aucun débordement horizontal ni nouvelle erreur de console n’a été relevé après les derniers ajustements.
 

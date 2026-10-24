@@ -8,33 +8,33 @@
 .play-header > .currency-balances {
   margin-left: auto;
 }
-.diamond-icon {
+.emerald-icon {
   display: block;
   flex-shrink: 0;
   width: 36px;
   height: 36px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 3px #07343c80);
+  filter: drop-shadow(0 2px 3px #073c2180);
 }
-.diamond-amount,
-.diamond-balance {
+.emerald-amount,
+.emerald-balance {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.diamond-balance {
+.emerald-balance {
   min-height: 44px;
   flex-shrink: 0;
   padding: 3px 14px 3px 6px;
-  border: 1px solid #83c9ce88;
+  border: 1px solid #83ce9b88;
   border-radius: 24px;
-  background: linear-gradient(135deg, #243c35f2, #102c29f2);
-  color: #bff5ff;
+  background: linear-gradient(135deg, #243c2df2, #102c1cf2);
+  color: #c3f5ce;
   box-shadow:
     0 3px 12px #08130f40,
-    inset 0 1px #d0ffff1a;
+    inset 0 1px #d0ffdc1a;
   font:
     700 15px/1.2 "Avenir Next",
     sans-serif;
@@ -325,11 +325,11 @@
   font-size: 9px;
   font-weight: 400;
 }
-.summon-button-price .diamond-icon {
+.summon-button-price .emerald-icon {
   width: 24px;
   height: 24px;
 }
-.summon-button-price .diamond-amount {
+.summon-button-price .emerald-amount {
   gap: 3px;
 }
 .summon-button-guarantee {
@@ -535,15 +535,15 @@
   .currency-balances {
     gap: 5px;
   }
-  .diamond-balance {
+  .emerald-balance {
     gap: 5px;
     padding-right: 10px;
     font-size: 13px;
   }
-  .diamond-amount {
+  .emerald-amount {
     gap: 5px;
   }
-  .diamond-balance .diamond-icon {
+  .emerald-balance .emerald-icon {
     width: 30px;
     height: 30px;
   }
@@ -660,18 +660,18 @@
 }
 @media (max-width: 380px) {
   .currency-balances .gold-balance,
-  .currency-balances .diamond-balance {
+  .currency-balances .emerald-balance {
     min-height: 40px;
     gap: 3px;
     padding: 3px 8px 3px 3px;
     font-size: 11px;
   }
   .currency-balances .gold-amount,
-  .currency-balances .diamond-amount {
+  .currency-balances .emerald-amount {
     gap: 3px;
   }
   .currency-balances .gold-icon,
-  .currency-balances .diamond-icon {
+  .currency-balances .emerald-icon {
     width: 25px;
     height: 25px;
   }

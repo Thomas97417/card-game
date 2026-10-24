@@ -28,7 +28,7 @@ import leaguesCss from "../leagues.css?url";
 import sanctuaryCss from "../sanctuary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
-import { DiamondProvider } from "@/components/diamond-balance";
+import { EmeraldProvider } from "@/components/emerald-balance";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -112,7 +112,7 @@ function RootDocument() {
             storageKey="vite-ui-theme"
           >
             <GoldProvider>
-              <DiamondProvider>
+              <EmeraldProvider>
                 <div
                   className={
                     isImmersive
@@ -132,7 +132,7 @@ function RootDocument() {
                   </div>
                 </div>
                 <Toaster richColors />
-              </DiamondProvider>
+              </EmeraldProvider>
             </GoldProvider>
             <Scripts />
           </ThemeProvider>

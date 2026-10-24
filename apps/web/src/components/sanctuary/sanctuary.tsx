@@ -18,7 +18,7 @@ import {
   type SummonResult,
 } from "@sylve/game/summoning";
 import { CurrencyBalances } from "@/components/currency-balances";
-import { DiamondAmount } from "@/components/diamond-balance";
+import { EmeraldAmount } from "@/components/emerald-balance";
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import {
@@ -36,7 +36,7 @@ export interface SummonRequest {
 }
 
 interface SanctuaryProps {
-  diamonds: number | null | undefined;
+  emeralds: number | null | undefined;
   ready: boolean;
   latest?: SummonResult | null;
   collection: OwnedCard[] | undefined;
@@ -45,7 +45,7 @@ interface SanctuaryProps {
 }
 
 export function Sanctuary({
-  diamonds,
+  emeralds,
   ready,
   latest,
   collection,
@@ -66,7 +66,7 @@ export function Sanctuary({
   async function invoke(packId: SummonPackId, count: SummonCount) {
     const pack = summonPack(packId);
     const cost = count === 10 ? pack.tenPrice : pack.price;
-    if (lock.current || !ready || diamonds == null || diamonds < cost) return;
+    if (lock.current || !ready || emeralds == null || emeralds < cost) return;
     lock.current = true;
     setBusy({ packId, count });
     setError(null);
@@ -144,7 +144,7 @@ export function Sanctuary({
               <PackChoice
                 key={pack.id}
                 pack={pack}
-                diamonds={diamonds}
+                emeralds={emeralds}
                 ready={ready}
                 busy={busy}
                 onInvoke={invoke}
@@ -186,13 +186,13 @@ export function Sanctuary({
 
 function PackChoice({
   pack,
-  diamonds,
+  emeralds,
   ready,
   busy,
   onInvoke,
 }: {
   pack: SummonPack;
-  diamonds: number | null | undefined;
+  emeralds: number | null | undefined;
   ready: boolean;
   busy: { packId: SummonPackId; count: SummonCount } | null;
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
@@ -244,14 +244,14 @@ function PackChoice({
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
           const working = busy?.packId === pack.id && busy.count === count;
-          const insufficient = diamonds != null && diamonds < price;
+          const insufficient = emeralds != null && emeralds < price;
           return (
             <button
               key={count}
               type="button"
               className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
-              disabled={!ready || !!busy || diamonds == null || insufficient}
-              aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} diamants`}
+              disabled={!ready || !!busy || emeralds == null || insufficient}
+              aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
               aria-describedby={
                 count === 10
                   ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
@@ -259,7 +259,7 @@ function PackChoice({
               }
               title={
                 insufficient
-                  ? `Il te manque ${(price - diamonds!).toLocaleString("fr-FR")} diamants.`
+                  ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
                   : undefined
               }
               onClick={() => onInvoke(pack.id, count)}
@@ -278,11 +278,11 @@ function PackChoice({
               </span>
               <span className="summon-button-price">
                 {count === 10 && (
-                  <del aria-label={`Au lieu de ${pack.price * 10} diamants`}>
+                  <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
                     {(pack.price * 10).toLocaleString("fr-FR")}
                   </del>
                 )}
-                <DiamondAmount amount={price} />
+                <EmeraldAmount amount={price} />
               </span>
               {count === 10 && (
                 <span
@@ -296,10 +296,10 @@ function PackChoice({
           );
         })}
       </div>
-      {diamonds != null && diamonds < pack.price && (
+      {emeralds != null && emeralds < pack.price && (
         <p className="summon-insufficient">
-          Diamants insuffisants · Il te manque{" "}
-          {(pack.price - diamonds).toLocaleString("fr-FR")} diamants.
+          Émeraudes insuffisantes · Il te manque{" "}
+          {(pack.price - emeralds).toLocaleString("fr-FR")} émeraudes.
         </p>
       )}
     </article>

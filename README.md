@@ -25,18 +25,18 @@ L’ouverture révèle **deux récompenses : de l’or et un lot d’une seule c
 
 Le solde d’or, initialement nul, apparaît en haut des pages connectées, hors combat (`/game/$gameId` et `/practice`). Une icône originale de pièces dorées accompagne le solde, le coût des améliorations et les récompenses.
 
-### Sanctuaire et diamants
+### Sanctuaire et émeraudes
 
-Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les diamants permettent d’invoquer des cartes. Leur icône originale apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 diamants de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source de diamants n’est prévue pour le moment.
+Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les émeraudes permettent d’invoquer des cartes. Leur icône originale représente une seule grosse émeraude verte sur fond transparent et apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 émeraudes de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source d’émeraudes n’est prévue pour le moment. Les soldes existants sont conservés ; le champ de stockage historique `diamonds` reste compatible.
 
 | Pack | Taux par invocation, hors garantie | Une invocation | Dix invocations | Garantie du lot de dix |
 |---|---|---:|---:|---|
-| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 149 diamants | 1 299 diamants (−12,8 %) | Au moins 1 légendaire |
-| Appel des anciens | Épique 80 %, légendaire 20 % | 449 diamants | 3 899 diamants (−13,2 %) | Au moins 2 légendaires |
+| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 149 émeraudes | 1 299 émeraudes (−12,8 %) | Au moins 1 légendaire |
+| Appel des anciens | Épique 80 %, légendaire 20 % | 449 émeraudes | 3 899 émeraudes (−13,2 %) | Au moins 2 légendaires |
 
 Une invocation donne un exemplaire d’une variante. Le premier la débloque ; les doublons alimentent sa réserve sans changer son niveau. Les lots effectuent dix tirages puis, au besoin, remplacent des résultats non légendaires choisis au hasard pour atteindre leur garantie. Les légendaires obtenus naturellement sont conservés. Les garanties sont propres à chaque achat groupé, sans cumul des achats unitaires.
 
-Le serveur vérifie les diamants, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
+Le serveur vérifie les émeraudes, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
 
 ### Collection et deck
 
