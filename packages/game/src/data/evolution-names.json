@@ -1,0 +1,90 @@
+{
+  "guardian": {
+    "rare": "Gardien des runes",
+    "epic": "Colosse du serment"
+  },
+  "fox": {
+    "rare": "Renard archerune",
+    "epic": "Renard des comètes"
+  },
+  "owl": {
+    "rare": "Oracle des clairières",
+    "epic": "Hiérophante des brumes"
+  },
+  "stag": {
+    "rare": "Cerf prophète",
+    "epic": "Cerf des astres"
+  },
+  "mushroom": {
+    "rare": "Veilleur des fougères",
+    "epic": "Ancien des floraisons"
+  },
+  "dragon": {
+    "rare": "Dragon sylvestre",
+    "epic": "Dragon des tempêtes"
+  },
+  "turtle": {
+    "rare": "Tortue des roseaux",
+    "epic": "Tortue des marais anciens"
+  },
+  "wisp": {
+    "rare": "Esprit des fougères",
+    "epic": "Esprit des pluies"
+  },
+  "wolf": {
+    "rare": "Loup de givre",
+    "epic": "Loup de l’éclipse"
+  },
+  "knight": {
+    "rare": "Écuyer des ronces",
+    "epic": "Paladin des bosquets"
+  },
+  "serpent": {
+    "rare": "Vipère des ombres",
+    "epic": "Basilic de jade"
+  },
+  "bear": {
+    "rare": "Ours des fjords",
+    "epic": "Ours du tonnerre"
+  },
+  "healer": {
+    "rare": "Féline des lierres",
+    "epic": "Féline des neuf aurores"
+  },
+  "gnome": {
+    "rare": "Maître des racines",
+    "epic": "Forgeron des anciens"
+  },
+  "idol": {
+    "rare": "Totem des couronnes",
+    "epic": "Idole du soleil"
+  },
+  "enchantress": {
+    "rare": "Enchanteresse des runes",
+    "epic": "Archimage des pétales"
+  },
+  "lynx": {
+    "rare": "Lynx insaisissable",
+    "epic": "Lynx des miroirs"
+  },
+  "bard": {
+    "rare": "Ménestrel des branches",
+    "epic": "Maestro des frondaisons"
+  },
+  "tree": {
+    "rare": "Saule obscur",
+    "epic": "Ancêtre des murmures"
+  },
+  "vampire": {
+    "rare": "Aile de velours",
+    "epic": "Seigneur des ailes pourpres"
+  },
+  "captain": {
+    "rare": "Capitaine ailée",
+    "epic": "Maréchale des aurores"
+  },
+  "witch": {
+    "rare": "Sorcière des ombres",
+    "epic": "Matriarche des spores"
+  }
+}

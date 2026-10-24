@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUp,
@@ -6,10 +6,9 @@ import {
   Check,
   Crown,
   Plus,
-  Layers3,
 } from "lucide-react";
 import {
-  MAX_CARD_LEVEL,
+  maxCardLevel,
   RARITY_LABELS,
   resolveCard,
   upgradeCost,
@@ -17,6 +16,7 @@ import {
   combatTypeLabel,
   getCombatType,
   FACTION_LABELS,
+  GENDER_LABELS,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -27,11 +27,25 @@ import {
 } from "@/components/ui/dialog";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { StatBadge } from "@/components/game/stat-badge";
-import { GameIcon } from "@/components/game/game-icon";
+import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 import { CardAbilities } from "@/components/game/card-abilities";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
+
+type DeckActions =
+  | {
+      inDeck: boolean;
+      hasSpace: boolean;
+      onAdd: () => void;
+      onMove: () => void;
+    }
+  | {
+      inDeck?: never;
+      hasSpace?: never;
+      onAdd?: never;
+      onMove?: never;
+    };
 
 export function CardUpgradeDialog({
   entry,
@@ -43,18 +57,16 @@ export function CardUpgradeDialog({
   onMove,
 }: {
   entry: OwnedCard | undefined;
-  inDeck: boolean;
-  hasSpace: boolean;
   onClose: () => void;
   onUpgrade: (variantId: string) => Promise<unknown>;
-  onAdd: () => void;
-  onMove: () => void;
-}) {
+} & DeckActions) {
   const [busy, setBusy] = useState(false);
+  const popup = useRef<HTMLDivElement>(null);
   const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
-  const max = level >= MAX_CARD_LEVEL;
+  const maximum = maxCardLevel(card?.rarity, card?.baseId);
+  const max = level >= maximum;
   const cost = upgradeCost(level, card?.rarity);
   const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
@@ -86,12 +98,14 @@ export function CardUpgradeDialog({
       }}
     >
       <DialogContent
+        ref={popup}
+        initialFocus={popup}
         className="upgrade-dialog"
         appearance="game"
         data-rarity={card?.rarity ?? "common"}
       >
         {card && entry && (
-          <div className="upgrade-showcase">
+          <div className="upgrade-showcase" data-deck-actions={!!onMove}>
             <div className="upgrade-portrait">
               <div className="upgrade-portrait-stats">
                 <StatBadge
@@ -121,6 +135,7 @@ export function CardUpgradeDialog({
                   <GameIcon kind={getCombatType(card)} size={18} />
                   {combatTypeLabel(card)}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </span>
               </div>
             </div>
@@ -167,7 +182,7 @@ export function CardUpgradeDialog({
                     />
                     <span>
                       {max
-                        ? `Niveau ${level} / ${MAX_CARD_LEVEL}`
+                        ? `Niveau ${level} / ${maximum}`
                         : `${entry.copies} / ${cost} exemplaires`}
                     </span>
                   </span>
@@ -262,33 +277,35 @@ export function CardUpgradeDialog({
               </div>
             </div>
 
-            <aside className="upgrade-deck-panel" aria-label="Actions du deck">
-              <span className="eyebrow">TON DECK</span>
-              <div className="upgrade-deck-status" data-in-deck={inDeck}>
-                {inDeck ? <Check size={17} /> : <Layers3 size={17} />}
-                <span>{inDeck ? "Dans ton deck" : "Dans ta collection"}</span>
-              </div>
-              <div className="upgrade-deck-actions">
-                {inDeck ? (
-                  <button className="sylve-button secondary" onClick={onMove}>
-                    <ArrowRightLeft size={22} />
-                    Déplacer dans le deck
-                  </button>
-                ) : (
-                  <button
-                    className="sylve-button secondary"
-                    onClick={hasSpace ? onAdd : onMove}
-                  >
-                    {hasSpace ? (
-                      <Plus size={22} />
-                    ) : (
+            {onMove && (
+              <aside className="upgrade-deck-panel" aria-label="Actions du deck">
+                <span className="eyebrow">TON DECK</span>
+                <div className="upgrade-deck-status" data-in-deck={inDeck}>
+                  {inDeck ? <Check size={17} /> : <CollectionIcon size={17} />}
+                  <span>{inDeck ? "Dans ton deck" : "Dans ta collection"}</span>
+                </div>
+                <div className="upgrade-deck-actions">
+                  {inDeck ? (
+                    <button className="sylve-button secondary" onClick={onMove}>
                       <ArrowRightLeft size={22} />
-                    )}
-                    {hasSpace ? "Ajouter au deck" : "Remplacer une carte"}
-                  </button>
-                )}
-              </div>
-            </aside>
+                      Déplacer dans le deck
+                    </button>
+                  ) : (
+                    <button
+                      className="sylve-button secondary"
+                      onClick={hasSpace ? onAdd : onMove}
+                    >
+                      {hasSpace ? (
+                        <Plus size={22} />
+                      ) : (
+                        <ArrowRightLeft size={22} />
+                      )}
+                      {hasSpace ? "Ajouter au deck" : "Remplacer une carte"}
+                    </button>
+                  )}
+                </div>
+              </aside>
+            )}
           </div>
         )}
       </DialogContent>

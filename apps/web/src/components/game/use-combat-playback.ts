@@ -90,6 +90,9 @@ export function useCombatPlayback(latest: View | undefined) {
                   ...player,
                   ...(entry.runes ? { runes: entry.runes } : {}),
                   ...(entry.pentagrams ? { pentagrams: entry.pentagrams } : {}),
+                  ...(entry.heroMaxHp !== undefined
+                    ? { heroMaxHp: entry.heroMaxHp }
+                    : {}),
                   ...(entry.unit
                     ? {
                         board: player.board.map((unit) =>

@@ -14,7 +14,7 @@ export function CreaturePortrait({
       src={
         card.kind === "field-building"
           ? `/art/field/${card.id.replace(/^field-/, "")}.webp`
-          : `/art/characters/${baseCardId(card)}.webp`
+          : `/art/characters/${card.artId ?? baseCardId(card)}.webp`
       }
       alt={card.name}
       width={256}

@@ -3,11 +3,15 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen } from "lucide-react";
 import {
   CATALOG,
-  MAX_CARD_LEVEL,
+  maxCardLevel,
+  RARITIES,
+  RARITY_LABELS,
+  type CardRarity,
   variantCard,
   combatTypeLabel,
   getCombatType,
   FACTION_LABELS,
+  GENDER_LABELS,
 } from "@sylve/game";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameIcon } from "@/components/game/game-icon";
@@ -40,60 +44,91 @@ export function BestiaryDialog() {
 function BestiaryContent() {
   const [selectedId, setSelectedId] = useState(CATALOG[0]!.id);
   const [level, setLevel] = useState(1);
-  const selected = variantCard(selectedId, "common", level);
+  const [rarity, setRarity] = useState<CardRarity>("common");
+  const maximum = maxCardLevel(rarity, selectedId);
+  const selected = variantCard(selectedId, rarity, level);
   return (
     <>
       <span className="sanctuary-eyebrow">Le bestiaire</span>
       <DialogTitle>Des alliés, pas de simples cartes.</DialogTitle>
       <DialogDescription>
         Les {CATALOG.length} cartes de la Sylve existent chacune en quatre
-        raretés. Explore leurs caractéristiques communes du niveau 1 au niveau{" "}
-        {MAX_CARD_LEVEL}. Les invocations et les coffres débloquent de nouvelles
-        variantes ; l’or et leurs exemplaires permettent de les améliorer à
-        l’atelier.
+        raretés. Explore leurs évolutions, leurs compétences et leurs niveaux.
+        Les invocations et les coffres débloquent de nouvelles variantes ; l’or
+        et leurs exemplaires permettent de les améliorer à l’atelier.
       </DialogDescription>
+      <label className="bestiary-level">
+        Rareté de la carte
+        <select
+          value={rarity}
+          onChange={(e) => {
+            const next = e.target.value as CardRarity;
+            setRarity(next);
+            setLevel((current) =>
+              Math.min(current, maxCardLevel(next, selectedId)),
+            );
+          }}
+        >
+          {RARITIES.map((value) => (
+            <option key={value} value={value}>
+              {RARITY_LABELS[value]}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="bestiary-level">
         Niveau de la carte
         <select
           value={level}
           onChange={(e) => setLevel(Number(e.target.value))}
         >
-          {Array.from({ length: MAX_CARD_LEVEL }, (_, i) => (
+          {Array.from({ length: maximum }, (_, i) => (
             <option key={i + 1} value={i + 1}>
               {i + 1}
             </option>
           ))}
         </select>
-        <span>1 à {MAX_CARD_LEVEL} · Commune</span>
+        <span>
+          1 à {maximum} · {RARITY_LABELS[rarity]}
+        </span>
       </label>
       <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {CATALOG.map((base) => variantCard(base.id, "common", level)).map(
-            (card) => (
-              <button
-                key={card.id}
-                type="button"
-                onClick={() => setSelectedId(card.baseId!)}
-                aria-pressed={card.baseId === selectedId}
-                aria-label={`Découvrir ${card.name}`}
-                className={cn(
-                  "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
-                  card.baseId === selectedId
-                    ? "border-[#8c9d70] bg-[#e8eddb]"
-                    : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
-                )}
-              >
-                <CreaturePortrait card={card} />
-                <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
-                  {card.name}
-                </span>
-                <CardAbilityIcons
-                  card={card}
-                  className="bestiary-card-abilities"
-                />
-              </button>
+          {CATALOG.map((base) =>
+            variantCard(
+              base.id,
+              rarity,
+              Math.min(level, maxCardLevel(rarity, base.id)),
             ),
-          )}
+          ).map((card) => (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => {
+                setSelectedId(card.baseId!);
+                setLevel((current) =>
+                  Math.min(current, maxCardLevel(rarity, card.baseId)),
+                );
+              }}
+              aria-pressed={card.baseId === selectedId}
+              aria-label={`Découvrir ${card.name}`}
+              className={cn(
+                "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
+                card.baseId === selectedId
+                  ? "border-[#8c9d70] bg-[#e8eddb]"
+                  : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
+              )}
+            >
+              <CreaturePortrait card={card} />
+              <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
+                {card.name}
+              </span>
+              <CardAbilityIcons
+                card={card}
+                className="bestiary-card-abilities"
+              />
+            </button>
+          ))}
         </div>
         <div
           aria-live="polite"
@@ -113,6 +148,7 @@ function BestiaryContent() {
             <p className="mt-2 text-xs font-semibold text-[#4d614b]">
               {combatTypeLabel(selected)}
               {selected.faction && ` · ${FACTION_LABELS[selected.faction]}`}
+              {selected.gender && ` · ${GENDER_LABELS[selected.gender]}`}
             </p>
             <div className="mt-3 flex gap-5 text-sm font-semibold sm:mt-4 sm:justify-center">
               <span className="flex items-center gap-1.5">

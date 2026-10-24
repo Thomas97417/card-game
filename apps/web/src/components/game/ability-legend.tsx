@@ -1,6 +1,28 @@
 import { AbilityIcon, type AbilityIconKind } from "./ability-icons";
 
 const entries: [AbilityIconKind, string, string][] = [
+  [
+    "silence",
+    "Silence",
+    "Supprime les compétences et bonus. La purification ne retire pas le silence.",
+  ],
+  ["immunity", "Immunité", "Ignore les compétences alliées et ennemies."],
+  ["evasion", "Esquive", "Évite les attaques physiques à distance."],
+  [
+    "counter-attack",
+    "Contre-attaque",
+    "Riposte une fois aux attaques ; les ripostes ne se relancent pas entre elles.",
+  ],
+  [
+    "weaken",
+    "Malédiction",
+    "Inflige des dégâts quand le porteur reçoit un bonus d’attaque.",
+  ],
+  [
+    "heal",
+    "Purification",
+    "Retire poison, entrave, malédiction et affaiblissement, en conservant le silence.",
+  ],
   ["power", "Puissance", "Augmente l’attaque."],
   ["vitality", "Vitalité", "Augmente les PV actuels et maximum."],
   ["heal", "Soin", "Restaure des PV, jusqu’au maximum."],
@@ -38,7 +60,26 @@ const entries: [AbilityIconKind, string, string][] = [
     "Alliance de l’Ordre",
     "Renforce l’attaque grâce aux alliés Ordre.",
   ],
-  ["weaken", "Affaiblissement", "Réduit l’attaque."],
+  [
+    "weaken",
+    "Affaiblissement",
+    "Réduit l’attaque. Le vol d’attaque transfère la valeur effectivement retirée au lanceur.",
+  ],
+  [
+    "poison",
+    "Poison",
+    "Les attaques empoisonnent leur cible. Les doses se cumulent et infligent leurs dégâts au début du tour du porteur, avant sa régénération.",
+  ],
+  [
+    "vitality",
+    "Formation",
+    "Les bonus par allié suivent la formation : les voisins adjacents se touchent par un côté ; les unités autour incluent les diagonales.",
+  ],
+  [
+    "power",
+    "Rune de puissance",
+    "Renforce l’attaque de la prochaine unité qui apparaît sur cette case.",
+  ],
   [
     "blocked",
     "Attaque bloquée",
@@ -64,7 +105,7 @@ export function AbilityLegend() {
       </p>
       <dl>
         {entries.map(([kind, label, description]) => (
-          <div key={kind}>
+          <div key={label}>
             <AbilityIcon kind={kind} size={32} />
             <div>
               <dt>{label}</dt>

@@ -158,9 +158,14 @@
 }
 .upgrade-showcase {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr) 142px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
   align-items: stretch;
   gap: 24px;
+}
+@media (min-width: 901px) {
+  .upgrade-showcase[data-deck-actions="true"] {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr) 142px;
+  }
 }
 .upgrade-portrait {
   position: relative;
@@ -258,7 +263,7 @@
 .upgrade-portrait-name {
   color: #fff1d3;
   font:
-    600 clamp(22px, 2.2vw, 28px)/1.15 Georgia,
+    600 clamp(22px, 2.2vw, 28px) / 1.15 Georgia,
     serif;
   text-wrap: balance;
   text-shadow: 0 2px 4px #06150e;
@@ -827,11 +832,11 @@
     inset: 4px 2px auto;
   }
   .upgrade-portrait-stats .stat-badge {
-    width: 36px;
-    height: 36px;
+    width: 46px;
+    height: 40px;
   }
   .upgrade-portrait-stats .stat-badge strong {
-    font-size: 23px;
+    font-size: 20px;
   }
   .upgrade-card-level {
     top: 41px;

@@ -5,10 +5,8 @@ import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
   CATALOG,
   DECK_SIZE,
-  MAX_CARD_LEVEL,
   RARITIES,
   RARITY_LABELS,
-  upgradeCost,
   combatTypeLabel,
   getCombatType,
 } from "@sylve/game";
@@ -19,18 +17,15 @@ import type {
   OwnedCard,
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
+import { CardArtwork } from "./card-artwork";
 import {
   ArrowRightLeft,
   Check,
-  Layers3,
   Leaf,
   ListFilter,
   X,
 } from "lucide-react";
-import { CreaturePortrait } from "@/components/game/creature-portrait";
-import { CardAbilityIcons } from "@/components/game/ability-icons";
-import { StatBadge } from "@/components/game/stat-badge";
-import { GameIcon } from "@/components/game/game-icon";
+import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { CurrencyBalances } from "@/components/currency-balances";
@@ -73,46 +68,6 @@ const deckDraft = (deck: WorkshopDeck): Draft => ({
 });
 const instructions =
   "Glisse une carte de la collection sur une carte de ton deck pour la remplacer.";
-
-function CardArtwork({
-  card,
-  copies = 0,
-}: {
-  card: CardDefinition;
-  copies?: number;
-}) {
-  const type = getCombatType(card);
-  return (
-    <>
-      <span className="workshop-card-art">
-        <span className="workshop-card-halo" />
-        <CreaturePortrait card={card} />
-      </span>
-      <span className="card-level">Niv. {card.level ?? 1}</span>
-      <CardAbilityIcons card={card} className="workshop-card-abilities" />
-      <span className="card-stats">
-        <StatBadge
-          kind="attack"
-          value={card.attack}
-          combatType={getCombatType(card)}
-        />
-        <StatBadge kind="health" value={card.health} />
-      </span>
-      <span className="workshop-card-caption">
-        <span className="workshop-card-name">{card.name}</span>
-        <span className="workshop-card-type">
-          <GameIcon kind={type} size={15} />
-          {combatTypeLabel(card)}
-        </span>
-        <span className="workshop-copies">
-          {(card.level ?? 1) >= MAX_CARD_LEVEL
-            ? `${copies} · MAX`
-            : `${copies} / ${upgradeCost(card.level ?? 1, card.rarity)}`}
-        </span>
-      </span>
-    </>
-  );
-}
 
 export function DeckWorkshop({
   league = leagueProgress(0),
@@ -204,12 +159,18 @@ export function DeckWorkshop({
   const available = (collection ?? [])
     .map((entry) => entry.card)
     .filter((card) => !cards.includes(card.id));
-  const visible = available.filter(
-    (card) =>
-      (!filter || getCombatType(card) === filter) &&
-      (rarityFilters.length === 0 ||
-        rarityFilters.includes(card.rarity ?? "common")),
-  );
+  const visible = available
+    .filter(
+      (card) =>
+        (!filter || getCombatType(card) === filter) &&
+        (rarityFilters.length === 0 ||
+          rarityFilters.includes(card.rarity ?? "common")),
+    )
+    .sort(
+      (a, b) =>
+        RARITIES.indexOf(b.rarity ?? "common") -
+        RARITIES.indexOf(a.rarity ?? "common"),
+    );
   const selectedCard = picked ? entries.get(picked)?.card : undefined;
 
   function cancelDrag() {
@@ -482,7 +443,7 @@ export function DeckWorkshop({
                           if (picked) replaceCard(picked, slot);
                         }}
                       >
-                        <Layers3 size={27} />
+                        <CollectionIcon size={27} />
                         <span>Emplacement libre</span>
                       </button>
                     </div>
@@ -586,11 +547,7 @@ export function DeckWorkshop({
                 setMessage(instructions);
               }}
             >
-              {type ? (
-                <GameIcon kind={type} size={25} />
-              ) : (
-                <Layers3 size={19} strokeWidth={1.6} aria-hidden="true" />
-              )}
+              <GameIcon kind={type ?? "all"} size={25} />
               <span>{label}</span>
             </button>
           ))}

@@ -11,6 +11,7 @@ import {
   fieldBonus,
   fieldMarkName,
   unitCard,
+  GENDER_LABELS,
   type CardDefinition,
   type GameView,
   type UnitPosition,
@@ -226,6 +227,7 @@ export function DuelDetailsDialog({
                         ? "Déploiement sur toute case libre. N’attaque pas."
                         : "Déploiement au milieu ou vers ton héros."}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </p>
                 <div className="card-details-layout">
                   <div
@@ -383,7 +385,7 @@ export function DuelDetailsDialog({
                     <div>
                       <dt>Points de vie</dt>
                       <dd>
-                        {player.heroHp} / {HERO_HP}
+                        {player.heroHp} / {player.heroMaxHp ?? HERO_HP}
                       </dd>
                     </div>
                     <div>

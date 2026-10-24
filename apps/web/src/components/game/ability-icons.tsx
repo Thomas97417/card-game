@@ -25,7 +25,12 @@ export type AbilityIconKind =
   | "order-alliance"
   | "weaken"
   | "blocked"
-  | "temporary";
+  | "temporary"
+  | "poison"
+  | "silence"
+  | "immunity"
+  | "evasion"
+  | "counter-attack";
 
 const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   attack: "power",
@@ -41,6 +46,22 @@ const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   rune: "life-rune",
   summon: "reinforcement",
   attack_per_ally: "order-alliance",
+  health_per_ally: "vitality",
+  heal_full: "heal",
+  damage: "power",
+  poison: "poison",
+  steal_attack: "weaken",
+  attack_rune: "power",
+  cleanse: "heal",
+  silence: "silence",
+  drain: "vampirism",
+  counter_attack: "counter-attack",
+  immunity: "immunity",
+  evasion: "evasion",
+  set_attack: "weaken",
+  attack_curse: "weaken",
+  hero_damage_from_health: "power",
+  poison_enemy: "poison",
 };
 
 export function abilityIconKind(
@@ -120,6 +141,9 @@ const storedPassives = new Set<AbilityEffect>([
   "spikes",
   "vampirism",
   "regeneration",
+  "poison",
+  "immunity",
+  "evasion",
 ]);
 
 export function CardAbilityIcons({
@@ -211,6 +235,68 @@ export function unitEffects(
       label: `Vampirisme ${unit.vampirism}`,
       value: unit.vampirism,
       description: `Draine jusqu’à ${unit.vampirism} PV après l’attaque et soigne son porteur.`,
+    });
+  if (unit.poison)
+    effects.push({
+      kind: "poison",
+      label: `Poison ${unit.poison}`,
+      value: unit.poison,
+      description: `Les attaques empoisonnent leur cible pour ${unit.poison} dégâts récurrents.`,
+    });
+  if (unit.poisoned)
+    effects.push({
+      kind: "poison",
+      label: `Empoisonné ${unit.poisoned}`,
+      value: unit.poisoned,
+      description: `Subit ${unit.poisoned} dégâts au début de son tour, avant la régénération.`,
+    });
+  if (unit.extraAttacks)
+    effects.push({
+      kind: "double-strike",
+      label: `Attaques supplémentaires ${unit.extraAttacks}`,
+      value: unit.extraAttacks,
+      description: `Effectue ${unit.extraAttacks} attaque(s) supplémentaire(s) à chaque assaut.`,
+    });
+  if (unit.silenced)
+    effects.push({
+      kind: "silence",
+      label: "Silence",
+      description:
+        "Compétences et bonus supprimés ; la purification ne retire pas ce silence.",
+    });
+  if (unit.immune)
+    effects.push({
+      kind: "immunity",
+      label: "Immunité",
+      description: "Ignore les compétences alliées et ennemies.",
+    });
+  if (unit.evasion)
+    effects.push({
+      kind: "evasion",
+      label: "Esquive",
+      description: "Évite les attaques physiques à distance.",
+    });
+  if (unit.counterAttack)
+    effects.push({
+      kind: "counter-attack",
+      label: "Contre-attaque",
+      description:
+        "Riposte une fois à chaque attaque reçue ; une riposte ne provoque pas de nouvelle riposte.",
+    });
+  if (unit.attackLimit !== undefined)
+    effects.push({
+      kind: "weaken",
+      label: `Entrave : ATQ ${unit.attackLimit}`,
+      value: unit.attackLimit,
+      description:
+        "Attaque fixée jusqu’à la fin du prochain assaut de son propriétaire.",
+    });
+  if (unit.attackCurse)
+    effects.push({
+      kind: "weaken",
+      label: `Malédiction ${unit.attackCurse}`,
+      value: unit.attackCurse,
+      description: `Subit ${unit.attackCurse} dégâts à chaque bonus d’attaque reçu.`,
     });
   const attack = unit.card.attack - base.attack;
   if (attack > 0)
@@ -318,6 +404,24 @@ export function UnitEffectIcons({
 
 const eventIcons: Record<string, AbilityIconKind> = {
   Puissance: "power",
+  Purification: "heal",
+  Silence: "silence",
+  "Drain de vie": "vampirism",
+  "Contre-attaque": "counter-attack",
+  Immunité: "immunity",
+  Esquive: "evasion",
+  Entrave: "weaken",
+  Malédiction: "weaken",
+  "Écho vital": "power",
+  "Fin de l’entrave": "weaken",
+  "Soin intégral": "heal",
+  "Dégâts magiques": "power",
+  Poison: "poison",
+  Empoisonnement: "poison",
+  "Vol d’attaque": "weaken",
+  "Rune de puissance": "power",
+  "Vitalité de formation": "vitality",
+  "Puissance de formation": "order-alliance",
   Vitalité: "vitality",
   Soin: "heal",
   Blocage: "block",
@@ -328,7 +432,6 @@ const eventIcons: Record<string, AbilityIconKind> = {
   "Double attaque": "double-strike",
   Perforation: "piercing",
   "Rune de vie": "life-rune",
-  "Rune de puissance": "power",
   "Pentagramme de vie": "vitality",
   "Pentagramme de puissance": "power",
   Renfort: "reinforcement",

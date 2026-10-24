@@ -1,27 +1,28 @@
-import { Landmark } from "lucide-react";
+const ICON_ARTWORK = {
+  health: "health-heart",
+  melee: "melee-sword",
+  ranged: "ranged-bow",
+  building: "building-tower",
+  all: "all-cards",
+} as const;
+
+interface IconProps {
+  size?: number;
+  className?: string;
+}
 
 /** Illustrated game symbols; the surrounding label supplies their meaning. */
 export function GameIcon({
   kind,
   size = 20,
   className = "",
-}: {
-  kind: "health" | "melee" | "ranged" | "building";
-  size?: number;
-  className?: string;
+}: IconProps & {
+  kind: keyof typeof ICON_ARTWORK;
 }) {
-  if (kind === "building")
-    return (
-      <Landmark
-        className={`game-icon ${className}`}
-        size={size}
-        aria-hidden="true"
-      />
-    );
   return (
     <img
       className={`game-icon ${className}`}
-      src={`/art/ui/${kind === "health" ? "health-heart" : kind === "melee" ? "melee-sword" : "ranged-bow"}.webp`}
+      src={`/art/ui/${ICON_ARTWORK[kind]}.webp`}
       alt=""
       aria-hidden="true"
       width={size}
@@ -30,4 +31,8 @@ export function GameIcon({
       decoding="async"
     />
   );
+}
+
+export function CollectionIcon(props: IconProps) {
+  return <GameIcon kind="all" {...props} />;
 }

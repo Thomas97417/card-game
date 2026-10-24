@@ -1,6 +1,7 @@
 export * from "./cards";
 export * from "./field";
 import { populateField, type FieldBuildingKind } from "./field";
+import summonProfiles from "./data/mighty-party-summons.json";
 import {
   GameError,
   resolveCard,
@@ -79,7 +80,18 @@ export interface Unit {
   spikes?: number;
   vampirism?: number;
   regeneration?: number;
+  poison?: number;
+  poisoned?: number;
+  extraAttacks?: number;
+  formationHealth?: number;
   shield?: boolean;
+  silenced?: boolean;
+  immune?: boolean;
+  evasion?: boolean;
+  counterAttack?: boolean;
+  attackCurse?: number;
+  attackLimit?: number;
+  formationAttack?: number;
   temporaryAttack?: number;
   /** Definitions for summoned tokens and scenery outside the collectible deck. */
   definition?: CardDefinition;
@@ -124,29 +136,139 @@ export function unitMaxHp(unit: Unit, cards: readonly CardDefinition[]) {
 export function unitAttack(
   unit: Unit,
   owner: Pick<PlayerState, "cards" | "board">,
+  enemy?: Pick<PlayerState, "cards" | "board">,
 ) {
   const card = unitCard(unit, owner.cards);
-  const synergy = (card.abilities ?? [])
+  if (unit.attackLimit !== undefined) return unit.attackLimit;
+  const synergy = (unit.silenced ? [] : (card.abilities ?? []))
     .filter((a) => a.active && a.effect === "attack_per_ally")
     .reduce(
       (total, a) =>
         total +
         a.value *
-          owner.board.filter(
-            (other) =>
-              other !== unit &&
-              other.hp > 0 &&
-              unitCard(other, owner.cards).faction === "order",
-          ).length,
+          formationTargets(unit, owner, a.target, enemy, a.includeSelf).length,
       0,
     );
   return Math.max(0, (unit.attack ?? card.attack) + synergy);
+}
+
+/** Opposing front columns touch; adjacent is orthogonal, nearby includes diagonals. */
+function formationTargets(
+  source: Unit,
+  owner: Pick<PlayerState, "cards" | "board">,
+  target: CardAbility["target"],
+  enemy?: Pick<PlayerState, "cards" | "board">,
+  includeSelf = false,
+) {
+  const allies = owner.board.filter(
+    (u) => (includeSelf || u !== source) && u.hp > 0,
+  );
+  const adjacent = (u: Unit, opposing = false, diagonal = false) => {
+    const x = opposing
+      ? source.depth + u.depth + 1
+      : Math.abs(source.depth - u.depth);
+    const y = Math.abs(source.row - u.row);
+    return diagonal ? Math.max(x, y) === 1 : x + y === 1;
+  };
+  const card = (u: Unit) => unitCard(u, owner.cards);
+  switch (target) {
+    case "order_allies":
+      return allies.filter((u) => card(u).faction === "order");
+    case "nature_allies":
+      return allies.filter((u) => card(u).faction === "nature");
+    case "chaos_allies":
+      return allies.filter((u) => card(u).faction === "chaos");
+    case "male_allies":
+      return allies.filter((u) => card(u).gender === "male");
+    case "ranged_allies":
+      return allies.filter((u) => getCombatType(card(u)) === "ranged");
+    case "allies_with_block":
+      return allies.filter((u) => (u.block ?? 0) > 0);
+    case "allies_with_vampirism":
+      return allies.filter((u) => (u.vampirism ?? 0) > 0);
+    case "allies_with_shield":
+      return allies.filter((u) => u.shield);
+    case "adjacent_allies":
+      return allies.filter((u) => adjacent(u));
+    case "nearby_allies":
+      return allies.filter((u) => adjacent(u, false, true));
+    case "adjacent_heroes":
+    case "nearby_heroes": {
+      const diagonal = target === "nearby_heroes";
+      return [
+        ...allies.filter((u) => adjacent(u, false, diagonal)),
+        ...(enemy?.board ?? []).filter(
+          (u) => u.hp > 0 && adjacent(u, true, diagonal),
+        ),
+      ];
+    }
+    default:
+      return allies;
+  }
+}
+
+function refreshFormation(
+  state: GameState,
+  events: GameEvent[],
+  random: () => number = () => 0,
+) {
+  for (const [player, owner] of state.players.entries()) {
+    for (const unit of owner.board) {
+      if (unit.hp <= 0) continue;
+      const attackBonus = activeAbilities(unit, owner, "passive")
+        .filter((a) => a.effect === "attack_per_ally")
+        .reduce(
+          (sum, a) =>
+            sum +
+            a.value *
+              formationTargets(
+                unit,
+                owner,
+                a.target,
+                state.players[1 - player],
+                a.includeSelf,
+              ).length,
+          0,
+        );
+      const gainedAttack = attackBonus - (unit.formationAttack ?? 0);
+      if (attackBonus !== 0 || unit.formationAttack !== undefined)
+        unit.formationAttack = attackBonus;
+      if (gainedAttack > 0) punishAttack(state, events, player, unit, random);
+      if (unit.hp <= 0) continue;
+      const bonus = activeAbilities(unit, owner, "passive")
+        .filter((a) => a.effect === "health_per_ally")
+        .reduce(
+          (sum, a) =>
+            sum +
+            a.value *
+              formationTargets(unit, owner, a.target, state.players[1 - player])
+                .length,
+          0,
+        );
+      const previous = unit.formationHealth ?? 0;
+      if (bonus === previous) continue;
+      unit.maxHp = unitMaxHp(unit, owner.cards) + bonus - previous;
+      unit.hp = Math.min(unit.maxHp, Math.max(1, unit.hp + bonus - previous));
+      unit.formationHealth = bonus;
+      effectEvent(
+        state,
+        events,
+        player,
+        unit,
+        "Vitalité de formation",
+        player,
+        unit,
+        bonus - previous,
+      );
+    }
+  }
 }
 export type UnitPosition = Pick<Unit, "row" | "depth">;
 export interface PlayerState {
   userId: string;
   name: string;
   heroHp: number;
+  heroMaxHp?: number;
   cards: CardDefinition[];
   hand: string[];
   /** Variants outside the hand, all eligible even while deployed. */
@@ -187,6 +309,7 @@ export interface GameEvent {
   targetDepth?: number;
   damage?: number;
   hp?: number;
+  heroMaxHp?: number;
   ability?: string;
   amount?: number;
   unit?: Unit;
@@ -353,6 +476,8 @@ export function summon(
   });
   applyAbilities(state, playerIndex, unit, "deploy", events, random);
   appeared(state, playerIndex, unit, events, random);
+  removeDead(state, events, random);
+  if (victory(state, events)) return { state, events };
   const resolved = endTurn(state, playerIndex, turn, now, random);
   return { state: resolved.state, events: [...events, ...resolved.events] };
 }
@@ -397,6 +522,7 @@ export function withdraw(
     depth: unit.depth,
     ...removedMarks,
   });
+  refreshFormation(state, events);
   return { state, events };
 }
 
@@ -405,14 +531,16 @@ function activeAbilities(
   owner: PlayerState,
   trigger?: CardAbility["trigger"],
 ) {
-  return (unitCard(unit, owner.cards).abilities ?? []).filter(
-    (a) => a.active && (!trigger || a.trigger === trigger),
-  );
+  return (
+    unit.silenced ? [] : (unitCard(unit, owner.cards).abilities ?? [])
+  ).filter((a) => a.active && (!trigger || a.trigger === trigger));
 }
 function initializePassives(unit: Unit, card: CardDefinition) {
   for (const a of card.abilities ?? []) {
     if (!a.active || a.trigger !== "passive") continue;
     if (a.effect === "shield") unit.shield = true;
+    if (a.effect === "immunity") unit.immune = true;
+    if (a.effect === "evasion") unit.evasion = true;
     if (
       a.effect === "block" ||
       a.effect === "spikes" ||
@@ -466,20 +594,82 @@ function healUnit(
   target: Unit,
   amount: number,
   label: string,
+  random: () => number,
 ) {
   const owner = state.players[player]!;
   const healed = Math.min(
     amount,
     Math.max(0, unitMaxHp(target, owner.cards) - target.hp),
   );
-  if (target.hp <= 0 || healed <= 0) return;
+  if (target.hp <= 0 || target.immune || healed <= 0) return;
   target.hp += healed;
   effectEvent(state, events, player, source, label, player, target, healed);
+  react(state, player, "ally_healed", events, random, target);
+}
+function react(
+  state: GameState,
+  player: number,
+  trigger: CardAbility["trigger"],
+  events: GameEvent[],
+  random: () => number,
+  subject?: Unit,
+) {
+  for (const unit of [...state.players[player]!.board])
+    if (
+      unit.hp > 0 &&
+      (unit !== subject ||
+        activeAbilities(unit, state.players[player]!, trigger).some(
+          (a) => a.reactToSelf,
+        ))
+    )
+      applyAbilities(state, player, unit, trigger, events, random, subject);
 }
 function pick<T>(items: T[], random: () => number): T[] {
   return items.length
     ? [items[Math.min(items.length - 1, Math.floor(random() * items.length))]!]
     : [];
+}
+function consumeShield(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  source: Unit,
+  targetPlayer: number,
+  target: Unit,
+  random: () => number,
+) {
+  target.shield = false;
+  effectEvent(
+    state,
+    events,
+    player,
+    source,
+    "Bouclier mental",
+    targetPlayer,
+    target,
+  );
+  for (const p of [0, 1]) react(state, p, "shield_lost", events, random);
+}
+function punishAttack(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  unit: Unit,
+  random: () => number,
+) {
+  if (unit.attackCurse && unit.hp > 0)
+    damageUnit(
+      state,
+      events,
+      player,
+      unit,
+      player,
+      unit,
+      unit.attackCurse,
+      false,
+      "Malédiction",
+      random,
+    );
 }
 function targets(
   state: GameState,
@@ -487,15 +677,99 @@ function targets(
   source: Unit,
   a: CardAbility,
   random: () => number,
+  context?: Unit,
 ): Unit[] {
   const owner = state.players[player]!;
-  const allies = owner.board.filter((u) => u !== source && u.hp > 0);
+  const allies = owner.board.filter(
+    (u) => (a.includeSelf || u !== source) && u.hp > 0,
+  );
   const card = (u: Unit) => unitCard(u, owner.cards);
   switch (a.target) {
     case "self":
       return source.hp > 0 ? [source] : [];
     case "random_ally":
-      return pick(allies, random);
+      return (a.count ?? 1) === 1
+        ? pick(allies, random)
+        : shuffle(allies, random).slice(0, a.count);
+    case "random_wounded_ally":
+      return pick(
+        allies.filter((u) => u.hp < unitMaxHp(u, owner.cards)),
+        random,
+      );
+    case "event_ally":
+    case "event_enemy":
+    case "attacker":
+    case "attack_target":
+      return context && context.hp > 0 ? [context] : [];
+    case "random_enemy":
+      return shuffle(
+        state.players[1 - player]!.board.filter((u) => u.hp > 0),
+        random,
+      ).slice(0, a.count ?? 1);
+    case "random_column_ally":
+      return pick(
+        allies.filter((u) => u.depth === source.depth),
+        random,
+      );
+    case "adjacent_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) =>
+          u.hp > 0 &&
+          source.depth + u.depth + 1 + Math.abs(source.row - u.row) === 1,
+      );
+    case "nature_enemies":
+    case "melee_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) =>
+          u.hp > 0 &&
+          (a.target === "nature_enemies"
+            ? unitCard(u, state.players[1 - player]!.cards).faction === "nature"
+            : getCombatType(unitCard(u, state.players[1 - player]!.cards)) ===
+              "melee"),
+      );
+    case "all_heroes":
+    case "non_chaos_heroes":
+      return state.players.flatMap((p) =>
+        p.board.filter(
+          (u) =>
+            u.hp > 0 &&
+            (a.target === "all_heroes" ||
+              unitCard(u, p.cards).faction !== "chaos"),
+        ),
+      );
+    case "ranged_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) =>
+          u.hp > 0 &&
+          getCombatType(unitCard(u, state.players[1 - player]!.cards)) ===
+            "ranged",
+      );
+    case "random_female_enemy":
+      return pick(
+        state.players[1 - player]!.board.filter(
+          (u) =>
+            u.hp > 0 &&
+            unitCard(u, state.players[1 - player]!.cards).gender === "female",
+        ),
+        random,
+      );
+    case "ranged_allies":
+    case "chaos_allies":
+    case "male_allies":
+    case "adjacent_allies":
+    case "nearby_allies":
+    case "adjacent_heroes":
+    case "nearby_heroes":
+    case "allies_with_block":
+    case "allies_with_vampirism":
+    case "allies_with_shield":
+      return formationTargets(
+        source,
+        owner,
+        a.target,
+        state.players[1 - player],
+        a.includeSelf,
+      );
     case "random_zombie":
       return pick(
         allies.filter((u) => card(u).kind === "zombie"),
@@ -525,19 +799,81 @@ function tokenDefinition(
   source: CardDefinition,
   spec: NonNullable<CardAbility["summon"]>,
 ): CardDefinition {
+  const profile = summonProfiles.find((p) => p.kind === spec.kind);
+  if (profile) {
+    return {
+      id: `token-${spec.kind}-${source.id}-${spec.level}`,
+      baseId: profile.artId,
+      artId: profile.artId,
+      name: profile.name,
+      title: "Renfort invoqué",
+      kind: spec.kind,
+      color: source.color,
+      attack: spec.attack,
+      health: spec.health,
+      level: spec.level,
+      rarity: "common",
+      faction: profile.faction as CardDefinition["faction"],
+      gender: profile.gender as CardDefinition["gender"],
+      combatType: profile.combatType as CardDefinition["combatType"],
+      abilities: profile.skills.map((s): CardAbility => {
+        const value = s.values[spec.level - 1]!;
+        const effect = s.effect as CardAbility["effect"];
+        return {
+          id: s.id,
+          name:
+            effect === "damage"
+              ? "Dégâts magiques"
+              : effect === "attack"
+                ? "Puissance"
+                : effect === "heal"
+                  ? "Soin"
+                  : "Blocage",
+          description: s.descriptionFr.replace("{value}", String(value)),
+          value,
+          effect,
+          trigger: s.trigger as CardAbility["trigger"],
+          target: s.target as CardAbility["target"],
+          unlockLevel: 1,
+          active: true,
+          ...("scaleBy" in s && s.scaleBy
+            ? { scaleBy: s.scaleBy as CardAbility["target"] }
+            : {}),
+        };
+      }),
+    };
+  }
   const archer = spec.kind === "archer";
-  const pierce = [
-    [5, 2],
-    [8, 4],
-    [11, 7],
-    [14, 13],
-    [17, 21],
-    [20, 32],
-    [23, 46],
-    [26, 64],
-  ]
-    .reverse()
-    .find(([level]) => spec.level >= level!);
+  // Scarlet Warrior summons the plain archer subtype; only the support subtype
+  // used by Warrioress/Soulblade has the documented Pierce skill schedule.
+  const pierce =
+    source.sourceHero === "Scarlet Warrior" || source.sourceHero === "Athena"
+      ? undefined
+      : (source.sourceHero === "Prince"
+          ? [
+              [2, 2],
+              [3, 4],
+              [4, 7],
+              [5, 13],
+              [6, 21],
+              [7, 32],
+              [8, 46],
+              [9, 64],
+              [10, 86],
+            ]
+          : [
+              [5, 2],
+              [8, 4],
+              [11, 7],
+              [14, 13],
+              [17, 21],
+              [20, 32],
+              [23, 46],
+              [26, 64],
+            ]
+        )
+          .reverse()
+          .find(([level]) => spec.level >= level!);
   return {
     id: `token-${spec.kind}-${source.id}-${spec.level}`,
     baseId: archer ? "fox" : "sporeling",
@@ -550,6 +886,7 @@ function tokenDefinition(
     level: spec.level,
     rarity: "common",
     faction: archer ? "order" : "chaos",
+    ...(archer ? { gender: "female" as const } : {}),
     combatType: archer ? "ranged" : "melee",
     abilities:
       archer && pierce
@@ -558,7 +895,7 @@ function tokenDefinition(
               id: "pierce",
               name: "Perforation",
               description: `Inflige ${pierce[1]} dégâts aux ennemis de la colonne de la cible.`,
-              unlockLevel: 5,
+              unlockLevel: source.sourceHero === "Prince" ? 2 : 5,
               active: true,
               effect: "pierce",
               trigger: "passive",
@@ -577,6 +914,23 @@ function appeared(
   random: () => number,
 ) {
   const owner = state.players[player]!;
+  refreshFormation(state, events, random);
+  react(state, player, "ally_appears", events, random, unit);
+  react(state, 1 - player, "enemy_appears", events, random, unit);
+  if (unitCard(unit, owner.cards).faction === "chaos") {
+    for (const [p, camp] of state.players.entries())
+      for (const observer of [...camp.board])
+        if (observer.hp > 0)
+          applyAbilities(
+            state,
+            p,
+            observer,
+            "chaos_appears",
+            events,
+            random,
+            unit,
+          );
+  }
   if (unitCard(unit, owner.cards).faction === "nature") {
     for (const ally of [...owner.board]) {
       if (ally !== unit && ally.hp > 0)
@@ -639,78 +993,171 @@ function applyAbilities(
   trigger: CardAbility["trigger"],
   events: GameEvent[],
   random: () => number,
+  context?: Unit,
 ) {
   const owner = state.players[player]!;
   for (const a of activeAbilities(source, owner, trigger)) {
     if (a.effect === "summon" && a.summon) {
-      const depth = source.depth + (a.summon.kind === "archer" ? 1 : -1);
-      if (
-        depth < 0 ||
-        depth >= DEPTHS ||
-        owner.board.some((u) => u.row === source.row && u.depth === depth)
-      )
-        continue;
-      const definition = tokenDefinition(
-        unitCard(source, owner.cards),
-        a.summon,
-      );
-      const unit: Unit = {
-        cardId: definition.id,
-        row: source.row,
-        depth,
-        hp: definition.health,
-        definition,
-      };
-      initializePassives(unit, definition);
-      owner.board.push(unit);
-      emit(state, events, {
-        type: "summon",
-        player,
-        cardId: unit.cardId,
-        row: unit.row,
-        depth,
-        unit: snapshot(unit),
-        ability: a.name,
-      });
-      appeared(state, player, unit, events, random);
-      continue;
-    }
-    if (a.effect === "rune") {
-      const cells = Array.from({ length: ROWS * DEPTHS }, (_, i) => ({
+      const placement =
+        a.summon.placement ?? (a.summon.kind === "archer" ? "behind" : "front");
+      let cells = Array.from({ length: ROWS * DEPTHS }, (_, i) => ({
         row: Math.floor(i / DEPTHS),
         depth: i % DEPTHS,
-      })).filter(
-        (cell) =>
-          !owner.board.some(
-            (u) => u.row === cell.row && u.depth === cell.depth,
-          ) &&
-          !owner.runes?.some(
-            (r) => r.row === cell.row && r.depth === cell.depth,
-          ) &&
-          !owner.pentagrams?.some(
-            (p) => p.row === cell.row && p.depth === cell.depth,
-          ),
+      }));
+      if (placement === "around")
+        cells = cells.filter(
+          (c) =>
+            Math.max(
+              Math.abs(c.row - source.row),
+              Math.abs(c.depth - source.depth),
+            ) === 1,
+        );
+      else if (placement === "row")
+        cells = cells.filter((c) => c.row === source.row);
+      else if (placement === "random_ranged")
+        cells = shuffle(
+          cells.filter((c) => c.depth >= DEPTHS - FRONT_DEPTHS),
+          random,
+        );
+      else
+        cells = Array.from({ length: a.count ?? 1 }, (_, i) => ({
+          row: source.row,
+          depth: source.depth + (i + 1) * (placement === "behind" ? 1 : -1),
+        }));
+      const selectedCells =
+        placement === "behind" || placement === "front"
+          ? cells
+          : cells.filter(
+              (c) =>
+                !owner.board.some(
+                  (u) => u.row === c.row && u.depth === c.depth,
+                ),
+            );
+      for (const cell of selectedCells.slice(0, a.count ?? 1)) {
+        if (
+          cell.depth < 0 ||
+          cell.depth >= DEPTHS ||
+          owner.board.some((u) => u.row === cell.row && u.depth === cell.depth)
+        )
+          continue;
+        const definition = tokenDefinition(
+          unitCard(source, owner.cards),
+          a.summon,
+        );
+        const unit: Unit = {
+          cardId: definition.id,
+          ...cell,
+          hp: definition.health,
+          definition,
+        };
+        initializePassives(unit, definition);
+        owner.board.push(unit);
+        emit(state, events, {
+          type: "summon",
+          player,
+          cardId: unit.cardId,
+          ...cell,
+          unit: snapshot(unit),
+          ability: a.name,
+        });
+        applyAbilities(state, player, unit, "deploy", events, random);
+        appeared(state, player, unit, events, random);
+      }
+      continue;
+    }
+    if (a.effect === "rune" || a.effect === "attack_rune") {
+      for (let i = 0; i < (a.count ?? 1); i++) {
+        const cells = Array.from({ length: ROWS * DEPTHS }, (_, i) => ({
+          row: Math.floor(i / DEPTHS),
+          depth: i % DEPTHS,
+        })).filter(
+          (cell) =>
+            !owner.board.some(
+              (u) => u.row === cell.row && u.depth === cell.depth,
+            ) &&
+            !owner.runes?.some(
+              (r) => r.row === cell.row && r.depth === cell.depth,
+            ) &&
+            !owner.pentagrams?.some(
+              (p) => p.row === cell.row && p.depth === cell.depth,
+            ),
+        );
+        const cell = pick(cells, random)[0];
+        if (cell) {
+          owner.runes = [
+            ...(owner.runes ?? []),
+            {
+              ...cell,
+              health: a.effect === "rune" ? a.value : 0,
+              ...(a.effect === "attack_rune" ? { attack: a.value } : {}),
+            },
+          ];
+          effectEvent(
+            state,
+            events,
+            player,
+            source,
+            a.name,
+            player,
+            undefined,
+            a.value,
+          );
+          events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
+        }
+      }
+      continue;
+    }
+    const value =
+      a.value *
+      (a.scaleBy
+        ? formationTargets(
+            source,
+            owner,
+            a.scaleBy,
+            state.players[1 - player],
+            a.scaleIncludeSelf,
+          ).length
+        : 1);
+    if (a.target === "ally_hero" && a.effect === "health") {
+      if (owner.heroHp <= 0) continue;
+      owner.heroMaxHp = (owner.heroMaxHp ?? HERO_HP) + value;
+      owner.heroHp += value;
+      effectEvent(
+        state,
+        events,
+        player,
+        source,
+        a.name,
+        player,
+        undefined,
+        value,
       );
-      const cell = pick(cells, random)[0];
-      if (cell) {
-        owner.runes = [...(owner.runes ?? []), { ...cell, health: a.value }];
-        effectEvent(
+      events[events.length - 1]!.heroMaxHp = owner.heroMaxHp;
+      continue;
+    }
+    if (a.effect === "hero_damage_from_health") {
+      const ally = targets(state, player, source, a, random)[0];
+      if (ally)
+        heroDamage(
           state,
           events,
           player,
           source,
+          Math.floor((ally.hp * value) / 100),
           a.name,
-          player,
-          undefined,
-          a.value,
         );
-        events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
-      }
+      continue;
+    }
+    if (a.target === "enemy_hero" && a.effect === "damage") {
+      heroDamage(state, events, player, source, value, a.name);
       continue;
     }
     if (a.target === "ally_hero" && a.effect === "heal") {
-      const healed = Math.max(0, Math.min(a.value, HERO_HP - owner.heroHp));
-      if (healed) {
+      const healed = Math.max(
+        0,
+        Math.min(value, (owner.heroMaxHp ?? HERO_HP) - owner.heroHp),
+      );
+      if (healed && owner.heroHp > 0) {
         owner.heroHp += healed;
         effectEvent(
           state,
@@ -725,32 +1172,225 @@ function applyAbilities(
       }
       continue;
     }
-    const targetPlayer = a.target === "all_enemies" ? 1 - player : player;
-    const targetOwner = state.players[targetPlayer]!;
-    for (const target of targets(state, player, source, a, random)) {
-      if (a.effect === "heal") {
-        healUnit(state, events, player, source, target, a.value, a.name);
+    for (const target of targets(state, player, source, a, random, context)) {
+      const targetPlayer = state.players[1 - player]!.board.includes(target)
+        ? 1 - player
+        : player;
+      const targetOwner = state.players[targetPlayer]!;
+      if (target.immune) {
+        effectEvent(
+          state,
+          events,
+          player,
+          source,
+          "Immunité",
+          targetPlayer,
+          target,
+        );
         continue;
       }
-      if (a.effect === "attack") {
-        target.attack = Math.max(
-          0,
-          (target.attack ?? unitCard(target, targetOwner.cards).attack) +
-            a.value,
-        );
-        if (a.temporary)
-          target.temporaryAttack = (target.temporaryAttack ?? 0) + a.value;
-      } else if (a.effect === "health") {
-        target.maxHp = unitMaxHp(target, targetOwner.cards) + a.value;
-        target.hp += a.value;
-      } else if (
-        a.effect === "block" ||
-        a.effect === "spikes" ||
-        a.effect === "vampirism" ||
-        a.effect === "regeneration"
+      if (
+        targetPlayer !== player &&
+        target.shield &&
+        [
+          "silence",
+          "set_attack",
+          "attack_curse",
+          "poison_enemy",
+          "steal_attack",
+        ].includes(a.effect)
       ) {
-        target[a.effect] = (target[a.effect] ?? 0) + a.value;
-      } else continue;
+        consumeShield(
+          state,
+          events,
+          player,
+          source,
+          targetPlayer,
+          target,
+          random,
+        );
+        continue;
+      }
+      if (a.effect === "cleanse") {
+        delete target.poisoned;
+        delete target.attackCurse;
+        delete target.attackLimit;
+        target.attack = Math.max(
+          target.attack ?? unitCard(target, targetOwner.cards).attack,
+          unitCard(target, targetOwner.cards).attack,
+        );
+      } else if (a.effect === "silence") {
+        target.silenced = true;
+        target.attack = Math.min(
+          target.attack ?? unitCard(target, targetOwner.cards).attack,
+          unitCard(target, targetOwner.cards).attack,
+        );
+        target.maxHp = Math.min(
+          unitMaxHp(target, targetOwner.cards),
+          unitCard(target, targetOwner.cards).health,
+        );
+        target.hp = Math.min(target.hp, target.maxHp);
+        if (target.shield)
+          consumeShield(
+            state,
+            events,
+            player,
+            source,
+            targetPlayer,
+            target,
+            random,
+          );
+        for (const key of [
+          "block",
+          "spikes",
+          "vampirism",
+          "regeneration",
+          "poison",
+          "extraAttacks",
+          "counterAttack",
+          "evasion",
+          "temporaryAttack",
+          "formationHealth",
+          "formationAttack",
+        ] as const)
+          delete target[key];
+      } else if (a.effect === "set_attack") target.attackLimit = value;
+      else if (a.effect === "attack_curse")
+        target.attackCurse = Math.max(target.attackCurse ?? 0, value);
+      else if (a.effect === "counter_attack") target.counterAttack = true;
+      else if (a.effect === "poison_enemy")
+        target.poisoned = (target.poisoned ?? 0) + value;
+      else if (a.effect === "drain") {
+        const drained = damageUnit(
+          state,
+          events,
+          player,
+          source,
+          targetPlayer,
+          target,
+          value,
+          false,
+          a.name,
+          random,
+        );
+        healUnit(
+          state,
+          events,
+          player,
+          source,
+          source,
+          drained,
+          a.name,
+          random,
+        );
+        continue;
+      } else if (
+        ![
+          "damage",
+          "heal",
+          "heal_full",
+          "steal_attack",
+          "shield",
+          "extra_attack",
+          "attack",
+          "health",
+          "block",
+          "spikes",
+          "vampirism",
+          "regeneration",
+          "poison",
+        ].includes(a.effect)
+      )
+        continue;
+      else {
+        if (a.effect === "damage") {
+          damageUnit(
+            state,
+            events,
+            player,
+            source,
+            targetPlayer,
+            target,
+            value,
+            false,
+            a.name,
+            random,
+          );
+          continue;
+        }
+        if (a.effect === "heal" || a.effect === "heal_full") {
+          healUnit(
+            state,
+            events,
+            targetPlayer,
+            source,
+            target,
+            a.effect === "heal_full"
+              ? unitMaxHp(target, targetOwner.cards)
+              : value,
+            a.name,
+            random,
+          );
+          continue;
+        }
+        if (a.effect === "steal_attack") {
+          const stolen = Math.min(
+            value,
+            unitAttack(target, targetOwner, owner),
+          );
+          target.attack =
+            (target.attack ?? unitCard(target, targetOwner.cards).attack) -
+            stolen;
+          source.attack =
+            (source.attack ?? unitCard(source, owner.cards).attack) + stolen;
+          effectEvent(
+            state,
+            events,
+            player,
+            source,
+            a.name,
+            targetPlayer,
+            target,
+            -stolen,
+          );
+          effectEvent(
+            state,
+            events,
+            player,
+            source,
+            a.name,
+            player,
+            source,
+            stolen,
+          );
+          if (stolen > 0) punishAttack(state, events, player, source, random);
+          continue;
+        }
+        if (a.effect === "shield") {
+          target.shield = true;
+        } else if (a.effect === "extra_attack") {
+          target.extraAttacks = (target.extraAttacks ?? 0) + value;
+        } else if (a.effect === "attack") {
+          target.attack = Math.max(
+            0,
+            (target.attack ?? unitCard(target, targetOwner.cards).attack) +
+              value,
+          );
+          if (a.temporary)
+            target.temporaryAttack = (target.temporaryAttack ?? 0) + value;
+        } else if (a.effect === "health") {
+          target.maxHp = unitMaxHp(target, targetOwner.cards) + value;
+          target.hp += value;
+        } else if (
+          a.effect === "block" ||
+          a.effect === "spikes" ||
+          a.effect === "vampirism" ||
+          a.effect === "regeneration" ||
+          a.effect === "poison"
+        ) {
+          target[a.effect] = (target[a.effect] ?? 0) + value;
+        } else continue;
+      }
       effectEvent(
         state,
         events,
@@ -759,8 +1399,10 @@ function applyAbilities(
         a.name,
         targetPlayer,
         target,
-        a.value,
+        value,
       );
+      if (a.effect === "attack" && value > 0)
+        punishAttack(state, events, targetPlayer, target, random);
     }
   }
 }
@@ -774,15 +1416,23 @@ function damageUnit(
   amount: number,
   physical: boolean,
   label?: string,
+  random: () => number = () => 0,
 ) {
-  const shielded = target.shield === true;
+  if (target.hp <= 0) return 0;
+  const avoided =
+    physical &&
+    target.evasion === true &&
+    getCombatType(unitCard(source, state.players[player]!.cards)) === "ranged";
+  const immune = !physical && target.immune === true;
+  const shielded = !avoided && !immune && target.shield === true;
   if (shielded) target.shield = false;
-  const damage = shielded
-    ? 0
-    : Math.min(
-        target.hp,
-        Math.max(0, amount - (physical ? (target.block ?? 0) : 0)),
-      );
+  const damage =
+    shielded || avoided || immune
+      ? 0
+      : Math.min(
+          target.hp,
+          Math.max(0, amount - (physical ? (target.block ?? 0) : 0)),
+        );
   target.hp = Math.max(0, target.hp - damage);
   if (physical) {
     emit(state, events, {
@@ -798,7 +1448,11 @@ function damageUnit(
       damage,
       hp: target.hp,
       unit: snapshot(target),
-      ...(shielded ? { ability: "Bouclier mental" } : {}),
+      ...(shielded || avoided || label
+        ? {
+            ability: avoided ? "Esquive" : shielded ? "Bouclier mental" : label,
+          }
+        : {}),
     });
   } else
     effectEvent(
@@ -806,33 +1460,182 @@ function damageUnit(
       events,
       player,
       source,
-      shielded ? "Bouclier mental" : label!,
+      immune ? "Immunité" : shielded ? "Bouclier mental" : label!,
       targetPlayer,
       target,
       -damage,
     );
+  if (shielded)
+    for (const p of [0, 1]) react(state, p, "shield_lost", events, random);
+  if (damage > 0 && target.hp <= 0 && targetPlayer !== player && source.hp > 0)
+    applyAbilities(state, player, source, "kill", events, random, target);
+  if (physical && !avoided) {
+    if (!shielded && (target.block ?? 0) > 0 && amount > 0)
+      react(state, targetPlayer, "ally_block", events, random, target);
+    applyAbilities(
+      state,
+      targetPlayer,
+      target,
+      "attacked",
+      events,
+      random,
+      source,
+    );
+    react(state, targetPlayer, "ally_attacked", events, random, source);
+    if (
+      target.hp <= 0 &&
+      activeAbilities(
+        target,
+        state.players[targetPlayer]!,
+        "ally_attacked",
+      ).some((a) => a.reactToSelf)
+    )
+      applyAbilities(
+        state,
+        targetPlayer,
+        target,
+        "ally_attacked",
+        events,
+        random,
+        source,
+      );
+  }
   return damage;
 }
+/** Counterattacks complete one strike but never launch a reciprocal counterattack. */
+function counterStrike(
+  state: GameState,
+  events: GameEvent[],
+  player: number,
+  victim: Unit,
+  unit: Unit,
+  random: () => number,
+) {
+  if (!unit.counterAttack || unit.hp <= 0 || victim.hp <= 0) return;
+  const p = 1 - player,
+    owner = state.players[p]!,
+    defender = state.players[player]!;
+  applyAbilities(state, p, unit, "before_attack", events, random);
+  const power = unitAttack(unit, owner, defender);
+  if (power <= 0 || unit.hp <= 0) return;
+  react(
+    state,
+    player,
+    getCombatType(unitCard(unit, owner.cards)) === "melee"
+      ? "before_enemy_melee_attack"
+      : "before_enemy_ranged_attack",
+    events,
+    random,
+  );
+  damageUnit(
+    state,
+    events,
+    p,
+    unit,
+    player,
+    victim,
+    power,
+    true,
+    "Contre-attaque",
+    random,
+  );
+  for (const a of activeAbilities(unit, owner, "passive").filter(
+    (a) => a.effect === "pierce",
+  ))
+    for (const other of defender.board.filter(
+      (u) => u.hp > 0 && u.depth === victim.depth,
+    ))
+      damageUnit(
+        state,
+        events,
+        p,
+        unit,
+        player,
+        other,
+        a.value,
+        false,
+        a.name,
+        random,
+      );
+  if ((unit.vampirism ?? 0) > 0 && unit.hp > 0 && victim.hp > 0) {
+    const drained = damageUnit(
+      state,
+      events,
+      p,
+      unit,
+      player,
+      victim,
+      unit.vampirism!,
+      false,
+      "Vampirisme",
+      random,
+    );
+    healUnit(state, events, p, unit, unit, drained, "Vampirisme", random);
+    if (drained > 0) react(state, p, "ally_vampirism", events, random, unit);
+  }
+  if (unit.poison && unit.hp > 0 && victim.hp > 0 && !victim.immune) {
+    if (victim.shield)
+      consumeShield(state, events, p, unit, player, victim, random);
+    else {
+      victim.poisoned = (victim.poisoned ?? 0) + unit.poison;
+      effectEvent(
+        state,
+        events,
+        p,
+        unit,
+        "Empoisonnement",
+        player,
+        victim,
+        unit.poison,
+      );
+    }
+  }
+  if (victim.spikes && unit.hp > 0) {
+    damageUnit(
+      state,
+      events,
+      player,
+      victim,
+      p,
+      unit,
+      victim.spikes,
+      false,
+      "Épines",
+      random,
+    );
+    react(state, player, "ally_spikes", events, random, victim);
+  }
+  applyAbilities(state, p, unit, "attack", events, random, victim);
+}
+
 function removeDead(
   state: GameState,
   events: GameEvent[],
   random: () => number,
 ) {
-  for (const [player, owner] of state.players.entries()) {
-    for (const dead of [...owner.board].filter((u) => u.hp <= 0)) {
-      owner.board = owner.board.filter((u) => u !== dead);
-      const removedMarks = releaseFieldMarks(owner, dead);
-      emit(state, events, {
-        type: "death",
-        player,
-        cardId: dead.cardId,
-        row: dead.row,
-        depth: dead.depth,
-        ...removedMarks,
-      });
-      applyAbilities(state, player, dead, "death", events, random);
+  do {
+    for (const [player, owner] of state.players.entries()) {
+      for (const dead of [...owner.board].filter((u) => u.hp <= 0)) {
+        owner.board = owner.board.filter((u) => u !== dead);
+        const removedMarks = releaseFieldMarks(owner, dead);
+        emit(state, events, {
+          type: "death",
+          player,
+          cardId: dead.cardId,
+          row: dead.row,
+          depth: dead.depth,
+          ...removedMarks,
+        });
+        applyAbilities(state, player, dead, "death", events, random);
+        react(state, player, "ally_death", events, random, dead);
+        react(state, 1 - player, "enemy_death", events, random, dead);
+        for (const p of [0, 1])
+          react(state, p, "any_death", events, random, dead);
+        applyAbilities(state, player, dead, "any_death", events, random, dead);
+      }
     }
-  }
+    refreshFormation(state, events, random);
+  } while (state.players.some((p) => p.board.some((u) => u.hp <= 0)));
 }
 function heroDamage(
   state: GameState,
@@ -895,6 +1698,7 @@ export function endTurn(
     const passives = activeAbilities(unit, attacker, "passive");
     const attacks =
       1 +
+      (unit.extraAttacks ?? 0) +
       passives
         .filter((a) => a.effect === "extra_attack")
         .reduce((n, a) => n + a.value, 0);
@@ -903,12 +1707,32 @@ export function endTurn(
       hit < attacks && unit.hp > 0 && attacker.board.includes(unit);
       hit++
     ) {
-      const power = unitAttack(unit, attacker);
+      if (unitAttack(unit, attacker, defender) <= 0) break;
+      applyAbilities(state, playerIndex, unit, "before_attack", events, random);
+      if (unit.hp <= 0) break;
+      const power = unitAttack(unit, attacker, defender);
       if (power <= 0) break;
+      if (getCombatType(card) === "ranged")
+        react(
+          state,
+          opponentIndex,
+          "before_enemy_ranged_attack",
+          events,
+          random,
+        );
+      else
+        react(
+          state,
+          opponentIndex,
+          "before_enemy_melee_attack",
+          events,
+          random,
+        );
       const target = ordered(defender.board).find(
         (other) => other.row === unit.row && other.hp > 0,
       );
       if (target) {
+        const evaded = target.evasion && getCombatType(card) === "ranged";
         damageUnit(
           state,
           events,
@@ -918,60 +1742,119 @@ export function endTurn(
           target,
           power,
           true,
+          undefined,
+          random,
         );
-        for (const a of passives.filter((a) => a.effect === "pierce")) {
-          for (const pierced of ordered(defender.board).filter(
-            (other) => other.depth === target.depth && other.hp > 0,
-          ))
-            damageUnit(
+        if (!evaded) {
+          for (const a of passives.filter((a) => a.effect === "pierce")) {
+            for (const pierced of ordered(defender.board).filter(
+              (other) => other.depth === target.depth && other.hp > 0,
+            ))
+              damageUnit(
+                state,
+                events,
+                playerIndex,
+                unit,
+                opponentIndex,
+                pierced,
+                a.value,
+                false,
+                a.name,
+                random,
+              );
+          }
+          if ((unit.vampirism ?? 0) > 0 && unit.hp > 0 && target.hp > 0) {
+            const drained = damageUnit(
               state,
               events,
               playerIndex,
               unit,
               opponentIndex,
-              pierced,
-              a.value,
+              target,
+              unit.vampirism!,
               false,
-              a.name,
+              "Vampirisme",
+              random,
             );
-        }
-        if ((unit.vampirism ?? 0) > 0 && target.hp > 0) {
-          const drained = damageUnit(
+            healUnit(
+              state,
+              events,
+              playerIndex,
+              unit,
+              unit,
+              drained,
+              "Vampirisme",
+              random,
+            );
+            if (drained > 0)
+              react(state, playerIndex, "ally_vampirism", events, random, unit);
+          }
+          if ((unit.poison ?? 0) > 0 && target.hp > 0) {
+            if (target.immune) {
+              effectEvent(
+                state,
+                events,
+                playerIndex,
+                unit,
+                "Immunité",
+                opponentIndex,
+                target,
+              );
+            } else if (target.shield)
+              consumeShield(
+                state,
+                events,
+                playerIndex,
+                unit,
+                opponentIndex,
+                target,
+                random,
+              );
+            else {
+              target.poisoned = (target.poisoned ?? 0) + unit.poison!;
+              effectEvent(
+                state,
+                events,
+                playerIndex,
+                unit,
+                "Empoisonnement",
+                opponentIndex,
+                target,
+                unit.poison!,
+              );
+            }
+          }
+          // Attacked effects resolve before deaths, including lethal counter-damage.
+          if ((target.spikes ?? 0) > 0 && unit.hp > 0) {
+            damageUnit(
+              state,
+              events,
+              opponentIndex,
+              target,
+              playerIndex,
+              unit,
+              target.spikes!,
+              false,
+              "Épines",
+              random,
+            );
+            react(state, opponentIndex, "ally_spikes", events, random, target);
+          }
+          applyAbilities(
             state,
-            events,
             playerIndex,
             unit,
-            opponentIndex,
+            "attack",
+            events,
+            random,
             target,
-            unit.vampirism!,
-            false,
-            "Vampirisme",
           );
-          healUnit(
-            state,
-            events,
-            playerIndex,
-            unit,
-            unit,
-            drained,
-            "Vampirisme",
-          );
+          counterStrike(state, events, playerIndex, unit, target, random);
         }
-        // Attacked effects resolve before deaths, including lethal counter-damage.
-        if ((target.spikes ?? 0) > 0 && unit.hp > 0)
-          damageUnit(
-            state,
-            events,
-            opponentIndex,
-            target,
-            playerIndex,
-            unit,
-            target.spikes!,
-            false,
-            "Épines",
-          );
       } else {
         heroDamage(state, events, playerIndex, unit, power);
+        react(state, opponentIndex, "ally_hero_attacked", events, random);
+        applyAbilities(state, playerIndex, unit, "hero_attack", events, random);
         for (const ally of ordered(attacker.board))
           if (ally.hp > 0)
             applyAbilities(
@@ -999,14 +1882,36 @@ export function endTurn(
             unit,
             drained,
             "Vampirisme",
+            random,
           );
+          if (drained > 0)
+            react(state, playerIndex, "ally_vampirism", events, random, unit);
         }
+        applyAbilities(state, playerIndex, unit, "attack", events, random);
       }
       removeDead(state, events, random);
       if (victory(state, events)) return { state, events };
     }
   }
+  for (const unit of ordered(attacker.board)) {
+    if (unit.hp > 0)
+      applyAbilities(state, playerIndex, unit, "turn_end", events, random);
+    removeDead(state, events, random);
+    if (victory(state, events)) return { state, events };
+  }
   for (const unit of attacker.board) {
+    if (unit.attackLimit !== undefined) {
+      delete unit.attackLimit;
+      effectEvent(
+        state,
+        events,
+        playerIndex,
+        unit,
+        "Fin de l’entrave",
+        playerIndex,
+        unit,
+      );
+    }
     if (!unit.temporaryAttack) continue;
     const amount = unit.temporaryAttack;
     unit.attack = Math.max(
@@ -1031,7 +1936,26 @@ export function endTurn(
   state.turnEndsAt = now + TURN_MS;
   for (const unit of ordered(defender.board)) {
     if (unit.hp <= 0) continue;
-    if (unit.regeneration)
+    if (unit.poisoned) {
+      damageUnit(
+        state,
+        events,
+        opponentIndex,
+        unit,
+        opponentIndex,
+        unit,
+        unit.poisoned,
+        false,
+        "Poison",
+        random,
+      );
+      react(state, playerIndex, "enemy_poison", events, random, unit);
+      removeDead(state, events, random);
+      if (victory(state, events)) return { state, events };
+      if (unit.hp <= 0) continue;
+    }
+    if (unit.regeneration) {
+      const previousHp = unit.hp;
       healUnit(
         state,
         events,
@@ -1040,8 +1964,14 @@ export function endTurn(
         unit,
         unit.regeneration,
         "Régénération",
+        random,
       );
+      if (unit.hp > previousHp)
+        react(state, opponentIndex, "ally_regeneration", events, random, unit);
+    }
     applyAbilities(state, opponentIndex, unit, "turn_start", events, random);
+    removeDead(state, events, random);
+    if (victory(state, events)) return { state, events };
   }
   removeDead(state, events, random);
   if (victory(state, events)) return { state, events };
@@ -1084,6 +2014,7 @@ export function playerView(state: GameState, userId: string) {
     players: state.players.map((player, index) => ({
       name: player.name,
       heroHp: player.heroHp,
+      ...(player.heroMaxHp ? { heroMaxHp: player.heroMaxHp } : {}),
       // Deck composition is public; hand contents and draw order stay private.
       deck: player.cards.map((card) => ({ ...card })),
       runes: player.runes?.map((r) => ({ ...r })),
@@ -1092,7 +2023,8 @@ export function playerView(state: GameState, userId: string) {
         ...unit,
         card: {
           ...cloneCard(unitCard(unit, player.cards)),
-          attack: unitAttack(unit, player),
+          ...(unit.silenced ? { abilities: [] } : {}),
+          attack: unitAttack(unit, player, state.players[1 - index]),
           health: unitMaxHp(unit, player.cards),
         },
       })),

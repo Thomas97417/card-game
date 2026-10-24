@@ -26,6 +26,13 @@ L’[activation en entraînement](seal-activation-game.png) montre la lueur ambr
 La page [Field de Mighty Party](https://mightyparty.fandom.com/wiki/Field) sert de référence pour la présence de bâtiments, de runes et de pentagrammes au début du combat. Les illustrations et les effets chiffrés sont des adaptations originales pour Sylve ; ils ne reproduisent pas les statistiques de Mighty Party. Les règles retenues sont décrites dans [field.md](field.md).
 
 Les pertes de statistiques réutilisent le halo et les étincelles avec une teinte rouge et une étiquette sombre « −N puissance » ou « −N PV ». Les captures de contrôle montrent une [perte de puissance](debuff-attack-animation.png) causée par le Saule des murmures et une [perte de vie](debuff-health-animation.png) appliquée par une capacité de démonstration. Les deux scénarios utilisent les composants réels et les événements du moteur partagé ; leurs écrans temporaires ne sont pas intégrés au jeu. La perte affichée tient compte du plancher de puissance à zéro.
+## Filtres « Toutes » et « Bâtiments »
+
+Deux illustrations ont été créées avec **ImageGen intégré**, par deux appels distincts avec fond transparent, puis encodées en WebP de 256 × 256 px avec alpha conservé : `apps/web/public/art/ui/all-cards.webp`, un éventail de cartes aux couleurs des quatre raretés, et `apps/web/public/art/ui/building-tower.webp`, une tour de pierre au toit vert et aux ornements dorés. Les prompts exacts et les chemins des sources sont conservés dans [art-prompts-collection-filters.json](art-prompts-collection-filters.json).
+
+Le composant partagé `GameIcon` affiche les deux illustrations dans les filtres de l’atelier. Le bâtiment apparaît aussi dans les cartes, les statistiques de combat, les détails et le bestiaire. `CollectionIcon` réutilise l’éventail dans les emplacements libres, la fiche d’amélioration, le refuge, les archives et les récompenses de ligue. La collection de l’atelier s’affiche par rareté décroissante : légendaire, épique, rare, commune ; les cartes de même rareté gardent leur ordre d’origine.
+
+Le [rendu de l’atelier](decks-rarity-filters-validation.jpg) montre le tri et les deux nouvelles illustrations dans les filtres.
 
 ## Trophées et ligues
 
@@ -246,3 +253,21 @@ Les bonus d’attaque et de vie sont comparés aux valeurs de base de la variant
 Une légende repliable est disponible dans les règles du duel, les archives et le bestiaire. Les fiches conservent un contraste adapté aux panneaux clairs ou sombres ; la fiche d’un compagnon s’ouvre sur son titre. Les animations de capacité ont une durée de 360 ms et un impact à 180 ms, ce qui laisse leur image et leur valeur apparaître avant l’événement suivant. Les dégâts physiques conservent leur impact à 260 ms.
 
 Les tests couvrent les déblocages, les états accordés par une autre unité, les protections consommées, les bonus et malus, le compteur des effets cumulés et les impacts illustrés pendant la lecture des événements. Les contrôles visuels utilisent les composants réels, avec un état de combat de démonstration : [plateau à 1 440 × 900](abilities-board-desktop.jpg), [fiche sur ordinateur](abilities-details-desktop.jpg), [fiche à 390 × 844](abilities-details-mobile.jpg), [états et capacités sur mobile](abilities-statuses-mobile.jpg), [amélioration mobile](abilities-upgrade-mobile.jpg), [bestiaire](abilities-bestiary-desktop.jpg), [légende des seize icônes](abilities-legend-desktop.jpg). Toutes les images chargent ; les fiches contrôlées ne débordent pas horizontalement.
+
+## Évolutions Rare et Epic — 24 octobre 2026
+
+**44 sprites originaux** ont été générés avec **ImageGen intégré**, un appel par variante, puis enregistrés en WebP RGBA dans `apps/web/public/art/characters/evolutions/{famille}-{rare,epic}.webp` (512 px maximum). Les sprites conservent l’espèce et l’univers peint des communes ; l’équipement et la silhouette progressent avec la rareté, avec des accents bleus puis améthyste. Les portraits utilisent l’identifiant d’illustration conservé dans chaque instantané de carte. Une nouvelle icône de poison est dans `apps/web/public/art/abilities/poison.webp` (192 px maximum).
+
+Le [manifeste](art-prompts-evolutions.json) contient les 45 prompts finaux, le nom de chaque évolution, les chemins de sortie et les PNG originaux. L’alpha a été vérifié sur tous les fichiers ; les 44 sprites ont été contrôlés sur deux planches de comparaison : [familles 1–11](evolutions-art-1.jpg) et [familles 12–22](evolutions-art-2.jpg). Les illustrations Mighty Party ne sont pas utilisées.
+
+Contrôles des composants : [bestiaire ordinateur](evolutions-bestiary-desktop.jpg), [bestiaire mobile](evolutions-bestiary-mobile.jpg), [fiche ordinateur](evolutions-upgrade-desktop.jpg), [fiche mobile](evolutions-upgrade-mobile.jpg).
+
+## Évolutions Legendary — 24 octobre 2026
+
+**20 sprites originaux** ont été générés avec **ImageGen intégré**, un appel par évolution, et enregistrés dans `apps/web/public/art/characters/evolutions/{famille}-legendary.webp`. Les espèces et silhouettes des familles Epic sont conservées ; l’équipement, les couronnes et les motifs végétaux progressent avec des accents d’or, d’ivoire et de lumière. Les WebP ont une boîte maximale de 512 px et une transparence réelle vérifiée. Les deux familles dont les fiches Epic indiquent « Evolves To: N/A » conservent leur illustration existante.
+
+Les invocations de l’Oracle du firmament et du Grand forgeron ont leurs propres sprites : **Autel des sources** (`characters/life-palace.webp`) et **Bobine des racines** (`characters/root-coil.webp`), également transparents et limités à 512 px. L’Écuyer des racines réutilise le Chevalier commun. Quatre nouvelles icônes transparentes de 192 px maximum — **silence, immunité, esquive, contre-attaque** — complètent les 17 symboles existants. Elles sont partagées par les capacités, les états du plateau, les fiches et le journal.
+
+Le [manifeste Legendary](art-prompts-legendary.json) contient les **26 prompts complets**, les PNG générés et chaque chemin final. Les illustrations sont originales et ne reprennent pas les images de Mighty Party. Planches de comparaison Epic → Legendary : [familles 1–10](legendary-art-1.jpg), [familles 11–20](legendary-art-2.jpg), [invocations et icônes](legendary-summons-and-icons.jpg).
+
+Les composants réels ont été contrôlés à **1 330 × 1 100** et **390 × 844 px** dans un aperçu local : les 20 nouveaux portraits chargent, les plafonds 31 et 26 suivent la famille, aucune erreur JavaScript ni aucun débordement horizontal n’est relevé. Le focus initial de la fiche d’amélioration est placé sur sa fenêtre pour qu’elle s’ouvre en haut sur mobile. Aperçus : [bestiaire ordinateur](legendary-bestiary-desktop.jpg), [bestiaire mobile](legendary-bestiary-mobile.jpg), [fiche ordinateur](legendary-upgrade-desktop.jpg), [fiche mobile](legendary-upgrade-mobile.jpg). Les [sources et règles Legendary](references/mighty-party/legendary-cards.md) détaillent les statistiques et compétences intégrées.
