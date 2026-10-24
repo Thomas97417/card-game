@@ -1,10 +1,17 @@
 import reference from "./data/mighty-party.json";
 import evolutions from "./data/mighty-party-evolutions.json";
 import evolutionNames from "./data/evolution-names.json";
+import legendary from "./data/mighty-party-legendary.json";
+import legendaryNames from "./data/legendary-names.json";
 
 export const MAX_CARD_LEVEL = 26;
-export function maxCardLevel(rarity: CardRarity = "common") {
-  return rarity === "rare" || rarity === "epic" ? 31 : MAX_CARD_LEVEL;
+export function maxCardLevel(rarity: CardRarity = "common", baseId?: string) {
+  if (
+    rarity === "common" ||
+    (rarity === "legendary" && (baseId === "tree" || baseId === "idol"))
+  )
+    return MAX_CARD_LEVEL;
+  return 31;
 }
 export type CombatType = "melee" | "ranged" | "building";
 export type Faction = "order" | "nature" | "chaos";
@@ -50,7 +57,17 @@ export type AbilityEffect =
   | "damage"
   | "poison"
   | "steal_attack"
-  | "attack_rune";
+  | "attack_rune"
+  | "cleanse"
+  | "silence"
+  | "drain"
+  | "counter_attack"
+  | "immunity"
+  | "evasion"
+  | "set_attack"
+  | "attack_curse"
+  | "hero_damage_from_health"
+  | "poison_enemy";
 export type AbilityTrigger =
   | "deploy"
   | "turn_start"
@@ -69,6 +86,17 @@ export type AbilityTrigger =
   | "ally_spikes"
   | "ally_vampirism"
   | "before_enemy_ranged_attack"
+  | "before_attack"
+  | "kill"
+  | "enemy_appears"
+  | "shield_lost"
+  | "chaos_appears"
+  | "ally_attacked"
+  | "hero_attack"
+  | "ally_regeneration"
+  | "enemy_poison"
+  | "before_enemy_melee_attack"
+  | "any_death"
   | "passive";
 export type AbilityTarget =
   | "self"
@@ -99,7 +127,15 @@ export type AbilityTarget =
   | "ranged_enemies"
   | "random_female_enemy"
   | "all_heroes"
-  | "non_chaos_heroes";
+  | "non_chaos_heroes"
+  | "allies_with_shield"
+  | "event_enemy"
+  | "attacker"
+  | "random_enemy"
+  | "adjacent_enemies"
+  | "nature_enemies"
+  | "melee_enemies"
+  | "random_column_ally";
 export interface CardAbility {
   id: string;
   name: string;
@@ -113,8 +149,12 @@ export interface CardAbility {
   temporary?: boolean;
   count?: number;
   scaleBy?: AbilityTarget;
+  includeSelf?: boolean;
+  scaleIncludeSelf?: boolean;
+  reactToSelf?: boolean;
   summon?: {
-    kind: "archer" | "zombie";
+    kind: "archer" | "zombie" | "squire" | "life_palace" | "tesla";
+    placement?: "behind" | "front" | "around" | "row" | "random_ranged";
     attack: number;
     health: number;
     level: number;
@@ -405,6 +445,16 @@ const effectNames: Record<AbilityEffect, string> = {
   poison: "Poison",
   steal_attack: "Vol d’attaque",
   attack_rune: "Rune de puissance",
+  cleanse: "Purification",
+  silence: "Silence",
+  drain: "Drain de vie",
+  counter_attack: "Contre-attaque",
+  immunity: "Immunité",
+  evasion: "Esquive",
+  set_attack: "Entrave",
+  attack_curse: "Malédiction",
+  hero_damage_from_health: "Écho vital",
+  poison_enemy: "Empoisonnement",
 };
 interface Progression {
   level: number;
@@ -431,6 +481,11 @@ interface ReferenceCard {
     target?: string;
     count?: number;
     scaleBy?: string;
+    includeSelf?: boolean;
+    scaleIncludeSelf?: boolean;
+    reactToSelf?: boolean;
+    temporary?: boolean;
+    placement?: string;
   }[];
 }
 const data = reference as {
@@ -443,14 +498,25 @@ function build(
   rarity: CardRarity,
   level: number,
 ): CardDefinition {
-  const evolved = rarity === "rare" || rarity === "epic";
+  const legendarySource =
+    rarity === "legendary"
+      ? legendary.cards.find(
+          (c) =>
+            c.name ===
+            legendary.chains.find((c) => c.common === base.reference)
+              ?.legendary,
+        )
+      : undefined;
+  const evolved = rarity === "rare" || rarity === "epic" || !!legendarySource;
   const chain = evolutions.chains.find((c) => c.common === base.reference)!;
-  const source: ReferenceCard = evolved
-    ? evolutions.cards.find((c) => c.name === chain[rarity])!
-    : data.cards.find((c) => c.name === base.reference)!;
+  const source: ReferenceCard =
+    legendarySource ??
+    (rarity === "rare" || rarity === "epic"
+      ? evolutions.cards.find((c) => c.name === chain[rarity])!
+      : data.cards.find((c) => c.name === base.reference)!);
   const stats = source.stats[level - 1]!;
-  // Legendary profiles remain the pre-existing Sylve adaptation until collected.
-  const bonus = rarity === "legendary" ? 4 : 0;
+  // The two Epic buildings have no documented Legendary evolution.
+  const bonus = rarity === "legendary" && !legendarySource ? 4 : 0;
   const abilities = source.skills.map((skill, index): CardAbility => {
     const point =
       [...skill.progression].reverse().find((p) => p.level <= level) ??
@@ -460,7 +526,7 @@ function build(
           skill.effect as AbilityEffect,
           skill.trigger as AbilityTrigger,
           skill.target as AbilityTarget,
-          false,
+          skill.temporary ?? false,
         ]
       : mechanics[base.reference]![index]!;
     let description = skill.descriptionFr.replace(
@@ -514,14 +580,36 @@ function build(
         ? { count: point.count ?? skill.count }
         : {}),
       ...(skill.scaleBy ? { scaleBy: skill.scaleBy as AbilityTarget } : {}),
+      ...(skill.includeSelf ? { includeSelf: true } : {}),
+      ...(skill.scaleIncludeSelf ? { scaleIncludeSelf: true } : {}),
+      ...(skill.reactToSelf ? { reactToSelf: true } : {}),
       ...(temporary ? { temporary: true } : {}),
       ...(effect === "summon"
         ? {
             summon: {
-              kind:
-                point.summon === "Archer"
-                  ? ("archer" as const)
-                  : ("zombie" as const),
+              kind: (
+                {
+                  Archer: "archer",
+                  Zombie: "zombie",
+                  Squire: "squire",
+                  "Little Life Palace": "life_palace",
+                  "Mini Tesla-X": "tesla",
+                } as const
+              )[
+                point.summon as
+                  | "Archer"
+                  | "Zombie"
+                  | "Squire"
+                  | "Little Life Palace"
+                  | "Mini Tesla-X"
+              ],
+              ...(skill.placement
+                ? {
+                    placement: skill.placement as NonNullable<
+                      CardAbility["summon"]
+                    >["placement"],
+                  }
+                : {}),
               attack: point.attack!,
               health: point.health!,
               level: point.summonLevel!,
@@ -533,10 +621,16 @@ function build(
   return {
     id: `${base.id}:${rarity}`,
     baseId: base.id,
-    name: evolved ? evolutionNames[base.id][rarity] : base.name,
+    name: legendarySource
+      ? (legendaryNames as Record<string, string>)[base.id]!
+      : rarity === "rare" || rarity === "epic"
+        ? evolutionNames[base.id][rarity]
+        : base.name,
     title: evolved
       ? `Évolution ${RARITY_LABELS[rarity].toLowerCase()} · ${base.name}`
-      : base.title,
+      : rarity === "legendary"
+        ? `Création Sylve · ${base.title}`
+        : base.title,
     color: base.color,
     kind: base.kind,
     rarity,
@@ -580,7 +674,7 @@ export function variantCard(
     !RARITIES.includes(rarity) ||
     !Number.isInteger(level) ||
     level < 1 ||
-    level > maxCardLevel(rarity)
+    level > maxCardLevel(rarity, baseId)
   )
     throw new GameError("Cette variante de carte n’existe pas.");
   return build(base, rarity, level);

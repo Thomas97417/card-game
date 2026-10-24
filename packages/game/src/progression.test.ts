@@ -44,7 +44,7 @@ describe("variantes et progression", () => {
         if (card.combatType === "building") expect(card.attack).toBe(0);
         else expect(card.attack).toBeGreaterThan(0);
         expect(card.health).toBeGreaterThan(0);
-        const upgraded = resolveCard(card.id, maxCardLevel(rarity));
+        const upgraded = resolveCard(card.id, maxCardLevel(rarity, base.id));
         expect(upgraded.id).toBe(card.id);
         expect(upgraded.rarity).toBe(rarity);
         if (card.combatType === "building") expect(upgraded.attack).toBe(0);

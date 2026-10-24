@@ -278,7 +278,7 @@ export function DuelDetailsDialog({
                     <div>
                       <dt>Points de vie</dt>
                       <dd>
-                        {player.heroHp} / {HERO_HP}
+                        {player.heroHp} / {player.heroMaxHp ?? HERO_HP}
                       </dd>
                     </div>
                     <div>

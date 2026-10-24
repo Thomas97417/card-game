@@ -307,7 +307,7 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
     expect(collection().getAllByRole("button")).toHaveLength(2);
     expect(card(collection(), "Colosse du serment")).toBeTruthy();
-    expect(card(collection(), "Loup de lune")).toBeTruthy();
+    expect(card(collection(), "Loup de l’astre rouge")).toBeTruthy();
     expect(
       collection().queryByRole("button", { name: /^Renard des comètes,/ }),
     ).toBeNull();
@@ -317,7 +317,7 @@ describe("l’atelier et la collection", () => {
     expect(epic.getAttribute("aria-pressed")).toBe("false");
     expect(legendary.getAttribute("aria-pressed")).toBe("true");
     expect(collection().getAllByRole("button")).toHaveLength(1);
-    expect(card(collection(), "Loup de lune")).toBeTruthy();
+    expect(card(collection(), "Loup de l’astre rouge")).toBeTruthy();
 
     fireEvent.click(legendary);
     expect(

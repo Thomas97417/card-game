@@ -26,7 +26,11 @@ export type AbilityIconKind =
   | "weaken"
   | "blocked"
   | "temporary"
-  | "poison";
+  | "poison"
+  | "silence"
+  | "immunity"
+  | "evasion"
+  | "counter-attack";
 
 const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   attack: "power",
@@ -48,6 +52,16 @@ const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   poison: "poison",
   steal_attack: "weaken",
   attack_rune: "power",
+  cleanse: "heal",
+  silence: "silence",
+  drain: "vampirism",
+  counter_attack: "counter-attack",
+  immunity: "immunity",
+  evasion: "evasion",
+  set_attack: "weaken",
+  attack_curse: "weaken",
+  hero_damage_from_health: "power",
+  poison_enemy: "poison",
 };
 
 export function abilityIconKind(
@@ -128,6 +142,8 @@ const storedPassives = new Set<AbilityEffect>([
   "vampirism",
   "regeneration",
   "poison",
+  "immunity",
+  "evasion",
 ]);
 
 export function CardAbilityIcons({
@@ -241,6 +257,47 @@ export function unitEffects(
       value: unit.extraAttacks,
       description: `Effectue ${unit.extraAttacks} attaque(s) supplémentaire(s) à chaque assaut.`,
     });
+  if (unit.silenced)
+    effects.push({
+      kind: "silence",
+      label: "Silence",
+      description:
+        "Compétences et bonus supprimés ; la purification ne retire pas ce silence.",
+    });
+  if (unit.immune)
+    effects.push({
+      kind: "immunity",
+      label: "Immunité",
+      description: "Ignore les compétences alliées et ennemies.",
+    });
+  if (unit.evasion)
+    effects.push({
+      kind: "evasion",
+      label: "Esquive",
+      description: "Évite les attaques physiques à distance.",
+    });
+  if (unit.counterAttack)
+    effects.push({
+      kind: "counter-attack",
+      label: "Contre-attaque",
+      description:
+        "Riposte une fois à chaque attaque reçue ; une riposte ne provoque pas de nouvelle riposte.",
+    });
+  if (unit.attackLimit !== undefined)
+    effects.push({
+      kind: "weaken",
+      label: `Entrave : ATQ ${unit.attackLimit}`,
+      value: unit.attackLimit,
+      description:
+        "Attaque fixée jusqu’à la fin du prochain assaut de son propriétaire.",
+    });
+  if (unit.attackCurse)
+    effects.push({
+      kind: "weaken",
+      label: `Malédiction ${unit.attackCurse}`,
+      value: unit.attackCurse,
+      description: `Subit ${unit.attackCurse} dégâts à chaque bonus d’attaque reçu.`,
+    });
   const attack = unit.card.attack - base.attack;
   if (attack > 0)
     effects.push({
@@ -347,6 +404,16 @@ export function UnitEffectIcons({
 
 const eventIcons: Record<string, AbilityIconKind> = {
   Puissance: "power",
+  Purification: "heal",
+  Silence: "silence",
+  "Drain de vie": "vampirism",
+  "Contre-attaque": "counter-attack",
+  Immunité: "immunity",
+  Esquive: "evasion",
+  Entrave: "weaken",
+  Malédiction: "weaken",
+  "Écho vital": "power",
+  "Fin de l’entrave": "weaken",
   "Soin intégral": "heal",
   "Dégâts magiques": "power",
   Poison: "poison",

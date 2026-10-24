@@ -86,7 +86,7 @@ export function DuelArena({
           <StatBadge
             kind="health"
             value={player.heroHp}
-            wounded={player.heroHp < HERO_HP}
+            wounded={player.heroHp < (player.heroMaxHp ?? HERO_HP)}
           />
         </button>
       </div>

@@ -35,7 +35,7 @@ Les liens « Evolves To » sont contrôlés dans l’autre sens avec « Evolves 
 
 ## Adaptation dans Sylve
 
-Les statistiques et paliers Rare/Epic remplacent les anciens bonus fixes sur les communes. Leur plafond passe à 31. Les communes et l’adaptation légendaire existante gardent leur plafond de 26 ; les légendaires restent basées sur leur commune avec +4 ATQ/+8 PV, attaque des bâtiments nulle. Les coûts Rare/Epic jusqu’au niveau 31 sont comparés aux coûts déjà collectés dans Hero Level Table.
+Les statistiques et paliers Rare/Epic remplacent les anciens bonus fixes sur les communes. Leur plafond passe à 31. La collecte a ensuite été complétée par les [20 évolutions Legendary](legendary-cards.md), également au plafond 31 ; les communes et les deux bâtiments légendaires sans correspondance documentée conservent leur plafond 26. Les coûts Rare/Epic jusqu’au niveau 31 sont comparés aux coûts déjà collectés dans Hero Level Table.
 
 Le bestiaire propose les quatre raretés et leurs niveaux. Les illustrations originales sont dans `apps/web/public/art/characters/evolutions/`. [Prompts et sources ImageGen](../../art-prompts-evolutions.json), [aperçu 1](../../evolutions-art-1.jpg), [aperçu 2](../../evolutions-art-2.jpg).
 

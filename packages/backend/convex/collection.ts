@@ -55,7 +55,13 @@ export const upgrade = mutation({
     const entry = await ownedCard(ctx, userId, variantId);
     if (!entry)
       throw new ConvexError("Cette carte n’est pas encore débloquée.");
-    if (entry.level >= maxCardLevel(resolveCard(entry.variantId).rarity))
+    if (
+      entry.level >=
+      maxCardLevel(
+        resolveCard(entry.variantId).rarity,
+        entry.variantId.split(":")[0],
+      )
+    )
       throw new ConvexError("Cette carte a atteint le niveau maximal.");
     const current = rules(() => resolveCard(variantId, entry.level));
     const cost = upgradeCost(entry.level, current.rarity);

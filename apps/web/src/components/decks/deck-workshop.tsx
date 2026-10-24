@@ -105,7 +105,7 @@ function CardArtwork({
           {combatTypeLabel(card)}
         </span>
         <span className="workshop-copies">
-          {(card.level ?? 1) >= maxCardLevel(card.rarity)
+          {(card.level ?? 1) >= maxCardLevel(card.rarity, card.baseId)
             ? `${copies} · MAX`
             : `${copies} / ${upgradeCost(card.level ?? 1, card.rarity)}`}
         </span>

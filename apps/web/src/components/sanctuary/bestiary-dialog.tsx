@@ -45,7 +45,7 @@ function BestiaryContent() {
   const [selectedId, setSelectedId] = useState(CATALOG[0]!.id);
   const [level, setLevel] = useState(1);
   const [rarity, setRarity] = useState<CardRarity>("common");
-  const maximum = maxCardLevel(rarity);
+  const maximum = maxCardLevel(rarity, selectedId);
   const selected = variantCard(selectedId, rarity, level);
   return (
     <>
@@ -64,7 +64,9 @@ function BestiaryContent() {
           onChange={(e) => {
             const next = e.target.value as CardRarity;
             setRarity(next);
-            setLevel((current) => Math.min(current, maxCardLevel(next)));
+            setLevel((current) =>
+              Math.min(current, maxCardLevel(next, selectedId)),
+            );
           }}
         >
           {RARITIES.map((value) => (
@@ -92,32 +94,41 @@ function BestiaryContent() {
       </label>
       <div className="mt-6 grid gap-5 sm:grid-cols-[1fr_190px]">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {CATALOG.map((base) => variantCard(base.id, rarity, level)).map(
-            (card) => (
-              <button
-                key={card.id}
-                type="button"
-                onClick={() => setSelectedId(card.baseId!)}
-                aria-pressed={card.baseId === selectedId}
-                aria-label={`Découvrir ${card.name}`}
-                className={cn(
-                  "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
-                  card.baseId === selectedId
-                    ? "border-[#8c9d70] bg-[#e8eddb]"
-                    : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
-                )}
-              >
-                <CreaturePortrait card={card} />
-                <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
-                  {card.name}
-                </span>
-                <CardAbilityIcons
-                  card={card}
-                  className="bestiary-card-abilities"
-                />
-              </button>
+          {CATALOG.map((base) =>
+            variantCard(
+              base.id,
+              rarity,
+              Math.min(level, maxCardLevel(rarity, base.id)),
             ),
-          )}
+          ).map((card) => (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => {
+                setSelectedId(card.baseId!);
+                setLevel((current) =>
+                  Math.min(current, maxCardLevel(rarity, card.baseId)),
+                );
+              }}
+              aria-pressed={card.baseId === selectedId}
+              aria-label={`Découvrir ${card.name}`}
+              className={cn(
+                "flex flex-col items-center rounded-lg border p-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]",
+                card.baseId === selectedId
+                  ? "border-[#8c9d70] bg-[#e8eddb]"
+                  : "border-[#e0e3d7] bg-[#fdfcf7] hover:border-[#a8b49b]",
+              )}
+            >
+              <CreaturePortrait card={card} />
+              <span className="mt-1 text-center text-[9px] leading-4 text-[#4d614b]">
+                {card.name}
+              </span>
+              <CardAbilityIcons
+                card={card}
+                className="bestiary-card-abilities"
+              />
+            </button>
+          ))}
         </div>
         <div
           aria-live="polite"

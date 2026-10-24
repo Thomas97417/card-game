@@ -1,6 +1,28 @@
 import { AbilityIcon, type AbilityIconKind } from "./ability-icons";
 
 const entries: [AbilityIconKind, string, string][] = [
+  [
+    "silence",
+    "Silence",
+    "Supprime les compétences et bonus. La purification ne retire pas le silence.",
+  ],
+  ["immunity", "Immunité", "Ignore les compétences alliées et ennemies."],
+  ["evasion", "Esquive", "Évite les attaques physiques à distance."],
+  [
+    "counter-attack",
+    "Contre-attaque",
+    "Riposte une fois aux attaques ; les ripostes ne se relancent pas entre elles.",
+  ],
+  [
+    "weaken",
+    "Malédiction",
+    "Inflige des dégâts quand le porteur reçoit un bonus d’attaque.",
+  ],
+  [
+    "heal",
+    "Purification",
+    "Retire poison, entrave, malédiction et affaiblissement, en conservant le silence.",
+  ],
   ["power", "Puissance", "Augmente l’attaque."],
   ["vitality", "Vitalité", "Augmente les PV actuels et maximum."],
   ["heal", "Soin", "Restaure des PV, jusqu’au maximum."],

@@ -74,7 +74,7 @@ export function ChestRevealDialog({
               {reward.reveals.map((item, index) => {
                 const card = resolveCard(item.variantId, item.level);
                 const canUpgrade =
-                  item.level < maxCardLevel(card.rarity) &&
+                  item.level < maxCardLevel(card.rarity, card.baseId) &&
                   item.copies >= upgradeCost(item.level, card.rarity) &&
                   gold != null &&
                   gold >= upgradeGoldCost(item.level, card.rarity);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUp,
@@ -52,10 +52,11 @@ export function CardUpgradeDialog({
   onMove: () => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const popup = useRef<HTMLDivElement>(null);
   const gold = useGoldBalance();
   const card = entry?.card;
   const level = card?.level ?? 1;
-  const maximum = maxCardLevel(card?.rarity);
+  const maximum = maxCardLevel(card?.rarity, card?.baseId);
   const max = level >= maximum;
   const cost = upgradeCost(level, card?.rarity);
   const goldCost = upgradeGoldCost(level, card?.rarity);
@@ -88,6 +89,8 @@ export function CardUpgradeDialog({
       }}
     >
       <DialogContent
+        ref={popup}
+        initialFocus={popup}
         className="upgrade-dialog"
         appearance="game"
         data-rarity={card?.rarity ?? "common"}

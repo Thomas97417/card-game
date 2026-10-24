@@ -479,7 +479,7 @@ describe("collection autoritaire", () => {
       )!.card.abilities,
     ).toEqual(result.card.abilities);
   });
-  it.each(["rare", "epic"] as const)(
+  it.each(["rare", "epic", "legendary"] as const)(
     "upgrades %s cards to 31 and snapshots evolution metadata",
     async (rarity) => {
       const { t, alice, deckId } = await fixture();
@@ -519,6 +519,92 @@ describe("collection autoritaire", () => {
       );
     },
   );
+  it.each(
+    CATALOG.filter((c) => !["tree", "idol"].includes(c.id)).map((c) => c.id),
+  )("persists the Legendary profile and live states of %s", async (baseId) => {
+    const { t, alice, deckId } = await fixture();
+    const variantId = `${baseId}:legendary`;
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId,
+        level: 1,
+        copies: 0,
+      });
+    });
+    await alice.mutation(api.decks.save, {
+      deckId,
+      name: "Légendes",
+      cardIds: [variantId, ...DEFAULT_DECK.slice(1)],
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    const card = resolveCard(variantId);
+    await alice.mutation(api.games.playCard, {
+      gameId,
+      cardId: variantId,
+      row: 0,
+      depth: card.combatType === "ranged" ? 2 : 0,
+      expectedTurn: 1,
+    });
+    const view = await alice.query(api.games.get, { gameId });
+    expect(view.players[0]!.deck.find((c) => c.id === variantId)).toEqual(card);
+    const unit = view.players[0]!.board.find((u) => u.cardId === variantId)!;
+    expect(unit).toBeTruthy();
+    if (baseId === "stag") expect(unit.immune).toBe(true);
+    if (baseId === "captain") expect(unit.evasion).toBe(true);
+    if (baseId === "lynx") expect(unit.counterAttack).toBe(true);
+  });
+  it("persists increases to hero maximum health and their combat events", async () => {
+    const { t, alice, deckId } = await fixture();
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("collection", {
+        ownerId,
+        variantId: "dragon:legendary",
+        level: 1,
+        copies: 0,
+      });
+    });
+    await alice.mutation(api.decks.save, {
+      deckId,
+      name: "Aube",
+      cardIds: [
+        "dragon:legendary",
+        "guardian:common",
+        "turtle:common",
+        "wisp:common",
+      ],
+    });
+    const gameId = await alice.mutation(api.games.createSolo, { deckId });
+    await t.run(async (ctx) => {
+      const state = (await ctx.db.get(gameId))!.state!;
+      state.players[1]!.heroHp = 100;
+      state.players[1]!.heroMaxHp = 100;
+      state.players[0]!.board.push({
+        cardId: "guardian:common",
+        row: 1,
+        depth: 0,
+        hp: 8,
+      });
+      state.players[1]!.board.push({
+        cardId: "guardian:common",
+        row: 1,
+        depth: 0,
+        hp: 1,
+      });
+      await ctx.db.patch(gameId, { state });
+    });
+    await alice.mutation(api.games.playCard, {
+      gameId,
+      cardId: "dragon:legendary",
+      row: 3,
+      depth: 2,
+      expectedTurn: 1,
+    });
+    const view = await alice.query(api.games.get, { gameId });
+    expect(view.players[0]).toMatchObject({ heroHp: 39, heroMaxHp: 39 });
+  });
   it("persists poison granted by an Epic end-of-turn skill", async () => {
     const { t, alice, deckId } = await fixture();
     await t.run(async (ctx) => {

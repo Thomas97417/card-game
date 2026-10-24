@@ -150,7 +150,7 @@ describe("documented Rare and Epic evolutions", () => {
       expect(upgradeCost(31, rarity)).toBe(0);
       expect(() => variantCard("guardian", rarity, 32)).toThrow();
     }
-    for (const rarity of ["common", "legendary"] as const) {
+    for (const rarity of ["common"] as const) {
       expect(maxCardLevel(rarity)).toBe(26);
       expect(() => variantCard("guardian", rarity, 27)).toThrow();
     }

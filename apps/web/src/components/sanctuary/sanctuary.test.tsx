@@ -234,4 +234,37 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
     ).toBeTruthy();
   });
+  it("explores sourced Legendaries through 31 and labels both Sylve buildings with their own cap", async () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
+    const dialog = await screen.findByRole("dialog");
+    const rarity = within(dialog).getByRole("combobox", {
+      name: /Rareté de la carte/,
+    });
+    const level = within(dialog).getByRole("combobox", {
+      name: /Niveau de la carte/,
+    });
+    fireEvent.change(rarity, { target: { value: "legendary" } });
+    expect(within(level).getAllByRole("option")).toHaveLength(31);
+    expect(
+      within(dialog).getByRole("heading", {
+        name: "Gardien du serment éternel",
+      }),
+    ).toBeTruthy();
+    fireEvent.change(level, { target: { value: "31" } });
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Totem de l’aurore",
+      }),
+    );
+    expect((level as HTMLSelectElement).value).toBe("26");
+    expect(within(level).getAllByRole("option")).toHaveLength(26);
+    expect(within(dialog).getByText(/Création Sylve/)).toBeTruthy();
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Découvrir Gardien du serment éternel",
+      }),
+    );
+    expect(within(level).getAllByRole("option")).toHaveLength(31);
+  });
 });

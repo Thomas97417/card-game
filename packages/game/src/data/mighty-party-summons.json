@@ -1,0 +1,175 @@
+[
+  {
+    "kind": "life_palace",
+    "name": "Autel des sources",
+    "artId": "life-palace",
+    "combatType": "building",
+    "faction": "order",
+    "gender": "sexless",
+    "skills": [
+      {
+        "id": "token_0",
+        "effect": "heal",
+        "trigger": "deploy",
+        "target": "ally_hero",
+        "descriptionFr": "Rend {value} PV au héros allié par allié.",
+        "values": [
+          6,
+          10,
+          17,
+          25,
+          40,
+          60,
+          86,
+          119,
+          160,
+          207,
+          275
+        ],
+        "scaleBy": "all_allies"
+      },
+      {
+        "id": "token_1",
+        "effect": "heal",
+        "trigger": "turn_start",
+        "target": "all_allies",
+        "descriptionFr": "Au début du tour : rend {value} PV aux alliés.",
+        "values": [
+          5,
+          7,
+          12,
+          20,
+          32,
+          45,
+          59,
+          68,
+          92,
+          124,
+          165
+        ]
+      },
+      {
+        "id": "token_2",
+        "effect": "heal",
+        "trigger": "turn_start",
+        "target": "ally_hero",
+        "descriptionFr": "Au début du tour : rend {value} PV au héros allié.",
+        "values": [
+          2,
+          4,
+          7,
+          13,
+          20,
+          31,
+          43,
+          56,
+          64,
+          86,
+          114
+        ]
+      }
+    ],
+    "sourceUrl": "https://mightyparty.wiki.gg/wiki/Summon/Little_Life_Palace",
+    "sourceSha256": "10101dbb0f2a3216e3be5faf616f389a1dfeff3984d90ac3ab5ce7b658b786be"
+  },
+  {
+    "kind": "tesla",
+    "name": "Bobine des racines",
+    "artId": "root-coil",
+    "combatType": "building",
+    "faction": "order",
+    "gender": "sexless",
+    "skills": [
+      {
+        "id": "token_0",
+        "effect": "damage",
+        "trigger": "any_death",
+        "target": "enemy_hero",
+        "descriptionFr": "À chaque mort : inflige {value} dégâts au héros ennemi.",
+        "values": [
+          5,
+          9,
+          14,
+          21,
+          29,
+          39,
+          54,
+          87,
+          103,
+          137
+        ]
+      },
+      {
+        "id": "token_1",
+        "effect": "attack",
+        "trigger": "turn_start",
+        "target": "all_allies",
+        "descriptionFr": "Au début du tour : accorde {value} ATQ aux alliés.",
+        "values": [
+          5,
+          8,
+          14,
+          23,
+          38,
+          53,
+          71,
+          102,
+          129,
+          171
+        ]
+      }
+    ],
+    "sourceUrl": "https://mightyparty.wiki.gg/wiki/Summon/Mini_Tesla-X",
+    "sourceSha256": "47ff1eb3ba4a564c06ab69755e51371f637b8fe02583fbef7dc6dde5420ca89f"
+  },
+  {
+    "kind": "squire",
+    "name": "Écuyer des racines",
+    "artId": "knight",
+    "combatType": "melee",
+    "faction": "order",
+    "gender": "male",
+    "skills": [
+      {
+        "id": "token_0",
+        "effect": "block",
+        "trigger": "passive",
+        "target": "self",
+        "descriptionFr": "Blocage {value}.",
+        "values": [
+          2,
+          4,
+          6,
+          10,
+          16,
+          26,
+          40,
+          56,
+          76,
+          101
+        ]
+      },
+      {
+        "id": "token_1",
+        "effect": "attack",
+        "trigger": "deploy",
+        "target": "allies_with_block",
+        "descriptionFr": "Accorde {value} ATQ aux alliés dotés de Blocage.",
+        "values": [
+          3,
+          5,
+          8,
+          12,
+          20,
+          32,
+          48,
+          68,
+          92,
+          120
+        ]
+      }
+    ],
+    "sourceUrl": "https://mightyparty.wiki.gg/wiki/Summon/Squire",
+    "sourceSha256": "5f05968c05855b1a338de9d5177525f6e24bda39935c5b37ecd1dd13ae49c5d3"
+  }
+]
