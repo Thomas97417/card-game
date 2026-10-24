@@ -100,15 +100,11 @@ export function SummonRevealDialog({
   const repeatHint =
     lastRound && !enabled
       ? "Cet appel est temporairement indisponible."
-      : !complete
-        ? "Révèle toutes les cartes pour continuer"
-        : !lastRound
-          ? "La suite de ton lot t’attend"
-          : insufficient
-            ? "Émeraudes insuffisantes"
-            : offer && offer.cost < offer.baseCost
-              ? "Remise perdue en quittant ce cercle"
-              : null;
+      : !complete || !lastRound
+        ? null
+        : insufficient
+          ? "Émeraudes insuffisantes"
+          : null;
   useEffect(() => {
     if (lastFlipped == null) return;
     if (complete) center.current?.focus();
@@ -361,11 +357,6 @@ export function SummonRevealDialog({
                   </span>
                   {lastRound && <EmeraldAmount amount={offer.cost} />}
                 </button>
-                {!lastRound && (
-                  <span className="summon-next-price">
-                    Prochain lot ×10 : <EmeraldAmount amount={offer.cost} />
-                  </span>
-                )}
                 {repeatHint && (
                   <small className="summon-repeat-hint">{repeatHint}</small>
                 )}

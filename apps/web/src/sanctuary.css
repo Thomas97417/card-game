@@ -840,22 +840,6 @@
   font-size: 9px;
   line-height: 1.5;
 }
-.summon-next-price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 2px 5px;
-  font-size: 9px;
-}
-.summon-next-price .emerald-amount {
-  font-size: 12px;
-  gap: 3px;
-}
-.summon-next-price .emerald-icon {
-  width: 19px;
-  height: 19px;
-}
 .summon-reveal-actions {
   display: flex;
   align-items: center;
