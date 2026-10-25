@@ -1579,23 +1579,8 @@ button:disabled {
   box-shadow: 0 8px 32px #091a1b40;
   backdrop-filter: blur(12px);
 }
-.hand-deck {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  flex-shrink: 0;
-  width: 38px;
-  min-height: 54px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #e5d5ac;
-  font-size: 10px;
-}
-.hand-deck:hover {
-  background: #e7dbb714;
+.turn-actions:empty {
+  display: none;
 }
 .player-hand {
   display: flex;
@@ -2412,9 +2397,6 @@ button:disabled {
     left: max(12px, env(safe-area-inset-left));
     padding: 8px 12px;
     gap: 12px;
-  }
-  .hand-deck {
-    width: 28px;
   }
   .player-hand .card-level,
   .hero-details-dialog .details-deck .card-level {

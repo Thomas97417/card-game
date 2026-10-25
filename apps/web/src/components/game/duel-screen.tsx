@@ -19,7 +19,6 @@ import {
   Flag,
   Hourglass,
   History,
-  Layers,
   Leaf,
   RotateCcw,
   Bot,
@@ -367,17 +366,6 @@ export function DuelScreen({
         }
       />
       <section className="hand-area" aria-label="Ta main">
-        <button
-          type="button"
-          className="hand-deck"
-          aria-label="Voir mon deck"
-          title="Voir mon deck"
-          aria-haspopup="dialog"
-          onClick={() => inspect({ type: "hero", playerIndex: data.me })}
-        >
-          <Layers size={22} strokeWidth={1.3} />
-          <span>{mine.deck.length}</span>
-        </button>
         <div className="player-hand" data-inactive={!canSummon}>
           {mine.hand.map((card) => (
             <CreatureCard

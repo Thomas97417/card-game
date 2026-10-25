@@ -396,7 +396,7 @@ describe("inspection pendant un duel", () => {
     ).toBeNull();
   });
 
-  it.each(["own hero", "own deck", "enemy hero"] as const)(
+  it.each(["own hero", "enemy hero"] as const)(
     "opens %s on its side, with its deck and individual cards",
     async (target) => {
       const { data } = setup();
@@ -404,12 +404,9 @@ describe("inspection pendant un duel", () => {
       const player = data.players[own ? data.me : 1 - data.me]!;
       fireEvent.click(
         await screen.findByRole("button", {
-          name:
-            target === "own deck"
-              ? "Voir mon deck"
-              : own
-                ? `Voir Alice, ${player.heroHp} PV`
-                : `Voir Bob, ${player.heroHp} PV`,
+          name: own
+            ? `Voir Alice, ${player.heroHp} PV`
+            : `Voir Bob, ${player.heroHp} PV`,
         }),
       );
       expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
