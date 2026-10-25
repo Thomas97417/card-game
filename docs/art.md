@@ -4,6 +4,8 @@
 
 Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton entoure uniquement le chat ; les icônes restent directement sur le décor, sans cadre au survol. Les commandes d’exploration du village encadrent la barre à gauche et à droite, à hauteur du chat. Le texte d’aide au déplacement est retiré. L’ensemble s’adapte aux petits écrans et à leur zone de sécurité.
 
+Les raccourcis sont regroupés au centre sur 280 px au maximum, avec des icônes de 52 px et des libellés de 14 px, à 2 px du chat. Sur mobile, le groupe mesure au maximum 252 px, les icônes 44 px et les textes 12 px ; aucun espace supplémentaire ne sépare les raccourcis du cadre du chat.
+
 Les trois icônes originales ont été créées par trois appels distincts à **ImageGen intégré**, avec un fond transparent :
 
 - `apps/web/public/art/ui/ranking-trophy.webp` : trophée doré avec une émeraude en forme de feuille.

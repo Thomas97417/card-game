@@ -102,7 +102,7 @@ export function HubDock() {
                 setActiveDestination(destination);
               }}
             >
-              <GameIcon kind={destination.icon} size={72} />
+              <GameIcon kind={destination.icon} size={52} />
               <span>{destination.label}</span>
             </DialogTrigger>
           ))}
