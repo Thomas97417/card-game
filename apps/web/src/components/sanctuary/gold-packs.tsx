@@ -93,41 +93,46 @@ export function GoldPacks({
               <div className="gold-pack-amount">
                 <GoldAmount amount={pack.gold} />
               </div>
-              <button
-                className="gold-pack-button"
-                type="button"
-                disabled={
-                  !ready ||
-                  !!busy ||
-                  !onPurchase ||
-                  (!!pending.current && !retry) ||
-                  (!retry && (emeralds == null || insufficient))
-                }
-                aria-busy={working || undefined}
-                aria-label={`${retry ? "Vérifier l’achat de" : "Acheter"} ${pack.gold.toLocaleString("fr-FR")} pièces d’or — ${pack.name}, ${pack.cost} émeraudes`}
-                title={
-                  retry
-                    ? "Vérifier l’achat."
-                    : insufficient
-                      ? `Il te manque ${(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                      : undefined
-                }
-                onClick={() => void buy(pack.id)}
-              >
-                <EmeraldAmount amount={pack.cost} />
-              </button>
-              {insufficient && !retry && (
-                <span className="gold-pack-note">
-                  Il te manque{" "}
-                  {(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.
-                </span>
-              )}
+              <div className="sanctuary-purchase-footer">
+                <button
+                  className="gold-pack-button"
+                  type="button"
+                  disabled={
+                    !ready ||
+                    !!busy ||
+                    !onPurchase ||
+                    (!!pending.current && !retry) ||
+                    (!retry && (emeralds == null || insufficient))
+                  }
+                  aria-busy={working || undefined}
+                  aria-label={`${retry ? "Vérifier l’achat de" : "Acheter"} ${pack.gold.toLocaleString("fr-FR")} pièces d’or — ${pack.name}, ${pack.cost} émeraudes`}
+                  title={
+                    retry
+                      ? "Vérifier l’achat."
+                      : insufficient
+                        ? `Il te manque ${(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                        : undefined
+                  }
+                  onClick={() => void buy(pack.id)}
+                >
+                  <EmeraldAmount amount={pack.cost} />
+                </button>
+                {insufficient && !retry && (
+                  <span className="gold-pack-note">
+                    Il te manque{" "}
+                    {(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.
+                  </span>
+                )}
+              </div>
             </article>
           );
         })}
       </div>
       {purchased && (
-        <div className="sanctuary-feedback gold-purchase-feedback" role="status">
+        <div
+          className="sanctuary-feedback gold-purchase-feedback"
+          role="status"
+        >
           <Check size={17} />
           <span>
             {purchased.gold.toLocaleString("fr-FR")} pièces d’or ajoutées à ton
