@@ -1,12 +1,6 @@
 import { useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Check,
-  ChevronUp,
-  Globe2,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowRight, ChevronUp, Globe2, MessageCircle } from "lucide-react";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import {
   Dialog,
@@ -16,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MissionsDialog, type HubMissionsProps } from "./missions-dialog";
+import { MissionCheck } from "./mission-icons";
 
 const DESTINATIONS = [
   {
@@ -119,7 +114,7 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
                     role="img"
                     aria-label="Récompenses à récupérer"
                   >
-                    <Check size={15} strokeWidth={3} aria-hidden="true" />
+                    <MissionCheck />
                   </span>
                 )}
               <span>{destination.label}</span>

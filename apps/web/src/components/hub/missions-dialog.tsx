@@ -1,16 +1,6 @@
 import { useId, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  CalendarDays,
-  Check,
-  Clock3,
-  Crown,
-  Leaf,
-  LoaderCircle,
-  LockKeyhole,
-  Sun,
-} from "lucide-react";
+import { ArrowRight, Clock3, LoaderCircle, LockKeyhole } from "lucide-react";
 import type {
   MissionBoard,
   MissionPeriodKind,
@@ -26,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { GameIcon } from "@/components/game/game-icon";
 import { EmeraldIcon } from "@/components/emerald-balance";
+import { MissionCheck, MissionSeal } from "./mission-icons";
 
 export interface HubMissionsProps {
   board?: MissionBoard;
@@ -41,39 +32,10 @@ export interface HubMissionsProps {
 }
 
 const TABS = [
-  { id: "daily", label: "Jour", icon: Sun },
-  { id: "weekly", label: "Semaine", icon: CalendarDays },
-  { id: "epic", label: "Épique", icon: Crown },
+  { id: "daily", label: "Jour" },
+  { id: "weekly", label: "Semaine" },
+  { id: "epic", label: "Épique" },
 ] as const;
-
-/** A minted leaf distinguishes mission seals from gold, emeralds and soul dust. */
-export function MissionSeal({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={`mission-seal ${className}`}
-      width="40"
-      height="44"
-      viewBox="0 0 40 44"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M20 2 36 11v22L20 42 4 33V11Z"
-        fill="#80552d"
-        stroke="#e7c781"
-        strokeWidth="2"
-      />
-      <path d="M20 6 32 13v18l-12 7-12-7V13Z" fill="#b7904f" stroke="#f4daa2" />
-      <path d="M26 13c-12 0-16 6-11 13 8 3 14-3 11-13Z" fill="#fff0bd" />
-      <path
-        d="m13 32 11-16M18 25l-1-7M19 23l6 1"
-        stroke="#674828"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function resetTime(resetsAt: number, now: number) {
   const minutes = Math.max(0, Math.ceil((resetsAt - now) / 60_000));
@@ -95,13 +57,13 @@ export function MissionsDialog({
   const id = useId();
   const track = tab === "epic" ? null : board?.[tab];
   const missions = tab === "epic" ? board?.epic : track?.missions;
-  const readyCount = (kind: MissionTab) => {
-    if (!board) return 0;
+  const hasRewards = (kind: MissionTab) => {
+    if (!board) return false;
     return (
       kind === "epic"
         ? board.epic
         : [...board[kind].missions, ...board[kind].chests]
-    ).filter((item) => item.status === "ready").length;
+    ).some((item) => item.status === "ready");
   };
 
   function changeTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -132,9 +94,6 @@ export function MissionsDialog({
       <header className="missions-heading">
         <GameIcon kind="missions" size={64} />
         <div>
-          <span className="missions-eyebrow">
-            <Leaf size={12} aria-hidden="true" /> Le carnet des gardiens
-          </span>
           <DialogTitle>Missions</DialogTitle>
           <DialogDescription>
             Chaque aventure mérite sa récompense.
@@ -156,25 +115,13 @@ export function MissionsDialog({
           </div>
         ) : (
           <>
-            {track && tab !== "epic" ? (
+            {track && tab !== "epic" && (
               <MissionChestTrack
                 kind={tab}
                 track={track}
                 pending={pending}
                 onOpen={onOpenChest}
               />
-            ) : (
-              <div className="missions-epic-intro">
-                <Crown size={29} aria-hidden="true" />
-                <div>
-                  <strong>Des exploits qui grandissent avec toi</strong>
-                  <p>
-                    Récupère tes émeraudes pour ouvrir le palier suivant. Ta
-                    progression est conservée.
-                  </p>
-                </div>
-                <EmeraldIcon />
-              </div>
             )}
 
             <div className="missions-list-heading">
@@ -246,7 +193,7 @@ export function MissionsDialog({
                   <div className="mission-action">
                     {mission.status === "claimed" ? (
                       <span className="mission-claimed">
-                        <Check size={17} aria-hidden="true" /> Récupérée
+                        <MissionCheck /> Récupérée
                       </span>
                     ) : mission.status === "ready" ? (
                       <button
@@ -263,7 +210,7 @@ export function MissionsDialog({
                             aria-hidden="true"
                           />
                         ) : (
-                          <Check size={15} aria-hidden="true" />
+                          <MissionCheck />
                         )}{" "}
                         Récupérer
                       </button>
@@ -281,10 +228,6 @@ export function MissionsDialog({
                 </li>
               ))}
             </ul>
-            <p className="missions-footnote">
-              <Leaf size={12} aria-hidden="true" /> Les duels solo et publics
-              comptent pour tes missions. Reviens ici récupérer tes récompenses.
-            </p>
           </>
         )}
       </section>
@@ -294,7 +237,7 @@ export function MissionsDialog({
         role="tablist"
         aria-label="Période des missions"
       >
-        {TABS.map(({ id: kind, label, icon: Icon }, index) => (
+        {TABS.map(({ id: kind, label }, index) => (
           <button
             type="button"
             role="tab"
@@ -306,14 +249,14 @@ export function MissionsDialog({
             onClick={() => setTab(kind)}
             onKeyDown={(event) => changeTab(event, index)}
           >
-            <Icon size={18} aria-hidden="true" />
             <span>{label}</span>
-            {readyCount(kind) > 0 && (
+            {hasRewards(kind) && (
               <span
-                className="missions-tab-count"
-                aria-label={`${readyCount(kind)} récompenses à récupérer`}
+                className="missions-tab-ready"
+                role="img"
+                aria-label="Récompenses à récupérer"
               >
-                {readyCount(kind)}
+                <MissionCheck />
               </span>
             )}
           </button>
@@ -383,7 +326,7 @@ function MissionChestTrack({
             />
             <span className="mission-chest-threshold">
               {chest.status === "claimed" ? (
-                <Check size={13} aria-hidden="true" />
+                <MissionCheck />
               ) : chest.status === "active" ? (
                 <LockKeyhole size={11} aria-hidden="true" />
               ) : null}
