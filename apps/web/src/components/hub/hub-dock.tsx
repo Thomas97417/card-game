@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, ChevronUp, Globe2 } from "lucide-react";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import { WorldChat } from "./world-chat";
+import { HubRanking } from "./hub-ranking";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +13,6 @@ import {
 } from "@/components/ui/dialog";
 
 const DESTINATIONS = [
-  {
-    id: "ranking",
-    label: "Classement",
-    icon: "ranking",
-    description: "Le classement mondial des gardiens arrive bientôt.",
-    detail:
-      "Retrouve ici les gardiens au sommet des ligues et mesure ton avancée dans la Sylve.",
-    action: "Gagner des trophées",
-  },
   {
     id: "friends",
     label: "Amis",
@@ -48,13 +40,16 @@ const DESTINATIONS = [
   action: string;
 }[];
 
-/** The hub's social entry points and live world chat. */
+/** Social panels share the space directly above the hub's shortcuts. */
 export function HubDock() {
   const [activeDestination, setActiveDestination] = useState<
     (typeof DESTINATIONS)[number]
   >(DESTINATIONS[0]);
   const [destinationOpen, setDestinationOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [rankingOpen, setRankingOpen] = useState(false);
+  const rankingId = useId();
+  const rankingTrigger = useRef<HTMLButtonElement>(null);
   const chatId = useId();
   const chatTitleId = useId();
   const chatTrigger = useRef<HTMLButtonElement>(null);
@@ -64,9 +59,15 @@ export function HubDock() {
     chatTrigger.current?.focus();
   }
 
+  function closeRanking() {
+    setRankingOpen(false);
+    rankingTrigger.current?.focus();
+  }
+
   return (
     <Dialog open={destinationOpen} onOpenChange={setDestinationOpen}>
       <div className="hub-dock" role="region" aria-label="Vie du refuge">
+        {rankingOpen && <HubRanking id={rankingId} onClose={closeRanking} />}
         <WorldChat
           id={chatId}
           titleId={chatTitleId}
@@ -75,12 +76,27 @@ export function HubDock() {
         />
 
         <nav className="hub-dock-shortcuts" aria-label="Communauté du refuge">
+          <button
+            ref={rankingTrigger}
+            type="button"
+            className="hub-dock-shortcut"
+            aria-expanded={rankingOpen}
+            aria-controls={rankingOpen ? rankingId : undefined}
+            onClick={() => {
+              setChatOpen(false);
+              setRankingOpen((open) => !open);
+            }}
+          >
+            <GameIcon kind="ranking" size={52} />
+            <span>Classement</span>
+          </button>
           {DESTINATIONS.map((destination) => (
             <DialogTrigger
               key={destination.id}
               className="hub-dock-shortcut"
               onClick={() => {
                 setChatOpen(false);
+                setRankingOpen(false);
                 setActiveDestination(destination);
               }}
             >
@@ -96,7 +112,10 @@ export function HubDock() {
           className="hub-chat-toggle"
           aria-expanded={chatOpen}
           aria-controls={chatOpen ? chatId : undefined}
-          onClick={() => setChatOpen((open) => !open)}
+          onClick={() => {
+            setRankingOpen(false);
+            setChatOpen((open) => !open);
+          }}
           onKeyDown={(event) => {
             if (event.key === "Escape" && chatOpen) {
               event.stopPropagation();

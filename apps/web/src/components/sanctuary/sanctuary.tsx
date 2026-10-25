@@ -8,17 +8,16 @@ import {
 } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import {
-  ArrowRight,
-  Check,
-  History,
-  LoaderCircle,
-} from "lucide-react";
+import { ArrowRight, Check, History } from "lucide-react";
 import type {
   EmeraldPackId,
   EmeraldPackOffer,
 } from "@sylve/game/emerald-packs";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
+import type {
+  GoldPurchaseRequest,
+  GoldPurchaseResult,
+} from "@sylve/game/gold-packs";
 import { RARITIES, RARITY_LABELS, type OwnedCard } from "@sylve/game";
 import {
   ACTIVE_SUMMON_PACKS,
@@ -39,6 +38,7 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { BestiaryDialog } from "./bestiary-dialog";
 import { EmeraldPacks } from "./emerald-packs";
+import { GoldPacks } from "./gold-packs";
 import { SummonRevealDialog } from "./summon-reveal-dialog";
 import {
   useSummonRevealProgress,
@@ -67,6 +67,7 @@ interface SanctuaryProps {
   onUpgrade: (variantId: string) => Promise<unknown>;
   emeraldOffers?: EmeraldPackOffer[];
   onBuyEmeralds?: (packId: EmeraldPackId) => Promise<void>;
+  onBuyGold?: (request: GoldPurchaseRequest) => Promise<GoldPurchaseResult>;
   paymentFeedback?: ReactNode;
 }
 
@@ -85,6 +86,7 @@ export function Sanctuary({
   onUpgrade,
   emeraldOffers,
   onBuyEmeralds,
+  onBuyGold,
   paymentFeedback,
 }: SanctuaryProps) {
   const [busy, setBusy] = useState<{
@@ -298,7 +300,7 @@ export function Sanctuary({
             ref={offersRow}
             className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}
             role="region"
-            aria-label="Invocations, clés et émeraudes, défilement horizontal"
+            aria-label="Invocations, émeraudes, or et clés, défilement horizontal"
             tabIndex={0}
             {...dragHandlers}
           >
@@ -320,6 +322,16 @@ export function Sanctuary({
                 />
               ))}
             </section>
+            <EmeraldPacks
+              offers={emeraldOffers}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyEmeralds}
+            />
+            <GoldPacks
+              emeralds={emeralds}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyGold}
+            />
             {availableKeys.length > 0 && (
               <section
                 className="sanctuary-chest-keys"
@@ -338,7 +350,6 @@ export function Sanctuary({
                         key={key.slot}
                         aria-labelledby={`key-${key.slot}`}
                       >
-                        <span className="sanctuary-key-tag">Achat unique</span>
                         <img
                           className="sanctuary-key-art"
                           src={key.image}
@@ -364,6 +375,7 @@ export function Sanctuary({
                             emeralds == null ||
                             insufficient
                           }
+                          aria-busy={working || undefined}
                           aria-label={`Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`}
                           title={
                             insufficient
@@ -372,15 +384,6 @@ export function Sanctuary({
                           }
                           onClick={() => void unlockSlot(key.slot)}
                         >
-                          <span>
-                            {working && (
-                              <LoaderCircle
-                                className="animate-spin"
-                                size={15}
-                              />
-                            )}
-                            Déverrouiller
-                          </span>
                           <EmeraldAmount amount={key.price} />
                         </button>
                       </article>
@@ -389,11 +392,6 @@ export function Sanctuary({
                 </div>
               </section>
             )}
-            <EmeraldPacks
-              offers={emeraldOffers}
-              ready={ready && !busy && busyKey === null}
-              onPurchase={onBuyEmeralds}
-            />
           </div>
           <nav
             className="sanctuary-navigation"
@@ -593,45 +591,44 @@ function PackChoice({
           const working = busy?.packId === pack.id && busy.count === count;
           const insufficient = emeralds != null && emeralds < price;
           return (
-            <button
-              key={count}
-              type="button"
-              className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
-              disabled={!ready || !!busy || emeralds == null || insufficient}
-              aria-busy={working || undefined}
-              aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
-              aria-describedby={
-                count === 10
-                  ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
-                  : undefined
-              }
-              title={
-                insufficient
-                  ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                  : undefined
-              }
-              onClick={() => onInvoke(pack.id, count)}
-            >
-              {count === 10 && (
+            <div className="summon-purchase" key={count}>
+              {count === 10 ? (
                 <span
                   id={`pack-${pack.id}-offer`}
                   className="summon-offer-ribbon"
                 >
                   Offre ×10
                 </span>
+              ) : (
+                <span className="summon-offer-quantity">×1</span>
               )}
-              <span className="summon-button-label">
-                {working && <LoaderCircle className="animate-spin" size={15} />}
-                {count === 1 ? "Invoquer ×1" : "Invoquer ×10"}
-              </span>
-              <span className="summon-button-price">
-                {count === 10 && (
-                  <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
-                    {(pack.price * 10).toLocaleString("fr-FR")}
-                  </del>
-                )}
-                <EmeraldAmount amount={price} />
-              </span>
+              <button
+                type="button"
+                className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
+                disabled={!ready || !!busy || emeralds == null || insufficient}
+                aria-busy={working || undefined}
+                aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
+                aria-describedby={
+                  count === 10
+                    ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
+                    : undefined
+                }
+                title={
+                  insufficient
+                    ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                    : undefined
+                }
+                onClick={() => onInvoke(pack.id, count)}
+              >
+                <span className="summon-button-price">
+                  {count === 10 && (
+                    <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
+                      {(pack.price * 10).toLocaleString("fr-FR")}
+                    </del>
+                  )}
+                  <EmeraldAmount amount={price} />
+                </span>
+              </button>
               {count === 10 && (
                 <span
                   id={`pack-${pack.id}-guarantee`}
@@ -640,7 +637,7 @@ function PackChoice({
                   {guarantee}
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

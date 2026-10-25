@@ -33,6 +33,9 @@ vi.mock("convex/react", () => ({
   useMutation: () => state.send,
   useConvexConnectionState: () => ({ isWebSocketConnected: state.connected }),
 }));
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: () => ({ data: [], isPending: false, isError: false }),
+}));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>
@@ -66,6 +69,33 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("le chat mondial du refuge", () => {
+  it("preserves the draft when switching between the chat and the ranking", () => {
+    render(<HubDock />);
+    const chatTrigger = openChat();
+    fireEvent.change(screen.getByLabelText("Ton message"), {
+      target: { value: "Mon message en cours" },
+    });
+    const rankingTrigger = screen.getByRole("button", {
+      name: "Classement",
+    });
+    fireEvent.click(rankingTrigger);
+    expect(
+      screen.getByRole("region", { name: "Classement mondial" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("region", { name: "Chat mondial" }),
+    ).toBeNull();
+    expect(vi.mocked(useQuery).mock.calls.at(-1)?.[1]).toBe("skip");
+    fireEvent.click(chatTrigger);
+    expect(
+      screen.queryByRole("region", { name: "Classement mondial" }),
+    ).toBeNull();
+    expect(rankingTrigger.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      (screen.getByLabelText("Ton message") as HTMLTextAreaElement).value,
+    ).toBe("Mon message en cours");
+  });
+
   it("subscribes on opening, shows live messages and closes with Escape, restoring focus and the draft", () => {
     state.messages = [
       {

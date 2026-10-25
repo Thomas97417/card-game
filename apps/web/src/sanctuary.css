@@ -35,6 +35,25 @@
     700 15px/1.2 "Avenir Next",
     sans-serif;
 }
+.emerald-balance-link,
+.gold-balance-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 24px;
+  transition: filter 160ms;
+}
+.emerald-balance-link:hover,
+.gold-balance-link:hover {
+  filter: brightness(1.12);
+}
+.emerald-balance-link:focus-visible,
+.gold-balance-link:focus-visible {
+  outline: 2px solid #c3f5ce;
+  outline-offset: 3px;
+}
+.gold-balance-link:focus-visible {
+  outline-color: #ffe2a2;
+}
 .sanctuary-page {
   position: relative;
   isolation: isolate;
@@ -148,20 +167,27 @@
   outline: 2px solid #ffe0a0;
   outline-offset: -2px;
 }
-.emerald-shop {
+.emerald-shop,
+.gold-shop,
+.sanctuary-chest-keys {
   display: flex;
   flex: none;
   flex-direction: column;
   justify-content: center;
   width: max-content;
 }
-.emerald-pack-grid {
+.emerald-pack-grid,
+.gold-pack-grid,
+.sanctuary-key-grid {
   display: grid;
   flex: 1;
-  grid-template-columns: repeat(5, var(--sanctuary-key-width));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--sanctuary-key-width);
   gap: var(--sanctuary-offer-gap);
 }
-.emerald-pack {
+.emerald-pack,
+.gold-pack,
+.sanctuary-key-card {
   position: relative;
   display: flex;
   align-items: center;
@@ -178,52 +204,64 @@
     inset 0 1px #f7dc9d22;
   text-align: center;
 }
-.emerald-pack-tag {
-  align-self: flex-end;
-  color: #dac58e;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+.gold-pack,
+.sanctuary-key-card {
+  background:
+    radial-gradient(ellipse at 50% 32%, #e8b64c24, transparent 65%),
+    linear-gradient(155deg, #3d4930f2, #192c20f5);
 }
-.emerald-pack-art {
+.emerald-pack-art,
+.gold-pack-art,
+.sanctuary-key-art {
   width: 100%;
   height: clamp(160px, 23svh, 230px);
-  margin-block: auto 0;
+  margin-block: 0;
   object-fit: contain;
   filter: drop-shadow(0 8px 10px #021a1499);
   transform: scale(var(--treasure-art-scale, 1));
   transform-origin: center bottom;
 }
-.emerald-pack h2 {
+.emerald-pack h2,
+.gold-pack h2,
+.sanctuary-key-copy h2 {
   color: #fff0d1;
   font:
     400 22px/1.25 Georgia,
     serif;
 }
-.emerald-pack-description {
+.emerald-pack-description,
+.gold-pack-description,
+.sanctuary-key-copy p {
   min-height: 32px;
   margin-top: 7px;
   color: #c1cfb9;
   font-size: 10px;
   line-height: 1.6;
 }
-.emerald-pack-amount {
+.emerald-pack-amount,
+.gold-pack-amount {
   margin: 14px 0 17px;
   color: #d5f8c8;
   font-size: 23px;
   font-weight: 700;
 }
-.emerald-pack-amount .emerald-icon {
+.gold-pack-amount {
+  color: #ffe2a2;
+}
+.emerald-pack-amount .emerald-icon,
+.gold-pack-amount .gold-icon {
   width: 30px;
   height: 30px;
 }
-.emerald-pack-button {
+.emerald-pack-button,
+.gold-pack-button,
+.sanctuary-key-button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
   width: 100%;
-  min-height: 46px;
+  min-height: 48px;
   margin-top: auto;
   padding: 10px 13px;
   border: 1px solid #dfbe79b3;
@@ -235,23 +273,44 @@
     0 3px 0 #071c1766;
   font-size: 11px;
 }
-.emerald-pack-button > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.gold-pack-button,
+.sanctuary-key-button {
+  border-color: #a4d29a9c;
+  background: linear-gradient(#3f7046, #295234);
+  color: #e1f7d3;
 }
 .emerald-pack-button strong {
   font-size: 15px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.emerald-pack-button:hover:not(:disabled) {
+.gold-pack-button .emerald-amount,
+.sanctuary-key-button .emerald-amount {
+  gap: 5px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.gold-pack-button .emerald-icon,
+.sanctuary-key-button .emerald-icon {
+  width: 26px;
+  height: 26px;
+}
+.emerald-pack-button:hover:not(:disabled),
+.gold-pack-button:hover:not(:disabled),
+.sanctuary-key-button:hover:not(:disabled) {
   filter: brightness(1.15);
 }
-.emerald-pack-button:disabled {
+.emerald-pack-button:disabled,
+.gold-pack-button:disabled,
+.sanctuary-key-button:disabled {
   opacity: 0.55;
 }
-.emerald-pack-payment {
+.gold-pack-button:focus-visible,
+.sanctuary-key-button:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: 3px;
+}
+.gold-pack-note {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -259,7 +318,9 @@
   color: #bcc9ad;
   font-size: 8px;
 }
-.emerald-shop > .sanctuary-error {
+.emerald-shop > .sanctuary-error,
+.gold-shop > .sanctuary-error,
+.gold-shop > .sanctuary-feedback {
   position: fixed;
   z-index: 20;
   inset-inline: 16px;
@@ -268,6 +329,18 @@
   max-width: min(620px, calc(100vw - 32px));
   margin: 0 auto;
   white-space: normal;
+}
+.gold-purchase-feedback > svg {
+  flex-shrink: 0;
+}
+.gold-purchase-feedback button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 5px;
 }
 .sanctuary-feedback.emerald-payment-feedback {
   margin: 0 0 16px;
@@ -298,96 +371,7 @@
   gap: var(--sanctuary-offer-gap);
 }
 .sanctuary-chest-keys {
-  display: flex;
-  flex: none;
   scroll-margin-block: 16px;
-}
-.sanctuary-key-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: var(--sanctuary-key-width);
-  gap: var(--sanctuary-offer-gap);
-}
-.sanctuary-key-card {
-  position: relative;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px 18px 17px;
-  border: 1px solid #c5a66b99;
-  border-radius: 12px 12px 22px 22px;
-  background:
-    radial-gradient(ellipse at 50% 15%, #a58b402b, transparent 65%),
-    linear-gradient(155deg, #283e2ced, #10281ff5);
-  box-shadow:
-    0 10px 24px #051c1566,
-    inset 0 1px #f7dc9d22;
-}
-.sanctuary-key-tag {
-  align-self: flex-end;
-  color: #dbc48c;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-}
-.sanctuary-key-art {
-  width: 200px;
-  height: clamp(180px, 24svh, 240px);
-  margin-block: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 8px #061e1680);
-}
-.sanctuary-key-copy {
-  text-align: center;
-}
-.sanctuary-key-copy h2 {
-  color: #f7e6b8;
-  font:
-    400 21px/1.25 Georgia,
-    serif;
-}
-.sanctuary-key-copy p {
-  margin: 7px 0 15px;
-  color: #c6d0b5;
-  font-size: 10px;
-  line-height: 1.5;
-}
-.sanctuary-key-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  min-height: 43px;
-  margin-top: auto;
-  padding: 7px 10px;
-  border: 1px solid #87b67a99;
-  border-radius: 6px;
-  background: linear-gradient(#395b36, #244b30);
-  color: #edebc4;
-  font-size: 10px;
-  font-weight: 600;
-}
-.sanctuary-key-button > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.sanctuary-key-button .emerald-icon {
-  width: 24px;
-  height: 24px;
-}
-.sanctuary-key-button:hover:not(:disabled) {
-  border-color: #e4d18c;
-  filter: brightness(1.15);
-}
-.sanctuary-key-button:disabled {
-  opacity: 0.6;
-}
-.sanctuary-key-button:focus-visible {
-  outline: 2px solid #ffe0a0;
-  outline-offset: 3px;
 }
 .sanctuary-feedback.sanctuary-key-success {
   position: absolute;
@@ -543,6 +527,20 @@
   gap: 10px;
   margin-top: auto;
 }
+.summon-purchase {
+  display: grid;
+  grid-template-rows: 22px 46px auto;
+  gap: 6px;
+  min-width: 0;
+}
+.summon-offer-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ead9b2;
+  font-size: 11px;
+  font-weight: 600;
+}
 .summon-button {
   position: relative;
   display: flex;
@@ -550,9 +548,9 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  min-height: 90px;
+  min-height: 46px;
   min-width: 0;
-  padding: 12px 6px 9px;
+  padding: 9px 6px;
   border: 1px solid #94b08c88;
   border-radius: 8px;
   background: linear-gradient(#365949, #244333);
@@ -565,7 +563,6 @@
     transform 160ms;
 }
 .summon-button-ten {
-  padding-top: 20px;
   border-color: #dfbe79c9;
   background: linear-gradient(#7d6232, #59451f);
 }
@@ -582,20 +579,12 @@
   opacity: 0.5;
   filter: saturate(0.5);
 }
-.summon-button-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-}
 .summon-button-price {
   display: flex;
   align-items: center;
   gap: 4px;
   color: #e5f9f4;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 }
 .summon-button-price del {
@@ -617,10 +606,7 @@
   text-align: center;
 }
 .summon-offer-ribbon {
-  position: absolute;
-  top: -11px;
-  right: -5px;
-  left: -5px;
+  position: relative;
   padding: 4px 6px;
   border: 1px solid #f5dda1;
   border-radius: 2px;
@@ -1252,9 +1238,6 @@
     min-height: 58px;
     padding-block: 10px;
   }
-  .summon-button {
-    min-height: 86px;
-  }
 }
 @media (min-width: 900px) and (min-height: 850px) {
   .summon-pack {
@@ -1281,9 +1264,6 @@
     --sanctuary-pack-width: min(380px, calc(100vw - 48px));
     --sanctuary-key-width: min(280px, calc(100vw - 48px));
     --sanctuary-offer-gap: 16px;
-  }
-  .sanctuary-key-card {
-    padding-inline: 12px;
   }
   .currency-balances {
     gap: 5px;
@@ -1315,9 +1295,6 @@
   .summon-actions {
     gap: 7px;
   }
-  .summon-button-label {
-    font-size: 10px;
-  }
 }
 @media (max-width: 560px) {
   .summon-pack {
@@ -1337,9 +1314,6 @@
   }
   .summon-rates > span {
     font-size: 10px;
-  }
-  .summon-button-label {
-    font-size: 12px;
   }
   .summon-reveal-dialog > [data-slot="dialog-body"] {
     padding: 18px 10px 12px;

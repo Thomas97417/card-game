@@ -1,6 +1,26 @@
+import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GoldBalance, GoldContext } from "./gold-balance";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    children,
+    to,
+    hash,
+    hashScrollIntoView: _hashScrollIntoView,
+    ...props
+  }: {
+    children: ReactNode;
+    to: string;
+    hash?: string;
+    hashScrollIntoView?: ScrollIntoViewOptions;
+  }) => (
+    <a href={`${to}${hash ? `#${hash}` : ""}`} {...props}>
+      {children}
+    </a>
+  ),
+}));
 
 describe("le solde d’or", () => {
   it("shows zero, uses the generated icon, and updates the balance", () => {
@@ -16,6 +36,11 @@ describe("le solde d’or", () => {
     expect(balance.querySelector("img")?.getAttribute("src")).toBe(
       "/art/ui/gold-coins.webp",
     );
+    expect(
+      screen
+        .getByRole("link", { name: /^Acheter des pièces d’or/ })
+        .getAttribute("href"),
+    ).toBe("/sanctuary#gold-packs");
     rerender(
       <GoldContext.Provider value={1234}>
         <GoldBalance />

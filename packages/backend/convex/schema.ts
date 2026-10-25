@@ -10,6 +10,7 @@ import {
   revealValidator,
   summonPackValidator,
   summonCountValidator,
+  goldPackValidator,
 } from "./lib/validators";
 
 export default defineSchema({
@@ -22,7 +23,9 @@ export default defineSchema({
     ownerId: v.string(),
     trophies: v.number(),
     peakTrophies: v.optional(v.number()),
-  }).index("by_owner", ["ownerId"]),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_trophies", ["trophies"]),
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
@@ -53,6 +56,13 @@ export default defineSchema({
     .index("by_checkout", ["checkoutId"])
     .index("by_order", ["orderId"])
     .index("by_owner", ["ownerId"]),
+  goldPurchases: defineTable({
+    ownerId: v.string(),
+    requestId: v.string(),
+    packId: goldPackValidator,
+    gold: v.number(),
+    cost: v.number(),
+  }).index("by_owner_request", ["ownerId", "requestId"]),
   chestSlotUnlocks: defineTable({
     ownerId: v.string(),
     slot: v.number(),
