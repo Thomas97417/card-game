@@ -27,6 +27,27 @@ export default defineSchema({
     diamonds: v.optional(v.number()),
     activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
+  emeraldPurchases: defineTable({
+    ownerId: v.string(),
+    checkoutId: v.string(),
+    customerId: v.string(),
+    productId: v.string(),
+    packId: v.string(),
+    emeralds: v.number(),
+    priceAmount: v.number(),
+    priceCurrency: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("refunded"),
+    ),
+    orderId: v.optional(v.string()),
+    creditedEmeralds: v.number(),
+    refundedEmeralds: v.number(),
+  })
+    .index("by_checkout", ["checkoutId"])
+    .index("by_order", ["orderId"])
+    .index("by_owner", ["ownerId"]),
   chestSlotUnlocks: defineTable({
     ownerId: v.string(),
     slot: v.number(),

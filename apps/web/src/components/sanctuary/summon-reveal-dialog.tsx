@@ -99,11 +99,7 @@ export function SummonRevealDialog({
   const repeatHint =
     lastRound && !enabled
       ? "Cet appel est temporairement indisponible."
-      : !complete || !lastRound
-        ? null
-        : insufficient
-          ? "Émeraudes insuffisantes"
-          : null;
+      : null;
   useEffect(() => {
     const timers = celebrationTimers.current;
     return () => {
