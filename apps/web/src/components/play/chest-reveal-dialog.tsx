@@ -138,14 +138,6 @@ export function ChestRevealDialog({
                     <span>Pièces d’or</span>
                   </div>
                 </ChestRewardCard>
-                <div className="chest-reveal-caption">
-                  {revealedCount > 0 && (
-                    <>
-                      <strong>Pièces d’or</strong>
-                      <small>Pour améliorer tes cartes</small>
-                    </>
-                  )}
-                </div>
               </div>
               {reward.reveals.map((item, index) => {
                 const entry = entries.get(item.variantId);
