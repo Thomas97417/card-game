@@ -365,27 +365,29 @@ export function Sanctuary({
                             {String(key.slot + 2).padStart(2, "0")}.
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          className="sanctuary-key-button"
-                          disabled={
-                            !ready ||
-                            !!busy ||
-                            busyKey !== null ||
-                            emeralds == null ||
-                            insufficient
-                          }
-                          aria-busy={working || undefined}
-                          aria-label={`Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`}
-                          title={
-                            insufficient
-                              ? `Il te manque ${(key.price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                              : undefined
-                          }
-                          onClick={() => void unlockSlot(key.slot)}
-                        >
-                          <EmeraldAmount amount={key.price} />
-                        </button>
+                        <div className="sanctuary-purchase-footer">
+                          <button
+                            type="button"
+                            className="sanctuary-key-button"
+                            disabled={
+                              !ready ||
+                              !!busy ||
+                              busyKey !== null ||
+                              emeralds == null ||
+                              insufficient
+                            }
+                            aria-busy={working || undefined}
+                            aria-label={`Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`}
+                            title={
+                              insufficient
+                                ? `Il te manque ${(key.price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                                : undefined
+                            }
+                            onClick={() => void unlockSlot(key.slot)}
+                          >
+                            <EmeraldAmount amount={key.price} />
+                          </button>
+                        </div>
                       </article>
                     );
                   })}
@@ -553,7 +555,7 @@ function PackChoice({
         <h2 id={`pack-${pack.id}`}>{pack.name}</h2>
         <p>{pack.description}</p>
       </div>
-      <div className="summon-rates" aria-label={`Taux de ${pack.name}`}>
+      <dl className="summon-rates" aria-label={`Taux de ${pack.name}`}>
         {RARITIES.filter((rarity) => pack.rates[rarity] > 0).map((rarity) => {
           const quantity = summonQuantity(pack.id, rarity, peakTrophies);
           const boosted =
@@ -561,30 +563,39 @@ function PackChoice({
               ? summonQuantity(pack.id, rarity, peakTrophies, 2)
               : null;
           return (
-            <span key={rarity} data-rarity={rarity}>
-              <i aria-hidden="true" />
-              {RARITY_LABELS[rarity]}
-              <strong>{pack.rates[rarity]} %</strong>
-              <small
+            <div key={rarity} data-rarity={rarity}>
+              <dt>
+                <img
+                  src={`/art/ui/rarity-${rarity}.webp`}
+                  alt=""
+                  width={24}
+                  height={33}
+                  draggable={false}
+                />
+                {RARITY_LABELS[rarity]}
+              </dt>
+              <dd className="summon-rate-chance">{pack.rates[rarity]} %</dd>
+              <dd
+                className="summon-rate-quantity"
                 title={
                   boosted
-                    ? "Les deux lots légendaires garantis ont chacun 50 % de chance d’être renforcés."
-                    : undefined
+                    ? "Nombre de cartes par compagnon obtenu. Les deux lots légendaires garantis ont chacun 50 % de chance d’être renforcés."
+                    : "Nombre de cartes par compagnon obtenu."
                 }
               >
-                ×{quantity.min}
+                {quantity.min}
                 {quantity.max !== quantity.min ? `–${quantity.max}` : ""}
+                {" cartes"}
                 {boosted && (
-                  <>
-                    {" "}
-                    ou ×{boosted.min}–{boosted.max}
-                  </>
+                  <span className="summon-rate-boost">
+                    ou {boosted.min}–{boosted.max} cartes
+                  </span>
                 )}
-              </small>
-            </span>
+              </dd>
+            </div>
           );
         })}
-      </div>
+      </dl>
       <div className="summon-actions">
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
@@ -592,16 +603,12 @@ function PackChoice({
           const insufficient = emeralds != null && emeralds < price;
           return (
             <div className="summon-purchase" key={count}>
-              {count === 10 ? (
-                <span
-                  id={`pack-${pack.id}-offer`}
-                  className="summon-offer-ribbon"
-                >
-                  Offre ×10
-                </span>
-              ) : (
-                <span className="summon-offer-quantity">×1</span>
-              )}
+              <span
+                id={`pack-${pack.id}-offer-${count}`}
+                className="summon-purchase-label"
+              >
+                {count === 1 ? "1 invocation" : "10 invocations"}
+              </span>
               <button
                 type="button"
                 className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
@@ -610,8 +617,8 @@ function PackChoice({
                 aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
                 aria-describedby={
                   count === 10
-                    ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
-                    : undefined
+                    ? `pack-${pack.id}-offer-${count} pack-${pack.id}-guarantee`
+                    : `pack-${pack.id}-offer-${count}`
                 }
                 title={
                   insufficient

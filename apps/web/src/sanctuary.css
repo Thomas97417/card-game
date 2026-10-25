@@ -140,6 +140,9 @@
   );
   --sanctuary-key-width: 280px;
   --sanctuary-offer-gap: 28px;
+  --sanctuary-purchase-height: 48px;
+  --sanctuary-purchase-note-height: 28px;
+  --sanctuary-purchase-gap: 6px;
   display: flex;
   flex: none;
   align-items: stretch;
@@ -261,8 +264,7 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
-  min-height: 48px;
-  margin-top: auto;
+  min-height: var(--sanctuary-purchase-height);
   padding: 10px 13px;
   border: 1px solid #dfbe79b3;
   border-radius: 7px;
@@ -314,9 +316,20 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 11px;
+  align-self: start;
+  justify-content: center;
   color: #bcc9ad;
   font-size: 8px;
+  line-height: 1.4;
+}
+.sanctuary-purchase-footer {
+  display: grid;
+  grid-template-rows: var(--sanctuary-purchase-height) var(
+      --sanctuary-purchase-note-height
+    );
+  gap: var(--sanctuary-purchase-gap);
+  width: 100%;
+  margin-top: auto;
 }
 .emerald-shop > .sanctuary-error,
 .gold-shop > .sanctuary-error,
@@ -397,7 +410,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px 26px 14px;
+  padding: 20px 26px 17px;
   border: 1px solid #b8a46c9c;
   border-radius: 15px 15px 28px 28px;
   background: linear-gradient(155deg, #22463dec, #122f28f0 65%, #10251ff5);
@@ -483,63 +496,82 @@
 }
 .summon-rates {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-content: center;
-  gap: 8px 20px;
-  min-height: 68px;
-  margin-top: 6px;
-  padding: 12px 4px;
-  border-bottom: 1px solid #b4b88822;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: start;
+  margin: 16px 0 20px;
+  padding: 14px 0;
+  border-block: 1px solid #b4b88822;
+  text-align: center;
 }
-.summon-rates > span {
+.summon-rates > div {
+  min-width: 0;
+  padding-inline: 6px;
+}
+.summon-rates > div + div {
+  border-left: 1px solid #b4b88822;
+}
+.summon-rates dt {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   color: #d4dfd0;
-  font-size: 10px;
+  font-size: 11px;
   white-space: nowrap;
 }
-.summon-rates small {
-  flex-basis: 100%;
-  padding-left: 11px;
+.summon-rates dt img {
+  flex-shrink: 0;
+  width: 24px;
+  height: 33px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #020f1366);
+}
+.summon-rate-quantity {
   color: #b9c9ad;
+  font-size: 11px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.summon-rate-boost {
+  display: block;
+  color: #d4c399;
   font-size: 9px;
 }
-.summon-rates i {
-  flex-shrink: 0;
-  width: 5px;
-  height: 5px;
-  border-radius: 1px;
-  background: var(--rarity-color);
-  transform: rotate(45deg);
-}
-.summon-rates strong {
-  margin-left: auto;
+.summon-rate-chance {
+  margin-block: 5px 2px;
   color: var(--rarity-color);
-  font-size: 11px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
 .summon-actions {
   display: grid;
-  grid-template-columns: 1fr 1.18fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: 10px;
   margin-top: auto;
 }
 .summon-purchase {
   display: grid;
-  grid-template-rows: 22px 46px auto;
-  gap: 6px;
+  grid-template-rows: 18px var(--sanctuary-purchase-height) var(
+      --sanctuary-purchase-note-height
+    );
+  gap: var(--sanctuary-purchase-gap);
   min-width: 0;
 }
-.summon-offer-quantity {
+.summon-purchase-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ead9b2;
+  color: #c9d1bd;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.summon-purchase:last-child .summon-purchase-label {
+  color: #ead5a5;
 }
 .summon-button {
   position: relative;
@@ -548,7 +580,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  min-height: 46px;
+  min-height: var(--sanctuary-purchase-height);
   min-width: 0;
   padding: 9px 6px;
   border: 1px solid #94b08c88;
@@ -600,40 +632,11 @@
   gap: 3px;
 }
 .summon-button-guarantee {
+  align-self: start;
   color: #f5d798;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.4;
   text-align: center;
-}
-.summon-offer-ribbon {
-  position: relative;
-  padding: 4px 6px;
-  border: 1px solid #f5dda1;
-  border-radius: 2px;
-  background: linear-gradient(100deg, #cfa65d, #f3d78e 48%, #d6b16a);
-  color: #493214;
-  box-shadow: 0 2px 5px #20160555;
-  font-size: 9px;
-  font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: 0.5px;
-  text-align: center;
-  text-transform: uppercase;
-}
-.summon-offer-ribbon::before,
-.summon-offer-ribbon::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  border-top: 5px solid #795326;
-}
-.summon-offer-ribbon::before {
-  left: -1px;
-  border-left: 5px solid transparent;
-}
-.summon-offer-ribbon::after {
-  right: -1px;
-  border-right: 5px solid transparent;
 }
 .sanctuary-feedback,
 .sanctuary-error {
@@ -1226,7 +1229,7 @@
 }
 @media (min-width: 761px) and (max-height: 800px) {
   .summon-pack {
-    padding-block: 15px 12px;
+    padding-top: 15px;
   }
   .summon-pack-art {
     height: 110px;
@@ -1235,13 +1238,12 @@
     min-height: 28px;
   }
   .summon-rates {
-    min-height: 58px;
     padding-block: 10px;
   }
 }
 @media (min-width: 900px) and (min-height: 850px) {
   .summon-pack {
-    padding-block: 24px 20px;
+    padding-top: 24px;
   }
 }
 @media (max-width: 600px) {
@@ -1286,19 +1288,13 @@
   .summon-pack-copy p {
     min-height: 48px;
   }
-  .summon-rates {
-    gap: 8px;
-  }
-  .summon-rates > span {
-    font-size: 9px;
-  }
   .summon-actions {
     gap: 7px;
   }
 }
 @media (max-width: 560px) {
   .summon-pack {
-    padding: 20px 22px 16px;
+    padding: 20px 22px 17px;
   }
   .summon-pack-art {
     height: 145px;
@@ -1308,12 +1304,6 @@
   }
   .summon-pack h2 {
     font-size: 27px;
-  }
-  .summon-rates {
-    gap: 10px 22px;
-  }
-  .summon-rates > span {
-    font-size: 10px;
   }
   .summon-reveal-dialog > [data-slot="dialog-body"] {
     padding: 18px 10px 12px;
@@ -1381,8 +1371,13 @@
   .summon-pack {
     padding-inline: 16px;
   }
-  .summon-rates {
-    gap: 8px 14px;
+  .summon-rates dt {
+    gap: 4px;
+    font-size: 10px;
+  }
+  .summon-rates dt img {
+    width: 20px;
+    height: 28px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
