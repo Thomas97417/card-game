@@ -12,6 +12,7 @@ import {
   fieldBonus,
   fieldMarkName,
   unitCard,
+  nextHeroAbility,
   GENDER_LABELS,
   type CardDefinition,
   type GameView,
@@ -69,6 +70,15 @@ export function DuelDetailsDialog({
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
+  const localPlayer = view.players[view.me]!;
+  const hasPowerPile =
+    view.status === "active" &&
+    localPlayer.heroLevel !== undefined &&
+    nextHeroAbility(
+      localPlayer.heroLevel,
+      localPlayer.heroAbilityUses ?? 0,
+      view.turn,
+    ).unlockLevel <= localPlayer.heroLevel;
   const own = inspection?.playerIndex === view.me;
   const inspectedCard = inspection?.type === "card" ? inspection.card : null;
   const source = inspection?.type === "card" ? inspection.source : null;
@@ -129,7 +139,7 @@ export function DuelDetailsDialog({
             ? ({ "--hero-deck-count": player?.deck.length ?? 4 } as CSSProperties)
             : undefined
         }
-        data-power-pile={view.status === "active" && view.players[view.me]?.heroLevel !== undefined}
+        data-power-pile={hasPowerPile}
         appearance="game"
         placement={own ? "left" : "right"}
         showBackdrop={false}
@@ -200,10 +210,9 @@ export function DuelDetailsDialog({
                     Retour au héros
                   </button>
                 )}
-                <span className="eyebrow">
-                  {source === "deck"
-                    ? `DECK DE ${player.name}`
-                    : neutral
+                {source !== "deck" && (
+                  <span className="eyebrow">
+                    {neutral
                       ? "BÂTIMENT NEUTRE"
                       : unit
                         ? own
@@ -212,7 +221,8 @@ export function DuelDetailsDialog({
                         : source === "hand"
                           ? "DANS TA MAIN"
                           : "FICHE DE CRÉATURE"}
-                </span>
+                  </span>
+                )}
                 <DialogTitle ref={titleRef} tabIndex={-1}>
                   {card.name}
                 </DialogTitle>
@@ -226,14 +236,12 @@ export function DuelDetailsDialog({
                     : `${RARITY_LABELS[card.rarity ?? "common"]} · Niveau ${card.level ?? 1}`}
                 </span>
                 <p className="details-note card-details-role">
-                  {combatTypeLabel(card)} ·{" "}
+                  {combatTypeLabel(card)}
                   {neutral
-                    ? "Présent dès le début du combat. N’attaque pas."
-                    : getCombatType(card) === "melee"
-                      ? "Déploiement au milieu ou vers l’ennemi."
-                      : getCombatType(card) === "building"
-                        ? "Déploiement sur toute case libre. N’attaque pas."
-                        : "Déploiement au milieu ou vers ton héros."}
+                    ? " · Présent dès le début du combat. N’attaque pas."
+                    : getCombatType(card) === "building"
+                      ? " · N’attaque pas."
+                      : ""}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
                   {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </p>

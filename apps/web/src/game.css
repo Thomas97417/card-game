@@ -1043,17 +1043,6 @@ button:disabled {
   color: #e3ddc4;
   text-shadow: 0 1px 4px #071c1a;
 }
-.hero-power-exhausted {
-  display: grid;
-  justify-items: center;
-  gap: 7px;
-  padding: 12px 8px;
-  border: 1px solid #bfce9e47;
-  border-radius: 10px;
-  background: #16352be6;
-  color: #c5d7af;
-  font-size: 10px;
-}
 .hero-level-badge {
   position: absolute;
   bottom: 3%;

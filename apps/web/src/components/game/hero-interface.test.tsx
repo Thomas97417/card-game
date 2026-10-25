@@ -92,13 +92,11 @@ describe("interface des héros", () => {
         practice
       />,
     );
-    const pile = within(
-      screen.getByRole("complementary", { name: "Pouvoirs du héros" }),
-    );
-    expect(pile.queryByRole("button", { name: /^Utiliser / })).toBeNull();
-    expect(pile.getByText("Pouvoir utilisé")).toBeTruthy();
-    expect(pile.queryByText("Appel des éclaireurs")).toBeNull();
-    expect(pile.queryByText(/Niveau 11/)).toBeNull();
+    expect(
+      screen.queryByRole("complementary", { name: "Pouvoirs du héros" }),
+    ).toBeNull();
+    expect(screen.queryByText("Pouvoir utilisé")).toBeNull();
+    expect(screen.queryByText("Appel des éclaireurs")).toBeNull();
     expect(actions.onHeroAbility).not.toHaveBeenCalled();
   });
   it.each(["turn", "opponent", "deployed"])(
