@@ -620,9 +620,9 @@
   font-weight: 700;
 }
 .summon-button-price del {
-  color: #d0c39e;
-  font-size: 9px;
-  font-weight: 400;
+  color: #e4d1a8;
+  font-size: 13px;
+  font-weight: 500;
 }
 .summon-button-price .emerald-icon {
   width: 24px;
@@ -1378,6 +1378,18 @@
   .summon-rates dt img {
     width: 20px;
     height: 28px;
+  }
+  .summon-button-ten {
+    padding-block: 4px;
+  }
+  .summon-button-ten .summon-button-price {
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1;
+  }
+  .summon-button-ten .emerald-icon {
+    width: 20px;
+    height: 20px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

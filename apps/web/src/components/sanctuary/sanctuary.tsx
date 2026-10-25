@@ -567,12 +567,11 @@ function PackChoice({
               <dt>
                 <img
                   src={`/art/ui/rarity-${rarity}.webp`}
-                  alt=""
+                  alt={RARITY_LABELS[rarity]}
                   width={24}
                   height={33}
                   draggable={false}
                 />
-                {RARITY_LABELS[rarity]}
               </dt>
               <dd className="summon-rate-chance">{pack.rates[rarity]} %</dd>
               <dd
