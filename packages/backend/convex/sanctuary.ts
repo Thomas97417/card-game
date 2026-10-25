@@ -17,6 +17,7 @@ import { ensureStarterDeck } from "./decks";
 import { grantLoot, playerLeague, playerWallet } from "./lib/progression";
 import { ensureEmeralds } from "./lib/wallet";
 import { summonCountValidator, summonPackValidator } from "./lib/validators";
+import { recordMissionProgress } from "./lib/missions";
 
 export const ensureWallet = mutation({
   args: {},
@@ -301,6 +302,7 @@ export const summon = mutation({
       gold: wallet.gold + gold,
       activeSummonId: invocationId,
     });
+    await recordMissionProgress(ctx, userId, { summons: count });
     return { ...result, repeatToken: invocationId };
   },
 });

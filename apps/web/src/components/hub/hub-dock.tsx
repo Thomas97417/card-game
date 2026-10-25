@@ -1,6 +1,12 @@
 import { useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronUp, Globe2, MessageCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronUp,
+  Globe2,
+  MessageCircle,
+} from "lucide-react";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import {
   Dialog,
@@ -9,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { MissionsDialog, type HubMissionsProps } from "./missions-dialog";
 
 const DESTINATIONS = [
   {
@@ -16,7 +23,8 @@ const DESTINATIONS = [
     label: "Classement",
     icon: "ranking",
     description: "Le classement mondial des gardiens arrive bientôt.",
-    detail: "Retrouve ici les gardiens au sommet des ligues et mesure ton avancée dans la Sylve.",
+    detail:
+      "Retrouve ici les gardiens au sommet des ligues et mesure ton avancée dans la Sylve.",
     action: "Gagner des trophées",
   },
   {
@@ -24,15 +32,17 @@ const DESTINATIONS = [
     label: "Amis",
     icon: "friends",
     description: "La liste d’amis arrive bientôt au refuge.",
-    detail: "En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou en rejoignant un défi amical.",
+    detail:
+      "En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou en rejoignant un défi amical.",
     action: "Lancer un défi amical",
   },
   {
     id: "missions",
     label: "Missions",
     icon: "missions",
-    description: "De nouvelles missions se préparent dans la Sylve.",
-    detail: "En attendant, remporte trois victoires dans l’arène pour déverrouiller ton coffre commun.",
+    description: "Chaque aventure mérite sa récompense.",
+    detail:
+      "Récupère des sceaux et des émeraudes en accomplissant tes missions.",
     action: "Rejoindre l’arène",
   },
 ] as const satisfies readonly {
@@ -44,8 +54,7 @@ const DESTINATIONS = [
   action: string;
 }[];
 
-/** The hub's social entry points. Feature availability stays explicit until connected. */
-export function HubDock() {
+export function HubDock({ missions }: { missions?: HubMissionsProps }) {
   const [activeDestination, setActiveDestination] = useState<
     (typeof DESTINATIONS)[number]
   >(DESTINATIONS[0]);
@@ -103,6 +112,16 @@ export function HubDock() {
               }}
             >
               <GameIcon kind={destination.icon} size={52} />
+              {destination.id === "missions" &&
+                missions?.board?.hasClaimable && (
+                  <span
+                    className="hub-missions-ready"
+                    role="img"
+                    aria-label="Récompenses à récupérer"
+                  >
+                    <Check size={15} strokeWidth={3} aria-hidden="true" />
+                  </span>
+                )}
               <span>{destination.label}</span>
             </DialogTrigger>
           ))}
@@ -125,28 +144,40 @@ export function HubDock() {
           >
             <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
             <span className="hub-chat-label">Chat mondial</span>
-            <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
-            <ChevronUp size={17} className="hub-chat-chevron" aria-hidden="true" />
+            <span className="hub-chat-preview">
+              Le rendez-vous des gardiens
+            </span>
+            <ChevronUp
+              size={17}
+              className="hub-chat-chevron"
+              aria-hidden="true"
+            />
           </button>
         </div>
       </div>
 
-      <DialogContent appearance="game" className="hub-destination-dialog">
-        <GameIcon
-          kind={activeDestination.icon}
-          size={88}
-          className="hub-destination-art"
+      {activeDestination.id === "missions" ? (
+        <MissionsDialog
+          {...missions}
+          onNavigate={() => setDestinationOpen(false)}
         />
-        <span className="hub-coming-soon">Bientôt disponible</span>
-        <DialogTitle>{activeDestination.label}</DialogTitle>
-        <DialogDescription>
-          {activeDestination.description}
-        </DialogDescription>
-        <p className="hub-destination-detail">{activeDestination.detail}</p>
-        <Link to="/arena" className="sylve-button">
-          {activeDestination.action} <ArrowRight size={15} aria-hidden="true" />
-        </Link>
-      </DialogContent>
+      ) : (
+        <DialogContent appearance="game" className="hub-destination-dialog">
+          <GameIcon
+            kind={activeDestination.icon}
+            size={88}
+            className="hub-destination-art"
+          />
+          <span className="hub-coming-soon">Bientôt disponible</span>
+          <DialogTitle>{activeDestination.label}</DialogTitle>
+          <DialogDescription>{activeDestination.description}</DialogDescription>
+          <p className="hub-destination-detail">{activeDestination.detail}</p>
+          <Link to="/arena" className="sylve-button">
+            {activeDestination.action}{" "}
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

@@ -8,7 +8,8 @@
     "./progression": "./src/progression.ts",
     "./leagues": "./src/leagues.ts",
     "./summoning": "./src/summoning.ts",
-    "./emerald-packs": "./src/emerald-packs.ts"
+    "./emerald-packs": "./src/emerald-packs.ts",
+    "./missions": "./src/missions.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

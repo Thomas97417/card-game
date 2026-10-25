@@ -19,6 +19,7 @@ import { mutation, query } from "./_generated/server";
 import { requirePlayer, rules } from "./lib/game_service";
 import { ownedCard, playerWallet, playerLeague } from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
+import { recordMissionProgress } from "./lib/missions";
 
 export const league = query({
   args: {},
@@ -101,6 +102,7 @@ export const upgrade = mutation({
       level: entry.level + 1,
       copies: entry.copies - cost,
     });
+    await recordMissionProgress(ctx, userId, { upgrades: 1 });
     return { card, copies: entry.copies - cost, gold: wallet.gold - goldCost };
   },
 });
@@ -218,6 +220,7 @@ export const evolve = mutation({
       );
     await ctx.db.patch(entry._id, { copies: entry.copies - option.cost });
     await ctx.db.patch(target._id, { copies: target.copies + option.count });
+    await recordMissionProgress(ctx, userId, { evolutions: 1 });
     return {
       variantId: target.variantId,
       count: option.count,

@@ -18,6 +18,7 @@ import {
   chestRushCost,
 } from "@sylve/game/progression";
 import { ensureEmeralds } from "./lib/wallet";
+import { recordMissionProgress } from "./lib/missions";
 
 async function earnedTrophies(ctx: QueryCtx, chest: Doc<"chests">) {
   if (chest.leagueTrophies !== undefined) return chest.leagueTrophies;
@@ -137,6 +138,7 @@ export const open = mutation({
       leagueTrophies,
       emeraldsSpent: cost,
     });
+    await recordMissionProgress(ctx, userId, { chestsOpened: 1 });
     return { rarity: chest.rarity, reveals, gold };
   },
 });
@@ -173,6 +175,7 @@ export const openVictory = mutation({
       gold: 0,
       lastClaim: { cycle, reveals, gold },
     });
+    await recordMissionProgress(ctx, userId, { chestsOpened: 1 });
     return { rarity: "common" as const, reveals, gold };
   },
 });
