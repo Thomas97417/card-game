@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
 import { DEFAULT_DECK, resolveCard } from "@sylve/game";
 import type { api } from "@my-better-t-app/backend/convex/_generated/api";
@@ -8,6 +8,12 @@ import { HubDock } from "./hub-dock";
 
 const { useQuery, retry } = vi.hoisted(() => ({ useQuery: vi.fn(), retry: vi.fn() }));
 vi.mock("@tanstack/react-query", () => ({ useQuery }));
+vi.mock("convex/react", () => ({
+  useQuery: (_query: unknown, args: unknown) =>
+    args === "skip" ? undefined : [],
+  useMutation: () => vi.fn(),
+  useConvexConnectionState: () => ({ isWebSocketConnected: true }),
+}));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
@@ -29,6 +35,13 @@ let rankingState: { data: typeof players | undefined; isPending?: boolean; isErr
 let profileState: { data: typeof profile | undefined; isPending?: boolean; isError?: boolean };
 
 beforeEach(() => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   useQuery.mockReset();
   retry.mockReset();
   rankingState = { data: players };
@@ -40,6 +53,7 @@ beforeEach(() => {
     ...(getFunctionName(queryKey[1]) === "collection:leaderboard" ? rankingState : profileState),
   }));
 });
+afterEach(() => vi.unstubAllGlobals());
 
 function openRanking() {
   render(<HubDock />);

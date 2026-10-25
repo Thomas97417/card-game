@@ -14,6 +14,11 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  worldMessages: defineTable({
+    senderId: v.string(),
+    senderName: v.string(),
+    body: v.string(),
+  }).index("by_sender", ["senderId"]),
   leagueProgress: defineTable({
     ownerId: v.string(),
     trophies: v.number(),

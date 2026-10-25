@@ -11,6 +11,7 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 vi.mock("@/components/user-menu", () => ({ default: () => null }));
+vi.mock("./world-chat", () => ({ WorldChat: () => null }));
 vi.mock("@/components/currency-balances", () => ({
   CurrencyBalances: () => null,
 }));
