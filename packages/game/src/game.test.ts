@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { legacyDeck } from "./legacy-fixture";
+import { legacyDeck } from "./test-fixtures/pre-abilities";
 import {
   CATALOG,
   DEFAULT_DECK as STARTER_DECK,

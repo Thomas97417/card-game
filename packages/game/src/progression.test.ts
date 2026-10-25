@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import reference from "../../../docs/references/mighty-party/common-cards.json";
+import reference from "../../../docs/references/cunt-wars/rules.json";
 import {
   CATALOG,
   availableRarities,
@@ -17,6 +17,7 @@ import {
   variantCard,
   upgradeCost,
   upgradeGoldCost,
+  upgradeExperience,
 } from "./index";
 import {
   CHEST_TYPES,
@@ -52,12 +53,15 @@ describe("variantes et progression", () => {
     ]);
     expect(unlockedChestSlots(Number.NaN)).toEqual([0, 1]);
   });
-  it("requires duplicates and gold for each successive level", () => {
-    for (const rarity of RARITIES)
+  it("uses the collected CW copies, gold and XP for each successive level", () => {
+    for (const [index, rarity] of RARITIES.entries())
       for (let level = 1; level < maxCardLevel(rarity); level++) {
-        const target = reference.economy.byRarity[rarity][level]!;
-        expect(upgradeCost(level, rarity)).toBe(target.soulsToReach);
-        expect(upgradeGoldCost(level, rarity)).toBe(target.goldToReach);
+        const target = reference.Level_up_requirement.tables[index]!.rows.find(
+          (row) => row[0] === String(level + 1),
+        )!;
+        expect(upgradeCost(level, rarity)).toBe(Number(target[2]));
+        expect(upgradeGoldCost(level, rarity)).toBe(Number(target[1]));
+        expect(upgradeExperience(level, rarity)).toBe(Number(target[4]));
       }
   });
   it("defines 84 CW identities, preserving zero attack for buildings", () => {

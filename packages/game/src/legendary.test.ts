@@ -7,9 +7,9 @@ import {
   maxCardLevel,
   upgradeCost,
   upgradeGoldCost,
-} from "./test-fixtures/legacy-catalogue";
-import reference from "../../../docs/references/mighty-party/legendary-cards.json";
-import commonReference from "../../../docs/references/mighty-party/common-cards.json";
+} from "./test-fixtures/mighty-party/catalogue";
+import reference from "./test-fixtures/mighty-party/legendary-reference.json";
+import commonReference from "./test-fixtures/mighty-party/common-reference.json";
 import {
   createGame,
   summon,

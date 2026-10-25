@@ -1,9 +1,10 @@
 /** Frozen version-1 card definitions for saved-match compatibility tests only. */
-import reference from "../data/mighty-party.json";
-import evolutions from "../data/mighty-party-evolutions.json";
-import evolutionNames from "../data/evolution-names.json";
-import legendary from "../data/mighty-party-legendary.json";
-import legendaryNames from "../data/legendary-names.json";
+import reference from "./common-profiles.json";
+import evolutions from "./evolution-profiles.json";
+import evolutionNames from "../../data/evolution-names.json";
+import legendary from "./legendary-profiles.json";
+import legendaryNames from "../../data/legendary-names.json";
+import legacyCosts from "../../legacy/upgrade-costs.json";
 
 export const MAX_CARD_LEVEL = 26;
 export function maxCardLevel(rarity: CardRarity = "common", baseId?: string) {
@@ -491,7 +492,6 @@ interface ReferenceCard {
 }
 const data = reference as {
   cards: ReferenceCard[];
-  costs: Record<CardRarity, number[][]>;
 };
 
 function build(
@@ -716,7 +716,7 @@ function cost(level: number, rarity: CardRarity, column: number) {
     throw new GameError("Ce niveau d’amélioration n’existe pas.");
   return level === maxCardLevel(rarity)
     ? 0
-    : data.costs[rarity][level]![column]!;
+    : legacyCosts.costs[rarity][level]![column]!;
 }
 export function upgradeCost(level: number, rarity: CardRarity = "common") {
   return cost(level, rarity, 0);

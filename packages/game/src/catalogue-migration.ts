@@ -1,4 +1,4 @@
-import legacy from "./data/mighty-party.json";
+import legacy from "./legacy/upgrade-costs.json";
 import {
   canonicalVariantId,
   type CardRarity,

@@ -1,6 +1,6 @@
 # Progression de Sylve
 
-Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` ; les ligues, trophées et déblocages sont dans `packages/game/src/leagues.ts` ; les statistiques, les raretés, les capacités et le coût des niveaux sont dans `packages/game/src/cards.ts`. Le [détail de l’équilibrage](card-balance.md) décrit les données et leur adaptation.
+Les paramètres partagés du butin sont dans `packages/game/src/progression.ts` ; les ligues, trophées et déblocages sont dans `packages/game/src/leagues.ts` ; les statistiques, les raretés, les capacités et le coût des niveaux sont dans `packages/game/src/cards.ts`. L’[alignement Cunt Wars](cw-alignment.md) décrit le catalogue et les [données historiques isolées](legacy-data.md) assurent les remboursements et la compatibilité des anciennes parties.
 
 ## Ligues
 
@@ -42,7 +42,7 @@ L’IA mémorise ses trois dernières cartes, conserve cette mémoire après une
 
 ## Coffres et butin
 
-Les tableaux de cartes et d’or proviennent de [Chests — Mighty Party](https://mightyparty.wiki.gg/wiki/Chests), consulté le 24 octobre 2026 (page revue le 1er mars 2022). Les données utilisées sont conservées dans `packages/game/src/data/mighty-party-chests.json`. Les 31 paliers Sylve correspondent dans l’ordre aux ligues 30 à 1, puis GM : Fer IV = 30, Argent II = 20, Argent I = 19, Grand maître = 1, Challenger = GM. Le contenu et l’or restent fixés à l’obtention, même après une promotion ; pour le coffre de victoires, ils sont fixés à la troisième victoire.
+Les tableaux de cartes et d’or proviennent de [Chests — Mighty Party](https://mightyparty.wiki.gg/wiki/Chests), consulté le 24 octobre 2026 (page revue le 1er mars 2022). Les données actives sont conservées dans `packages/game/src/data/rewards.json`, avec leurs métadonnées de provenance. Les 31 paliers Sylve correspondent dans l’ordre aux ligues 30 à 1, puis GM : Fer IV = 30, Argent II = 20, Argent I = 19, Grand maître = 1, Challenger = GM. Le contenu et l’or restent fixés à l’obtention, même après une promotion ; pour le coffre de victoires, ils sont fixés à la troisième victoire.
 
 Les coffres sont tirés sans remise dans une réserve propre à chaque joueur et ligue. Une réserve épuisée se renouvelle. Les pourcentages affichés sont ceux de la réserve initiale, calculés à partir des nombres exacts du wiki :
 

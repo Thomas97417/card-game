@@ -24,7 +24,7 @@ import { PRACTICE_DEADLINE } from "@sylve/game/practice";
 import { api, components, internal } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import schema from "../convex/schema";
-import { resolveCard as legacyCard } from "../../game/src/test-fixtures/legacy-catalogue";
+import { resolveCard as legacyCard } from "../../game/src/test-fixtures/mighty-party/catalogue";
 const modules = import.meta.glob("../convex/**/*.ts");
 function setup() {
   const t = convexTest(schema, modules);

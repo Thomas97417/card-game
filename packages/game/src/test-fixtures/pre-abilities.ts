@@ -1,4 +1,4 @@
-import { CATALOG, type CardDefinition } from "./cards";
+import { CATALOG, type CardDefinition } from "../cards";
 
 // Saved pre-ability matches keep their original immutable definitions. Regression
 // tests exercise those snapshots independently of the new live card catalogue.

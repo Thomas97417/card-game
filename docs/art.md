@@ -257,7 +257,7 @@ Les raccourcis Bestiaire et Ma collection sont désormais centrés juste sous le
 
 Onze illustrations originales ont été générées avec l’outil intégré **ImageGen** pour compléter le catalogue : `healer`, `gnome`, `idol`, `enchantress`, `lynx`, `bard`, `tree`, `vampire`, `captain`, `witch` et le jeton `sporeling`. Les personnages, le totem et l’arbre conservent la direction peinte de Sylve, leurs silhouettes entières et un fond transparent. Les images ne reprennent pas les illustrations de Mighty Party.
 
-Les fichiers sont intégrés dans `apps/web/public/art/characters/`, en WebP avec canal alpha, dans une boîte maximale de 512 px. Les portraits et unités partagent ces mêmes fichiers ; l’Éclaireur invoqué réutilise l’illustration du Renard des braises. Le [manifeste des prompts](art-prompts-cards.json) conserve chaque prompt intégral, le PNG source généré et le chemin final. L’[équilibrage des cartes](card-balance.md) détaille leurs rôles et capacités.
+Les fichiers sont intégrés dans `apps/web/public/art/characters/`, en WebP avec canal alpha, dans une boîte maximale de 512 px. Les portraits et unités partagent ces mêmes fichiers ; l’Éclaireur invoqué réutilise l’illustration du Renard des braises. Le [manifeste des prompts](art-prompts-cards.json) conserve chaque prompt intégral, le PNG source généré et le chemin final. L’[alignement Cunt Wars](cw-alignment.md) décrit leurs rôles et capacités actuels.
 
 
 ## Capacités et états — 24 octobre 2026
@@ -290,7 +290,7 @@ Les invocations de l’Oracle du firmament et du Grand forgeron ont leurs propre
 
 Le [manifeste Legendary](art-prompts-legendary.json) contient les **26 prompts complets**, les PNG générés et chaque chemin final. Les illustrations sont originales et ne reprennent pas les images de Mighty Party. Planches de comparaison Epic → Legendary : [familles 1–10](legendary-art-1.jpg), [familles 11–20](legendary-art-2.jpg), [invocations et icônes](legendary-summons-and-icons.jpg).
 
-Les composants réels ont été contrôlés à **1 330 × 1 100** et **390 × 844 px** dans un aperçu local : les 20 nouveaux portraits chargent, les plafonds 31 et 26 suivent la famille, aucune erreur JavaScript ni aucun débordement horizontal n’est relevé. Le focus initial de la fiche d’amélioration est placé sur sa fenêtre pour qu’elle s’ouvre en haut sur mobile. Aperçus : [bestiaire ordinateur](legendary-bestiary-desktop.jpg), [bestiaire mobile](legendary-bestiary-mobile.jpg), [fiche ordinateur](legendary-upgrade-desktop.jpg), [fiche mobile](legendary-upgrade-mobile.jpg). Les [sources et règles Legendary](references/mighty-party/legendary-cards.md) détaillent les statistiques et compétences intégrées.
+Les composants réels ont été contrôlés à **1 330 × 1 100** et **390 × 844 px** dans un aperçu local : les 20 nouveaux portraits chargent, les plafonds 31 et 26 suivent la famille, aucune erreur JavaScript ni aucun débordement horizontal n’est relevé. Le focus initial de la fiche d’amélioration est placé sur sa fenêtre pour qu’elle s’ouvre en haut sur mobile. Aperçus : [bestiaire ordinateur](legendary-bestiary-desktop.jpg), [bestiaire mobile](legendary-bestiary-mobile.jpg), [fiche ordinateur](legendary-upgrade-desktop.jpg), [fiche mobile](legendary-upgrade-mobile.jpg). Les [profils historiques conservés pour les tests](legacy-data.md) documentent les données de cette validation antérieure à CW.
 
 
 ## Emplacements de coffre et clés — 24 octobre 2026

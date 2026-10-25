@@ -4,8 +4,8 @@ import {
   CATALOG,
   MAX_CARD_LEVEL,
   variantCard,
-} from "./test-fixtures/legacy-catalogue";
-import reference from "../../../docs/references/mighty-party/common-cards.json";
+} from "./test-fixtures/mighty-party/catalogue";
+import reference from "./test-fixtures/mighty-party/common-reference.json";
 import {
   HERO_HP,
   createGame,

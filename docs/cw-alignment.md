@@ -1,6 +1,6 @@
 # Alignement des cartes sur Cunt Wars
 
-Référence collectée le 25 octobre 2026 sur le [wiki Cunt Wars](https://cwars.miraheze.org/wiki/List_of_all_cards). Ce document remplace l’[équilibrage Mighty Party historique](card-balance.md) pour les nouvelles cartes et parties.
+Référence collectée le 25 octobre 2026 sur le [wiki Cunt Wars](https://cwars.miraheze.org/wiki/List_of_all_cards). Les nouvelles cartes et parties suivent ce catalogue ; les [données historiques nécessaires aux anciennes parties et aux migrations](legacy-data.md) sont isolées.
 
 ## Catalogue et correspondances
 

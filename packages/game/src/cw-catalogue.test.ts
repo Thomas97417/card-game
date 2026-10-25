@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import raw from "../../../docs/references/cunt-wars/cards-raw.json";
-import { variantCard as legacyCard } from "./test-fixtures/legacy-catalogue";
+import { variantCard as legacyCard } from "./test-fixtures/mighty-party/catalogue";
 import {
   CARD_VARIANTS,
   CW_CATALOGUE,

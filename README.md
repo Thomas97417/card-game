@@ -258,6 +258,7 @@ card-game/
 
 ## Documentation
 
-- [Référence Mighty Party : cartes communes, niveaux, capacités et coûts](docs/mighty-party-reference.md) — collecte documentaire du 23 octobre 2026, avec sources historiques et comparaison avec Sylve.
+- [Cartes Cunt Wars et Soulbind](docs/cw-alignment.md) — correspondances, progression et migrations du catalogue actuel.
+- [Données historiques conservées](docs/legacy-data.md) — récompenses actives, remboursements et compatibilité des anciennes parties.
 - [Convex et Better Auth avec TanStack Start](https://labs.convex.dev/better-auth/framework-guides/tanstack-start)
 - [Variables d’environnement Convex](https://docs.convex.dev/production/environment-variables)
