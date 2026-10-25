@@ -102,6 +102,7 @@ export function MissionsDialog({
       </header>
 
       <section
+        key={tab}
         role="tabpanel"
         id={`${id}-panel`}
         aria-labelledby={`${id}-${tab}`}
