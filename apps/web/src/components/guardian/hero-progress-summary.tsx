@@ -1,45 +1,38 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Sparkles } from "lucide-react";
-import { GameIcon } from "@/components/game/game-icon";
+import { ArrowUp } from "lucide-react";
 import type { HeroProgress } from "./guardian-house";
 
 export function HeroProgressSummary({ progress }: { progress: HeroProgress }) {
   return (
     <section className="workshop-hero" aria-label="Progression du Gardien">
-      <Link to="/guardian" className="workshop-hero-identity">
-        <img src="/art/heroes/hero-sylve.webp" width={54} height={62} alt="" />
-        <span>
-          <strong>Gardien de la Sylve</strong>
-          <small>
-            Niveau {progress.level} <GameIcon kind="health" size={14} />{" "}
-            {progress.health} PV
-          </small>
-        </span>
-      </Link>
-      <div className="workshop-hero-progress">
-        <span>
-          <Sparkles size={13} /> Puissance
-          <strong>{progress.might.toLocaleString("fr-FR")}</strong>
-          <small>
-            {progress.nextMight == null
-              ? "Niveau maximum"
-              : `/ ${progress.nextMight.toLocaleString("fr-FR")}`}
-          </small>
-        </span>
-        <progress
-          max={progress.nextMight ?? 1}
-          value={
-            progress.nextMight == null
-              ? 1
-              : Math.min(progress.peakMight, progress.nextMight)
-          }
-          aria-label="Record de puissance pour le prochain niveau du Gardien"
-        />
-      </div>
-      <Link to="/guardian" className="workshop-hero-link">
-        {progress.canUpgrade ? "Amélioration disponible" : "Mon Gardien"}
-        <ArrowUpRight size={15} aria-hidden="true" />
-      </Link>
+      <strong>
+        <span className="sr-only">Puissance actuelle : </span>
+        {progress.might.toLocaleString("fr-FR")}
+      </strong>
+      <span className="workshop-hero-threshold">
+        {progress.nextMight == null ? (
+          <>
+            <span className="sr-only">Niveau maximum</span>
+            <span aria-hidden="true">Max.</span>
+          </>
+        ) : (
+          <>
+            <span aria-hidden="true">/ </span>
+            <span className="sr-only">Prochain palier : </span>
+            {progress.nextMight.toLocaleString("fr-FR")}
+          </>
+        )}
+      </span>
+      {progress.canUpgrade && (
+        <Link
+          to="/guardian"
+          className="workshop-hero-upgrade"
+          aria-label="Amélioration disponible — ouvrir la Maison des gardiens"
+          title="Améliorer le Gardien"
+        >
+          <ArrowUp size={16} aria-hidden="true" />
+        </Link>
+      )}
     </section>
   );
 }

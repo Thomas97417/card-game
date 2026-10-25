@@ -158,8 +158,8 @@ describe("la Maison des gardiens", () => {
     expect(screen.queryByRole("button", { name: /Améliorer/ })).toBeNull();
   });
 
-  it("links the workshop summary to the house and leaves promotion in the house", () => {
-    render(
+  it("shows the workshop upgrade shortcut only while a promotion is available", () => {
+    const { rerender } = render(
       <HeroProgressSummary
         progress={heroProgress([{ id: "deck", might: 870 }])}
       />,
@@ -173,5 +173,21 @@ describe("la Maison des gardiens", () => {
         .getAttribute("href"),
     ).toBe("/guardian");
     expect(summary.queryByRole("button")).toBeNull();
+    expect(summary.queryByRole("progressbar")).toBeNull();
+    rerender(
+      <HeroProgressSummary
+        progress={heroProgress([{ id: "deck", might: 400 }])}
+      />,
+    );
+    expect(summary.queryByRole("link")).toBeNull();
+    expect(summary.getByText("400")).toBeTruthy();
+    expect(summary.getByText("870")).toBeTruthy();
+    rerender(
+      <HeroProgressSummary
+        progress={heroProgress([], { level: 91, peakMight: 100_000 })}
+      />,
+    );
+    expect(summary.queryByRole("link")).toBeNull();
+    expect(summary.getByText("Max.")).toBeTruthy();
   });
 });
