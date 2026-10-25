@@ -24,8 +24,19 @@ import { EmeraldContext } from "@/components/emerald-balance";
 import { selectOption } from "@/test-select";
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
-    <a href={to} {...props}>
+  Link: ({
+    children,
+    to,
+    hash,
+    hashScrollIntoView: _hashScrollIntoView,
+    ...props
+  }: {
+    children: ReactNode;
+    to: string;
+    hash?: string;
+    hashScrollIntoView?: ScrollIntoViewOptions;
+  }) => (
+    <a href={`${to}${hash ? `#${hash}` : ""}`} {...props}>
       {children}
     </a>
   ),
@@ -215,7 +226,7 @@ describe("le sanctuaire", () => {
     );
     expect(onUnlockChestSlot).toHaveBeenCalledTimes(2);
   });
-  it("shows both balances, explicit rates and batch guarantees, and links to the hub and collection", () => {
+  it("shows both balances, rates and guarantees, and links to the hub, collection and emerald shop", () => {
     setup();
     expect(
       screen
@@ -223,6 +234,11 @@ describe("le sanctuaire", () => {
         .querySelector("img")
         ?.getAttribute("src"),
     ).toBe("/art/ui/emerald.webp");
+    expect(
+      screen
+        .getByRole("link", { name: /^Acheter des émeraudes/ })
+        .getAttribute("href"),
+    ).toBe("/sanctuary#emerald-packs");
     expect(
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();

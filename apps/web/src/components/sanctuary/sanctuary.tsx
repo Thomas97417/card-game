@@ -305,7 +305,7 @@ export function Sanctuary({
             ref={offersRow}
             className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}
             role="region"
-            aria-label="Invocations, clés, or et émeraudes, défilement horizontal"
+            aria-label="Invocations, émeraudes, or et clés, défilement horizontal"
             tabIndex={0}
             {...dragHandlers}
           >
@@ -327,6 +327,16 @@ export function Sanctuary({
                 />
               ))}
             </section>
+            <EmeraldPacks
+              offers={emeraldOffers}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyEmeralds}
+            />
+            <GoldPacks
+              emeralds={emeralds}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyGold}
+            />
             {availableKeys.length > 0 && (
               <section
                 className="sanctuary-chest-keys"
@@ -395,16 +405,6 @@ export function Sanctuary({
                 </div>
               </section>
             )}
-            <GoldPacks
-              emeralds={emeralds}
-              ready={ready && !busy && busyKey === null}
-              onPurchase={onBuyGold}
-            />
-            <EmeraldPacks
-              offers={emeraldOffers}
-              ready={ready && !busy && busyKey === null}
-              onPurchase={onBuyEmeralds}
-            />
           </div>
           <nav
             className="sanctuary-navigation"
