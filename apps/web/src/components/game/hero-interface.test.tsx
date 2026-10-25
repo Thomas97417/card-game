@@ -12,13 +12,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_DECK,
   createGame,
-  heroProgress,
   playerView,
   useHeroAbility,
   validateDeck,
 } from "@sylve/game";
 import { DuelScreen } from "./duel-screen";
-import { HeroProgressPanel } from "../decks/hero-progress-panel";
 import { HeroAbilityStack } from "./hero-ability-stack";
 import { useCombatPlayback } from "./use-combat-playback";
 import { COMBAT_TIMING } from "./combat-timing";
@@ -193,36 +191,6 @@ describe("interface des héros", () => {
       screen.getByRole("button", { name: "Voir les pouvoirs du héros" }),
     );
     expect(onInspect).toHaveBeenCalledOnce();
-  });
-  it("shows hero progression, upgrades with a version check, and presents all 91 levels", async () => {
-    const progress = heroProgress([{ id: "deck", might: 870 }]);
-    const onUpgrade = vi.fn().mockResolvedValue(undefined);
-    render(<HeroProgressPanel progress={progress} onUpgrade={onUpgrade} />);
-    fireEvent.click(screen.getByRole("button", { name: /Niveau 2/ }));
-    await waitFor(() => expect(onUpgrade).toHaveBeenCalledWith(1));
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "Voir la progression et les pouvoirs du héros",
-      }),
-    );
-    const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Puissance du deck")).toBeTruthy();
-    fireEvent.click(within(dialog).getByText("Les 91 niveaux du héros"));
-    expect(within(dialog).getAllByRole("row")).toHaveLength(92);
-    expect(within(dialog).getByText("1475")).toBeTruthy();
-    expect(within(dialog).getAllByText("Niveau 21").length).toBeGreaterThan(0);
-  });
-  it("does not permit a promotion while the deck is being saved", () => {
-    const onUpgrade = vi.fn();
-    render(
-      <HeroProgressPanel
-        progress={heroProgress([{ id: "deck", might: 900 }])}
-        onUpgrade={onUpgrade}
-        disabled
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: /Niveau 2/ }));
-    expect(onUpgrade).not.toHaveBeenCalled();
   });
   it("plays a hero cast before its damage and commits the spent spell without replaying on reload", () => {
     vi.useFakeTimers();

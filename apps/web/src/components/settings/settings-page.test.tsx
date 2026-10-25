@@ -80,7 +80,7 @@ function setup() {
   );
 }
 
-describe("les paramètres de la maison des gardiens", () => {
+describe("les paramètres des archives", () => {
   it("preserves unsaved profile edits when switching between the French sections", async () => {
     setup();
     expect(screen.getByRole("heading", { name: "Paramètres" })).toBeTruthy();

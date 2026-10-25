@@ -72,6 +72,15 @@ export default function UserMenu() {
             </span>
             <ChevronRight className="sylve-menu-chevron" size={14} />
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate({ to: "/guardian" })}>
+            <span className="sylve-menu-icon">
+              <GameIcon kind="guardian" size={28} />
+            </span>
+            <span>
+              Mon Gardien<small>Niveau et pouvoirs</small>
+            </span>
+            <ChevronRight className="sylve-menu-chevron" size={14} />
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate({ to: "/sanctuary" })}>
             <span className="sylve-menu-icon">
               <GameIcon kind="sanctuary" size={28} />
