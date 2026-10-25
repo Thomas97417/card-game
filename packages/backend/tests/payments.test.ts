@@ -8,13 +8,15 @@ import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
 const modules = import.meta.glob("../convex/**/*.ts");
-const prefixedWebhookSecret = `whsec_${btoa(
-  String.fromCharCode(
-    ...Array.from({ length: 32 }, (_, index) => (index * 37) % 256),
-  ),
-)}`;
-const webhookSecret = prefixedWebhookSecret;
+// Test-only keys are generated locally and never read from a real environment.
+function createTestWebhookSecret() {
+  return `whsec_${btoa(
+    String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))),
+  )}`;
+}
+let webhookSecret: string;
 beforeEach(() => {
+  webhookSecret = createTestWebhookSecret();
   vi.stubEnv("SITE_URL", "https://sylve.example");
   vi.stubEnv("POLAR_ORGANIZATION_TOKEN", "test-token");
   vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
@@ -428,21 +430,21 @@ describe("achats d’émeraudes avec Polar", () => {
   it.each(["legacy", "standard"] as const)(
     "accepts a whsec secret using the %s signing scheme and credits replays once",
     async (scheme) => {
-      vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+      vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
       const t = setup();
       const { userId } = await player(t);
       await pendingPurchase(t, userId);
       const event = { ...orderEvent(), api_version: "2026-10" };
       for (let delivery = 0; delivery < 2; delivery++)
         expect(
-          (await sendWebhook(t, event, prefixedWebhookSecret, { scheme })).status,
+          (await sendWebhook(t, event, webhookSecret, { scheme })).status,
         ).toBe(202);
       expect((await balance(t, userId))?.diamonds).toBe(WELCOME_DIAMONDS + 500);
     },
   );
 
   it("rejects tampered bodies, stale deliveries and incorrect Standard Webhooks keys", async () => {
-    vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+    vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
     const t = setup();
     const { userId } = await player(t);
     await pendingPurchase(t, userId);
@@ -457,27 +459,27 @@ describe("achats d’émeraudes avec Polar", () => {
     ];
     for (const attempt of attempts)
       expect(
-        (await sendWebhook(t, event, prefixedWebhookSecret, {
+        (await sendWebhook(t, event, webhookSecret, {
           scheme: "standard",
           ...attempt,
         })).status,
       ).toBe(403);
     expect(
-      (await sendWebhook(t, event, "whsec_Zm9yZ2VkLXNpZ25pbmcta2V5", {
+      (await sendWebhook(t, event, createTestWebhookSecret(), {
         scheme: "standard",
       })).status,
     ).toBe(403);
     expect(await balance(t, userId)).toBeNull();
-    expect(JSON.stringify(errorLog.mock.calls)).not.toContain(prefixedWebhookSecret);
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain(webhookSecret);
   });
 
   it("applies refunds signed with Standard Webhooks", async () => {
-    vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+    vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
     const t = setup();
     const { userId } = await player(t);
     await pendingPurchase(t, userId);
     expect(
-      (await sendWebhook(t, orderEvent(), prefixedWebhookSecret, {
+      (await sendWebhook(t, orderEvent(), webhookSecret, {
         scheme: "standard",
       })).status,
     ).toBe(202);
@@ -485,7 +487,7 @@ describe("achats d’émeraudes avec Polar", () => {
       (await sendWebhook(
         t,
         orderEvent("order.refunded", { status: "refunded", refunded_amount: 499 }),
-        prefixedWebhookSecret,
+        webhookSecret,
         { scheme: "standard" },
       )).status,
     ).toBe(202);
@@ -503,7 +505,7 @@ describe("achats d’émeraudes avec Polar", () => {
       expect((await sendWebhook(t, event, "forged-secret")).status).toBe(403);
       expect(sync).not.toHaveBeenCalled();
       expect(
-        (await sendWebhook(t, event, prefixedWebhookSecret, {
+        (await sendWebhook(t, event, webhookSecret, {
           scheme: "standard",
         })).status,
       ).toBe(202);
