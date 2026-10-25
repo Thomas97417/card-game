@@ -527,7 +527,7 @@ export function summon(
   return { state: resolved.state, events: [...events, ...resolved.events] };
 }
 
-/** Remove only the selected creature; the hand and reusable deck are unchanged. */
+/** Reject withdrawal requests from older clients without changing the game. */
 export function withdraw(
   input: GameState,
   playerIndex: number,
@@ -539,36 +539,19 @@ export function withdraw(
   checkTurn(input, playerIndex, turn);
   if (now >= input.turnEndsAt)
     throw new GameError("Le temps du tour est écoulé.");
-  const state = cloneGame(input);
-  const player = state.players[playerIndex]!;
-  const matches = player.board.filter(
+  const player = input.players[playerIndex]!;
+  const unit = player.board.find(
     (entry) =>
       entry.cardId === cardId &&
       (!position ||
         (entry.row === position.row && entry.depth === position.depth)),
   );
-  if (matches.length > 1)
-    throw new GameError("Choisis la créature à retirer sur le terrain.");
-  const unit = matches[0];
   if (!unit) throw new GameError("Cette carte n’est pas dans ton camp.");
   if (unit.fieldObject)
     throw new GameError(
       "Un bâtiment neutre doit être détruit pour libérer sa case.",
     );
-  player.board = player.board.filter((entry) => entry !== unit);
-  const removedMarks = releaseFieldMarks(player, unit);
-  player.discard = [];
-  const events: GameEvent[] = [];
-  emit(state, events, {
-    type: "withdraw",
-    player: playerIndex,
-    cardId,
-    row: unit.row,
-    depth: unit.depth,
-    ...removedMarks,
-  });
-  refreshFormation(state, events);
-  return { state, events };
+  throw new GameError("Les cartes posées ne peuvent pas être retirées du terrain.");
 }
 
 function activeAbilities(

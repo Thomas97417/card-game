@@ -1036,13 +1036,6 @@ button:disabled {
 .hero-power-card[data-ready="true"] .hero-power-status {
   color: #d7f1a9;
 }
-.hero-power-hint {
-  display: block;
-  margin-top: 7px;
-  font-size: 9px;
-  color: #e3ddc4;
-  text-shadow: 0 1px 4px #071c1a;
-}
 .hero-level-badge {
   position: absolute;
   bottom: 3%;
@@ -1208,9 +1201,6 @@ button:disabled {
   }
   .hero-power-heading {
     margin-bottom: 7px;
-    font-size: 8px;
-  }
-  .hero-power-hint {
     font-size: 8px;
   }
 }
@@ -1854,6 +1844,8 @@ button:disabled {
 }
 .duel-details-dialog > [data-slot="dialog-body"] {
   max-height: calc(100svh - var(--dialog-bottom-space) - 34px);
+  scrollbar-width: thin;
+  scrollbar-color: #b99b6077 transparent;
 }
 .hero-details-dialog[data-slot="dialog-content"] {
   width: min(

@@ -49,7 +49,6 @@ function fixture(level = 21, turn = 13, uses = 0) {
 function callbacks() {
   return {
     onPlayCard: vi.fn().mockResolvedValue(undefined),
-    onWithdrawCard: vi.fn().mockResolvedValue(undefined),
     onEndTurn: vi.fn().mockResolvedValue(undefined),
     onSurrender: vi.fn().mockResolvedValue(undefined),
     onHeroAbility: vi.fn().mockResolvedValue(undefined),

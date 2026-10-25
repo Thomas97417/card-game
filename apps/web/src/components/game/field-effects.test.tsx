@@ -265,8 +265,8 @@ describe("couleurs des statistiques en combat", () => {
     const view = playerView(state, "alice");
     render(<DuelDetailsDialog
       inspection={{ type: "card", card, source: "board", playerIndex: 0, position: { row: 1, depth: 1 } }}
-      view={view} canSummon={false} canWithdraw={false}
-      onInspect={() => {}} onClose={() => {}} onSelectCard={() => {}} onWithdrawCard={() => {}}
+      view={view} canSummon={false}
+      onInspect={() => {}} onClose={() => {}} onSelectCard={() => {}}
     />);
     expect(screen.getByRole("dialog")).toBeTruthy();
     expect(document.querySelector('.card-details-stats .attack[data-stat-change="debuffed"]')).toBeTruthy();

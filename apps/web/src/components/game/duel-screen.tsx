@@ -11,7 +11,6 @@ import {
   type CardDefinition,
   type GameView,
   type GameEvent,
-  type UnitPosition,
   type HeroAbilityId,
 } from "@sylve/game";
 import {
@@ -63,11 +62,6 @@ interface DuelScreenProps {
     depth: number,
     turn: number,
   ) => Promise<unknown>;
-  onWithdrawCard: (
-    cardId: string,
-    turn: number,
-    position: UnitPosition,
-  ) => Promise<unknown>;
   onEndTurn: (turn: number) => Promise<unknown>;
   onHeroAbility?: (
     abilityId: HeroAbilityId,
@@ -83,7 +77,6 @@ interface DuelScreenProps {
 export function DuelScreen({
   data,
   onPlayCard,
-  onWithdrawCard,
   onEndTurn,
   onHeroAbility,
   onSurrender,
@@ -139,7 +132,6 @@ export function DuelScreen({
     seconds > 0 &&
     data.status === "active";
   const canEnd = myTurn && !pending && !catchingUp && data.status === "active";
-  const canWithdraw = canEnd && seconds > 0;
   const hasPlacement = mine.hand.some(
     (card) => legalPlacements(card, mine.board).length > 0,
   );
@@ -165,27 +157,6 @@ export function DuelScreen({
   function inspect(next: DuelInspection) {
     setSelected(null);
     setInspection(next);
-  }
-  async function withdrawCard(cardId: string, position: UnitPosition) {
-    if (
-      !canWithdraw ||
-      !mine.board.some(
-        (unit) =>
-          unit.cardId === cardId &&
-          unit.row === position.row &&
-          unit.depth === position.depth,
-      )
-    )
-      return;
-    setPending(true);
-    try {
-      await onWithdrawCard(cardId, data.turn, position);
-      setInspection(null);
-    } catch (error) {
-      showGameError(error);
-    } finally {
-      setPending(false);
-    }
   }
   async function place(cardId: string, row: number, depth: number) {
     const card = mine.hand.find((entry) => entry.id === cardId);
@@ -589,7 +560,6 @@ export function DuelScreen({
         inspection={inspection}
         view={display}
         canSummon={canSummon}
-        canWithdraw={canWithdraw}
         onInspect={setInspection}
         onClose={() => setInspection(null)}
         onSelectCard={(cardId) => {
@@ -599,9 +569,6 @@ export function DuelScreen({
           setSelected(cardId);
           setInspection(null);
         }}
-        onWithdrawCard={(cardId, position) =>
-          void withdrawCard(cardId, position)
-        }
       />
       <dialog
         className="sylve-dialog game-dialog"
@@ -662,8 +629,8 @@ export function DuelScreen({
           de l’unité, une seule fois. Un pentagramme ne donne rien à la pose :
           il ajoute son bonus à chaque début de tour du propriétaire de l’unité,
           en cumulant les gains. Les bonus de vie augmentent les PV actuels et
-          maximum. Les deux sceaux disparaissent quand leur porteur meurt ou est
-          retiré. Sélectionne un bâtiment ou un sceau pour voir ses effets.
+          maximum. Les deux sceaux disparaissent quand leur porteur meurt.
+          Sélectionne un bâtiment ou un sceau pour voir ses effets.
         </p>
         <p>
           Pas de déplacement. Ton deck contient de {MIN_DECK_SIZE} à {DECK_SIZE}{" "}
@@ -676,17 +643,15 @@ export function DuelScreen({
             : "Tu as 60 secondes pour agir."}
         </p>
         <p>
-          Pour retirer une créature pendant ton tour, sélectionne-la sur le
-          terrain puis choisis « Retirer du terrain ». Seule cette créature
-          quitte sa case ; ta main ne change pas. Fais tes retraits avant de
-          jouer ta carte. Si aucun placement n’est possible, « Attaquer sans
-          invoquer » permet de continuer le combat.
+          Les créatures restent sur le plateau jusqu’à leur mort. Si aucun
+          placement n’est possible, « Attaquer sans invoquer » permet de
+          continuer le combat.
         </p>
         <p>
           Le niveau du héros dépend de la puissance de son deck et améliore ses
           PV et ses pouvoirs. Les cartes de pouvoir se trouvent en bas à droite
           : utilise toujours la première avant les suivantes, avant de poser ta
-          créature. Tempête est prête dès ton premier tour ; les renforts à ton
+          créature. Tempête est prête dès ton deuxième tour ; les renforts à ton
           troisième tour (niveau 11) et Élan à ton septième (niveau 21). Un
           pouvoir ne termine pas le tour et ne consomme pas de carte en main. À
           partir de ton onzième tour, Dernier souffle ajoute des dégâts directs

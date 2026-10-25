@@ -6,7 +6,6 @@ import {
   summon,
   surrender,
   validateDeck,
-  withdraw,
   useHeroAbility,
   type GameState,
   type Transition,
@@ -179,18 +178,6 @@ function PracticeMatch({
             turn,
             Date.now(),
             Math.random,
-          ),
-        )
-      }
-      onWithdrawCard={async (cardId, turn, position) =>
-        commit(
-          withdraw(
-            current.current.state,
-            0,
-            cardId,
-            turn,
-            Date.now(),
-            position,
           ),
         )
       }
