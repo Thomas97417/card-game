@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import {
   CATALOG,
+  availableRarities,
   maxCardLevel,
   RARITIES,
   RARITY_LABELS,
@@ -32,6 +33,7 @@ import {
   GENDER_LABELS,
 } from "@sylve/game";
 import { CardArtwork } from "@/components/decks/card-artwork";
+import { CardSoulbind } from "@/components/decks/card-soulbind";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameIcon } from "@/components/game/game-icon";
 import { CardAbilities } from "@/components/game/card-abilities";
@@ -87,7 +89,12 @@ const searchNames = new Map(
   CATALOG.map((base) => [
     base.id,
     searchText(
-      RARITIES.map((rarity) => variantCard(base.id, rarity).name).join(" "),
+      [
+        base.name,
+        ...availableRarities(base.id).map(
+          (rarity) => variantCard(base.id, rarity).name,
+        ),
+      ].join(" "),
     ),
   ]),
 );
@@ -124,17 +131,21 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
   const title = useRef<HTMLHeadingElement>(null);
   const galleryPosition = useRef(0);
   const returnFocusId = useRef<string | null>(null);
-  const cards = CATALOG.map((base) =>
-    variantCard(
-      base.id,
-      rarity,
-      Math.min(level, maxCardLevel(rarity, base.id)),
-    ),
-  ).filter(
-    (card) =>
-      (combatType === "all" || getCombatType(card) === combatType) &&
-      searchNames.get(card.baseId!)!.includes(searchText(query.trim())),
-  );
+  const cards = CATALOG.filter((base) =>
+    availableRarities(base.id).includes(rarity),
+  )
+    .map((base) =>
+      variantCard(
+        base.id,
+        rarity,
+        Math.min(level, maxCardLevel(rarity, base.id)),
+      ),
+    )
+    .filter(
+      (card) =>
+        (combatType === "all" || getCombatType(card) === combatType) &&
+        searchNames.get(card.baseId!)!.includes(searchText(query.trim())),
+    );
   const selected = selectedId ? variantCard(selectedId, rarity, level) : null;
   const position = selectedId ? navigationIds.indexOf(selectedId) : -1;
 
@@ -155,6 +166,8 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
   }, [selectedId, rarity, query, combatType]);
 
   function inspect(id: string) {
+    if (!availableRarities(id).includes(rarity))
+      setRarity(availableRarities(id)[0]!);
     setLevel((current) => Math.min(current, maxCardLevel(rarity, id)));
     setSelectedId(id);
   }
@@ -483,14 +496,16 @@ function BestiaryDetails({
           <h3 ref={evolutions} tabIndex={-1}>
             Ses évolutions
           </h3>
-          <span>4 formes à explorer</span>
+          <span>
+            {availableRarities(card.baseId!).length} formes à explorer
+          </span>
         </div>
         <p>
           Chaque rareté se collectionne séparément et possède ses propres
           niveaux et capacités.
         </p>
         <div className="bestiary-evolution-grid">
-          {RARITIES.map((rarity) => {
+          {availableRarities(card.baseId!).map((rarity) => {
             const form = variantCard(
               card.baseId!,
               rarity,
@@ -531,6 +546,7 @@ function BestiaryDetails({
           })}
         </div>
       </section>
+      <CardSoulbind key={card.id} card={card} />
     </>
   );
 }

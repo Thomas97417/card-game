@@ -1,4 +1,4 @@
-import reference from "./data/mighty-party-chests.json";
+import reference from "./data/rewards.json";
 import { leagueAt } from "./leagues";
 
 export type RewardRange = readonly number[];

@@ -1,14 +1,17 @@
+// Compatibility coverage for games whose full card snapshots predate CW.
 import { describe, expect, it } from "vitest";
-import reference from "../../../docs/references/mighty-party/common-cards.json";
 import {
   CATALOG,
   MAX_CARD_LEVEL,
+  variantCard,
+} from "./test-fixtures/mighty-party/catalogue";
+import reference from "./test-fixtures/mighty-party/common-reference.json";
+import {
   HERO_HP,
   createGame,
   endTurn,
   summon,
   playerView,
-  variantCard,
   unitAttack,
   type GameState,
   type Unit,
@@ -71,7 +74,7 @@ function deploy(
   );
 }
 
-describe("reference-backed cards", () => {
+describe("version-1 saved card snapshots", () => {
   it("reproduces all 572 common stat pairs and all 34 skill schedules from the collected reference", () => {
     expect(MAX_CARD_LEVEL).toBe(26);
     expect(new Set(CATALOG.map((c) => c.sourceHero)).size).toBe(22);
@@ -219,7 +222,9 @@ describe("ability resolution", () => {
     ).state;
     expect(state.players[0]!.runes).toEqual([{ row: 0, depth: 0, health: 2 }]);
     const result = deploy(state, 0, "guardian", 0, 0);
-    expect(result.state.players[0]!.runes).toEqual([{ row: 0, depth: 0, health: 2, activated: true }]);
+    expect(result.state.players[0]!.runes).toEqual([
+      { row: 0, depth: 0, health: 2, activated: true },
+    ]);
     expect(
       result.state.players[0]!.board.find(
         (u) => u.cardId === "guardian:common",

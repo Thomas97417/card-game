@@ -1,4 +1,9 @@
-import { resolveCard, validateDeck, type GameState } from "@sylve/game";
+import {
+  resolveCard,
+  canonicalVariantId,
+  validateDeck,
+  type GameState,
+} from "@sylve/game";
 import {
   deckCapacity,
   leagueAt,
@@ -21,6 +26,7 @@ import {
 import { ConvexError } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { migratePlayerCatalogue } from "./catalogue";
 
 export async function playerProgress(
   ctx: QueryCtx | MutationCtx,
@@ -86,6 +92,7 @@ export async function ownedCard(
   ownerId: string,
   variantId: string,
 ) {
+  variantId = canonicalVariantId(variantId);
   return ctx.db
     .query("collection")
     .withIndex("by_owner_variant", (q) =>
@@ -112,7 +119,7 @@ export async function ownedDeck(
         throw new ConvexError(
           "Cette carte n’est pas encore débloquée dans ta collection.",
         );
-      return resolveCard(id, owned.level);
+      return resolveCard(id, owned.level, owned.soulbinds);
     }),
   );
 }
@@ -133,8 +140,10 @@ export async function grantLoot(
   ownerId: string,
   contents: readonly LootStack[],
 ): Promise<LootReveal[]> {
+  await migratePlayerCatalogue(ctx, ownerId);
   const reveals: LootReveal[] = [];
-  for (const { variantId, count } of contents) {
+  for (const { variantId: originalId, count } of contents) {
+    const variantId = canonicalVariantId(originalId);
     const owned = await ownedCard(ctx, ownerId, variantId);
     const copies = (owned?.copies ?? -1) + count;
     if (owned) await ctx.db.patch(owned._id, { copies });
