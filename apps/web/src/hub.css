@@ -74,16 +74,17 @@
   padding: 10px 13px;
   border: 1px solid #b99b60;
   border-radius: 8px;
-  background: linear-gradient(150deg, #314d3af5, #182e24fa 60%, #11251efc);
+  background-color: #142b21;
+  background-image: linear-gradient(150deg, #314d3af5, #182e24fa 60%, #11251efc);
   box-shadow: 0 14px 35px #061a13aa;
   text-align: left;
   cursor: pointer;
   pointer-events: auto;
-  transition: background-color 160ms;
+  transition: border-color 160ms;
 }
 .hub-chat-toggle:hover,
 .hub-chat-toggle[aria-expanded="true"] {
-  background: #1a3829;
+  border-color: #d4b779;
 }
 .hub-chat-globe {
   flex-shrink: 0;
