@@ -351,9 +351,6 @@ export function DeckWorkshop({
       <div className="workshop-shade" />
 
       <GameHeader league={ready ? league : undefined} />
-      {ready && hero && (
-        <HeroProgressSummary progress={hero} />
-      )}
 
       <div className="workshop-content">
         <section
@@ -446,6 +443,7 @@ export function DeckWorkshop({
                 </span>
               </h2>
             </div>
+            {ready && hero && <HeroProgressSummary progress={hero} />}
           </div>
           <div
             {...collectionPan.dragHandlers}
