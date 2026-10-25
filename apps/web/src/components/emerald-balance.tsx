@@ -6,10 +6,16 @@ import {
   type ReactNode,
 } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { Link } from "@tanstack/react-router";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { showGameError } from "@/components/game/shared";
 
 export const EmeraldContext = createContext<number | null | undefined>(null);
+
+const EMERALD_SHOP_SCROLL: ScrollIntoViewOptions = {
+  block: "nearest",
+  inline: "start",
+};
 
 export function EmeraldProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useConvexAuth();
@@ -75,20 +81,44 @@ export function EmeraldBalance() {
   const emeralds = useEmeraldBalance();
   if (emeralds === null) return null;
   return (
-    <div
-      className="emerald-balance"
-      role="status"
-      aria-label="Solde d’émeraudes"
+    <Link
+      to="/sanctuary"
+      hash="emerald-packs"
+      hashScrollIntoView={EMERALD_SHOP_SCROLL}
+      className="emerald-balance-link"
+      aria-label={`Acheter des émeraudes${emeralds === undefined ? "" : `, solde : ${emeralds.toLocaleString("fr-FR")} émeraudes`}`}
+      title="Acheter des émeraudes"
+      draggable={false}
+      onClick={(event) => {
+        if (
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        // Recenter even when the URL already points to this section.
+        document
+          .getElementById("emerald-packs")
+          ?.scrollIntoView(EMERALD_SHOP_SCROLL);
+      }}
     >
-      {emeralds === undefined ? (
-        <>
-          <EmeraldIcon />
-          <span aria-hidden="true">—</span>
-          <span className="sr-only">Chargement des émeraudes…</span>
-        </>
-      ) : (
-        <EmeraldAmount amount={emeralds} />
-      )}
-    </div>
+      <div
+        className="emerald-balance"
+        role="status"
+        aria-label="Solde d’émeraudes"
+      >
+        {emeralds === undefined ? (
+          <>
+            <EmeraldIcon />
+            <span aria-hidden="true">—</span>
+            <span className="sr-only">Chargement des émeraudes…</span>
+          </>
+        ) : (
+          <EmeraldAmount amount={emeralds} />
+        )}
+      </div>
+    </Link>
   );
 }

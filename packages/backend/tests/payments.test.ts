@@ -330,7 +330,7 @@ describe("achats d’émeraudes avec Polar", () => {
       packId: "small-pouch",
     });
     expect(checkout.url).toBe(
-      "https://sandbox.polar.sh/checkout/test?locale=fr",
+      "https://sandbox.polar.sh/checkout/test?locale=fr&theme=dark",
     );
     expect(create.mock.calls[0][1]).toEqual({
       productIds: ["product-small-pouch"],

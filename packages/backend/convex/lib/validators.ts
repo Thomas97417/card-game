@@ -1,5 +1,10 @@
 import { v } from "convex/values";
 
+export const goldPackValidator = v.union(
+  v.literal("gold-pouch"),
+  v.literal("gold-chest"),
+);
+
 export const summonPackValidator = v.union(
   v.literal("sylve"),
   v.literal("ancients"),
