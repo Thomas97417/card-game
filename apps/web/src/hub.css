@@ -436,7 +436,7 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-bottom: 8px;
+  margin-bottom: -1px;
   border: 1px solid #d1be8599;
   border-radius: 50%;
   background: #1a3026e6;
@@ -503,7 +503,7 @@
   .hub-map-arrow {
     width: 36px;
     height: 36px;
-    margin-bottom: 10px;
+    margin-bottom: 3px;
   }
 }
 @media (max-height: 580px) {
