@@ -71,7 +71,6 @@ export function EmeraldPacks({
               key={pack.id}
               aria-labelledby={`emerald-pack-${pack.id}`}
             >
-              <span className="emerald-pack-tag">Achat ponctuel</span>
               <img
                 className="emerald-pack-art"
                 src={pack.image}
@@ -112,9 +111,6 @@ export function EmeraldPacks({
                 </span>
                 {price && <strong>{price}</strong>}
               </button>
-              <span className="emerald-pack-payment">
-                <ShieldCheck size={12} /> Paiement sécurisé · sans abonnement
-              </span>
             </article>
           );
         })}

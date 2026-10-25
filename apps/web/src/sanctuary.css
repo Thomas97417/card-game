@@ -148,20 +148,26 @@
   outline: 2px solid #ffe0a0;
   outline-offset: -2px;
 }
-.emerald-shop {
+.emerald-shop,
+.gold-shop {
   display: flex;
   flex: none;
   flex-direction: column;
   justify-content: center;
   width: max-content;
 }
-.emerald-pack-grid {
+.emerald-pack-grid,
+.gold-pack-grid {
   display: grid;
   flex: 1;
   grid-template-columns: repeat(5, var(--sanctuary-key-width));
   gap: var(--sanctuary-offer-gap);
 }
-.emerald-pack {
+.gold-pack-grid {
+  grid-template-columns: repeat(2, var(--sanctuary-key-width));
+}
+.emerald-pack,
+.gold-pack {
   position: relative;
   display: flex;
   align-items: center;
@@ -178,14 +184,13 @@
     inset 0 1px #f7dc9d22;
   text-align: center;
 }
-.emerald-pack-tag {
-  align-self: flex-end;
-  color: #dac58e;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+.gold-pack {
+  background:
+    radial-gradient(ellipse at 50% 32%, #e8b64c24, transparent 65%),
+    linear-gradient(155deg, #3d4930f2, #192c20f5);
 }
-.emerald-pack-art {
+.emerald-pack-art,
+.gold-pack-art {
   width: 100%;
   height: clamp(160px, 23svh, 230px);
   margin-block: auto 0;
@@ -194,30 +199,38 @@
   transform: scale(var(--treasure-art-scale, 1));
   transform-origin: center bottom;
 }
-.emerald-pack h2 {
+.emerald-pack h2,
+.gold-pack h2 {
   color: #fff0d1;
   font:
     400 22px/1.25 Georgia,
     serif;
 }
-.emerald-pack-description {
+.emerald-pack-description,
+.gold-pack-description {
   min-height: 32px;
   margin-top: 7px;
   color: #c1cfb9;
   font-size: 10px;
   line-height: 1.6;
 }
-.emerald-pack-amount {
+.emerald-pack-amount,
+.gold-pack-amount {
   margin: 14px 0 17px;
   color: #d5f8c8;
   font-size: 23px;
   font-weight: 700;
 }
-.emerald-pack-amount .emerald-icon {
+.gold-pack-amount {
+  color: #ffe2a2;
+}
+.emerald-pack-amount .emerald-icon,
+.gold-pack-amount .gold-icon {
   width: 30px;
   height: 30px;
 }
-.emerald-pack-button {
+.emerald-pack-button,
+.gold-pack-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -235,7 +248,13 @@
     0 3px 0 #071c1766;
   font-size: 11px;
 }
-.emerald-pack-button > span {
+.gold-pack-button {
+  border-color: #a4d29a9c;
+  background: linear-gradient(#3f7046, #295234);
+  color: #e1f7d3;
+}
+.emerald-pack-button > span,
+.gold-pack-button > span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -245,13 +264,28 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.emerald-pack-button:hover:not(:disabled) {
+.gold-pack-button .emerald-amount {
+  gap: 5px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.gold-pack-button .emerald-icon {
+  width: 26px;
+  height: 26px;
+}
+.emerald-pack-button:hover:not(:disabled),
+.gold-pack-button:hover:not(:disabled) {
   filter: brightness(1.15);
 }
-.emerald-pack-button:disabled {
+.emerald-pack-button:disabled,
+.gold-pack-button:disabled {
   opacity: 0.55;
 }
-.emerald-pack-payment {
+.gold-pack-button:focus-visible {
+  outline: 2px solid #ffe0a0;
+  outline-offset: 3px;
+}
+.gold-pack-note {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -259,7 +293,9 @@
   color: #bcc9ad;
   font-size: 8px;
 }
-.emerald-shop > .sanctuary-error {
+.emerald-shop > .sanctuary-error,
+.gold-shop > .sanctuary-error,
+.gold-shop > .sanctuary-feedback {
   position: fixed;
   z-index: 20;
   inset-inline: 16px;
@@ -268,6 +304,18 @@
   max-width: min(620px, calc(100vw - 32px));
   margin: 0 auto;
   white-space: normal;
+}
+.gold-purchase-feedback > svg {
+  flex-shrink: 0;
+}
+.gold-purchase-feedback button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 5px;
 }
 .sanctuary-feedback.emerald-payment-feedback {
   margin: 0 0 16px;

@@ -19,6 +19,10 @@ import type {
   EmeraldPackOffer,
 } from "@sylve/game/emerald-packs";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
+import type {
+  GoldPurchaseRequest,
+  GoldPurchaseResult,
+} from "@sylve/game/gold-packs";
 import { RARITIES, RARITY_LABELS, type OwnedCard } from "@sylve/game";
 import {
   ACTIVE_SUMMON_PACKS,
@@ -39,6 +43,7 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { BestiaryDialog } from "./bestiary-dialog";
 import { EmeraldPacks } from "./emerald-packs";
+import { GoldPacks } from "./gold-packs";
 import { SummonRevealDialog } from "./summon-reveal-dialog";
 import {
   useSummonRevealProgress,
@@ -67,6 +72,7 @@ interface SanctuaryProps {
   onUpgrade: (variantId: string) => Promise<unknown>;
   emeraldOffers?: EmeraldPackOffer[];
   onBuyEmeralds?: (packId: EmeraldPackId) => Promise<void>;
+  onBuyGold?: (request: GoldPurchaseRequest) => Promise<GoldPurchaseResult>;
   paymentFeedback?: ReactNode;
 }
 
@@ -85,6 +91,7 @@ export function Sanctuary({
   onUpgrade,
   emeraldOffers,
   onBuyEmeralds,
+  onBuyGold,
   paymentFeedback,
 }: SanctuaryProps) {
   const [busy, setBusy] = useState<{
@@ -298,7 +305,7 @@ export function Sanctuary({
             ref={offersRow}
             className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}
             role="region"
-            aria-label="Invocations, clés et émeraudes, défilement horizontal"
+            aria-label="Invocations, clés, or et émeraudes, défilement horizontal"
             tabIndex={0}
             {...dragHandlers}
           >
@@ -389,6 +396,11 @@ export function Sanctuary({
                 </div>
               </section>
             )}
+            <GoldPacks
+              emeralds={emeralds}
+              ready={ready && !busy && busyKey === null}
+              onPurchase={onBuyGold}
+            />
             <EmeraldPacks
               offers={emeraldOffers}
               ready={ready && !busy && busyKey === null}

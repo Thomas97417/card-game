@@ -32,7 +32,6 @@ describe("packs d’émeraudes", () => {
       }),
     ).toBeTruthy();
     expect(screen.queryByText(/Achats en argent réel/)).toBeNull();
-    expect(within(shop).getAllByText(/sans abonnement/)).toHaveLength(5);
     expect(
       [...shop.querySelectorAll("img.emerald-pack-art")].map((img) =>
         img.getAttribute("src"),
