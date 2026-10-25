@@ -1,7 +1,5 @@
-.hub-missions {
-  max-height: min(660px, var(--hub-panel-max-height));
-}
 .missions-panel {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;

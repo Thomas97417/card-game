@@ -139,6 +139,7 @@
   display: flex;
   flex-direction: column;
   width: min(620px, calc(100vw - 24px));
+  height: min(660px, var(--hub-panel-max-height));
   max-height: var(--hub-panel-max-height);
   overflow: hidden;
   border: 1px solid #b99b60;
@@ -195,9 +196,6 @@
 .hub-panel-close:hover {
   background: #c5a76b22;
   color: #fff0cd;
-}
-.hub-world-chat {
-  height: min(620px, var(--hub-panel-max-height));
 }
 .hub-world-chat-messages {
   flex: 1;
@@ -429,9 +427,6 @@
   color: #b4c3ad;
   font-size: 12px;
   line-height: 1.7;
-}
-.hub-ranking {
-  height: min(540px, var(--hub-panel-max-height));
 }
 .hub-ranking-scroll {
   flex: 1;
