@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { ArrowRight, RotateCw } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import {
   combatTypeLabel,
   RARITY_LABELS,
@@ -369,17 +369,13 @@ export function SummonRevealDialog({
                   }}
                 >
                   {lastRound ? (
-                    <RotateCw
-                      className={busy ? "animate-spin" : undefined}
-                      size={15}
-                    />
+                    <EmeraldAmount amount={offer.cost} />
                   ) : (
-                    <ArrowRight size={15} />
+                    <>
+                      <ArrowRight size={15} />
+                      <span>Suivante</span>
+                    </>
                   )}
-                  <span>
-                    {lastRound ? `Réinvoquer ×${result.count}` : "Suivante"}
-                  </span>
-                  {lastRound && <EmeraldAmount amount={offer.cost} />}
                 </button>
                 {repeatHint && (
                   <small className="summon-repeat-hint">{repeatHint}</small>

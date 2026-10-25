@@ -8,12 +8,7 @@ import {
 } from "react";
 import { Link } from "@tanstack/react-router";
 import { ConvexError } from "convex/values";
-import {
-  ArrowRight,
-  Check,
-  History,
-  LoaderCircle,
-} from "lucide-react";
+import { ArrowRight, Check, History } from "lucide-react";
 import type {
   EmeraldPackId,
   EmeraldPackOffer,
@@ -380,6 +375,7 @@ export function Sanctuary({
                             emeralds == null ||
                             insufficient
                           }
+                          aria-busy={working || undefined}
                           aria-label={`Déverrouiller l’emplacement ${key.slot + 2} — ${key.name}, ${key.price} émeraudes`}
                           title={
                             insufficient
@@ -388,15 +384,6 @@ export function Sanctuary({
                           }
                           onClick={() => void unlockSlot(key.slot)}
                         >
-                          <span>
-                            {working && (
-                              <LoaderCircle
-                                className="animate-spin"
-                                size={15}
-                              />
-                            )}
-                            Déverrouiller
-                          </span>
                           <EmeraldAmount amount={key.price} />
                         </button>
                       </article>
@@ -604,45 +591,44 @@ function PackChoice({
           const working = busy?.packId === pack.id && busy.count === count;
           const insufficient = emeralds != null && emeralds < price;
           return (
-            <button
-              key={count}
-              type="button"
-              className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
-              disabled={!ready || !!busy || emeralds == null || insufficient}
-              aria-busy={working || undefined}
-              aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
-              aria-describedby={
-                count === 10
-                  ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
-                  : undefined
-              }
-              title={
-                insufficient
-                  ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                  : undefined
-              }
-              onClick={() => onInvoke(pack.id, count)}
-            >
-              {count === 10 && (
+            <div className="summon-purchase" key={count}>
+              {count === 10 ? (
                 <span
                   id={`pack-${pack.id}-offer`}
                   className="summon-offer-ribbon"
                 >
                   Offre ×10
                 </span>
+              ) : (
+                <span className="summon-offer-quantity">×1</span>
               )}
-              <span className="summon-button-label">
-                {working && <LoaderCircle className="animate-spin" size={15} />}
-                {count === 1 ? "Invoquer ×1" : "Invoquer ×10"}
-              </span>
-              <span className="summon-button-price">
-                {count === 10 && (
-                  <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
-                    {(pack.price * 10).toLocaleString("fr-FR")}
-                  </del>
-                )}
-                <EmeraldAmount amount={price} />
-              </span>
+              <button
+                type="button"
+                className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
+                disabled={!ready || !!busy || emeralds == null || insufficient}
+                aria-busy={working || undefined}
+                aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
+                aria-describedby={
+                  count === 10
+                    ? `pack-${pack.id}-offer pack-${pack.id}-guarantee`
+                    : undefined
+                }
+                title={
+                  insufficient
+                    ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                    : undefined
+                }
+                onClick={() => onInvoke(pack.id, count)}
+              >
+                <span className="summon-button-price">
+                  {count === 10 && (
+                    <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
+                      {(pack.price * 10).toLocaleString("fr-FR")}
+                    </del>
+                  )}
+                  <EmeraldAmount amount={price} />
+                </span>
+              </button>
               {count === 10 && (
                 <span
                   id={`pack-${pack.id}-guarantee`}
@@ -651,7 +637,7 @@ function PackChoice({
                   {guarantee}
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

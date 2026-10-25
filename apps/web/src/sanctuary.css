@@ -255,7 +255,7 @@
 .gold-pack-button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 10px;
   width: 100%;
   min-height: 46px;
@@ -275,18 +275,13 @@
   background: linear-gradient(#3f7046, #295234);
   color: #e1f7d3;
 }
-.emerald-pack-button > span,
-.gold-pack-button > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 .emerald-pack-button strong {
   font-size: 15px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.gold-pack-button .emerald-amount {
+.gold-pack-button .emerald-amount,
+.sanctuary-key-button .emerald-amount {
   gap: 5px;
   font-size: 15px;
   font-weight: 700;
@@ -400,7 +395,7 @@
 .sanctuary-key-button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
   width: 100%;
   min-height: 43px;
@@ -412,11 +407,6 @@
   color: #edebc4;
   font-size: 10px;
   font-weight: 600;
-}
-.sanctuary-key-button > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
 }
 .sanctuary-key-button .emerald-icon {
   width: 24px;
@@ -587,6 +577,20 @@
   gap: 10px;
   margin-top: auto;
 }
+.summon-purchase {
+  display: grid;
+  grid-template-rows: 22px 46px auto;
+  gap: 6px;
+  min-width: 0;
+}
+.summon-offer-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ead9b2;
+  font-size: 11px;
+  font-weight: 600;
+}
 .summon-button {
   position: relative;
   display: flex;
@@ -594,9 +598,9 @@
   flex-direction: column;
   justify-content: center;
   gap: 5px;
-  min-height: 90px;
+  min-height: 46px;
   min-width: 0;
-  padding: 12px 6px 9px;
+  padding: 9px 6px;
   border: 1px solid #94b08c88;
   border-radius: 8px;
   background: linear-gradient(#365949, #244333);
@@ -609,7 +613,6 @@
     transform 160ms;
 }
 .summon-button-ten {
-  padding-top: 20px;
   border-color: #dfbe79c9;
   background: linear-gradient(#7d6232, #59451f);
 }
@@ -626,20 +629,12 @@
   opacity: 0.5;
   filter: saturate(0.5);
 }
-.summon-button-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-}
 .summon-button-price {
   display: flex;
   align-items: center;
   gap: 4px;
   color: #e5f9f4;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 }
 .summon-button-price del {
@@ -661,10 +656,7 @@
   text-align: center;
 }
 .summon-offer-ribbon {
-  position: absolute;
-  top: -11px;
-  right: -5px;
-  left: -5px;
+  position: relative;
   padding: 4px 6px;
   border: 1px solid #f5dda1;
   border-radius: 2px;
@@ -1296,9 +1288,6 @@
     min-height: 58px;
     padding-block: 10px;
   }
-  .summon-button {
-    min-height: 86px;
-  }
 }
 @media (min-width: 900px) and (min-height: 850px) {
   .summon-pack {
@@ -1359,9 +1348,6 @@
   .summon-actions {
     gap: 7px;
   }
-  .summon-button-label {
-    font-size: 10px;
-  }
 }
 @media (max-width: 560px) {
   .summon-pack {
@@ -1381,9 +1367,6 @@
   }
   .summon-rates > span {
     font-size: 10px;
-  }
-  .summon-button-label {
-    font-size: 12px;
   }
   .summon-reveal-dialog > [data-slot="dialog-body"] {
     padding: 18px 10px 12px;

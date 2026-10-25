@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import {
   GOLD_PACKS,
   type GoldPackId,
@@ -103,20 +103,17 @@ export function GoldPacks({
                   (!!pending.current && !retry) ||
                   (!retry && (emeralds == null || insufficient))
                 }
+                aria-busy={working || undefined}
                 aria-label={`${retry ? "Vérifier l’achat de" : "Acheter"} ${pack.gold.toLocaleString("fr-FR")} pièces d’or — ${pack.name}, ${pack.cost} émeraudes`}
                 title={
-                  insufficient && !retry
-                    ? `Il te manque ${(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.`
-                    : undefined
+                  retry
+                    ? "Vérifier l’achat."
+                    : insufficient
+                      ? `Il te manque ${(pack.cost - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                      : undefined
                 }
                 onClick={() => void buy(pack.id)}
               >
-                <span>
-                  {working && (
-                    <LoaderCircle size={15} className="animate-spin" />
-                  )}
-                  {working ? "Achat…" : retry ? "Vérifier l’achat" : "Acheter"}
-                </span>
                 <EmeraldAmount amount={pack.cost} />
               </button>
               {insufficient && !retry && (

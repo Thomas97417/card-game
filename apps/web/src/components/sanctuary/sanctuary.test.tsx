@@ -260,10 +260,12 @@ describe("le sanctuaire", () => {
     expect(screen.getByText("46 %")).toBeTruthy();
     expect(screen.getByText("×30–33 ou ×60–63")).toBeTruthy();
     expect(
-      within(purchase("Sylve", 10)).getByText("1 compagnon légendaire garanti"),
+      within(purchase("Sylve", 10).parentElement!).getByText(
+        "1 compagnon légendaire garanti",
+      ),
     ).toBeTruthy();
     expect(
-      within(purchase("anciens", 10)).getByText(
+      within(purchase("anciens", 10).parentElement!).getByText(
         "20 compagnons légendaires garantis",
       ),
     ).toBeTruthy();
@@ -278,8 +280,12 @@ describe("le sanctuaire", () => {
     );
     expect(screen.queryByText(/Carte d’or garantie/)).toBeNull();
     expect(screen.queryByText(/5 compagnons par invocation/)).toBeNull();
-    expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
-    expect(within(purchase("anciens", 10)).getByText("Offre ×10")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10).parentElement!).getByText("Offre ×10"),
+    ).toBeTruthy();
+    expect(
+      within(purchase("anciens", 10).parentElement!).getByText("Offre ×10"),
+    ).toBeTruthy();
     expect(
       screen
         .getByRole("link", { name: "Retour au refuge" })
@@ -328,7 +334,9 @@ describe("le sanctuaire", () => {
     fireEvent.click(purchase("Sylve", 1));
     expect(onSummon).toHaveBeenCalledOnce();
     expect(purchaseButton.getAttribute("aria-busy")).toBe("true");
-    expect(purchaseButton.querySelector(".animate-spin")).toBeTruthy();
+    expect(
+      within(purchaseButton).getByText(/44\s*999/),
+    ).toBeTruthy();
     expect(screen.queryByText("Les esprits répondent à ton appel…")).toBeNull();
     const request = onSummon.mock.calls[0]![0];
     expect(request).toMatchObject({ packId: "ancients", count: 10 });
@@ -369,15 +377,13 @@ describe("le sanctuaire", () => {
     const repeat = within(dialog).getByRole("button", {
       name: "Réinvoquer ×10, 39999 émeraudes",
     });
-    const repeatIcon = repeat.querySelector(".lucide-rotate-cw");
-    expect(repeatIcon?.classList.contains("animate-spin")).toBe(false);
     fireEvent.click(repeat);
     fireEvent.click(repeat);
     expect(onSummon).toHaveBeenCalledTimes(2);
     expect(repeat.getAttribute("aria-busy")).toBe("true");
-    expect(repeat.querySelector(".lucide-rotate-cw")).toBe(repeatIcon);
-    expect(repeatIcon?.classList.contains("animate-spin")).toBe(true);
-    expect(within(repeat).getByText("Réinvoquer ×10")).toBeTruthy();
+    expect(
+      within(repeat).getByText(/39\s*999/),
+    ).toBeTruthy();
     expect(screen.queryByText("Les esprits répondent à ton appel…")).toBeNull();
     const nextRequest = onSummon.mock.calls[1]![0];
     expect(nextRequest).toMatchObject({ packId: "ancients", count: 10 });
@@ -758,7 +764,9 @@ describe("le sanctuaire", () => {
     expect(purchase("Sylve", 10).getAttribute("aria-label")).toContain(
       "1299 émeraudes",
     );
-    expect(within(purchase("Sylve", 10)).getByText("Offre ×10")).toBeTruthy();
+    expect(
+      within(purchase("Sylve", 10).parentElement!).getByText("Offre ×10"),
+    ).toBeTruthy();
     expect(
       within(purchase("Sylve", 10)).getByLabelText("Au lieu de 1490 émeraudes"),
     ).toBeTruthy();
