@@ -1,14 +1,17 @@
+// Compatibility coverage for games whose full card snapshots predate CW.
 import { describe, expect, it } from "vitest";
-import reference from "../../../docs/references/mighty-party/legendary-cards.json";
-import commonReference from "../../../docs/references/mighty-party/common-cards.json";
 import {
   CATALOG,
-  createGame,
   resolveCard,
   variantCard,
   maxCardLevel,
   upgradeCost,
   upgradeGoldCost,
+} from "./test-fixtures/legacy-catalogue";
+import reference from "../../../docs/references/mighty-party/legendary-cards.json";
+import commonReference from "../../../docs/references/mighty-party/common-cards.json";
+import {
+  createGame,
   summon,
   endTurn,
   playerView,

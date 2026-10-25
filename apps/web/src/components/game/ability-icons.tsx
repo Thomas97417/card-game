@@ -62,6 +62,10 @@ const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
   attack_curse: "weaken",
   hero_damage_from_health: "power",
   poison_enemy: "poison",
+  splash: "power",
+  reflect_damage: "spikes",
+  attack_pentagram: "power",
+  health_pentagram: "vitality",
 };
 
 export function abilityIconKind(
@@ -403,6 +407,8 @@ export function UnitEffectIcons({
 }
 
 const eventIcons: Record<string, AbilityIconKind> = {
+  "Dégâts de zone": "power",
+  "Reflet des dégâts": "spikes",
   Puissance: "power",
   Purification: "heal",
   Silence: "silence",

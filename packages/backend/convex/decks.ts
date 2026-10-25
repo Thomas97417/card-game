@@ -1,9 +1,10 @@
-import { DEFAULT_DECK, validateDeck } from "@sylve/game";
+import { DEFAULT_DECK, validateDeck, canonicalVariantId } from "@sylve/game";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { currentDeck, requirePlayer, rules } from "./lib/game_service";
 import { ownedDeck } from "./lib/progression";
+import { migratePlayerCatalogue } from "./lib/catalogue";
 
 export const list = query({
   args: {},
@@ -23,6 +24,7 @@ export const ensureStarter = mutation({
 
 /** Summoning must initialize the starting collection before granting the first new card. */
 export async function ensureStarterDeck(ctx: MutationCtx, ownerId: string) {
+  await migratePlayerCatalogue(ctx, ownerId);
   const existing = await currentDeck(ctx, ownerId);
   const initialized = await ctx.db
     .query("collection")
@@ -58,6 +60,7 @@ export const save = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requirePlayer(ctx);
+    await migratePlayerCatalogue(ctx, user.userId);
     if (!args.deckId)
       throw new ConvexError(
         "Tu disposes d’un seul deck. Modifie ton deck existant.",
@@ -68,11 +71,12 @@ export const save = mutation({
     const name = args.name.trim();
     if (!name || name.length > 60)
       throw new ConvexError("Donne un nom de 1 à 60 caractères à ton deck.");
-    rules(() => validateDeck(args.cardIds));
-    await ownedDeck(ctx, user.userId, args.cardIds);
+    const cardIds = rules(() => args.cardIds.map(canonicalVariantId));
+    rules(() => validateDeck(cardIds));
+    await ownedDeck(ctx, user.userId, cardIds);
     await ctx.db.patch(deck._id, {
       name,
-      cardIds: args.cardIds,
+      cardIds,
       updatedAt: Math.max(Date.now(), deck.updatedAt + 1),
     });
     return deck._id;

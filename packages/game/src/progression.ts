@@ -1,4 +1,4 @@
-import { CATALOG, type CardRarity } from "./index";
+import { cardsOfRarity, type CardRarity } from "./index";
 import { leagueAt } from "./leagues";
 import { CHEST_TYPES, chestPoolForLeague, type ChestType } from "./chest-types";
 import { rewardRow, rollReward } from "./reward-tables";
@@ -217,8 +217,10 @@ export function chestLoot(
     rule.cards.find((entry) => (roll -= entry.chance) < 0) ??
     rule.cards[rule.cards.length - 1]!;
   const total = rollReward([card.min, card.max], random);
-  const base = CATALOG[Math.floor(random() * CATALOG.length)]!;
-  return [{ variantId: `${base.id}:${card.rarity}`, count: total }];
+  const pool = cardsOfRarity(card.rarity);
+  const chosen =
+    pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))]!;
+  return [{ variantId: chosen.id, count: total }];
 }
 
 export function chestGold(

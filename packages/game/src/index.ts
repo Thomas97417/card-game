@@ -1,5 +1,7 @@
 export * from "./cards";
 export * from "./field";
+export * from "./soulbind";
+export * from "./catalogue-migration";
 import { populateField, type FieldBuildingKind } from "./field";
 import summonProfiles from "./data/mighty-party-summons.json";
 import {
@@ -7,6 +9,8 @@ import {
   resolveCard,
   cloneCard,
   getCombatType,
+  canonicalVariantId,
+  CW_TOKENS,
   type CardDefinition,
   type CardAbility,
 } from "./cards";
@@ -63,7 +67,7 @@ export function validateDeck(ids: readonly string[]): CardDefinition[] {
     throw new GameError(
       `Un deck doit contenir de ${MIN_DECK_SIZE} à ${DECK_SIZE} cartes.`,
     );
-  if (new Set(ids).size !== ids.length)
+  if (new Set(ids.map(canonicalVariantId)).size !== ids.length)
     throw new GameError("Chaque carte doit être unique dans le deck.");
   return ids.map((id) => resolveCard(id));
 }
@@ -180,6 +184,12 @@ function formationTargets(
       return allies.filter((u) => card(u).faction === "chaos");
     case "male_allies":
       return allies.filter((u) => card(u).gender === "male");
+    case "female_allies":
+      return allies.filter((u) => card(u).gender === "female");
+    case "allies_with_summon":
+      return allies.filter((u) =>
+        card(u).abilities?.some((a) => a.active && a.effect === "summon"),
+      );
     case "ranged_allies":
       return allies.filter((u) => getCombatType(card(u)) === "ranged");
     case "allies_with_block":
@@ -691,6 +701,11 @@ function targets(
       return (a.count ?? 1) === 1
         ? pick(allies, random)
         : shuffle(allies, random).slice(0, a.count);
+    case "random_nature_ally":
+      return pick(
+        allies.filter((u) => card(u).faction === "nature"),
+        random,
+      );
     case "random_wounded_ally":
       return pick(
         allies.filter((u) => u.hp < unitMaxHp(u, owner.cards)),
@@ -702,8 +717,15 @@ function targets(
     case "attack_target":
       return context && context.hp > 0 ? [context] : [];
     case "random_enemy":
+    case "random_enemy_unit":
       return shuffle(
-        state.players[1 - player]!.board.filter((u) => u.hp > 0),
+        state.players[1 - player]!.board.filter(
+          (u) =>
+            u.hp > 0 &&
+            (a.target !== "random_enemy_unit" ||
+              getCombatType(unitCard(u, state.players[1 - player]!.cards)) !==
+                "building"),
+        ),
         random,
       ).slice(0, a.count ?? 1);
     case "random_column_ally":
@@ -716,6 +738,10 @@ function targets(
         (u) =>
           u.hp > 0 &&
           source.depth + u.depth + 1 + Math.abs(source.row - u.row) === 1,
+      );
+    case "column_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) => u.hp > 0 && u.depth === source.depth,
       );
     case "nature_enemies":
     case "melee_enemies":
@@ -756,6 +782,8 @@ function targets(
     case "ranged_allies":
     case "chaos_allies":
     case "male_allies":
+    case "female_allies":
+    case "allies_with_summon":
     case "adjacent_allies":
     case "nearby_allies":
     case "adjacent_heroes":
@@ -799,6 +827,43 @@ function tokenDefinition(
   source: CardDefinition,
   spec: NonNullable<CardAbility["summon"]>,
 ): CardDefinition {
+  if (source.rulesVersion === 2 && spec.profileId) {
+    const profile = CW_TOKENS.find((p) => p.id === spec.profileId)!;
+    const point = profile.levels.find((p) => p.minionLevel === spec.level)!;
+    return {
+      id: `token-${spec.kind}-${source.id}-${spec.level}`,
+      baseId: profile.artId,
+      artId: profile.artId,
+      name: profile.name,
+      title: "Renfort invoqué",
+      kind: spec.kind,
+      color: source.color,
+      rulesVersion: 2,
+      attack: spec.attack,
+      health: spec.health,
+      level: spec.level,
+      rarity: "common",
+      faction: profile.faction,
+      gender: profile.gender,
+      combatType: profile.combatType,
+      abilities: point.skills.map(({ descriptionFr, ...s }) => ({
+        ...s,
+        name:
+          s.effect === "pierce"
+            ? "Perforation"
+            : s.effect === "heal"
+              ? "Soin"
+              : s.effect === "attack"
+                ? "Puissance"
+                : "Dégâts magiques",
+        description: descriptionFr.replace(/\{(\w+)\}/g, (_, key: string) =>
+          String(s[key as keyof typeof s] ?? ""),
+        ),
+        active: true,
+        unlockLevel: 1,
+      })),
+    };
+  }
   const profile = summonProfiles.find((p) => p.kind === spec.kind);
   if (profile) {
     return {
@@ -916,6 +981,8 @@ function appeared(
   const owner = state.players[player]!;
   refreshFormation(state, events, random);
   react(state, player, "ally_appears", events, random, unit);
+  if (unitCard(unit, owner.cards).faction === "order")
+    react(state, player, "order_ally_appears", events, random, unit);
   react(state, 1 - player, "enemy_appears", events, random, unit);
   if (unitCard(unit, owner.cards).faction === "chaos") {
     for (const [p, camp] of state.players.entries())
@@ -968,20 +1035,42 @@ function applyFieldBonus(
     unit.maxHp = unitMaxHp(unit, owner.cards) + bonus.value;
     unit.hp += bonus.value;
   } else {
-    unit.attack = (unit.attack ?? unitCard(unit, owner.cards).attack) + bonus.value;
+    unit.attack =
+      (unit.attack ?? unitCard(unit, owner.cards).attack) + bonus.value;
   }
-  effectEvent(state, events, player, unit, fieldMarkName(kind, mark), player, unit, bonus.value);
+  effectEvent(
+    state,
+    events,
+    player,
+    unit,
+    fieldMarkName(kind, mark),
+    player,
+    unit,
+    bonus.value,
+  );
 }
 
 /** Clear the occupant's seals before death skills can summon a replacement. */
 function releaseFieldMarks(owner: PlayerState, unit: UnitPosition) {
   const updates: Pick<GameEvent, "runes" | "pentagrams"> = {};
-  if (owner.runes?.some((mark) => mark.row === unit.row && mark.depth === unit.depth)) {
-    owner.runes = owner.runes.filter((mark) => mark.row !== unit.row || mark.depth !== unit.depth);
+  if (
+    owner.runes?.some(
+      (mark) => mark.row === unit.row && mark.depth === unit.depth,
+    )
+  ) {
+    owner.runes = owner.runes.filter(
+      (mark) => mark.row !== unit.row || mark.depth !== unit.depth,
+    );
     updates.runes = owner.runes.map((mark) => ({ ...mark }));
   }
-  if (owner.pentagrams?.some((mark) => mark.row === unit.row && mark.depth === unit.depth)) {
-    owner.pentagrams = owner.pentagrams.filter((mark) => mark.row !== unit.row || mark.depth !== unit.depth);
+  if (
+    owner.pentagrams?.some(
+      (mark) => mark.row === unit.row && mark.depth === unit.depth,
+    )
+  ) {
+    owner.pentagrams = owner.pentagrams.filter(
+      (mark) => mark.row !== unit.row || mark.depth !== unit.depth,
+    );
     updates.pentagrams = owner.pentagrams.map((mark) => ({ ...mark }));
   }
   return updates;
@@ -994,9 +1083,17 @@ function applyAbilities(
   events: GameEvent[],
   random: () => number,
   context?: Unit,
+  receivedDamage = 0,
 ) {
   const owner = state.players[player]!;
   for (const a of activeAbilities(source, owner, trigger)) {
+    if (a.requiresVampirism && (!context || (context.vampirism ?? 0) <= 0))
+      continue;
+    if (a.effect === "reflect_damage") {
+      if (receivedDamage > 0)
+        heroDamage(state, events, player, source, receivedDamage, a.name);
+      continue;
+    }
     if (a.effect === "summon" && a.summon) {
       const placement =
         a.summon.placement ?? (a.summon.kind === "archer" ? "behind" : "front");
@@ -1065,13 +1162,21 @@ function applyAbilities(
       }
       continue;
     }
-    if (a.effect === "rune" || a.effect === "attack_rune") {
+    if (
+      ["rune", "attack_rune", "attack_pentagram", "health_pentagram"].includes(
+        a.effect,
+      )
+    ) {
+      const pentagram =
+        a.effect === "attack_pentagram" || a.effect === "health_pentagram";
+      const healthMark = a.effect === "rune" || a.effect === "health_pentagram";
       for (let i = 0; i < (a.count ?? 1); i++) {
         const cells = Array.from({ length: ROWS * DEPTHS }, (_, i) => ({
           row: Math.floor(i / DEPTHS),
           depth: i % DEPTHS,
         })).filter(
           (cell) =>
+            (a.fieldPlacement !== "melee" || cell.depth < FRONT_DEPTHS) &&
             !owner.board.some(
               (u) => u.row === cell.row && u.depth === cell.depth,
             ) &&
@@ -1084,14 +1189,20 @@ function applyAbilities(
         );
         const cell = pick(cells, random)[0];
         if (cell) {
-          owner.runes = [
-            ...(owner.runes ?? []),
+          const marks = [
+            ...(pentagram ? (owner.pentagrams ?? []) : (owner.runes ?? [])),
             {
               ...cell,
-              health: a.effect === "rune" ? a.value : 0,
-              ...(a.effect === "attack_rune" ? { attack: a.value } : {}),
+              ...(healthMark
+                ? { health: a.value }
+                : {
+                    attack: a.value,
+                    ...(a.effect === "attack_rune" ? { health: 0 } : {}),
+                  }),
             },
           ];
+          if (pentagram) owner.pentagrams = marks;
+          else owner.runes = marks;
           effectEvent(
             state,
             events,
@@ -1102,13 +1213,23 @@ function applyAbilities(
             undefined,
             a.value,
           );
-          events[events.length - 1]!.runes = owner.runes.map((r) => ({ ...r }));
+          if (pentagram)
+            events[events.length - 1]!.pentagrams = marks.map((r) => ({
+              ...r,
+            }));
+          else events[events.length - 1]!.runes = marks.map((r) => ({ ...r }));
         }
       }
       continue;
     }
     const value =
-      a.value *
+      (a.valueMax === undefined
+        ? a.value
+        : a.value +
+          Math.min(
+            a.valueMax - a.value,
+            Math.floor(random() * (a.valueMax - a.value + 1)),
+          )) *
       (a.scaleBy
         ? formationTargets(
             source,
@@ -1169,6 +1290,7 @@ function applyAbilities(
           undefined,
           healed,
         );
+        react(state, player, "ally_hero_healed", events, random);
       }
       continue;
     }
@@ -1255,6 +1377,7 @@ function applyAbilities(
         ] as const)
           delete target[key];
       } else if (a.effect === "set_attack") target.attackLimit = value;
+      else if (a.effect === "evasion") target.evasion = true;
       else if (a.effect === "attack_curse")
         target.attackCurse = Math.max(target.attackCurse ?? 0, value);
       else if (a.effect === "counter_attack") target.counterAttack = true;
@@ -1480,6 +1603,7 @@ function damageUnit(
       events,
       random,
       source,
+      damage,
     );
     react(state, targetPlayer, "ally_attacked", events, random, source);
     if (
@@ -1503,6 +1627,40 @@ function damageUnit(
   return damage;
 }
 /** Counterattacks complete one strike but never launch a reciprocal counterattack. */
+function splashDamage(
+  state: GameState,
+  player: number,
+  unit: Unit,
+  target: Unit | undefined,
+  events: GameEvent[],
+  random: () => number,
+) {
+  const owner = state.players[player]!;
+  const defender = state.players[1 - player]!;
+  for (const a of activeAbilities(unit, owner, "passive").filter(
+    (a) => a.effect === "splash",
+  ))
+    for (const other of [...defender.board].filter(
+      (u) =>
+        u.hp > 0 &&
+        (target
+          ? Math.abs(u.row - target.row) + Math.abs(u.depth - target.depth) ===
+            1
+          : u.depth === DEPTHS - 1 && Math.abs(u.row - unit.row) <= 1),
+    ))
+      damageUnit(
+        state,
+        events,
+        player,
+        unit,
+        1 - player,
+        other,
+        a.value,
+        false,
+        a.name,
+        random,
+      );
+}
 function counterStrike(
   state: GameState,
   events: GameEvent[],
@@ -1527,6 +1685,7 @@ function counterStrike(
     events,
     random,
   );
+  react(state, player, "before_enemy_attack", events, random);
   damageUnit(
     state,
     events,
@@ -1557,6 +1716,7 @@ function counterStrike(
         a.name,
         random,
       );
+  splashDamage(state, p, unit, victim, events, random);
   if ((unit.vampirism ?? 0) > 0 && unit.hp > 0 && victim.hp > 0) {
     const drained = damageUnit(
       state,
@@ -1712,6 +1872,7 @@ export function endTurn(
       if (unit.hp <= 0) break;
       const power = unitAttack(unit, attacker, defender);
       if (power <= 0) break;
+      react(state, opponentIndex, "before_enemy_attack", events, random);
       if (getCombatType(card) === "ranged")
         react(
           state,
@@ -1746,6 +1907,7 @@ export function endTurn(
           random,
         );
         if (!evaded) {
+          splashDamage(state, playerIndex, unit, target, events, random);
           for (const a of passives.filter((a) => a.effect === "pierce")) {
             for (const pierced of ordered(defender.board).filter(
               (other) => other.depth === target.depth && other.hp > 0,
@@ -1853,6 +2015,7 @@ export function endTurn(
         }
       } else {
         heroDamage(state, events, playerIndex, unit, power);
+        splashDamage(state, playerIndex, unit, undefined, events, random);
         react(state, opponentIndex, "ally_hero_attacked", events, random);
         applyAbilities(state, playerIndex, unit, "hero_attack", events, random);
         for (const ally of ordered(attacker.board))
@@ -1982,7 +2145,14 @@ export function endTurn(
       (mark) => mark.row === unit.row && mark.depth === unit.depth,
     );
     if (pentagram)
-      applyFieldBonus(state, events, opponentIndex, unit, pentagram, "pentagram");
+      applyFieldBonus(
+        state,
+        events,
+        opponentIndex,
+        unit,
+        pentagram,
+        "pentagram",
+      );
   }
   refill(defender, random);
   emit(state, events, { type: "turn", player: opponentIndex });

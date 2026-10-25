@@ -67,6 +67,11 @@ const abilityTargetValidator = v.union(
   v.literal("nature_enemies"),
   v.literal("melee_enemies"),
   v.literal("random_column_ally"),
+  v.literal("random_nature_ally"),
+  v.literal("random_enemy_unit"),
+  v.literal("female_allies"),
+  v.literal("allies_with_summon"),
+  v.literal("column_enemies"),
 );
 
 const abilityValidator = v.object({
@@ -76,6 +81,9 @@ const abilityValidator = v.object({
   unlockLevel: v.number(),
   active: v.boolean(),
   value: v.number(),
+  valueMax: v.optional(v.number()),
+  requiresVampirism: v.optional(v.boolean()),
+  fieldPlacement: v.optional(v.literal("melee")),
   effect: v.union(
     v.literal("attack"),
     v.literal("health"),
@@ -106,6 +114,10 @@ const abilityValidator = v.object({
     v.literal("attack_curse"),
     v.literal("hero_damage_from_health"),
     v.literal("poison_enemy"),
+    v.literal("splash"),
+    v.literal("attack_pentagram"),
+    v.literal("health_pentagram"),
+    v.literal("reflect_damage"),
   ),
   trigger: v.union(
     v.literal("deploy"),
@@ -137,6 +149,9 @@ const abilityValidator = v.object({
     v.literal("before_enemy_melee_attack"),
     v.literal("any_death"),
     v.literal("passive"),
+    v.literal("before_enemy_attack"),
+    v.literal("order_ally_appears"),
+    v.literal("ally_hero_healed"),
   ),
   target: abilityTargetValidator,
   count: v.optional(v.number()),
@@ -153,7 +168,9 @@ const abilityValidator = v.object({
         v.literal("squire"),
         v.literal("life_palace"),
         v.literal("tesla"),
+        v.literal("leaf_child"),
       ),
+      profileId: v.optional(v.string()),
       placement: v.optional(
         v.union(
           v.literal("behind"),
@@ -184,6 +201,9 @@ export const cardValidator = v.object({
     v.union(v.literal("order"), v.literal("nature"), v.literal("chaos")),
   ),
   sourceHero: v.optional(v.string()),
+  rulesVersion: v.optional(v.literal(2)),
+  might: v.optional(v.number()),
+  soulbinds: v.optional(v.array(v.number())),
   artId: v.optional(v.string()),
   gender: v.optional(
     v.union(v.literal("male"), v.literal("female"), v.literal("sexless")),

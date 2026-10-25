@@ -32,6 +32,11 @@ import { showGameError } from "@/components/game/shared";
 import { GoldAmount, useGoldBalance } from "@/components/gold-balance";
 import { CardAbilities } from "@/components/game/card-abilities";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
+import {
+  CardSoulbind,
+  CardEvolutionResources,
+  type CardProgressionActions,
+} from "./card-soulbind";
 
 type DeckActions =
   | {
@@ -55,11 +60,17 @@ export function CardUpgradeDialog({
   onUpgrade,
   onAdd,
   onMove,
+  collection,
+  soulProgress,
+  onSoulbind,
+  onSacrifice,
+  onEvolve,
 }: {
   entry: OwnedCard | undefined;
   onClose: () => void;
   onUpgrade: (variantId: string) => Promise<unknown>;
-} & DeckActions) {
+} & DeckActions &
+  CardProgressionActions) {
   const [busy, setBusy] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
   const gold = useGoldBalance();
@@ -70,7 +81,8 @@ export function CardUpgradeDialog({
   const cost = upgradeCost(level, card?.rarity);
   const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
-  const next = card && !max ? resolveCard(card.id, level + 1) : null;
+  const next =
+    card && !max ? resolveCard(card.id, level + 1, card.soulbinds) : null;
   const actionLabel = busy
     ? "Amélioration…"
     : max
@@ -275,10 +287,28 @@ export function CardUpgradeDialog({
                   {!max && <GoldAmount amount={goldCost} />}
                 </button>
               </div>
+              <CardSoulbind
+                key={`soul-${card.id}`}
+                card={card}
+                collection={collection}
+                soulProgress={soulProgress}
+                onSoulbind={onSoulbind}
+              />
+              <CardEvolutionResources
+                key={`resources-${card.id}`}
+                entry={entry}
+                collection={collection}
+                soulProgress={soulProgress}
+                onSacrifice={onSacrifice}
+                onEvolve={onEvolve}
+              />
             </div>
 
             {onMove && (
-              <aside className="upgrade-deck-panel" aria-label="Actions du deck">
+              <aside
+                className="upgrade-deck-panel"
+                aria-label="Actions du deck"
+              >
                 <span className="eyebrow">TON DECK</span>
                 <div className="upgrade-deck-status" data-in-deck={inDeck}>
                   {inDeck ? <Check size={17} /> : <CollectionIcon size={17} />}

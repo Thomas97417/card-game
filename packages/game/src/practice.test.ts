@@ -70,7 +70,7 @@ describe("terrain d’entraînement", () => {
     expect(
       computer.every((card) => card.level === 1 && card.rarity === "common"),
     ).toBe(true);
-    expect(computer.reduce((sum, card) => sum + card.attack, 0)).toBe(13);
+    expect(computer.reduce((sum, card) => sum + card.attack, 0)).toBe(14);
   });
 
   it("progressively unlocks creatures, rarities and levels by league, capped by the human deck's upgrades", () => {
@@ -122,12 +122,14 @@ describe("terrain d’entraînement", () => {
     );
     const computer = computerDeckForLeague(0, human, () => 0.25);
     expect(computer).toHaveLength(8);
-    expect(computer.every((card) => card.attack <= 4 && card.level === 1)).toBe(
+    expect(computer.every((card) => card.attack <= 5 && card.level === 1)).toBe(
       true,
     );
   });
   it("can include one unlocked support building while keeping melee and ranged attackers", () => {
-    const human = validateDeck(STARTER_DECK);
+    const human = STARTER_DECK.map((id) =>
+      variantCard(id.split(":")[0]!, "rare"),
+    );
     const before = computerDeckForLeague(1800, human, () => 0.25);
     expect(before.some((card) => getCombatType(card) === "building")).toBe(
       false,
@@ -333,14 +335,16 @@ describe("terrain d’entraînement", () => {
           expect(new Set(owner.hand).size).toBe(4);
           expect(owner.discard).toEqual([]);
           expect(
-            owner.board.every((unit) => unit.fieldObject || decks[index]!.includes(unit.cardId)),
+            owner.board.every(
+              (unit) =>
+                unit.fieldObject ||
+                unit.definition ||
+                decks[index]!.includes(unit.cardId),
+            ),
           ).toBe(true);
           expect(
             owner.board.every((unit) =>
-              isDeploymentDepth(
-                unitCard(unit, owner.cards),
-                unit.depth,
-              ),
+              isDeploymentDepth(unitCard(unit, owner.cards), unit.depth),
             ),
           ).toBe(true);
           expect(

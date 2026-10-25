@@ -1,0 +1,1640 @@
+[
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Apprentice",
+        "name": "Apprentice"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Archer",
+        "name": "Archer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Defender",
+        "name": "Defender"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Gnome",
+        "name": "Gnome"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shinobi",
+        "name": "Shinobi"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Love_Lady",
+        "name": "Love Lady"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Pilgrim",
+        "name": "Pilgrim"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Warrior",
+        "name": "Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Warrioress",
+        "name": "Warrioress"
+      }
+    ],
+    "faction": "Order",
+    "rarity": "Common"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Acolyte",
+        "name": "Acolyte"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Berserk",
+        "name": "Berserk"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bowmaster",
+        "name": "Bowmaster"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bunny",
+        "name": "Bunny"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Celestial_Maiden",
+        "name": "Celestial Maiden"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Crafter",
+        "name": "Crafter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Crusader",
+        "name": "Crusader"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Demon_Huntress",
+        "name": "Demon Huntress"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ding_Viesel",
+        "name": "Ding Viesel"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Drow",
+        "name": "Drow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Fan_Dancer",
+        "name": "Fan Dancer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/First_Aid",
+        "name": "First Aid"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Follower",
+        "name": "Follower"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Gravekeeper",
+        "name": "Gravekeeper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Immortal_Warrior",
+        "name": "Immortal Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Jester-Killer",
+        "name": "Jester-Killer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Kunoichi",
+        "name": "Kunoichi"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Love_Mage",
+        "name": "Love Mage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Minstrel",
+        "name": "Minstrel"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Monk",
+        "name": "Monk"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Nomad",
+        "name": "Nomad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Piece_of_Ice",
+        "name": "Piece of Ice"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Priestess_of_Equilibrium",
+        "name": "Priestess of Equilibrium"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Prophet",
+        "name": "Prophet"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Pyromancer",
+        "name": "Pyromancer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Snow_Maiden",
+        "name": "Snow Maiden"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Soulblade",
+        "name": "Soulblade"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Squire",
+        "name": "Squire"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/The_Undisputed",
+        "name": "The Undisputed"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Thunder",
+        "name": "Thunder"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Untouchable",
+        "name": "Untouchable"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Valkyrie",
+        "name": "Valkyrie"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Voltage_Tower",
+        "name": "Voltage Tower"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wild_Huntress",
+        "name": "Wild Huntress"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wonder-girl",
+        "name": "Wonder-girl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Young_Griffin",
+        "name": "Young Griffin"
+      }
+    ],
+    "faction": "Order",
+    "rarity": "Rare"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Adherent",
+        "name": "Adherent"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ayfe_the_Arrow",
+        "name": "Ayfe the Arrow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bard",
+        "name": "Bard"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Battle_Priest",
+        "name": "Battle Priest"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Champion_of_the_Arena",
+        "name": "Champion of the Arena"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Crazy_Harlequin",
+        "name": "Crazy Harlequin"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cruel_Gladiator",
+        "name": "Cruel Gladiator"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Huntress",
+        "name": "Dark Huntress"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Defender_of_Tribe",
+        "name": "Defender of Tribe"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Drunk_Master",
+        "name": "Drunk Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Engineer",
+        "name": "Engineer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Evil%27s_Helper",
+        "name": "Evil's Helper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Evil_Slayer",
+        "name": "Evil Slayer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Flame_Juggler",
+        "name": "Flame Juggler"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Free-folk_Leader",
+        "name": "Free-folk Leader"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Grim_Warden",
+        "name": "Grim Warden"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Harbringer_of_War",
+        "name": "Harbringer of War"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ice_Clod",
+        "name": "Ice Clod"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Justice_Inquisitor",
+        "name": "Justice Inquisitor"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Keeper_of_Storm",
+        "name": "Keeper of Storm"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Knight",
+        "name": "Knight"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Kunai_Master",
+        "name": "Kunai Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lady_Clair",
+        "name": "Lady Clair"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lady_Curl",
+        "name": "Lady Curl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lady_Snow",
+        "name": "Lady Snow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lord_Punisher",
+        "name": "Lord Punisher"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Love_Goddess",
+        "name": "Love Goddess"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lucky_Rabbit",
+        "name": "Lucky Rabbit"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sayuki",
+        "name": "Sayuki"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Scarlet_Warrior",
+        "name": "Scarlet Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shinigami",
+        "name": "Shinigami"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Swordmaster",
+        "name": "Swordmaster"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tent_of_Life",
+        "name": "Tent of Life"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tesla_Tower",
+        "name": "Tesla Tower"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Winged_Knight",
+        "name": "Winged Knight"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Winged_Protector",
+        "name": "Winged Protector"
+      }
+    ],
+    "faction": "Order",
+    "rarity": "Epic"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Alexandria",
+        "name": "Alexandria"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/All,_Prince_of_Sands",
+        "name": "All, Prince of Sands"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Amaterasu,_Eternal_Sun",
+        "name": "Amaterasu, Eternal Sun"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Angelia_the_Lightbringer",
+        "name": "Angelia the Lightbringer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Aphrodite",
+        "name": "Aphrodite"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Apollo",
+        "name": "Apollo"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Athena",
+        "name": "Athena"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Blair",
+        "name": "Blair"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bravi,_Deadly_Blade",
+        "name": "Bravi, Deadly Blade"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Charon,_Soul_Catcher",
+        "name": "Charon, Soul Catcher"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/D%27Arc,_Iron_Maiden",
+        "name": "D'Arc, Iron Maiden"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Diana,_Amazonian_Queen",
+        "name": "Diana, Amazonian Queen"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Evil_%22Santa%22",
+        "name": "Evil \"Santa\""
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Frost,_the_Snow_Queen",
+        "name": "Frost, the Snow Queen"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Fury,_the_great_warrior",
+        "name": "Fury, the great warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ghosta",
+        "name": "Ghosta"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Griffius,_the_Celestial",
+        "name": "Griffius, the Celestial"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Hanzo_Sama",
+        "name": "Hanzo Sama"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/High_Tinker_Gear",
+        "name": "High Tinker Gear"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Iceberg",
+        "name": "Iceberg"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Jaxy,_the_Thunderfist",
+        "name": "Jaxy, the Thunderfist"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Justia,_Law_Goddess",
+        "name": "Justia, Law Goddess"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Legion,_God_of_War",
+        "name": "Legion, God of War"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Life_Palace",
+        "name": "Life Palace"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mina_Hellsing",
+        "name": "Mina Hellsing"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Miss_Lapin",
+        "name": "Miss Lapin"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mjolnir,_Lightning_God",
+        "name": "Mjolnir, Lightning God"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Morgen_Von_Stern",
+        "name": "Morgen Von Stern"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Prince",
+        "name": "Prince"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shao_Lin",
+        "name": "Shao Lin"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sir_Lancelot",
+        "name": "Sir Lancelot"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Strik,_The_Fiery_Heart",
+        "name": "Strik, The Fiery Heart"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Super_Mary",
+        "name": "Super Mary"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tesla_X",
+        "name": "Tesla X"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Titania",
+        "name": "Titania"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Yuri,_Shadow_Dagger",
+        "name": "Yuri, Shadow Dagger"
+      }
+    ],
+    "faction": "Order",
+    "rarity": "Legendary"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Archer_(summon)",
+        "name": "Archer (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cenotaph",
+        "name": "Cenotaph"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Explosive_Gift",
+        "name": "Explosive Gift"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Knight_(summon)",
+        "name": "Knight (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Little_Life_Palace",
+        "name": "Little Life Palace"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mini_Tesla-X",
+        "name": "Mini Tesla-X"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Reward_Box",
+        "name": "Reward Box"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tombstone",
+        "name": "Tombstone"
+      }
+    ],
+    "faction": "Order",
+    "rarity": "Minions"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Big_Toad",
+        "name": "Big Toad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cat_Lady",
+        "name": "Cat Lady"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dryad",
+        "name": "Dryad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lumberjack",
+        "name": "Lumberjack"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Naga",
+        "name": "Naga"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Raven",
+        "name": "Raven"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shaman",
+        "name": "Shaman"
+      }
+    ],
+    "faction": "Nature",
+    "rarity": "Common"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ancient_Scorpid",
+        "name": "Ancient Scorpid"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Baby_rattle",
+        "name": "Baby rattle"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bully",
+        "name": "Bully"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cactusito",
+        "name": "Cactusito"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cultist",
+        "name": "Cultist"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dream_Whelpling",
+        "name": "Dream Whelpling"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Druid",
+        "name": "Druid"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Frozen_Moor_Guard",
+        "name": "Frozen Moor Guard"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Furious_Sabertooth",
+        "name": "Furious Sabertooth"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Harpy",
+        "name": "Harpy"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/High_Naga",
+        "name": "High Naga"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Jotunn",
+        "name": "Jotunn"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Junk_Rat",
+        "name": "Junk Rat"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Karas",
+        "name": "Karas"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Leaf_Child",
+        "name": "Leaf Child"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lizardfolk",
+        "name": "Lizardfolk"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mr._Toad",
+        "name": "Mr. Toad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Owl",
+        "name": "Owl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Panda_Warrior",
+        "name": "Panda Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Planty",
+        "name": "Planty"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Repressor",
+        "name": "Repressor"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Rock",
+        "name": "Rock"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sage_Disciple",
+        "name": "Sage Disciple"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Samurai_Dog",
+        "name": "Samurai Dog"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Satyr",
+        "name": "Satyr"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Scratchy",
+        "name": "Scratchy"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sea_Guardian",
+        "name": "Sea Guardian"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shark",
+        "name": "Shark"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shroomkin",
+        "name": "Shroomkin"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/The_Aqua_Spirit",
+        "name": "The Aqua Spirit"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Toothy_Thuggie",
+        "name": "Toothy Thuggie"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Totem",
+        "name": "Totem"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Treant",
+        "name": "Treant"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Viking",
+        "name": "Viking"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wild_Stalker",
+        "name": "Wild Stalker"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wind_Snake",
+        "name": "Wind Snake"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wood_Elf",
+        "name": "Wood Elf"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wood_Spirit",
+        "name": "Wood Spirit"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Woodland_Hermit",
+        "name": "Woodland Hermit"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Young_Primate",
+        "name": "Young Primate"
+      }
+    ],
+    "faction": "Nature",
+    "rarity": "Rare"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Angler_Vole",
+        "name": "Angler Vole"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ape_Warlord",
+        "name": "Ape Warlord"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Argios",
+        "name": "Argios"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bamboo_Master",
+        "name": "Bamboo Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cursed_Shaman",
+        "name": "Cursed Shaman"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Desert_Sentry",
+        "name": "Desert Sentry"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/El_Cactus",
+        "name": "El Cactus"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Emerald_Dragon",
+        "name": "Emerald Dragon"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Fierce_Rakshesh",
+        "name": "Fierce Rakshesh"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Forest_Mage",
+        "name": "Forest Mage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Forest_Song",
+        "name": "Forest Song"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Gnoll,_the_Blade_Master",
+        "name": "Gnoll, the Blade Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ice_Big",
+        "name": "Ice Big"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lady_Wild",
+        "name": "Lady Wild"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lake_Pixy",
+        "name": "Lake Pixy"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lolli_Pop",
+        "name": "Lolli Pop"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lord_of_the_Forest",
+        "name": "Lord of the Forest"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lord_Toad",
+        "name": "Lord Toad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Luck_Idol",
+        "name": "Luck Idol"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Keeper_of_the_Grove",
+        "name": "Keeper of the Grove"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Minotaur",
+        "name": "Minotaur"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Nagini",
+        "name": "Nagini"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ogre_Plant",
+        "name": "Ogre Plant"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Olaf_the_Red",
+        "name": "Olaf the Red"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sharp_Fin",
+        "name": "Sharp Fin"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sporelok",
+        "name": "Sporelok"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Stone_Guardian",
+        "name": "Stone Guardian"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/The_Killer_Serpent",
+        "name": "The Killer Serpent"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/The_Scorpion_Queen",
+        "name": "The Scorpion Queen"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Thug_Hunter",
+        "name": "Thug Hunter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Treebeard",
+        "name": "Treebeard"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Trident_Master",
+        "name": "Trident Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Turtle_Teacher",
+        "name": "Turtle Teacher"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Warden_of_the_North",
+        "name": "Warden of the North"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wild_Tamer",
+        "name": "Wild Tamer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Windsong",
+        "name": "Windsong"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wind_Warrior",
+        "name": "Wind Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wise_Owl",
+        "name": "Wise Owl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wrathy",
+        "name": "Wrathy"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Wyvern",
+        "name": "Wyvern"
+      }
+    ],
+    "faction": "Nature",
+    "rarity": "Epic"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Anak,_Princess_Dragon",
+        "name": "Anak, Princess Dragon"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bastet",
+        "name": "Bastet"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cabas,_Wasteland_Lord",
+        "name": "Cabas, Wasteland Lord"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cernun,_Archdruid",
+        "name": "Cernun, Archdruid"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Coba,_Temple_Keeper",
+        "name": "Coba, Temple Keeper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dandy_Croc",
+        "name": "Dandy Croc"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Draggara",
+        "name": "Draggara"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/El_Mariachi",
+        "name": "El Mariachi"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Enlil,_wind_of_change",
+        "name": "Enlil, wind of change"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Erik_the_Grey",
+        "name": "Erik the Grey"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Groot,_Silent_Guardian",
+        "name": "Groot, Silent Guardian"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Hoodoo",
+        "name": "Hoodoo"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Jormun_Grand",
+        "name": "Jormun Grand"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/King_Taurus",
+        "name": "King Taurus"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Kong,_Monkey_King",
+        "name": "Kong, Monkey King"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Kung_Fucius",
+        "name": "Kung Fucius"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Loath,_Spore_Loser",
+        "name": "Loath, Spore Loser"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Maeve",
+        "name": "Maeve"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Marquis_de_Sat",
+        "name": "Marquis de Sat"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Matriarch_Eona",
+        "name": "Matriarch Eona"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Melia,_Forest%27s_Daughter",
+        "name": "Melia, Forest's Daughter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mi,_Ten-Tailed_Fox",
+        "name": "Mi, Ten-Tailed Fox"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mizu,_the_Sea_Foam",
+        "name": "Mizu, the Sea Foam"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Morgan,_the_Sea_Tusk",
+        "name": "Morgan, the Sea Tusk"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mother_Owl",
+        "name": "Mother Owl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Myrddin_Caer",
+        "name": "Myrddin Caer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Poison_Flos",
+        "name": "Poison Flos"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Prince_Nod",
+        "name": "Prince Nod"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Queen_Ananta",
+        "name": "Queen Ananta"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Scrap,_the_King_of_Garbage",
+        "name": "Scrap, the King of Garbage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Serket_Sen_Scorp",
+        "name": "Serket Sen Scorp"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Sheer-Shah",
+        "name": "Sheer-Shah"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Snake,_the_Lizard_Prince",
+        "name": "Snake, the Lizard Prince"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tani_Windrunner",
+        "name": "Tani Windrunner"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tengu,_Ravencrest",
+        "name": "Tengu, Ravencrest"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tortulus,_the_Wise_One",
+        "name": "Tortulus, the Wise One"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Triton,_The_Bottom_Herald",
+        "name": "Triton, The Bottom Herald"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tsukumogami",
+        "name": "Tsukumogami"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Vanakauri",
+        "name": "Vanakauri"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Vixen,_the_Storm_Lord",
+        "name": "Vixen, the Storm Lord"
+      }
+    ],
+    "faction": "Nature",
+    "rarity": "Legendary"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bush",
+        "name": "Bush"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cactus",
+        "name": "Cactus"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Leaf_Child_(summon)",
+        "name": "Leaf Child (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lesser_Vanakauri",
+        "name": "Lesser Vanakauri"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mad_Totem",
+        "name": "Mad Totem"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Man-Eating_Tree",
+        "name": "Man-Eating Tree"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Plant",
+        "name": "Plant"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Prickly_Thickets",
+        "name": "Prickly Thickets"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Spiny_Totem",
+        "name": "Spiny Totem"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Stone_Golem",
+        "name": "Stone Golem"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Water_Elemental",
+        "name": "Water Elemental"
+      }
+    ],
+    "faction": "Nature",
+    "rarity": "Minions"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Fire_Mage",
+        "name": "Fire Mage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Nosferatu",
+        "name": "Nosferatu"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Vampire",
+        "name": "Vampire"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Witch",
+        "name": "Witch"
+      }
+    ],
+    "faction": "Chaos",
+    "rarity": "Common"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ancient",
+        "name": "Ancient"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bone_Hunter",
+        "name": "Bone Hunter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Butcher",
+        "name": "Butcher"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Child_of_Chaos",
+        "name": "Child of Chaos"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Chiropteran",
+        "name": "Chiropteran"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Clever_Viper",
+        "name": "Clever Viper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Cyclops",
+        "name": "Cyclops"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Acolyte",
+        "name": "Dark Acolyte"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Warrior",
+        "name": "Dark Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Witch",
+        "name": "Dark Witch"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Death_Whelpling",
+        "name": "Death Whelpling"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Demon_Orb",
+        "name": "Demon Orb"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Elf_Slayer",
+        "name": "Elf Slayer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Faceless",
+        "name": "Faceless"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Fireworker",
+        "name": "Fireworker"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Flesh_Spawn",
+        "name": "Flesh Spawn"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Friendly_Spirit",
+        "name": "Friendly Spirit"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Gargoyle",
+        "name": "Gargoyle"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Grim_Harvester",
+        "name": "Grim Harvester"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Igneous_Girl",
+        "name": "Igneous Girl"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Insatiable_Beast",
+        "name": "Insatiable Beast"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Moon_Child",
+        "name": "Moon Child"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mor_Lock",
+        "name": "Mor Lock"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mummy",
+        "name": "Mummy"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Necromancer",
+        "name": "Necromancer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Old_bones",
+        "name": "Old bones"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Puppet_Mistress",
+        "name": "Puppet Mistress"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Red_Orc",
+        "name": "Red Orc"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Scarecrow",
+        "name": "Scarecrow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Skeleton",
+        "name": "Skeleton"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Summoner",
+        "name": "Summoner"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Talking_Skull",
+        "name": "Talking Skull"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Undead",
+        "name": "Undead"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Visitor",
+        "name": "Visitor"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Void_Stone",
+        "name": "Void Stone"
+      }
+    ],
+    "faction": "Chaos",
+    "rarity": "Rare"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Annoying_Demon",
+        "name": "Annoying Demon"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Archwitch",
+        "name": "Archwitch"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Beholder",
+        "name": "Beholder"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Blood_Lord",
+        "name": "Blood Lord"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bone_Dragon",
+        "name": "Bone Dragon"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bone_Warrior",
+        "name": "Bone Warrior"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Bloody_Goddess",
+        "name": "Bloody Goddess"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Knight",
+        "name": "Dark Knight"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dark_Mage",
+        "name": "Dark Mage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dead_Bowman",
+        "name": "Dead Bowman"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Demon_the_Ripper",
+        "name": "Demon the Ripper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Demonic_Shadow",
+        "name": "Demonic Shadow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Doctor_Fear",
+        "name": "Doctor Fear"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Elwin_Fierce",
+        "name": "Elwin Fierce"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Embalmed_Priest",
+        "name": "Embalmed Priest"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Flamy_Helly",
+        "name": "Flamy Helly"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Flesh_Eater",
+        "name": "Flesh Eater"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Gargantos",
+        "name": "Gargantos"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Half_Moon_Priestess",
+        "name": "Half Moon Priestess"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Harbinger_of_Death",
+        "name": "Harbinger of Death"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Insidious_Gorgon",
+        "name": "Insidious Gorgon"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Living_Dead",
+        "name": "Living Dead"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lord_of_the_Undead",
+        "name": "Lord of the Undead"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Moody_Ghost",
+        "name": "Moody Ghost"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mr._Boom",
+        "name": "Mr. Boom"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Muddy_Trog",
+        "name": "Muddy Trog"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Old_god%27s_servant",
+        "name": "Old god's servant"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/One-Eyed_Ogre",
+        "name": "One-Eyed Ogre"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Orc_Master",
+        "name": "Orc Master"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shadow_Manipulator",
+        "name": "Shadow Manipulator"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Soul_Hunter",
+        "name": "Soul Hunter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Terror_From_Below",
+        "name": "Terror From Below"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/The_Colonist_Invader",
+        "name": "The Colonist Invader"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Void_Juggler",
+        "name": "Void Juggler"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Void_Rock",
+        "name": "Void Rock"
+      }
+    ],
+    "faction": "Chaos",
+    "rarity": "Epic"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Akasha,_Queen_of_the_Damned",
+        "name": "Akasha, Queen of the Damned"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Apep,_Aspect_of_Chaos",
+        "name": "Apep, Aspect of Chaos"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ball%27Zt,_the_Warden",
+        "name": "Ball'Zt, the Warden"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Chernomor",
+        "name": "Chernomor"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Chieftain_Orc",
+        "name": "Chieftain Orc"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Chuba_Cabras",
+        "name": "Chuba Cabras"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Count_Vlad",
+        "name": "Count Vlad"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dead_Lord",
+        "name": "Dead Lord"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Death",
+        "name": "Death"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Deep_Maw",
+        "name": "Deep Maw"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Dominus,_the_Swarm_King",
+        "name": "Dominus, the Swarm King"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Freddy,_Lord_of_Terror",
+        "name": "Freddy, Lord of Terror"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/General_Zor%27Ma",
+        "name": "General Zor'Ma"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Goliath",
+        "name": "Goliath"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Grand_Ma,_Reaper",
+        "name": "Grand Ma, Reaper"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Hanako,_Lady_Banshee",
+        "name": "Hanako, Lady Banshee"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Koschei_the_Immortal",
+        "name": "Koschei the Immortal"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Lady_Medusa",
+        "name": "Lady Medusa"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Leader_Nilen",
+        "name": "Leader Nilen"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Madam_Agony",
+        "name": "Madam Agony"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Madam_Lo%27Trix",
+        "name": "Madam Lo'Trix"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Mr._Flap",
+        "name": "Mr. Flap"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Necro,_Master_Lich",
+        "name": "Necro, Master Lich"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Neyda",
+        "name": "Neyda"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ogrok,_the_Leader",
+        "name": "Ogrok, the Leader"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Onmoraki",
+        "name": "Onmoraki"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Red_Woman",
+        "name": "Red Woman"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Regardus_Diplius",
+        "name": "Regardus Diplius"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Shadow_Shaa-Moona",
+        "name": "Shadow Shaa-Moona"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Stormrage",
+        "name": "Stormrage"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Taeral_Kelhorn",
+        "name": "Taeral Kelhorn"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/TNT,_Crazy_Demolitionist",
+        "name": "TNT, Crazy Demolitionist"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Void_Jewel",
+        "name": "Void Jewel"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Yorik,_the_Risen_One",
+        "name": "Yorik, the Risen One"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ysh%27Tmala,_The_Old_God",
+        "name": "Ysh'Tmala, The Old God"
+      }
+    ],
+    "faction": "Chaos",
+    "rarity": "Legendary"
+  },
+  {
+    "cards": [
+      {
+        "href": "https://cwars.miraheze.org/wiki/Archivampire",
+        "name": "Archivampire"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Ball%27Zt,_the_Warden_(minion)",
+        "name": "Ball'Zt, the Warden (minion)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Demon_(summon)",
+        "name": "Demon (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Echo_of_the_Void",
+        "name": "Echo of the Void"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Eclipse_Shard",
+        "name": "Eclipse Shard"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Hollow",
+        "name": "Hollow"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Horo-Horo",
+        "name": "Horo-Horo"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Puppet",
+        "name": "Puppet"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Rat_Killer",
+        "name": "Rat Killer"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Rotter",
+        "name": "Rotter"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Skeleton_(summon)",
+        "name": "Skeleton (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Small_Void_Rock",
+        "name": "Small Void Rock"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Tree_(summon)",
+        "name": "Tree (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Witch_(summon)",
+        "name": "Witch (summon)"
+      },
+      {
+        "href": "https://cwars.miraheze.org/wiki/Zombie",
+        "name": "Zombie"
+      }
+    ],
+    "faction": "Chaos",
+    "rarity": "Minions"
+  }
+]

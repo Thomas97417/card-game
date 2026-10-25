@@ -1,17 +1,20 @@
-import reference from "./data/mighty-party.json";
-import evolutions from "./data/mighty-party-evolutions.json";
-import evolutionNames from "./data/evolution-names.json";
-import legendary from "./data/mighty-party-legendary.json";
-import legendaryNames from "./data/legendary-names.json";
+import {
+  buildCwCard,
+  canonicalVariantId,
+  availableRarities,
+  cwUpgradeCost,
+} from "./cw-catalogue";
+export {
+  canonicalVariantId,
+  availableRarities,
+  cardSource,
+  CW_CATALOGUE,
+  CW_TOKENS,
+} from "./cw-catalogue";
 
 export const MAX_CARD_LEVEL = 26;
-export function maxCardLevel(rarity: CardRarity = "common", baseId?: string) {
-  if (
-    rarity === "common" ||
-    (rarity === "legendary" && (baseId === "tree" || baseId === "idol"))
-  )
-    return MAX_CARD_LEVEL;
-  return 31;
+export function maxCardLevel(_rarity: CardRarity = "common", _baseId?: string) {
+  return MAX_CARD_LEVEL;
 }
 export type CombatType = "melee" | "ranged" | "building";
 export type Faction = "order" | "nature" | "chaos";
@@ -67,7 +70,11 @@ export type AbilityEffect =
   | "set_attack"
   | "attack_curse"
   | "hero_damage_from_health"
-  | "poison_enemy";
+  | "poison_enemy"
+  | "splash"
+  | "attack_pentagram"
+  | "health_pentagram"
+  | "reflect_damage";
 export type AbilityTrigger =
   | "deploy"
   | "turn_start"
@@ -97,7 +104,10 @@ export type AbilityTrigger =
   | "enemy_poison"
   | "before_enemy_melee_attack"
   | "any_death"
-  | "passive";
+  | "passive"
+  | "before_enemy_attack"
+  | "order_ally_appears"
+  | "ally_hero_healed";
 export type AbilityTarget =
   | "self"
   | "random_ally"
@@ -135,7 +145,12 @@ export type AbilityTarget =
   | "adjacent_enemies"
   | "nature_enemies"
   | "melee_enemies"
-  | "random_column_ally";
+  | "random_column_ally"
+  | "random_nature_ally"
+  | "random_enemy_unit"
+  | "female_allies"
+  | "allies_with_summon"
+  | "column_enemies";
 export interface CardAbility {
   id: string;
   name: string;
@@ -146,6 +161,9 @@ export interface CardAbility {
   trigger: AbilityTrigger;
   target: AbilityTarget;
   value: number;
+  valueMax?: number;
+  requiresVampirism?: boolean;
+  fieldPlacement?: "melee";
   temporary?: boolean;
   count?: number;
   scaleBy?: AbilityTarget;
@@ -153,7 +171,14 @@ export interface CardAbility {
   scaleIncludeSelf?: boolean;
   reactToSelf?: boolean;
   summon?: {
-    kind: "archer" | "zombie" | "squire" | "life_palace" | "tesla";
+    kind:
+      | "archer"
+      | "zombie"
+      | "squire"
+      | "life_palace"
+      | "tesla"
+      | "leaf_child";
+    profileId?: string;
     placement?: "behind" | "front" | "around" | "row" | "random_ranged";
     attack: number;
     health: number;
@@ -177,6 +202,9 @@ export interface CardDefinition {
   baseId?: string;
   rarity?: CardRarity;
   level?: number;
+  rulesVersion?: 2;
+  might?: number;
+  soulbinds?: number[];
 }
 export interface OwnedCard {
   card: CardDefinition;
@@ -364,324 +392,47 @@ const definitions = [
   },
 ] as const;
 
-type Mechanic = [AbilityEffect, AbilityTrigger, AbilityTarget, boolean?];
-const mechanics: Record<string, Mechanic[]> = {
-  Apprentice: [
-    ["attack", "deploy", "random_ally"],
-    ["health", "turn_start", "column_allies"],
-  ],
-  Archer: [
-    ["pierce", "passive", "self"],
-    ["attack", "turn_start", "self"],
-  ],
-  "Big Toad": [["spikes", "passive", "self"]],
-  "Blood Cult Adept": [["vampirism", "deploy", "random_ally"]],
-  "Cat Lady": [
-    ["heal", "deploy", "ally_hero"],
-    ["heal", "turn_start", "ally_hero"],
-  ],
-  Dryad: [
-    ["health", "deploy", "melee_allies"],
-    ["health", "deploy", "nature_allies"],
-  ],
-  Gnome: [
-    ["heal", "enemy_hero_attacked", "ally_hero"],
-    ["heal", "deploy", "ally_buildings"],
-  ],
-  Idol: [["attack", "turn_start", "random_ally"]],
-  "Love Lady": [
-    ["rune", "deploy", "self"],
-    ["attack", "death", "all_allies"],
-  ],
-  Lumberjack: [["attack", "nature_ally_appears", "self"]],
-  Pilgrim: [
-    ["attack", "deploy", "order_allies", true],
-    ["health", "deploy", "order_allies"],
-  ],
-  Raven: [["regeneration", "deploy", "random_ally"]],
-  "Red Orc": [["extra_attack", "passive", "self"]],
-  Servant: [
-    ["block", "passive", "self"],
-    ["block", "deploy", "row_allies"],
-  ],
-  Shaman: [["spikes", "deploy", "random_ally"]],
-  Shinobi: [["shield", "passive", "self"]],
-  Singer: [
-    ["health", "deploy", "random_ally"],
-    ["attack", "deploy", "order_allies"],
-  ],
-  Tree: [["attack", "deploy", "all_enemies"]],
-  Vampire: [["vampirism", "passive", "self"]],
-  Warrior: [
-    ["block", "passive", "self"],
-    ["attack_per_ally", "passive", "order_allies"],
-  ],
-  Warrioress: [
-    ["summon", "deploy", "self"],
-    ["heal", "turn_start", "column_allies"],
-  ],
-  Witch: [
-    ["summon", "deploy", "self"],
-    ["attack", "deploy", "random_zombie"],
-  ],
-};
-const effectNames: Record<AbilityEffect, string> = {
-  attack: "Puissance",
-  health: "Vitalité",
-  heal: "Soin",
-  block: "Blocage",
-  spikes: "Épines",
-  vampirism: "Vampirisme",
-  regeneration: "Régénération",
-  shield: "Bouclier mental",
-  extra_attack: "Double attaque",
-  pierce: "Perforation",
-  rune: "Rune de vie",
-  summon: "Renfort",
-  attack_per_ally: "Alliance de l’Ordre",
-  health_per_ally: "Vitalité de formation",
-  heal_full: "Soin intégral",
-  damage: "Dégâts magiques",
-  poison: "Poison",
-  steal_attack: "Vol d’attaque",
-  attack_rune: "Rune de puissance",
-  cleanse: "Purification",
-  silence: "Silence",
-  drain: "Drain de vie",
-  counter_attack: "Contre-attaque",
-  immunity: "Immunité",
-  evasion: "Esquive",
-  set_attack: "Entrave",
-  attack_curse: "Malédiction",
-  hero_damage_from_health: "Écho vital",
-  poison_enemy: "Empoisonnement",
-};
-interface Progression {
-  level: number;
-  value?: number;
-  attack?: number;
-  health?: number;
-  summonLevel?: number;
-  summon?: string;
-  count?: number;
+export const CATALOG: readonly CardDefinition[] = definitions.map((base) => ({
+  ...buildCwCard(base, availableRarities(base.id)[0]!, 1),
+  id: base.id,
+  name: base.name,
+}));
+export const CARD_VARIANTS: readonly CardDefinition[] = definitions.flatMap(
+  (base) =>
+    availableRarities(base.id).map((rarity) => buildCwCard(base, rarity, 1)),
+);
+export function cardsOfRarity(rarity: CardRarity) {
+  return CARD_VARIANTS.filter((card) => card.rarity === rarity);
 }
-interface ReferenceCard {
-  name: string;
-  faction: string;
-  combatType: string;
-  gender?: string;
-  stats: number[][];
-  skills: {
-    id: string;
-    descriptionFr: string;
-    unlockLevel: number;
-    progression: Progression[];
-    effect?: string;
-    trigger?: string;
-    target?: string;
-    count?: number;
-    scaleBy?: string;
-    includeSelf?: boolean;
-    scaleIncludeSelf?: boolean;
-    reactToSelf?: boolean;
-    temporary?: boolean;
-    placement?: string;
-  }[];
-}
-const data = reference as {
-  cards: ReferenceCard[];
-  costs: Record<CardRarity, number[][]>;
-};
-
-function build(
-  base: (typeof definitions)[number],
-  rarity: CardRarity,
-  level: number,
-): CardDefinition {
-  const legendarySource =
-    rarity === "legendary"
-      ? legendary.cards.find(
-          (c) =>
-            c.name ===
-            legendary.chains.find((c) => c.common === base.reference)
-              ?.legendary,
-        )
-      : undefined;
-  const evolved = rarity === "rare" || rarity === "epic" || !!legendarySource;
-  const chain = evolutions.chains.find((c) => c.common === base.reference)!;
-  const source: ReferenceCard =
-    legendarySource ??
-    (rarity === "rare" || rarity === "epic"
-      ? evolutions.cards.find((c) => c.name === chain[rarity])!
-      : data.cards.find((c) => c.name === base.reference)!);
-  const stats = source.stats[level - 1]!;
-  // The two Epic buildings have no documented Legendary evolution.
-  const bonus = rarity === "legendary" && !legendarySource ? 4 : 0;
-  const abilities = source.skills.map((skill, index): CardAbility => {
-    const point =
-      [...skill.progression].reverse().find((p) => p.level <= level) ??
-      skill.progression[0]!;
-    const [effect, trigger, target, temporary] = evolved
-      ? [
-          skill.effect as AbilityEffect,
-          skill.trigger as AbilityTrigger,
-          skill.target as AbilityTarget,
-          skill.temporary ?? false,
-        ]
-      : mechanics[base.reference]![index]!;
-    let description = skill.descriptionFr.replace(
-      /\{(\w+)\}/g,
-      (_, key: string) =>
-        String(
-          key === "magnitude"
-            ? Math.abs(point.value ?? 0)
-            : key === "count"
-              ? (point.count ?? skill.count ?? 1)
-              : (point[key as keyof Progression] ?? ""),
-        ),
-    );
-    description = description
-      .replace("Archer", "Éclaireur des braises")
-      .replace("une Éclaireur", "un Éclaireur")
-      .replace(/Zombie/g, "Rejeton des spores")
-      .replace("chef de guerre", "héros")
-      .replace("chef allié", "héros allié")
-      .replace(" (« row » dans la source)", "");
-    description = description
-      .replace(/de sa ligne/g, "de sa colonne")
-      .replace("de la ligne de la cible", "de la colonne de la cible");
-    description = description
-      .replace(
-        /(\d+) Éclaireur\(s\)/g,
-        (_, n: string) => `${n} Éclaireur${Number(n) > 1 ? "s" : ""}`,
-      )
-      .replace(
-        /(\d+) rune\(s\)/g,
-        (_, n: string) => `${n} rune${Number(n) > 1 ? "s" : ""}`,
-      );
-    if (effect === "attack" && target === "all_enemies")
-      description = `Réduit l’ATQ de tous les ennemis de ${Math.abs(point.value ?? 0)}.`;
-    return {
-      id: skill.id,
-      name:
-        effect === "attack" && (point.value ?? 0) < 0
-          ? "Affaiblissement"
-          : effect === "attack_per_ally" && target !== "order_allies"
-            ? "Puissance de formation"
-            : effectNames[effect],
-      description,
-      unlockLevel: skill.unlockLevel,
-      active: level >= skill.unlockLevel,
-      effect,
-      trigger,
-      target,
-      value: point.value ?? 1,
-      ...((point.count ?? skill.count)
-        ? { count: point.count ?? skill.count }
-        : {}),
-      ...(skill.scaleBy ? { scaleBy: skill.scaleBy as AbilityTarget } : {}),
-      ...(skill.includeSelf ? { includeSelf: true } : {}),
-      ...(skill.scaleIncludeSelf ? { scaleIncludeSelf: true } : {}),
-      ...(skill.reactToSelf ? { reactToSelf: true } : {}),
-      ...(temporary ? { temporary: true } : {}),
-      ...(effect === "summon"
-        ? {
-            summon: {
-              kind: (
-                {
-                  Archer: "archer",
-                  Zombie: "zombie",
-                  Squire: "squire",
-                  "Little Life Palace": "life_palace",
-                  "Mini Tesla-X": "tesla",
-                } as const
-              )[
-                point.summon as
-                  | "Archer"
-                  | "Zombie"
-                  | "Squire"
-                  | "Little Life Palace"
-                  | "Mini Tesla-X"
-              ],
-              ...(skill.placement
-                ? {
-                    placement: skill.placement as NonNullable<
-                      CardAbility["summon"]
-                    >["placement"],
-                  }
-                : {}),
-              attack: point.attack!,
-              health: point.health!,
-              level: point.summonLevel!,
-            },
-          }
-        : {}),
-    };
-  });
-  return {
-    id: `${base.id}:${rarity}`,
-    baseId: base.id,
-    name: legendarySource
-      ? (legendaryNames as Record<string, string>)[base.id]!
-      : rarity === "rare" || rarity === "epic"
-        ? evolutionNames[base.id][rarity]
-        : base.name,
-    title: evolved
-      ? `Évolution ${RARITY_LABELS[rarity].toLowerCase()} · ${base.name}`
-      : rarity === "legendary"
-        ? `Création Sylve · ${base.title}`
-        : base.title,
-    color: base.color,
-    kind: base.kind,
-    rarity,
-    level,
-    sourceHero: source.name,
-    gender: (source.gender ??
-      evolutions.commonAttributes.find((c) => c.name === base.reference)
-        ?.gender) as CardDefinition["gender"],
-    ...(evolved ? { artId: `evolutions/${base.id}-${rarity}` } : {}),
-    attack: stats[0]! + (source.combatType === "building" ? 0 : bonus),
-    health: stats[1]! + bonus * 2,
-    combatType: source.combatType as CombatType,
-    faction: source.faction as Faction,
-    abilities,
-  };
-}
-export const CATALOG: readonly CardDefinition[] = definitions.map((base) => {
-  const {
-    rarity: _rarity,
-    level: _level,
-    baseId: _baseId,
-    ...card
-  } = build(base, "common", 1);
-  return { ...card, id: base.id };
-});
 export const DEFAULT_DECK = [
   "guardian:common",
   "turtle:common",
   "mushroom:common",
   "wisp:common",
 ];
-
 export function variantCard(
   baseId: string,
   rarity: CardRarity,
   level = 1,
+  soulbinds: readonly number[] = [],
 ): CardDefinition {
   const base = definitions.find((card) => card.id === baseId);
-  if (
-    !base ||
-    !RARITIES.includes(rarity) ||
-    !Number.isInteger(level) ||
-    level < 1 ||
-    level > maxCardLevel(rarity, baseId)
-  )
-    throw new GameError("Cette variante de carte n’existe pas.");
-  return build(base, rarity, level);
+  if (!base) throw new GameError("Cette carte n’existe pas dans le catalogue.");
+  return buildCwCard(base, rarity, level, soulbinds);
+}
+export function resolveCard(
+  id: string,
+  level = 1,
+  soulbinds: readonly number[] = [],
+): CardDefinition {
+  const [baseId, rarity] = canonicalVariantId(id).split(":");
+  const card = variantCard(baseId!, rarity as CardRarity, level, soulbinds);
+  return id.includes(":") ? card : { ...card, id };
 }
 export function cloneCard(card: CardDefinition): CardDefinition {
   return {
     ...card,
+    ...(card.soulbinds ? { soulbinds: [...card.soulbinds] } : {}),
     ...(card.abilities
       ? {
           abilities: card.abilities.map((a) => ({
@@ -692,36 +443,17 @@ export function cloneCard(card: CardDefinition): CardDefinition {
       : {}),
   };
 }
-export function resolveCard(id: string, level = 1): CardDefinition {
-  if (!id.includes(":")) {
-    const base = CATALOG.find((c) => c.id === id);
-    if (!base)
-      throw new GameError("Cette carte n’existe pas dans le catalogue.");
-    const card = variantCard(id, "common", level);
-    return { ...card, id };
-  }
-  const [baseId, rarity, extra] = id.split(":");
-  if (extra !== undefined)
-    throw new GameError("Cette variante de carte n’existe pas.");
-  return variantCard(baseId!, rarity as CardRarity, level);
-}
-function cost(level: number, rarity: CardRarity, column: number) {
-  if (
-    !Number.isInteger(level) ||
-    level < 1 ||
-    level > maxCardLevel(rarity) ||
-    !RARITIES.includes(rarity)
-  )
-    throw new GameError("Ce niveau d’amélioration n’existe pas.");
-  return level === maxCardLevel(rarity)
-    ? 0
-    : data.costs[rarity][level]![column]!;
-}
 export function upgradeCost(level: number, rarity: CardRarity = "common") {
-  return cost(level, rarity, 0);
+  return cwUpgradeCost(level, rarity, 0);
 }
 export function upgradeGoldCost(level: number, rarity: CardRarity = "common") {
-  return cost(level, rarity, 1);
+  return cwUpgradeCost(level, rarity, 1);
+}
+export function upgradeExperience(
+  level: number,
+  rarity: CardRarity = "common",
+) {
+  return cwUpgradeCost(level, rarity, 2);
 }
 export function baseCardId(card: CardDefinition) {
   return card.baseId ?? card.id.split(":")[0]!;

@@ -21,6 +21,9 @@ export default defineSchema({
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
+    soulDust: v.optional(v.number()),
+    experience: v.optional(v.number()),
+    catalogueVersion: v.optional(v.literal(2)),
     diamonds: v.optional(v.number()),
     activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
@@ -69,6 +72,7 @@ export default defineSchema({
     variantId: v.string(),
     level: v.number(),
     copies: v.number(),
+    soulbinds: v.optional(v.array(v.number())),
   }).index("by_owner_variant", ["ownerId", "variantId"]),
   chests: defineTable({
     ownerId: v.string(),

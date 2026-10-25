@@ -1,0 +1,245 @@
+.soulbind-panel {
+  min-width: 0;
+  border: 1px solid #c5b38347;
+  border-radius: 9px;
+  background: #0d241b55;
+  color: #f4ecd6;
+  font:
+    12px/1.6 "Avenir Next",
+    Avenir,
+    sans-serif;
+}
+.soulbind-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+  cursor: pointer;
+  color: #ead39a;
+  list-style: none;
+}
+.soulbind-panel > summary::-webkit-details-marker {
+  display: none;
+}
+.soulbind-panel > summary > span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+.soulbind-panel summary small {
+  color: #b9c9b7;
+  font-size: 10px;
+}
+.soulbind-panel summary em {
+  color: #b5dfb0;
+  font-size: 10px;
+  font-style: normal;
+}
+.soulbind-panel summary:focus-visible {
+  outline: 2px solid #e6cc8e;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.soulbind-content {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+  padding: 0 13px 13px;
+}
+.soulbind-content p {
+  margin: 0;
+  color: #becbb8;
+}
+.soulbind-account {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 12px;
+  border-radius: 7px;
+  background: #d4be880d;
+}
+.soulbind-account > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.soulbind-account > p {
+  width: 100%;
+  color: #dfca99;
+}
+.soulbind-rank-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  color: #becbb8;
+  font-size: 10px;
+}
+.soulbind-rank-progress progress {
+  flex: 1;
+  min-width: 55px;
+  height: 6px;
+  accent-color: #a8c98e;
+}
+.soulbind-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 225px), 1fr));
+  gap: 10px;
+}
+.soulbind-link {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #c5b38333;
+  border-radius: 7px;
+  background: #19372b55;
+}
+.soulbind-link[data-active="true"] {
+  border-color: #a3cf9288;
+}
+.soulbind-link header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #dbca9d;
+}
+.soulbind-link header strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.soulbind-link header > span {
+  font-size: 10px;
+}
+.soulbind-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 12px;
+  margin: 7px 0;
+  color: #bae2a9;
+  font-weight: 700;
+}
+.soulbind-bonuses small {
+  color: #b8c9b2;
+  font-weight: 400;
+  font-size: 10px;
+}
+.soulbind-link ul {
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  margin: 9px 0 14px;
+  list-style: none;
+}
+.soulbind-link li {
+  display: grid;
+  grid-template-columns: 13px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 6px;
+  font-size: 10px;
+  color: #bac4b2;
+}
+.soulbind-link li svg {
+  margin-top: 3px;
+}
+.soulbind-link li[data-ready="true"] {
+  color: #bddfac;
+}
+.soulbind-link li span:last-child {
+  white-space: nowrap;
+  color: #d5c7a5;
+}
+.soulbind-link .sylve-button {
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px;
+  font-size: 10px;
+}
+.soulbind-link .sylve-button span {
+  font-size: 9px;
+}
+.soulbind-cost {
+  font-size: 10px;
+}
+.soulbind-conversion,
+.soulbind-evolution {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.soulbind-content h3 {
+  margin: 0;
+  font-size: 12px;
+  color: #ead39a;
+}
+.soulbind-conversion > span {
+  font-size: 10px;
+  color: #becbb8;
+}
+.soulbind-conversion > label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.soulbind-conversion input {
+  width: 90px;
+  min-height: 42px;
+  padding: 6px 10px;
+  border: 1px solid #c5b38366;
+  border-radius: 5px;
+  background: #142a20;
+  color: #f4ecd6;
+}
+.soulbind-evolution > div {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid #c5b38333;
+  border-radius: 5px;
+}
+.soulbind-evolution small,
+.soulbind-evolution > div > span {
+  color: #becbb8;
+  font-size: 10px;
+}
+.resource-panel .sylve-button {
+  min-height: 42px;
+  white-space: normal;
+  font-size: 11px;
+}
+.bestiary-scroll > .soulbind-panel {
+  margin-top: 24px;
+}
+@media (min-width: 601px) {
+  .upgrade-showcase > .upgrade-portrait {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: min(620px, calc(100dvh - 100px));
+  }
+}
+@media (max-width: 600px) {
+  .upgrade-main > .soulbind-panel {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 500px) {
+  .soulbind-panel > summary {
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .soulbind-content {
+    padding-inline: 10px;
+  }
+  .soulbind-link {
+    padding: 10px;
+  }
+}

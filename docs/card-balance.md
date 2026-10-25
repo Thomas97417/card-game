@@ -1,5 +1,7 @@
 # Cartes de base : équilibrage et capacités
 
+> Historique Mighty Party, remplacé le 25 octobre 2026 par l’[alignement Cunt Wars](cw-alignment.md). Les descriptions ci-dessous restent la référence des anciens instantanés de combat.
+
 Adaptation du 23 octobre 2026. Le catalogue contient **22 identités**, déclinées en **88 variantes**, et le plafond des communes passe de 10 à **26 niveaux**. Depuis le 24 octobre 2026, les variantes Rare, Epic et 20 Legendary utilisent leurs 31 niveaux propres. Les deux bâtiments Legendary sans évolution documentée restent des créations Sylve de niveau maximal 26. Les noms, l’univers et les illustrations restent propres à Sylve.
 
 ## Données utilisées

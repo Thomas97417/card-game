@@ -10,6 +10,7 @@ import {
   shuffle,
   validateDeck,
   variantCard,
+  availableRarities,
   getCombatType,
   unitAttack,
   type CardDefinition,
@@ -51,11 +52,23 @@ export function computerDeckForLeague(
   random: () => number,
 ): CardDefinition[] {
   const profile = computerProfile(trophies);
-  const pool = CATALOG.filter((card) => profile.baseIds.includes(card.id));
+  const pool = CATALOG.filter(
+    (card) =>
+      profile.baseIds.includes(card.id) &&
+      availableRarities(card.id).some(
+        (r) => RARITIES.indexOf(r) <= RARITIES.indexOf(profile.maxRarity),
+      ),
+  );
   // A demoted player can retain more slots than their current league normally grants.
   for (const card of [...CATALOG].sort((a, b) => a.attack - b.attack)) {
     if (pool.length >= humanCards.length) break;
-    if (!pool.some((entry) => entry.id === card.id)) pool.push(card);
+    if (
+      !pool.some((entry) => entry.id === card.id) &&
+      availableRarities(card.id).some(
+        (r) => RARITIES.indexOf(r) <= RARITIES.indexOf(profile.maxRarity),
+      )
+    )
+      pool.push(card);
   }
   const available = shuffle(pool, random);
   const maxRarity = RARITIES.indexOf(profile.maxRarity);
@@ -65,6 +78,14 @@ export function computerDeckForLeague(
         profile.baseIds.includes(card.id) && getCombatType(card) === "building",
     ) && random() < 0.4;
   return humanCards.map((reference, index) => {
+    const maximumRarity = Math.min(
+      maxRarity,
+      RARITIES.indexOf(reference.rarity ?? "common"),
+    );
+    const eligible = (card: CardDefinition) =>
+      availableRarities(card.baseId ?? card.id).some(
+        (r) => RARITIES.indexOf(r) <= maximumRarity,
+      );
     const type =
       withBuilding && index === humanCards.length - 1
         ? "building"
@@ -72,14 +93,20 @@ export function computerDeckForLeague(
           ? "melee"
           : "ranged";
     const position = available.findIndex(
-      (card) => getCombatType(card) === type,
+      (card) => getCombatType(card) === type && eligible(card),
     );
-    const [base] = available.splice(position < 0 ? 0 : position, 1);
+    const fallback = available.findIndex(eligible);
+    const [base] = available.splice(
+      position < 0 ? Math.max(0, fallback) : position,
+      1,
+    );
+    const rarity =
+      availableRarities(base!.id)
+        .filter((r) => RARITIES.indexOf(r) <= maximumRarity)
+        .reverse()[0] ?? availableRarities(base!.id)[0]!;
     return variantCard(
       base!.id,
-      RARITIES[
-        Math.min(maxRarity, RARITIES.indexOf(reference.rarity ?? "common"))
-      ]!,
+      rarity,
       Math.min(profile.maxLevel, reference.level ?? 1),
     );
   });

@@ -18,6 +18,7 @@ import type {
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { CardArtwork } from "./card-artwork";
+import type { CardProgressionActions } from "./card-soulbind";
 import { ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
@@ -43,7 +44,7 @@ interface Draft {
   cards: string[];
 }
 
-interface DeckWorkshopProps {
+interface DeckWorkshopProps extends CardProgressionActions {
   league?: LeagueProgress;
   deck: WorkshopDeck | undefined;
   collection: OwnedCard[] | undefined;
@@ -69,6 +70,10 @@ export function DeckWorkshop({
   collection,
   onSave,
   onUpgrade,
+  soulProgress,
+  onSoulbind,
+  onSacrifice,
+  onEvolve,
 }: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
@@ -615,6 +620,11 @@ export function DeckWorkshop({
         hasSpace={cards.length < league.deckCapacity}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
+        collection={collection}
+        soulProgress={soulProgress}
+        onSoulbind={onSoulbind}
+        onSacrifice={onSacrifice}
+        onEvolve={onEvolve}
         onAdd={() => {
           if (inspected) replaceCard(inspected, cards.length);
           setInspected(null);

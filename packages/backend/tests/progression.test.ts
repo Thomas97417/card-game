@@ -3,6 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_DECK,
+  canonicalVariantId,
   CATALOG,
   MAX_CARD_LEVEL,
   RARITIES,
@@ -23,6 +24,7 @@ import { PRACTICE_DEADLINE } from "@sylve/game/practice";
 import { api, components, internal } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import schema from "../convex/schema";
+import { resolveCard as legacyCard } from "../../game/src/test-fixtures/legacy-catalogue";
 const modules = import.meta.glob("../convex/**/*.ts");
 function setup() {
   const t = convexTest(schema, modules);
@@ -311,7 +313,7 @@ describe("ligues et trophées autoritaires", () => {
     expect((await bob.query(api.collection.league, {})).trophies).toBe(0);
   });
 
-  it("limits legacy decks in queries and match snapshots without deleting cards or changing records", async () => {
+  it("limits legacy decks in queries and match snapshots without deleting cards while migrating their IDs", async () => {
     const { t, alice, deckId } = await fixture();
     const ids = [
       ...DEFAULT_DECK,
@@ -338,7 +340,9 @@ describe("ligues et trophées autoritaires", () => {
     expect(
       (await alice.query(api.games.get, { gameId })).players[0]!.deck,
     ).toHaveLength(4);
-    expect((await t.run((ctx) => ctx.db.get(deckId)))!.cardIds).toEqual(ids);
+    expect((await t.run((ctx) => ctx.db.get(deckId)))!.cardIds).toEqual(
+      ids.map(canonicalVariantId),
+    );
     expect(await alice.query(api.collection.list, {})).toHaveLength(8);
     await expect(
       alice.mutation(api.decks.save, {
@@ -546,18 +550,18 @@ describe("collection autoritaire", () => {
     ).toEqual(result.card.abilities);
   });
   it.each(["rare", "epic", "legendary"] as const)(
-    "upgrades %s cards to 31 and snapshots evolution metadata",
+    "upgrades %s cards to the CW cap of 26 and snapshots evolution metadata",
     async (rarity) => {
       const { t, alice, deckId } = await fixture();
       const variantId = `guardian:${rarity}`;
-      const copies = upgradeCost(30, rarity);
-      const gold = upgradeGoldCost(30, rarity);
+      const copies = upgradeCost(25, rarity);
+      const gold = upgradeGoldCost(25, rarity);
       await t.run(async (ctx) => {
         const { ownerId } = (await ctx.db.get(deckId))!;
         await ctx.db.insert("collection", {
           ownerId,
           variantId,
-          level: 30,
+          level: 25,
           copies,
         });
         await ctx.db.insert("wallets", { ownerId, gold });
@@ -568,7 +572,7 @@ describe("collection autoritaire", () => {
       expect(upgraded).toMatchObject({
         copies: 0,
         gold: 0,
-        card: resolveCard(variantId, 31),
+        card: resolveCard(variantId, 26),
       });
       await expect(
         alice.mutation(api.collection.upgrade, { variantId }),
@@ -630,7 +634,7 @@ describe("collection autoritaire", () => {
     if (baseId === "captain") expect(unit.evasion).toBe(true);
     if (baseId === "lynx") expect(unit.counterAttack).toBe(true);
   });
-  it("persists increases to hero maximum health and their combat events", async () => {
+  it("preserves hero maximum-health effects in version-1 saved matches", async () => {
     const { t, alice, deckId } = await fixture();
     await t.run(async (ctx) => {
       const { ownerId } = (await ctx.db.get(deckId))!;
@@ -654,6 +658,9 @@ describe("collection autoritaire", () => {
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     await t.run(async (ctx) => {
       const state = (await ctx.db.get(gameId))!.state!;
+      state.players[0]!.cards = state.players[0]!.cards.map((c) =>
+        c.id === "dragon:legendary" ? legacyCard(c.id) : c,
+      );
       for (const owner of state.players) {
         owner.board = [];
         owner.runes = [];
@@ -733,7 +740,7 @@ describe("collection autoritaire", () => {
     expect(
       view.players[0]!.board.find((u) => u.cardId === "guardian:common")!
         .poison,
-    ).toBe(3);
+    ).toBe(4);
   });
   it("persists summoned tokens and their events without adding cards to the player's deck", async () => {
     const { t, alice, deckId } = await fixture();
@@ -741,12 +748,12 @@ describe("collection autoritaire", () => {
       const deck = (await ctx.db.get(deckId))!;
       await ctx.db.insert("collection", {
         ownerId: deck.ownerId,
-        variantId: "witch:common",
+        variantId: "captain:common",
         level: 1,
         copies: 0,
       });
       await ctx.db.patch(deckId, {
-        cardIds: ["witch:common", ...DEFAULT_DECK.slice(1)],
+        cardIds: ["captain:common", ...DEFAULT_DECK.slice(1)],
       });
     });
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
@@ -764,9 +771,9 @@ describe("collection autoritaire", () => {
     const before = await alice.query(api.games.get, { gameId });
     await alice.mutation(api.games.playCard, {
       gameId,
-      cardId: "witch:common",
+      cardId: "captain:common",
       row: 0,
-      depth: 2,
+      depth: 0,
       expectedTurn: before.turn,
     });
     const view = await alice.query(api.games.get, { gameId });
@@ -776,18 +783,18 @@ describe("collection autoritaire", () => {
     ).toHaveLength(2);
     expect(
       view.players[0]!.board.find((u) => u.definition && !u.fieldObject)?.card,
-    ).toMatchObject({ name: "Rejeton des spores", attack: 2, health: 2 });
+    ).toMatchObject({ name: "Éclaireur des braises", attack: 5, health: 4 });
     expect(view.events.filter((e) => e.type === "summon")).toHaveLength(2);
     expect(
       (await alice.query(api.collection.list, {})).some(
-        (e) => e.card.kind === "zombie",
+        (e) => e.card.kind === "archer",
       ),
     ).toBe(false);
     await t.run(async (ctx) => {
       const game = (await ctx.db.get(gameId))!;
       const state = game.state!;
       state.players[1]!.cards = state.players[0]!.cards;
-      state.players[1]!.hand = ["witch:common"];
+      state.players[1]!.hand = ["captain:common"];
       await ctx.db.patch(gameId, { state });
     });
     await alice.mutation(api.games.soloTurn, {
@@ -797,10 +804,10 @@ describe("collection autoritaire", () => {
     const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
     expect(
       stored.state!.players[1]!.board.some(
-        (u) => u.definition?.kind === "zombie",
+        (u) => u.definition?.kind === "archer",
       ),
     ).toBe(true);
-    expect(stored.soloRecentCards).toEqual(["witch:common"]);
+    expect(stored.soloRecentCards).toEqual(["captain:common"]);
   });
   it("initializes exactly four common variants once", async () => {
     const t = setup();

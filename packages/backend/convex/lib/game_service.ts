@@ -15,6 +15,7 @@ import {
   PRACTICE_DEADLINE,
 } from "@sylve/game/practice";
 import { awardMatchRewards, ownedDeck, playerLeague } from "./progression";
+import { migratePlayerCatalogue } from "./catalogue";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -82,6 +83,7 @@ export async function deckSnapshot(
   deckId: Id<"decks">,
   userId: string,
 ) {
+  await migratePlayerCatalogue(ctx, userId);
   const deck = await currentDeck(ctx, userId);
   if (!deck || deck._id !== deckId)
     throw new ConvexError("Ce deck ne t’appartient pas.");

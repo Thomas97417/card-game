@@ -21,7 +21,7 @@ describe("icônes des capacités et états", () => {
       <CardAbilityIcons card={variantCard("guardian", "common", 3)} />,
     );
     expect(
-      screen.getByRole("img", { name: /Blocage · Active · niveau 3/ }),
+      screen.getByRole("img", { name: /Blocage · Active · niveau 1/ }),
     ).toBeTruthy();
     const locked = screen.getByRole("img", {
       name: /Alliance de l’Ordre · Verrouillée · niveau 11/,
@@ -140,7 +140,7 @@ describe("icônes des capacités et états", () => {
     expect(container.querySelector('[data-effect="power"]')).toBeNull();
     rerender(
       <CardAbilityIcons
-        card={variantCard("wolf", "common")}
+        card={variantCard("vampire", "legendary")}
         onBoard
         showLocked={false}
       />,
