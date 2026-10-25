@@ -40,6 +40,7 @@ function SanctuaryPage() {
   const saveRevealProgress = useMutation(api.sanctuary.saveRevealProgress);
   const closeCircle = useMutation(api.sanctuary.closeCircle);
   const summon = useMutation(api.sanctuary.summon);
+  const buyGold = useMutation(api.sanctuary.buyGold);
   const chestSlots = useQuery(api.chests.list);
   const unlockChestSlot = useMutation(api.sanctuary.unlockChestSlot);
   const collection = useQuery(api.collection.list);
@@ -73,6 +74,7 @@ function SanctuaryPage() {
       onUnlockChestSlot={(slot) => unlockChestSlot({ slot })}
       onUpgrade={(variantId) => upgrade({ variantId })}
       emeraldOffers={emeraldOffers}
+      onBuyGold={buyGold}
       onBuyEmeralds={async (packId) => {
         const { url } = await createCheckout({ packId });
         window.location.assign(url);

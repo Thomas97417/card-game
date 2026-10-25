@@ -9,7 +9,8 @@
     "./leagues": "./src/leagues.ts",
     "./summoning": "./src/summoning.ts",
     "./emerald-packs": "./src/emerald-packs.ts",
-    "./missions": "./src/missions.ts"
+    "./missions": "./src/missions.ts",
+    "./gold-packs": "./src/gold-packs.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

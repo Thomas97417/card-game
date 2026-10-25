@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { CHEST_SLOT_KEYS } from "@sylve/game/progression";
+import { GOLD_PACKS, type GoldPurchaseResult } from "@sylve/game/gold-packs";
 import {
   ACTIVE_SUMMON_PACKS,
   summonPack,
@@ -16,7 +17,11 @@ import { requirePlayer } from "./lib/game_service";
 import { ensureStarterDeck } from "./decks";
 import { grantLoot, playerLeague, playerWallet } from "./lib/progression";
 import { ensureEmeralds } from "./lib/wallet";
-import { summonCountValidator, summonPackValidator } from "./lib/validators";
+import {
+  goldPackValidator,
+  summonCountValidator,
+  summonPackValidator,
+} from "./lib/validators";
 import { recordMissionProgress } from "./lib/missions";
 
 export const ensureWallet = mutation({
@@ -53,6 +58,43 @@ export const unlockChestSlot = mutation({
       cost: key.price,
     });
     return { slot, cost: key.price };
+  },
+});
+
+export const buyGold = mutation({
+  args: { packId: goldPackValidator, requestId: v.string() },
+  handler: async (ctx, { packId, requestId }): Promise<GoldPurchaseResult> => {
+    const { userId } = await requirePlayer(ctx);
+    if (!/^[a-zA-Z0-9-]{16,80}$/.test(requestId))
+      throw new ConvexError("Identifiant d’achat invalide.");
+    const previous = await ctx.db
+      .query("goldPurchases")
+      .withIndex("by_owner_request", (q) =>
+        q.eq("ownerId", userId).eq("requestId", requestId),
+      )
+      .unique();
+    if (previous) {
+      if (previous.packId !== packId)
+        throw new ConvexError("Cet achat correspond à un autre pack d’or.");
+      return { packId, gold: previous.gold, cost: previous.cost };
+    }
+    const pack = GOLD_PACKS.find((item) => item.id === packId)!;
+    const wallet = await ensureEmeralds(ctx, userId);
+    if (wallet.diamonds < pack.cost)
+      throw new ConvexError("Tu n’as pas assez d’émeraudes pour ce pack d’or.");
+    // Both currencies and the receipt commit together, including on retries.
+    await ctx.db.patch(wallet._id, {
+      diamonds: wallet.diamonds - pack.cost,
+      gold: wallet.gold + pack.gold,
+    });
+    await ctx.db.insert("goldPurchases", {
+      ownerId: userId,
+      requestId,
+      packId,
+      gold: pack.gold,
+      cost: pack.cost,
+    });
+    return { packId, gold: pack.gold, cost: pack.cost };
   },
 });
 

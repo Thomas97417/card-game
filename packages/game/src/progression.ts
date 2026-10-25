@@ -30,7 +30,7 @@ export const CHEST_SLOT_KEYS = [
     slot: 7,
     name: "Clé souveraine",
     price: 1500,
-    image: "/art/keys/chest-key-3.webp",
+    image: "/art/keys/chest-key-3-v2.webp",
   },
 ] as const;
 export const TOTAL_CHEST_SLOTS = LEAGUE_CHEST_SLOTS + CHEST_SLOT_KEYS.length;

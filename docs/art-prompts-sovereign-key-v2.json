@@ -1,0 +1,16 @@
+{
+  "tool": "Built-in ImageGen",
+  "date": "2026-10-25",
+  "assets": [
+    {
+      "name": "sovereign-key-v2",
+      "editTarget": "apps/web/public/art/keys/chest-key-3.webp",
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a1732d-c088-73e3-8800-3fd6b404afcb/exec-2649dcb1-ff31-45ae-b2d9-fad37fe37afc.png",
+      "path": "apps/web/public/art/keys/chest-key-3-v2.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true,
+      "prompt": "Use case: precise-object-edit. Asset type: replacement transparent game inventory illustration for the Clé souveraine in the woodland fantasy card game Sylve. Input image 1 is the edit target and the reference for the warm antique gold, emerald green accents and detailed hand-painted game art. Redesign and straighten this key: one perfectly straight rigid cylindrical golden shaft along a single unbroken axis, two subtle aligned collars, and a traditional broad stepped three-tooth key bit perpendicular to the shaft. Replace the irregular twisting branch-like bow with a balanced symmetrical open oval bow crowned by three small oak-leaf tips, one central faceted emerald set firmly at the junction between bow and shaft. Make the key look like a coherent forged metal object, elegant and sturdy, with controlled engraved oak-leaf details. Use a near-frontal view with modest visible metal thickness and no perspective distortion. Orient the whole straight key on one clean diagonal from lower left bit to upper right bow; the shaft, collar centers and middle of the bow must be exactly collinear, with no bend or offset. Preserve the rich honey-gold highlights, deep amber edges, fine painterly material detail and green jewel of the reference, but reduce the overgrown asymmetrical decoration. Center one complete key in a square canvas, full silhouette visible, about 12 percent transparent margin, readable at 180px. Actual transparent alpha background. No background, scenery, floor, pedestal, UI, text, numerals, logos or watermark. No twisted vine shaft, no bent metal, no warped key, no curled oversized branch bow, no second key. The result should fit the existing richly painted treasure-shop assets."
+    }
+  ]
+}

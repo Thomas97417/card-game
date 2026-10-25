@@ -1,0 +1,3 @@
+export const WORLD_CHAT_MESSAGE_LIMIT = 500;
+export const WORLD_CHAT_HISTORY_LIMIT = 100;
+export const WORLD_CHAT_SEND_INTERVAL_MS = 2_000;

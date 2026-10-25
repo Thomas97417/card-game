@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import { Check, CreditCard, LoaderCircle, ShieldCheck, X } from "lucide-react";
+import { Check, LoaderCircle, ShieldCheck, X } from "lucide-react";
 import {
   EMERALD_PACKS,
   type EmeraldPackId,
@@ -71,7 +71,6 @@ export function EmeraldPacks({
               key={pack.id}
               aria-labelledby={`emerald-pack-${pack.id}`}
             >
-              <span className="emerald-pack-tag">Achat ponctuel</span>
               <img
                 className="emerald-pack-art"
                 src={pack.image}
@@ -93,28 +92,19 @@ export function EmeraldPacks({
                 className="emerald-pack-button"
                 type="button"
                 disabled={!ready || !!busy || !offer?.available || !onPurchase}
+                aria-busy={working || !offers || undefined}
                 aria-label={`Acheter ${pack.emeralds.toLocaleString("fr-FR")} émeraudes — ${pack.name}${price ? `, ${price}` : ""}`}
+                title={
+                  !offers
+                    ? "Chargement du prix…"
+                    : !offer?.available
+                      ? "Ce pack est momentanément indisponible."
+                      : undefined
+                }
                 onClick={() => void buy(pack.id)}
               >
-                <span>
-                  {working ? (
-                    <LoaderCircle size={15} className="animate-spin" />
-                  ) : (
-                    <CreditCard size={15} />
-                  )}
-                  {working
-                    ? "Ouverture…"
-                    : !offers
-                      ? "Chargement…"
-                      : !offer?.available
-                        ? "Indisponible"
-                        : "Acheter"}
-                </span>
-                {price && <strong>{price}</strong>}
+                <strong>{price ?? "—"}</strong>
               </button>
-              <span className="emerald-pack-payment">
-                <ShieldCheck size={12} /> Paiement sécurisé · sans abonnement
-              </span>
             </article>
           );
         })}

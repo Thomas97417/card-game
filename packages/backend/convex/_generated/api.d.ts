@@ -17,6 +17,7 @@ import type * as games from "../games.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
+import type * as lib_chat from "../lib/chat.js";
 import type * as lib_game_service from "../lib/game_service.js";
 import type * as lib_missions from "../lib/missions.js";
 import type * as lib_polar_webhook from "../lib/polar_webhook.js";
@@ -30,6 +31,7 @@ import type * as polar from "../polar.js";
 import type * as privateData from "../privateData.js";
 import type * as sanctuary from "../sanctuary.js";
 import type * as sendEmails from "../sendEmails.js";
+import type * as worldChat from "../worldChat.js";
 
 import type {
   ApiFromModules,
@@ -47,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   healthCheck: typeof healthCheck;
   http: typeof http;
   "lib/catalogue": typeof lib_catalogue;
+  "lib/chat": typeof lib_chat;
   "lib/game_service": typeof lib_game_service;
   "lib/missions": typeof lib_missions;
   "lib/polar_webhook": typeof lib_polar_webhook;
@@ -60,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   privateData: typeof privateData;
   sanctuary: typeof sanctuary;
   sendEmails: typeof sendEmails;
+  worldChat: typeof worldChat;
 }>;
 
 /**

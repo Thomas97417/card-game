@@ -13,6 +13,8 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 const now = Date.parse("2026-10-21T12:00:00Z");
 
+vi.mock("./world-chat", () => ({ WorldChat: () => null }));
+
 describe("carnet de missions du hub", () => {
   it("opens from the dock, switches between three tabs, and supports keyboard navigation", () => {
     render(<HubDock missions={{ board: missionBoard(null, now), now }} />);
