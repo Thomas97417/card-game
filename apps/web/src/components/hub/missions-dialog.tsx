@@ -269,6 +269,24 @@ function MissionChestTrack({
   onOpen?: HubMissionsProps["onOpenChest"];
 }) {
   const maximum = track.chests.at(-1)?.threshold ?? 100;
+  const openedCount = track.chests.filter(
+    (chest) => chest.status === "claimed",
+  ).length;
+  const seals = Math.max(0, Math.min(maximum, track.seals));
+  const firstThreshold = track.chests[0]?.threshold ?? 0;
+  // The route connects the first and last chest centers, rather than zero seals.
+  const routeProgress =
+    maximum > firstThreshold
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            ((seals - firstThreshold) / (maximum - firstThreshold)) * 100,
+          ),
+        )
+      : seals >= maximum
+        ? 100
+        : 0;
   return (
     <div className="mission-track">
       <div className="mission-track-heading">
@@ -290,12 +308,16 @@ function MissionChestTrack({
         role="group"
         aria-label="Coffres de mission"
       >
-        <div className="mission-road-line" aria-hidden="true">
-          <span
-            style={{
-              width: `${Math.min(100, (track.seals / maximum) * 100)}%`,
-            }}
-          />
+        <div
+          className="mission-road-line"
+          role="progressbar"
+          aria-label="Progression des coffres de mission"
+          aria-valuemin={0}
+          aria-valuemax={maximum}
+          aria-valuenow={seals}
+          aria-valuetext={`${track.seals} sceaux sur ${maximum}, ${openedCount} coffres ouverts sur ${track.chests.length}`}
+        >
+          <span style={{ width: `${routeProgress}%` }} />
         </div>
         {track.chests.map((chest) => (
           <button
@@ -309,15 +331,23 @@ function MissionChestTrack({
             aria-label={`${chestName(chest.rarity)}, ${chest.threshold} sceaux, ${chest.status === "claimed" ? "récupéré" : chest.status === "ready" ? "ouvrir" : "verrouillé"}`}
             title={`${chestName(chest.rarity)} — ${chest.threshold} sceaux`}
           >
-            <img
-              src={`/art/chests/${chest.rarity}.webp`}
-              alt=""
-              width={88}
-              height={80}
-              draggable={false}
-            />
+            <span className="mission-chest-art">
+              <img
+                src={`/art/chests/${chest.rarity}.webp`}
+                alt=""
+                width={88}
+                height={80}
+                draggable={false}
+              />
+            </span>
             <span className="mission-chest-threshold">
-              {chest.status === "claimed" ? (
+              {pending === `${kind}-chest-${chest.index}` ? (
+                <LoaderCircle
+                  size={12}
+                  className="animate-spin"
+                  aria-hidden="true"
+                />
+              ) : chest.status === "claimed" ? (
                 <MissionCheck />
               ) : chest.status === "active" ? (
                 <LockKeyhole size={11} aria-hidden="true" />
@@ -328,10 +358,10 @@ function MissionChestTrack({
               {pending === `${kind}-chest-${chest.index}`
                 ? "Ouverture…"
                 : chest.status === "claimed"
-                  ? "Récupéré"
+                  ? "Ouvert"
                   : chest.status === "ready"
                     ? "Ouvrir"
-                    : "Sceaux"}
+                    : "Verrouillé"}
             </span>
           </button>
         ))}

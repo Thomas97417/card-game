@@ -28,7 +28,10 @@ describe("carnet de missions du hub", () => {
     expect(
       screen.getByRole("tab", { name: "Jour" }).getAttribute("aria-selected"),
     ).toBe("true");
-    expect(screen.getAllByRole("progressbar")).toHaveLength(5);
+    expect(
+      within(screen.getByRole("list", { name: "Missions du jour" }))
+        .getAllByRole("progressbar"),
+    ).toHaveLength(5);
     expect(
       screen
         .getByRole("group", { name: "Coffres de mission" })
@@ -79,6 +82,11 @@ describe("carnet de missions du hub", () => {
     const chests = within(
       screen.getByRole("group", { name: "Coffres de mission" }),
     );
+    expect(
+      screen
+        .getByRole("progressbar", { name: "Progression des coffres de mission" })
+        .getAttribute("aria-valuenow"),
+    ).toBe("20");
     fireEvent.click(chests.getByRole("button", { name: /20 sceaux, ouvrir/ }));
     expect(onOpenChest).toHaveBeenCalledExactlyOnceWith(
       "daily",

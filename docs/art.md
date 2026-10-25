@@ -1,5 +1,11 @@
 # Illustrations de Sylve
 
+## Coffres de missions par palier — 25 octobre 2026
+
+Les cinq coffres sont reliés par un chemin fin de 4 px qui traverse la rangée derrière les illustrations. Le remplissage doré s’arrête au centre du palier atteint ; les seuils intermédiaires sont interpolés entre les coffres. Les images restent opaques pour masquer le trait sous leur silhouette. Les coffres récupérés portent une coche dans leur pastille de seuil et le libellé « Ouvert » ; le coffre disponible possède une pastille et un halo dorés ; les suivants portent un cadenas. Les coffres restent directement sur le fond commun, sans écrin individuel ni jauge séparée.
+
+Les illustrations existantes sont conservées. Le rendu réel des missions quotidiennes et hebdomadaires a été contrôlé dans le navigateur sur ordinateur, à 390 px et à 320 px de large. Détails : [ordinateur](missions-chest-track-desktop.png), [mobile](missions-chest-track-mobile.png). Les 23 tests du hub, TypeScript et la compilation passent.
+
 ## Panneaux communautaires harmonisés — 25 octobre 2026
 
 Le classement, les missions et le chat mondial utilisent le même composant `HubPanel` : largeur maximale de **620 px**, marge latérale de 12 px sur petit écran, bord inférieur à **14 px au-dessus des raccourcis**. Le cadre vert forêt, les bordures dorées, l’en-tête et la fermeture sont partagés. Leur hauteur commune reprend celle des missions : **660 px**, limités par l’espace disponible. Les onglets des missions restent visibles pendant le défilement. Ouvrir un panneau replie le précédent ; le brouillon du chat est conservé.
