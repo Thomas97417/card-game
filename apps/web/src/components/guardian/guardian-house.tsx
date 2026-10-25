@@ -6,8 +6,9 @@ import {
   heroMight,
   type heroProgress,
 } from "@sylve/game";
-import { ArrowRight, ArrowUp, Check, Heart, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, Sparkles } from "lucide-react";
 import { GameHeader } from "@/components/game-header";
+import { GameIcon } from "@/components/game/game-icon";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
 import { GuardianLevelExplorer } from "./guardian-level-explorer";
@@ -93,7 +94,7 @@ export function GuardianHouse({
                 <div>
                   <dt>Points de vie</dt>
                   <dd>
-                    <Heart size={22} aria-hidden="true" />
+                    <GameIcon kind="health" size={28} />
                     {number(progress.health)}
                   </dd>
                 </div>
@@ -239,10 +240,6 @@ export function GuardianHouse({
                     <span>Niveau {progress.level}</span>
                   </header>
                   <HeroPowerList level={progress.level} />
-                  <p className="guardian-powers-note">
-                    En combat, utilise les pouvoirs dans l’ordre de la pile,
-                    avant de poser ta créature. Ils ne terminent pas ton tour.
-                  </p>
                 </section>
               </>
             ) : (

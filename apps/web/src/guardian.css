@@ -147,9 +147,6 @@
     400 13px/1 "Avenir Next",
     sans-serif;
 }
-.guardian-vitals svg {
-  color: #e4a18a;
-}
 .guardian-identity > .guardian-permanent {
   display: flex;
   justify-content: center;
@@ -323,12 +320,6 @@
 .guardian-powers .hero-power-list li {
   padding: 14px;
 }
-.guardian-powers-note {
-  margin: 18px 0 0;
-  color: #b6c3ab;
-  font-size: 11px;
-  line-height: 1.7;
-}
 .guardian-explore-levels {
   display: inline-flex;
   align-items: center;
@@ -482,9 +473,6 @@
   gap: 6px;
   color: #c8d0b7;
   font-size: 11px;
-}
-.guardian-level-metrics dt svg {
-  color: #e4a18a;
 }
 .guardian-level-metrics dd {
   display: flex;

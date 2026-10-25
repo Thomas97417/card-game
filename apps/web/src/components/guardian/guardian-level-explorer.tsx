@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   ChevronLeft,
   ChevronRight,
-  Heart,
   LockKeyhole,
 } from "lucide-react";
 import {
@@ -15,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AbilityIcon } from "@/components/game/ability-icons";
+import { GameIcon } from "@/components/game/game-icon";
 import type { HeroProgress } from "./guardian-house";
 
 const number = (value: number) => value.toLocaleString("fr-FR");
@@ -134,7 +134,7 @@ export function GuardianLevelExplorer({
           <dl className="guardian-level-metrics">
             <div>
               <dt>
-                <Heart size={15} aria-hidden="true" />
+                <GameIcon kind="health" size={18} />
                 Points de vie
               </dt>
               <dd>

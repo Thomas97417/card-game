@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Heart, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
+import { GameIcon } from "@/components/game/game-icon";
 import type { HeroProgress } from "./guardian-house";
 
 export function HeroProgressSummary({ progress }: { progress: HeroProgress }) {
@@ -10,7 +11,8 @@ export function HeroProgressSummary({ progress }: { progress: HeroProgress }) {
         <span>
           <strong>Gardien de la Sylve</strong>
           <small>
-            Niveau {progress.level} <Heart size={12} /> {progress.health} PV
+            Niveau {progress.level} <GameIcon kind="health" size={14} />{" "}
+            {progress.health} PV
           </small>
         </span>
       </Link>
