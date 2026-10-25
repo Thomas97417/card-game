@@ -126,6 +126,7 @@ export const createCheckout = action({
     });
     const checkoutUrl = new URL(checkout.url);
     checkoutUrl.searchParams.set("locale", "fr");
+    checkoutUrl.searchParams.set("theme", "dark");
     return { url: checkoutUrl.toString() };
   },
 });
