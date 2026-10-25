@@ -11,6 +11,8 @@ import {
 import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
+import { CurrencyGainProvider, useCurrencyGain } from "@/components/currency-gain";
+import type { MineBoard, MineKind } from "@sylve/game/mines";
 import { requireGameAuth } from "@/lib/game-auth";
 import {
   ChestRevealDialog,
@@ -29,15 +31,35 @@ export const Route = createFileRoute("/hub")({
           "Retrouve ton refuge : prépare tes decks à l’atelier, découvre les créatures du sanctuaire et rejoins l’arène.",
       },
     ],
-    links: [{ rel: "preload", as: "image", href: "/art/guardian-village.jpg" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
+    ],
   }),
   component: HubPage,
 });
 
 function HubPage() {
+  return (
+    <CurrencyGainProvider>
+      <HubContent />
+    </CurrencyGainProvider>
+  );
+}
+
+function HubContent() {
+  const showCurrencyGain = useCurrencyGain();
   const [now, setNow] = useState(Date.now);
   const [pending, setPending] = useState<string | null>(null);
   const [reward, setReward] = useState<ChestReveal | null>(null);
+  const [pendingMine, setPendingMine] = useState<MineKind | null>(null);
+  const mineInFlight = useRef(false);
+  const mineSnapshot = useQuery(api.collection.mineBoard, { refreshKey: now });
+  const [mines, setMines] = useState<MineBoard>();
+  useEffect(() => {
+    if (mineSnapshot) setMines(mineSnapshot);
+  }, [mineSnapshot]);
+  const ensureMines = useMutation(api.collection.ensureMines);
+  const collectMine = useMutation(api.collection.collectMine);
   const inFlight = useRef(false);
   const board = useQuery(api.missions.board, {
     refreshKey: missionPeriod("daily", now).key,
@@ -47,12 +69,28 @@ function HubPage() {
   const activity = useQuery(api.games.activity);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   useEffect(() => {
-    void ensureStarter().catch(showGameError);
-  }, [ensureStarter]);
+    void ensureStarter().then(() => ensureMines()).catch(showGameError);
+  }, [ensureStarter, ensureMines]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
   }, []);
+
+  async function collectResource(kind: MineKind) {
+    const state = mines?.mines?.[kind];
+    if (mineInFlight.current || !state) return;
+    mineInFlight.current = true;
+    setPendingMine(kind);
+    try {
+      const result = await collectMine({ kind, revision: state.revision });
+      if (result.amount > 0) showCurrencyGain(result.kind, result.amount);
+    } catch (error) {
+      showGameError(error);
+    } finally {
+      mineInFlight.current = false;
+      setPendingMine(null);
+    }
+  }
 
   async function claimMission(mission: MissionView) {
     if (inFlight.current) return;
@@ -98,6 +136,7 @@ function HubPage() {
     <>
       <VillageHub
         activity={activity}
+        mines={{ board: mines, pending: pendingMine, onCollect: collectResource }}
         missions={{
           board,
           now,

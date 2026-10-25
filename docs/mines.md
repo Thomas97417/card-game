@@ -1,0 +1,24 @@
+# Mines du refuge
+
+Les deux mines démarrent à la première visite du hub et produisent même hors connexion. Le niveau utilisé est le **niveau du Gardien**, conservé dans `heroes` et augmenté manuellement dans la Maison des gardiens lorsque la puissance du deck le permet. Le rang d’expérience des liens d’âme reste indépendant. Aucun niveau de mine séparé ni achat n’est nécessaire.
+
+| Mine | Production horaire | Capacité | Exemple au niveau 3 |
+| --- | --- | --- | --- |
+| Or | 6 × niveau du héros | 48 × niveau du héros | 18 pièces/h, réserve de 144 |
+| Émeraudes | 2 × niveau du héros | 16 × niveau du héros | 6 émeraudes/h, réserve de 48 |
+
+La réserve correspond à huit heures de production. Une fois pleine, la production s’arrête : les heures supplémentaires ne sont pas reportées. Les paramètres sont centralisés dans `packages/game/src/mines.ts`.
+
+Dès qu’une unité entière est disponible, une icône de monnaie et la quantité apparaissent au-dessus de la mine. Cliquer sur l’icône transfère toute la quantité entière disponible au portefeuille et conserve la fraction restante. La production reprend immédiatement après la collecte. Les deux réserves sont indépendantes. Les mines sont accessibles en parcourant la carte.
+
+Pendant la requête, l’icône, le libellé et le curseur restent visuellement identiques ; les clics supplémentaires sont bloqués. Après confirmation du serveur, une petite animation « + X » avec l’icône de la monnaie apparaît pendant deux secondes sous son compteur dans l’en-tête. Les deux monnaies ont des animations indépendantes, regroupées sous les compteurs sur mobile. Une collecte vide, déjà récupérée ou échouée ne déclenche aucun gain ; les erreurs restent signalées. Le déplacement de l’animation est supprimé lorsque les animations réduites sont demandées.
+
+L’état de chaque mine (réserve fractionnaire, date de calcul, niveau du héros et révision de collecte) est stocké dans le champ optionnel `wallets.mines`, compatible avec les anciens portefeuilles. L’initialisation est idempotente et conserve les soldes existants, dont un solde d’émeraudes nul. Le bonus de bienvenue reste attribué une seule fois selon les règles existantes.
+
+`collection.mineBoard` renvoie l’état privé du joueur avec l’heure serveur. Le client actualise l’affichage chaque seconde avec une horloge monotone et resynchronise la lecture toutes les trente secondes ; le paramètre de rafraîchissement sert uniquement à invalider le cache. Le serveur calcule les récompenses avec sa propre heure. Le client ne choisit ni le montant, ni le propriétaire, ni la date de production.
+
+`collection.collectMine` vérifie la révision et crédite le portefeuille dans la même transaction que la remise à zéro de la réserve. Les doubles clics, requêtes rejouées et collectes simultanées depuis plusieurs onglets ne peuvent pas créditer deux fois une réserve. Une collecte vide ne réinitialise pas le temps de production.
+
+Lors d’une promotion du Gardien, la transaction calcule d’abord la production et le plafond de l’ancien niveau, puis applique le nouveau rendement à partir de cet instant. Les heures passées ne sont jamais recalculées au nouveau niveau. Une simple amélioration de carte ou un gain d’expérience n’augmente pas le rendement sans promotion du Gardien.
+
+Le décor panoramique 3:1 conserve les cinq bâtiments existants et ajoute une mine d’or à l’ouest et une mine d’émeraudes à l’est. Les zones cliquables utilisent les coordonnées de cette nouvelle illustration. Le [manifeste ImageGen](art-prompts-hub-mines.json) conserve le prompt intégral et les chemins des images.
