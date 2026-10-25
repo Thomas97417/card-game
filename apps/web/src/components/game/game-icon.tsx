@@ -11,6 +11,9 @@ const ICON_ARTWORK = {
   guardian: "guardian-emblem",
   settings: "settings-gear",
   logout: "logout-door",
+  ranking: "ranking-trophy",
+  friends: "friends-handshake",
+  missions: "missions-scroll",
 } as const;
 
 export type GameIconKind = keyof typeof ICON_ARTWORK;

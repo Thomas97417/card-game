@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
+import { HubDock } from "./hub-dock";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { AbilityLegend } from "@/components/game/ability-legend";
@@ -247,7 +248,7 @@ export function VillageHub({ activity }: VillageHubProps) {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center bg-gradient-to-t from-[#112a22]/70 to-transparent px-4 pt-12 pb-5 sm:pb-7">
+        <div className="hub-map-controls pointer-events-none absolute inset-x-0 z-10 flex justify-center px-4">
           <p
             className={cn(
               "flex items-center gap-2 rounded-full border border-[#d1be85]/30 bg-[#1a3026]/70 px-4 py-2 text-[11px] text-[#fff0cb] backdrop-blur-sm",
@@ -291,6 +292,7 @@ export function VillageHub({ activity }: VillageHubProps) {
             </button>
           </div>
         </div>
+        <HubDock />
       </main>
 
       <DialogContent>

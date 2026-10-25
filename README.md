@@ -6,6 +6,8 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, au compte, aux règles et au sanctuaire d’invocation. La carte se parcourt à la molette, par glisser à la souris, au clavier et au tactile, avec une barre de défilement horizontale masquée.
 
+Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. Ces fonctions sociales sont présentées comme bientôt disponibles ; leurs panneaux permettent déjà de rejoindre l’arène et ses défis amicaux. La barre s’adapte aux écrans mobiles.
+
 ### Arène et trésors
 
 `/arena` ouvre l’arène illustrée en plein écran (`/play` redirige vers `/arena` et conserve les invitations) : le héros à gauche ouvre le deck, les boutons de combat sont à droite et neuf emplacements de trésors occupent le bas. Le premier contient le coffre commun de trois victoires. Cinq places de combat suivent : deux sont ouvertes au départ et trois se gagnent en Bronze IV (800 trophées), Argent IV (1 600) et Or IV (2 400). Les trois dernières s’achètent au sanctuaire avec des clés à 500, 1 000 et 1 500 émeraudes. Les places acquises restent ouvertes après rétrogradation. La rangée se parcourt à la molette, au tactile, au clavier et par glisser à la souris, avec une barre de défilement masquée. Les illustrations originales reprennent l’univers peint de Sylve.
