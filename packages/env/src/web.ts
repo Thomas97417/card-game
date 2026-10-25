@@ -7,6 +7,10 @@ export const env = createEnv({
     VITE_CONVEX_URL: z.url(),
     VITE_CONVEX_SITE_URL: z.url(),
   },
-  runtimeEnv: (import.meta as any).env,
+  // Refer to each public value explicitly so Vite does not bundle the entire env.
+  runtimeEnvStrict: {
+    VITE_CONVEX_URL: (import.meta as any).env.VITE_CONVEX_URL,
+    VITE_CONVEX_SITE_URL: (import.meta as any).env.VITE_CONVEX_SITE_URL,
+  },
   emptyStringAsUndefined: true,
 });
