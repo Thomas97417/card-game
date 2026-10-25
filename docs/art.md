@@ -1,5 +1,13 @@
 # Illustrations de Sylve
 
+## Coffres de missions réellement ouverts — 25 octobre 2026
+
+Trois versions ouvertes ont été générées avec **ImageGen intégré**, en éditant séparément les coffres fermés correspondants : `apps/web/public/art/chests/common-open.webp`, `rare-open.webp` et `bigRare-open.webp`. Leurs matériaux, couleurs et perspective sont conservés ; le couvercle est relevé et l’intérieur vide est visible. Les fichiers sont en **WebP de 512 × 512 px avec alpha**, vérifié par `webpinfo`. Le [manifeste](art-prompts-open-chests.json) conserve les trois prompts, les références et les PNG sources.
+
+Le chemin des missions affiche ces images dès que le coffre passe à l’état récupéré. Les coffres ouverts gardent leurs couleurs pour que l’intérieur et le couvercle restent lisibles. Le passage de l’image fermée à l’image ouverte et la désactivation après récupération sont vérifiés par le test existant des récompenses.
+
+Le rendu réel a été contrôlé dans le navigateur à **1280 × 720** et **390 × 844 px**, avec trois coffres communs récupérés, un disponible et un verrouillé : [ordinateur](missions-open-chests-desktop.png), [mobile](missions-open-chests-mobile.png). Les 23 tests du hub, TypeScript et la compilation passent.
+
 ## Coffres de missions par palier — 25 octobre 2026
 
 Les cinq coffres sont reliés par un chemin fin de 4 px qui traverse la rangée derrière les illustrations. Le remplissage doré s’arrête au centre du palier atteint ; les seuils intermédiaires sont interpolés entre les coffres. Les images restent opaques pour masquer le trait sous leur silhouette. Les coffres récupérés portent une coche dans leur pastille de seuil et le libellé « Ouvert » ; le coffre disponible possède une pastille et un halo dorés ; les suivants portent un cadenas. Les coffres restent directement sur le fond commun, sans écrin individuel ni jauge séparée.

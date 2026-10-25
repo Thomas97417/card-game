@@ -333,7 +333,7 @@ function MissionChestTrack({
           >
             <span className="mission-chest-art">
               <img
-                src={`/art/chests/${chest.rarity}.webp`}
+                src={`/art/chests/${chest.rarity}${chest.status === "claimed" ? "-open" : ""}.webp`}
                 alt=""
                 width={88}
                 height={80}

@@ -71,7 +71,9 @@ describe("carnet de missions du hub", () => {
     const board = missionBoard(state, now);
     const onClaim = vi.fn();
     const onOpenChest = vi.fn();
-    render(<HubDock missions={{ board, now, onClaim, onOpenChest }} />);
+    const { rerender } = render(
+      <HubDock missions={{ board, now, onClaim, onOpenChest }} />,
+    );
     expect(screen.getByLabelText("Récompenses à récupérer")).toBeTruthy();
     expect(onClaim).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /Missions/ }));
@@ -87,7 +89,11 @@ describe("carnet de missions du hub", () => {
         .getByRole("progressbar", { name: "Progression des coffres de mission" })
         .getAttribute("aria-valuenow"),
     ).toBe("20");
-    fireEvent.click(chests.getByRole("button", { name: /20 sceaux, ouvrir/ }));
+    const readyChest = chests.getByRole("button", { name: /20 sceaux, ouvrir/ });
+    expect(readyChest.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/chests/common.webp",
+    );
+    fireEvent.click(readyChest);
     expect(onOpenChest).toHaveBeenCalledExactlyOnceWith(
       "daily",
       board.daily,
@@ -115,6 +121,15 @@ describe("carnet de missions du hub", () => {
         .getByRole("link", { name: "Aller : Un peu plus fort" })
         .getAttribute("href"),
     ).toBe("/decks");
+    state.daily.chests.push({ index: 0, rarity: "common", reveals: [], gold: 0 });
+    rerender(
+      <HubDock missions={{ board: missionBoard(state, now), now, onClaim, onOpenChest }} />,
+    );
+    const openedChest = chests.getByRole("button", { name: /20 sceaux, récupéré/ });
+    expect((openedChest as HTMLButtonElement).disabled).toBe(true);
+    expect(openedChest.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/chests/common-open.webp",
+    );
   });
 
   it("disables reward actions while a request is pending and reflects claimed rewards immediately", () => {
