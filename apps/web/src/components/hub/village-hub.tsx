@@ -159,7 +159,7 @@ export function VillageHub({ activity, missions, mines }: VillageHubProps) {
           />
 
           <nav aria-label="Bâtiments du refuge">
-            <MineBuildings {...(mines ?? { pending: null, onCollect: () => {} })} />
+            <MineBuildings {...(mines ?? { pending: [], onCollect: () => {} })} />
             {PLACES.map((place) => {
               const content = (
                 <BuildingLabel

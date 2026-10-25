@@ -16,7 +16,7 @@ afterEach(() => vi.useRealTimers());
 describe("mines du refuge", () => {
   it("shows both reserves, production and collectible currency icons", () => {
     const onCollect = vi.fn();
-    render(<MineBuildings board={board} pending={null} onCollect={onCollect} />);
+    render(<MineBuildings board={board} pending={[]} onCollect={onCollect} />);
     const gold = screen.getByRole("button", { name: "Récupérer 12 pièces d’or" });
     const emeralds = screen.getByRole("button", { name: "Récupérer 4 émeraudes" });
     fireEvent.click(gold);
@@ -28,12 +28,12 @@ describe("mines du refuge", () => {
   it("blocks duplicate collections without replacing the icon or changing the label", () => {
     const onCollect = vi.fn();
     const full = { ...board, serverNow: board.serverNow + 12 * HOUR_MS };
-    const { rerender } = render(<MineBuildings board={full} pending={null} onCollect={onCollect} />);
+    const { rerender } = render(<MineBuildings board={full} pending={[]} onCollect={onCollect} />);
     const gold = screen.getByRole("button", { name: "Récupérer 96 pièces d’or" });
     const label = gold.textContent;
     const icon = gold.querySelector("img")?.getAttribute("src");
     fireEvent.click(gold);
-    rerender(<MineBuildings board={full} pending="gold" onCollect={onCollect} />);
+    rerender(<MineBuildings board={full} pending={["gold"]} onCollect={onCollect} />);
     expect(gold.hasAttribute("disabled")).toBe(true);
     expect(gold.getAttribute("aria-busy")).toBe("true");
     expect(gold.textContent).toBe(label);
@@ -41,7 +41,7 @@ describe("mines du refuge", () => {
     expect(screen.queryByText("Collecte…")).toBeNull();
     fireEvent.click(gold);
     expect(onCollect).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("button", { name: "Récupérer 32 émeraudes" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "Récupérer 32 émeraudes" }).hasAttribute("disabled")).toBe(false);
     expect(screen.getAllByText("Production en pause")).toHaveLength(2);
   });
 
@@ -51,7 +51,7 @@ describe("mines du refuge", () => {
       gold: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },
       emeralds: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },
     } };
-    const props = { pending: null, onCollect: vi.fn() } as const;
+    const props = { pending: [], onCollect: vi.fn() } as const;
     const { rerender } = render(<MineBuildings {...props} board={empty} />);
     expect(screen.queryByRole("button", { name: /Récupérer/ })).toBeNull();
     act(() => vi.advanceTimersByTime(600_000));

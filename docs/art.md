@@ -1,5 +1,11 @@
 # Illustrations de Sylve
 
+## Collecte optimiste des mines — 26 octobre 2026
+
+Le retour visuel de collecte démarre désormais dès le clic : le cache Convex crédite provisoirement le compteur concerné, vide la réserve affichée et déclenche le « + X » avec son icône. La validation transactionnelle reste côté serveur. Une réponse identique ne rejoue pas l’animation et n’ajoute aucun second crédit ; un montant différent corrige l’affichage, et un refus retire l’animation puis restaure automatiquement les valeurs serveur. Chaque mine possède sa propre protection contre les doubles clics, ce qui permet de récupérer les deux monnaies sans attendre entre les clics.
+
+Les positions et animations de l’en-tête restent celles du retour visuel ci-dessous. Les tests couvrent les deux monnaies, les collectes simultanées, les fractions, les plafonds, les révisions déjà récupérées, les reprises du cache, le rafraîchissement pendant une requête, les erreurs et les nouvelles tentatives.
+
 ## Collecte discrète et gains dans l’en-tête — 26 octobre 2026
 
 La collecte des mines garde l’icône, le libellé et le curseur identiques pendant la requête. Les clics supplémentaires restent bloqués. Après confirmation du serveur, un petit « + X » accompagné de l’icône peinte de la monnaie apparaît pendant deux secondes sous son compteur, puis monte légèrement et s’efface. Cette animation remplace la notification de succès des mines. Les erreurs continuent d’être signalées et une collecte vide ou déjà traitée n’affiche aucun gain.

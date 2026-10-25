@@ -15,33 +15,41 @@ type Gain = { id: number; amount: number };
 type Gains = Partial<Record<MineKind, Gain>>;
 const CurrencyGainContext = createContext<{
   gains: Gains;
-  showGain: (currency: MineKind, amount: number) => void;
-}>({ gains: {}, showGain: () => {} });
+  showGain: (currency: MineKind, amount: number) => () => void;
+}>({ gains: {}, showGain: () => () => {} });
 
 export function CurrencyGainProvider({ children }: { children: ReactNode }) {
   const [gains, setGains] = useState<Gains>({});
   const nextId = useRef(0);
   const mounted = useRef(true);
-  const timers = useRef<Partial<Record<MineKind, number>>>({});
+  const timers = useRef<Partial<Record<MineKind, { id: number; timer: number }>>>({});
   const showGain = useCallback((currency: MineKind, amount: number) => {
-    if (!mounted.current || !Number.isSafeInteger(amount) || amount <= 0) return;
+    if (!mounted.current || !Number.isSafeInteger(amount) || amount <= 0)
+      return () => {};
     const gain = { id: ++nextId.current, amount };
-    window.clearTimeout(timers.current[currency]);
+    window.clearTimeout(timers.current[currency]?.timer);
     setGains((current) => ({ ...current, [currency]: gain }));
-    timers.current[currency] = window.setTimeout(() => {
+    const dismiss = () => {
+      if (!mounted.current || timers.current[currency]?.id !== gain.id) return;
+      window.clearTimeout(timers.current[currency]?.timer);
+      delete timers.current[currency];
       setGains((current) => {
         if (current[currency]?.id !== gain.id) return current;
         return { ...current, [currency]: undefined };
       });
-      delete timers.current[currency];
-    }, GAIN_DURATION_MS);
+    };
+    timers.current[currency] = {
+      id: gain.id,
+      timer: window.setTimeout(dismiss, GAIN_DURATION_MS),
+    };
+    return dismiss;
   }, []);
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      for (const timer of Object.values(timers.current)) window.clearTimeout(timer);
+      for (const entry of Object.values(timers.current)) window.clearTimeout(entry.timer);
     };
   }, []);
 

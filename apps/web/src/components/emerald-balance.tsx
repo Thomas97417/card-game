@@ -5,10 +5,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Link } from "@tanstack/react-router";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { showGameError } from "@/components/game/shared";
+import { useGameAuth } from "@/hooks/use-game-auth";
 
 export const EmeraldContext = createContext<number | null | undefined>(null);
 
@@ -18,7 +19,7 @@ const EMERALD_SHOP_SCROLL: ScrollIntoViewOptions = {
 };
 
 export function EmeraldProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated } = useGameAuth();
   // Retain the existing wallet endpoint so players keep their currency balance.
   const emeralds = useQuery(
     api.collection.diamonds,

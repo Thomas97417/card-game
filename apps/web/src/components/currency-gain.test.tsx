@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useRef } from "react";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CurrencyGainProvider, useCurrencyGain } from "./currency-gain";
@@ -17,12 +18,14 @@ vi.mock("@tanstack/react-router", () => ({
 
 function CollectButtons() {
   const showGain = useCurrencyGain();
+  const cancelGold = useRef(() => {});
   return (
     <>
-      <button onClick={() => showGain("gold", 12)}>Or confirmé</button>
+      <button onClick={() => { cancelGold.current = showGain("gold", 12); }}>Or confirmé</button>
       <button onClick={() => showGain("gold", 3)}>Nouvel or confirmé</button>
       <button onClick={() => showGain("emeralds", 4)}>Émeraudes confirmées</button>
       <button onClick={() => showGain("gold", 0)}>Collecte déjà récupérée</button>
+      <button onClick={() => cancelGold.current()}>Annuler la première collecte</button>
     </>
   );
 }
@@ -84,5 +87,24 @@ describe("gains sous les compteurs du header", () => {
     expect(screen.getByRole("status", { name: "Or récupéré" }).textContent).toContain("+ 3");
     unmount();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("withdraws a rejected gain without removing the other currency", () => {
+    fixture();
+    fireEvent.click(screen.getByRole("button", { name: "Or confirmé" }));
+    fireEvent.click(screen.getByRole("button", { name: "Émeraudes confirmées" }));
+    fireEvent.click(screen.getByRole("button", { name: "Annuler la première collecte" }));
+    expect(screen.queryByRole("status", { name: "Or récupéré" })).toBeNull();
+    expect(screen.getByRole("status", { name: "Émeraudes récupérées" })).toBeTruthy();
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it("never lets an old rejection dismiss a newer animation of the same currency", () => {
+    fixture();
+    fireEvent.click(screen.getByRole("button", { name: "Or confirmé" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nouvel or confirmé" }));
+    fireEvent.click(screen.getByRole("button", { name: "Annuler la première collecte" }));
+    expect(screen.getByRole("status", { name: "Or récupéré" }).textContent).toContain("+ 3");
+    expect(vi.getTimerCount()).toBe(1);
   });
 });

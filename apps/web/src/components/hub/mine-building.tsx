@@ -12,7 +12,7 @@ import { EmeraldIcon } from "@/components/emerald-balance";
 
 export interface HubMinesProps {
   board?: MineBoard;
-  pending: MineKind | null;
+  pending: readonly MineKind[];
   onCollect: (kind: MineKind) => void;
 }
 
@@ -65,7 +65,7 @@ function MineBuilding({
         : "émeraude"
       : unit;
   const ready = !!view && view.available > 0;
-  const collecting = pending === kind;
+  const collecting = pending.includes(kind);
   const minutes = view ? Math.max(1, Math.ceil(view.nextInMs / 60_000)) : 0;
   const Icon = kind === "gold" ? GoldIcon : EmeraldIcon;
 
@@ -84,7 +84,7 @@ function MineBuilding({
           aria-label={`Récupérer ${view.available.toLocaleString("fr-FR")} ${collectUnit}`}
           aria-describedby={descriptionId}
           aria-busy={collecting}
-          disabled={pending !== null}
+          disabled={collecting}
           onClick={() => onCollect(kind)}
         >
           <span className="hub-mine-collect-art" aria-hidden="true">
