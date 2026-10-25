@@ -160,14 +160,6 @@ export function WorldChat({
           </h2>
           <p>Le rendez-vous des gardiens</p>
         </div>
-        <span
-          className="hub-world-chat-status"
-          role="status"
-          data-connected={isWebSocketConnected}
-        >
-          <span aria-hidden="true" />
-          {isWebSocketConnected ? "En direct" : "Reconnexion…"}
-        </span>
         <button
           type="button"
           className="hub-world-chat-close"

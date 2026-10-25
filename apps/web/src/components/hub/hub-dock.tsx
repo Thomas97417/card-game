@@ -17,7 +17,8 @@ const DESTINATIONS = [
     label: "Classement",
     icon: "ranking",
     description: "Le classement mondial des gardiens arrive bientôt.",
-    detail: "Retrouve ici les gardiens au sommet des ligues et mesure ton avancée dans la Sylve.",
+    detail:
+      "Retrouve ici les gardiens au sommet des ligues et mesure ton avancée dans la Sylve.",
     action: "Gagner des trophées",
   },
   {
@@ -25,7 +26,8 @@ const DESTINATIONS = [
     label: "Amis",
     icon: "friends",
     description: "La liste d’amis arrive bientôt au refuge.",
-    detail: "En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou en rejoignant un défi amical.",
+    detail:
+      "En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou en rejoignant un défi amical.",
     action: "Lancer un défi amical",
   },
   {
@@ -33,7 +35,8 @@ const DESTINATIONS = [
     label: "Missions",
     icon: "missions",
     description: "De nouvelles missions se préparent dans la Sylve.",
-    detail: "En attendant, remporte trois victoires dans l’arène pour déverrouiller ton coffre commun.",
+    detail:
+      "En attendant, remporte trois victoires dans l’arène pour déverrouiller ton coffre commun.",
     action: "Rejoindre l’arène",
   },
 ] as const satisfies readonly {
@@ -87,27 +90,29 @@ export function HubDock() {
           ))}
         </nav>
 
-        <div className="hub-chat-frame">
-          <button
-            ref={chatTrigger}
-            type="button"
-            className="hub-chat-toggle"
-            aria-expanded={chatOpen}
-            aria-controls={chatOpen ? chatId : undefined}
-            onClick={() => setChatOpen((open) => !open)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape" && chatOpen) {
-                event.stopPropagation();
-                closeChat();
-              }
-            }}
-          >
-            <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
-            <span className="hub-chat-label">Chat mondial</span>
-            <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
-            <ChevronUp size={17} className="hub-chat-chevron" aria-hidden="true" />
-          </button>
-        </div>
+        <button
+          ref={chatTrigger}
+          type="button"
+          className="hub-chat-toggle"
+          aria-expanded={chatOpen}
+          aria-controls={chatOpen ? chatId : undefined}
+          onClick={() => setChatOpen((open) => !open)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && chatOpen) {
+              event.stopPropagation();
+              closeChat();
+            }
+          }}
+        >
+          <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
+          <span className="hub-chat-label">Chat mondial</span>
+          <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
+          <ChevronUp
+            size={17}
+            className="hub-chat-chevron"
+            aria-hidden="true"
+          />
+        </button>
       </div>
 
       <DialogContent appearance="game" className="hub-destination-dialog">
@@ -118,9 +123,7 @@ export function HubDock() {
         />
         <span className="hub-coming-soon">Bientôt disponible</span>
         <DialogTitle>{activeDestination.label}</DialogTitle>
-        <DialogDescription>
-          {activeDestination.description}
-        </DialogDescription>
+        <DialogDescription>{activeDestination.description}</DialogDescription>
         <p className="hub-destination-detail">{activeDestination.detail}</p>
         <Link to="/arena" className="sylve-button">
           {activeDestination.action} <ArrowRight size={15} aria-hidden="true" />
