@@ -9,7 +9,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -67,9 +66,6 @@ export function GuardianLevelExplorer({
         <DialogTitle ref={titleRef} tabIndex={-1}>
           Parcours du Gardien
         </DialogTitle>
-        <DialogDescription>
-          Explore les {maxLevel} niveaux et leurs pouvoirs.
-        </DialogDescription>
         <div className="guardian-level-controls">
           <div className="guardian-level-selector">
             <button

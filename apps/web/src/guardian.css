@@ -147,14 +147,6 @@
     400 13px/1 "Avenir Next",
     sans-serif;
 }
-.guardian-identity > .guardian-permanent {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #d6dfbf;
-}
 .guardian-panels {
   display: grid;
   gap: 20px;
@@ -305,13 +297,7 @@
   color: #fff0bc;
 }
 .guardian-powers > .guardian-panel-heading {
-  justify-content: space-between;
   margin-bottom: 20px;
-}
-.guardian-powers > header > span {
-  color: #c2cba9;
-  font-size: 11px;
-  white-space: nowrap;
 }
 .guardian-powers .hero-power-list {
   margin: 0;
@@ -353,16 +339,11 @@
   overflow: hidden;
   padding: 24px;
 }
-.guardian-level-dialog
-  :is(h2, [data-slot="dialog-description"], .guardian-level-controls) {
+.guardian-level-dialog :is(h2, .guardian-level-controls) {
   flex-shrink: 0;
 }
 .guardian-level-dialog [data-slot="dialog-title"] {
   font-size: 29px;
-}
-.guardian-level-dialog [data-slot="dialog-description"] {
-  margin-top: 8px;
-  font-size: 12px;
 }
 .guardian-level-controls {
   margin-block: 16px;

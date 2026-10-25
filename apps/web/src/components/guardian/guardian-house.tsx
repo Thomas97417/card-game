@@ -6,7 +6,7 @@ import {
   heroMight,
   type heroProgress,
 } from "@sylve/game";
-import { ArrowRight, ArrowUp, Check, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
 import { GameHeader } from "@/components/game-header";
 import { GameIcon } from "@/components/game/game-icon";
 import { HeroPowerList } from "@/components/game/hero-power-list";
@@ -100,10 +100,6 @@ export function GuardianHouse({
                 </div>
               </dl>
             )}
-            <p className="guardian-permanent">
-              <Check size={14} aria-hidden="true" />
-              Les niveaux acquis sont permanents.
-            </p>
             {progress && <GuardianLevelExplorer progress={progress} />}
           </section>
 
@@ -237,7 +233,6 @@ export function GuardianHouse({
                 >
                   <header className="guardian-panel-heading">
                     <h2 id="guardian-powers-title">Pouvoirs du Gardien</h2>
-                    <span>Niveau {progress.level}</span>
                   </header>
                   <HeroPowerList level={progress.level} />
                 </section>
