@@ -168,7 +168,8 @@
   outline-offset: -2px;
 }
 .emerald-shop,
-.gold-shop {
+.gold-shop,
+.sanctuary-chest-keys {
   display: flex;
   flex: none;
   flex-direction: column;
@@ -176,17 +177,17 @@
   width: max-content;
 }
 .emerald-pack-grid,
-.gold-pack-grid {
+.gold-pack-grid,
+.sanctuary-key-grid {
   display: grid;
   flex: 1;
-  grid-template-columns: repeat(5, var(--sanctuary-key-width));
+  grid-auto-flow: column;
+  grid-auto-columns: var(--sanctuary-key-width);
   gap: var(--sanctuary-offer-gap);
 }
-.gold-pack-grid {
-  grid-template-columns: repeat(2, var(--sanctuary-key-width));
-}
 .emerald-pack,
-.gold-pack {
+.gold-pack,
+.sanctuary-key-card {
   position: relative;
   display: flex;
   align-items: center;
@@ -203,7 +204,8 @@
     inset 0 1px #f7dc9d22;
   text-align: center;
 }
-.gold-pack {
+.gold-pack,
+.sanctuary-key-card {
   background:
     radial-gradient(ellipse at 50% 32%, #e8b64c24, transparent 65%),
     linear-gradient(155deg, #3d4930f2, #192c20f5);
@@ -252,13 +254,14 @@
   height: 30px;
 }
 .emerald-pack-button,
-.gold-pack-button {
+.gold-pack-button,
+.sanctuary-key-button {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   width: 100%;
-  min-height: 46px;
+  min-height: 48px;
   margin-top: auto;
   padding: 10px 13px;
   border: 1px solid #dfbe79b3;
@@ -270,7 +273,8 @@
     0 3px 0 #071c1766;
   font-size: 11px;
 }
-.gold-pack-button {
+.gold-pack-button,
+.sanctuary-key-button {
   border-color: #a4d29a9c;
   background: linear-gradient(#3f7046, #295234);
   color: #e1f7d3;
@@ -286,19 +290,23 @@
   font-size: 15px;
   font-weight: 700;
 }
-.gold-pack-button .emerald-icon {
+.gold-pack-button .emerald-icon,
+.sanctuary-key-button .emerald-icon {
   width: 26px;
   height: 26px;
 }
 .emerald-pack-button:hover:not(:disabled),
-.gold-pack-button:hover:not(:disabled) {
+.gold-pack-button:hover:not(:disabled),
+.sanctuary-key-button:hover:not(:disabled) {
   filter: brightness(1.15);
 }
 .emerald-pack-button:disabled,
-.gold-pack-button:disabled {
+.gold-pack-button:disabled,
+.sanctuary-key-button:disabled {
   opacity: 0.55;
 }
-.gold-pack-button:focus-visible {
+.gold-pack-button:focus-visible,
+.sanctuary-key-button:focus-visible {
   outline: 2px solid #ffe0a0;
   outline-offset: 3px;
 }
@@ -363,65 +371,7 @@
   gap: var(--sanctuary-offer-gap);
 }
 .sanctuary-chest-keys {
-  display: flex;
-  flex: none;
   scroll-margin-block: 16px;
-}
-.sanctuary-key-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: var(--sanctuary-key-width);
-  gap: var(--sanctuary-offer-gap);
-}
-.sanctuary-key-card {
-  position: relative;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px 18px 17px;
-  border: 1px solid #c5a66b99;
-  border-radius: 12px 12px 22px 22px;
-  background:
-    radial-gradient(ellipse at 50% 15%, #a58b402b, transparent 65%),
-    linear-gradient(155deg, #283e2ced, #10281ff5);
-  box-shadow:
-    0 10px 24px #051c1566,
-    inset 0 1px #f7dc9d22;
-}
-.sanctuary-key-copy {
-  text-align: center;
-}
-.sanctuary-key-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 43px;
-  margin-top: auto;
-  padding: 7px 10px;
-  border: 1px solid #87b67a99;
-  border-radius: 6px;
-  background: linear-gradient(#395b36, #244b30);
-  color: #edebc4;
-  font-size: 10px;
-  font-weight: 600;
-}
-.sanctuary-key-button .emerald-icon {
-  width: 24px;
-  height: 24px;
-}
-.sanctuary-key-button:hover:not(:disabled) {
-  border-color: #e4d18c;
-  filter: brightness(1.15);
-}
-.sanctuary-key-button:disabled {
-  opacity: 0.6;
-}
-.sanctuary-key-button:focus-visible {
-  outline: 2px solid #ffe0a0;
-  outline-offset: 3px;
 }
 .sanctuary-feedback.sanctuary-key-success {
   position: absolute;
@@ -1314,9 +1264,6 @@
     --sanctuary-pack-width: min(380px, calc(100vw - 48px));
     --sanctuary-key-width: min(280px, calc(100vw - 48px));
     --sanctuary-offer-gap: 16px;
-  }
-  .sanctuary-key-card {
-    padding-inline: 12px;
   }
   .currency-balances {
     gap: 5px;
