@@ -422,8 +422,8 @@ describe("inspection pendant un duel", () => {
             target === "own deck"
               ? "Voir mon deck"
               : own
-                ? `Voir ton héros, Alice, ${player.heroHp} PV`
-                : `Voir le héros adverse, Bob, ${player.heroHp} PV`,
+                ? `Voir Alice, ${player.heroHp} PV`
+                : `Voir Bob, ${player.heroHp} PV`,
         }),
       );
       expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(

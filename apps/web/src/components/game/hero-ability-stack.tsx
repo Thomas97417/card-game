@@ -1,5 +1,5 @@
 import { heroAbilities, type GameView, type HeroAbilityId } from "@sylve/game";
-import { Info, LockKeyhole } from "lucide-react";
+import { Check, Info, LockKeyhole } from "lucide-react";
 import { AbilityIcon } from "./ability-icons";
 
 export function HeroAbilityStack({
@@ -19,6 +19,11 @@ export function HeroAbilityStack({
   const uses = player.heroAbilityUses ?? 0;
   const abilities = heroAbilities(player.heroLevel, uses, turn);
   const ability = abilities[Math.min(3, uses)]!;
+  const unlocked = abilities
+    .slice(0, 3)
+    .filter((a) => a.unlockLevel <= player.heroLevel!);
+  const hasNextPower = ability.unlockLevel <= player.heroLevel;
+  const remaining = unlocked.filter((a) => a.state !== "used").length;
   const deathCards = Math.max(
     0,
     Math.ceil(turn / 2) - 10 - Math.max(0, uses - 3),
@@ -49,42 +54,53 @@ export function HeroAbilityStack({
           <Info size={14} />
         </button>
       </div>
-      <div
-        className="hero-power-cards"
-        data-remaining={uses < 3 ? 3 - uses : Math.max(1, deathCards)}
-      >
-        <button
-          type="button"
-          className="hero-power-card"
-          data-ready={ready && canUse}
-          disabled={!canUse || !ready}
-          title={`${ability.name}. ${ability.description} ${label}.`}
-          aria-label={`Utiliser ${ability.name}. ${ability.description} ${label}.`}
-          onClick={() => onUse(ability.id, uses)}
-        >
-          <span className="hero-power-number">
-            {uses < 3
-              ? `${uses + 1} / 3`
-              : deathCards
-                ? `${deathCards} en pile`
-                : "∞"}
+      {hasNextPower ? (
+        <>
+          <div
+            className="hero-power-cards"
+            data-remaining={uses < 3 ? remaining : Math.max(1, deathCards)}
+          >
+            <button
+              type="button"
+              className="hero-power-card"
+              data-ready={ready && canUse}
+              disabled={!canUse || !ready}
+              title={`${ability.name}. ${ability.description} ${label}.`}
+              aria-label={`Utiliser ${ability.name}. ${ability.description} ${label}.`}
+              onClick={() => onUse(ability.id, uses)}
+            >
+              <span className="hero-power-number">
+                {uses < 3
+                  ? `${uses + 1} / ${unlocked.length}`
+                  : deathCards
+                    ? `${deathCards} en pile`
+                    : "∞"}
+              </span>
+              <AbilityIcon kind={icon} />
+              <strong>{ability.name}</strong>
+              <span className="hero-power-value">
+                {ability.id === "call_to_arms"
+                  ? "2 renforts"
+                  : ability.id === "heavenly_power"
+                    ? `+${ability.value} ATQ`
+                    : `${ability.value} dégâts`}
+              </span>
+              <span className="hero-power-status">
+                {!ready && <LockKeyhole size={10} />}
+                {label}
+              </span>
+            </button>
+          </div>
+          <span className="hero-power-hint">Avant ta créature</span>
+        </>
+      ) : (
+        <div className="hero-power-exhausted" role="status">
+          <Check size={20} />
+          <span>
+            {unlocked.length === 1 ? "Pouvoir utilisé" : "Pouvoirs utilisés"}
           </span>
-          <AbilityIcon kind={icon} />
-          <strong>{ability.name}</strong>
-          <span className="hero-power-value">
-            {ability.id === "call_to_arms"
-              ? "2 renforts"
-              : ability.id === "heavenly_power"
-                ? `+${ability.value} ATQ`
-                : `${ability.value} dégâts`}
-          </span>
-          <span className="hero-power-status">
-            {!ready && <LockKeyhole size={10} />}
-            {label}
-          </span>
-        </button>
-      </div>
-      <span className="hero-power-hint">Avant ta créature</span>
+        </div>
+      )}
     </aside>
   );
 }

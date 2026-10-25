@@ -82,13 +82,32 @@ describe("interface des héros", () => {
     expect(actions.onPlayCard).not.toHaveBeenCalled();
     expect(actions.onEndTurn).not.toHaveBeenCalled();
   });
-  it.each(["level", "turn", "opponent", "deployed"])(
+  it("removes level-locked powers from the pile after the only unlocked power is spent", () => {
+    const state = fixture(1, 13, 1);
+    const actions = callbacks();
+    render(
+      <DuelScreen
+        data={{ ...playerView(state, "alice"), events: [] }}
+        {...actions}
+        practice
+      />,
+    );
+    const pile = within(
+      screen.getByRole("complementary", { name: "Pouvoirs du héros" }),
+    );
+    expect(pile.queryByRole("button", { name: /^Utiliser / })).toBeNull();
+    expect(pile.getByText("Pouvoir utilisé")).toBeTruthy();
+    expect(pile.queryByText("Appel des éclaireurs")).toBeNull();
+    expect(pile.queryByText(/Niveau 11/)).toBeNull();
+    expect(actions.onHeroAbility).not.toHaveBeenCalled();
+  });
+  it.each(["turn", "opponent", "deployed"])(
     "locks a spell for %s and explains its unlock",
     (reason) => {
       const state = fixture(
-        reason === "level" ? 1 : 21,
+        21,
         reason === "turn" ? 3 : 13,
-        reason === "level" || reason === "turn" ? 1 : 0,
+        reason === "turn" ? 1 : 0,
       );
       if (reason === "opponent") state.activePlayer = 1;
       if (reason === "deployed") state.hasSummoned = true;
@@ -106,8 +125,41 @@ describe("interface des héros", () => {
       expect(button.hasAttribute("disabled")).toBe(true);
       fireEvent.click(button);
       expect(actions.onHeroAbility).not.toHaveBeenCalled();
-      if (reason === "level") expect(button.textContent).toContain("Niveau 11");
       if (reason === "turn") expect(button.textContent).toContain("Ton tour 3");
+    },
+  );
+  it.each(["alice", "bob"])(
+    "shows only unlocked powers and their spent state in %s's widened panel",
+    async (name) => {
+      const state = fixture(11, 13, 1);
+      state.players[1]!.heroAbilityUses = 1;
+      const view = playerView(state, "alice");
+      render(
+        <DuelScreen data={{ ...view, events: [] }} {...callbacks()} practice />,
+      );
+      const player = view.players[name === "alice" ? 0 : 1]!;
+      fireEvent.click(
+        await screen.findByRole("button", {
+          name: `Voir ${player.name}, ${player.heroHp} PV`,
+        }),
+      );
+      const dialog = within(await screen.findByRole("dialog"));
+      const powers = within(
+        dialog.getByRole("list", { name: "Capacités du héros" }),
+      );
+      expect(powers.getAllByRole("listitem")).toHaveLength(
+        name === "alice" ? 2 : 1,
+      );
+      expect(powers.getByText("Utilisé")).toBeTruthy();
+      expect(powers.queryByText("Élan de la Sylve")).toBeNull();
+      expect(powers.queryByText("Dernier souffle")).toBeNull();
+      if (name === "bob")
+        expect(powers.queryByText("Appel des éclaireurs")).toBeNull();
+      expect(dialog.queryByText("TON HÉROS")).toBeNull();
+      expect(dialog.queryByText("HÉROS ADVERSE")).toBeNull();
+      expect(
+        screen.getByRole("dialog").classList.contains("hero-details-dialog"),
+      ).toBe(true);
     },
   );
   it("updates the top of the pile after a cast and exposes full power details", async () => {

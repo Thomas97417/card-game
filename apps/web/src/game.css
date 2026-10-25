@@ -901,8 +901,11 @@ button:disabled {
   align-items: center;
   color: var(--forest);
 }
-.game-room {
+.game-room,
+.duel-details-dialog {
   --hand-card-width: clamp(46px, min(17vw, 10svh), 116px);
+}
+.game-room {
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -1040,6 +1043,17 @@ button:disabled {
   color: #e3ddc4;
   text-shadow: 0 1px 4px #071c1a;
 }
+.hero-power-exhausted {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 12px 8px;
+  border: 1px solid #bfce9e47;
+  border-radius: 10px;
+  background: #16352be6;
+  color: #c5d7af;
+  font-size: 10px;
+}
 .hero-level-badge {
   position: absolute;
   bottom: 3%;
@@ -1078,9 +1092,20 @@ button:disabled {
   font-size: 13px;
   color: #ecdfb8;
 }
-.hero-power-list li > div > span {
-  display: block;
-  margin-top: 3px;
+.hero-power-copy {
+  min-width: 0;
+  flex: 1;
+}
+.hero-power-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+}
+.hero-power-list .hero-power-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   color: #b7ce98;
 }
@@ -1093,8 +1118,59 @@ button:disabled {
 .hero-power-list [data-locked="true"] {
   opacity: 0.65;
 }
+.hero-power-list[data-battle="true"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 22px;
+}
+.hero-power-list[data-battle="true"] > li {
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, #a1b87318, #a1b87306);
+}
+.hero-power-list[data-battle="true"] > li:only-child {
+  grid-column: 1 / -1;
+}
+.hero-power-list[data-battle="true"] .ability-icon {
+  --ability-size: 38px;
+}
+.hero-power-list[data-battle="true"] .hero-power-title {
+  justify-content: space-between;
+}
+.hero-power-list[data-battle="true"] .hero-power-badge {
+  padding: 3px 7px;
+  border: 1px solid #c8d8a535;
+  border-radius: 20px;
+  background: #a4bf7820;
+  white-space: nowrap;
+}
+.hero-power-list[data-battle="true"] > [data-state="used"] {
+  border-color: #b8c89a25;
+  background: #071d173d;
+}
+.hero-power-list[data-battle="true"] > [data-state="used"] > .ability-icon {
+  filter: saturate(0.35);
+  opacity: 0.65;
+}
+.hero-power-list[data-battle="true"] > [data-state="used"] strong,
+.hero-power-list[data-battle="true"] > [data-state="used"] p {
+  color: #b1bda8;
+}
+.hero-power-list[data-battle="true"] > [data-state="used"] .hero-power-badge {
+  color: #d5e4bb;
+}
+.hero-power-list[data-battle="true"] > [data-state="turn"] .hero-power-badge,
+.hero-power-list[data-battle="true"]
+  > [data-state="previous"]
+  .hero-power-badge {
+  color: #dfc98e;
+  border-color: #d8bf7f33;
+  background: #d8bf7f12;
+}
 @media (max-width: 600px) {
-  .game-room:has(.hero-power-pile) {
+  .game-room:has(.hero-power-pile),
+  .duel-details-dialog[data-power-pile="true"] {
     --hand-card-width: clamp(26px, calc((100vw - 202px) / 4), 66px);
   }
   .hero-power-pile {
@@ -1111,8 +1187,16 @@ button:disabled {
   .hero-power-card strong {
     font-size: 11px;
   }
-  .game-room:has(.hero-power-pile) .player-hand .card-stats .stat-badge strong {
+  .game-room:has(.hero-power-pile) .player-hand .card-stats .stat-badge strong,
+  .hero-details-dialog[data-power-pile="true"]
+    .details-deck
+    .card-stats
+    .stat-badge
+    strong {
     font-size: clamp(10px, 3vw, 15px);
+  }
+  .hero-power-list[data-battle="true"] {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-height: 500px) and (min-width: 601px) {
@@ -1554,10 +1638,12 @@ button:disabled {
 .player-hand[data-inactive="true"] .creature-card:hover {
   opacity: 0.8;
 }
-.player-hand .card-stats .stat-badge {
+.player-hand .card-stats .stat-badge,
+.hero-details-dialog .details-deck .card-stats .stat-badge {
   width: 42%;
 }
-.player-hand .card-stats .stat-badge strong {
+.player-hand .card-stats .stat-badge strong,
+.hero-details-dialog .details-deck .card-stats .stat-badge strong {
   font-size: clamp(16px, 2.5svh, 28px);
 }
 .turn-actions {
@@ -1771,9 +1857,7 @@ button:disabled {
   font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
 }
 .duel-details-dialog[data-placement="left"] {
-  --dialog-bottom-space: calc(
-    clamp(46px, min(17vw, 10svh), 116px) * 4 / 3 + 44px
-  );
+  --dialog-bottom-space: calc(var(--hand-card-width) * 4 / 3 + 44px);
 }
 .duel-details-dialog[data-slot="dialog-content"] {
   top: calc((100svh - var(--dialog-bottom-space)) / 2);
@@ -1781,6 +1865,48 @@ button:disabled {
 }
 .duel-details-dialog > [data-slot="dialog-body"] {
   max-height: calc(100svh - var(--dialog-bottom-space) - 34px);
+}
+.hero-details-dialog[data-slot="dialog-content"] {
+  width: min(
+    max(
+      600px,
+      calc(
+        var(--hand-card-width) * var(--hero-deck-count) +
+          (var(--hero-deck-count) - 1) * 12px + 56px
+      )
+    ),
+    calc(100vw - 32px)
+  );
+}
+.hero-details-dialog > [data-slot="dialog-body"] {
+  scrollbar-width: none;
+}
+.hero-details-dialog > [data-slot="dialog-body"]::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.hero-details-dialog .hero-details-summary {
+  gap: 20px;
+  margin: 16px 0;
+}
+.hero-details-dialog .hero-details-summary > img {
+  width: 82px;
+  height: 118px;
+}
+.hero-details-dialog .hero-details-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 20px;
+}
+.hero-details-dialog .details-deck {
+  grid-template-columns: repeat(auto-fill, var(--hand-card-width));
+}
+.hero-details-dialog .details-deck > .creature-card {
+  width: var(--hand-card-width);
+  height: fit-content;
+}
+.hero-details-dialog .details-deck-note {
+  margin-top: 12px;
 }
 .duel-details-dialog .eyebrow {
   display: block;
@@ -2309,7 +2435,8 @@ button:disabled {
   .hand-deck {
     width: 28px;
   }
-  .player-hand .card-level {
+  .player-hand .card-level,
+  .hero-details-dialog .details-deck .card-level {
     bottom: 4px;
     padding: 2px 4px;
     font-size: 7px;
@@ -2335,6 +2462,17 @@ button:disabled {
   .hero-details-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+  }
+  .hero-details-dialog .hero-details-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+  }
+  .hero-details-dialog .hero-details-summary {
+    gap: 14px;
+  }
+  .hero-details-dialog .hero-details-summary > img {
+    width: 62px;
+    height: 100px;
   }
 }
 @media (max-width: 560px) {
@@ -2677,7 +2815,8 @@ button:disabled {
   right: 4px;
   --ability-size: 22px;
 }
-.player-hand .card-ability-icons {
+.player-hand .card-ability-icons,
+.hero-details-dialog .details-deck .card-ability-icons {
   bottom: 24px;
   gap: 2px;
   --ability-size: clamp(14px, 1.7vw, 20px);
@@ -2786,7 +2925,8 @@ button:disabled {
   .unit-effects-details ul {
     grid-template-columns: 1fr;
   }
-  .player-hand .card-ability-icons {
+  .player-hand .card-ability-icons,
+  .hero-details-dialog .details-deck .card-ability-icons {
     bottom: 20px;
   }
   .ability-legend dl {

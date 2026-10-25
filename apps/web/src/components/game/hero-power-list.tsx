@@ -1,4 +1,5 @@
 import { heroAbilities } from "@sylve/game";
+import { Check, Clock3, LockKeyhole } from "lucide-react";
 import { AbilityIcon } from "./ability-icons";
 
 export function HeroPowerList({
@@ -12,34 +13,57 @@ export function HeroPowerList({
   turn?: number;
   inBattle?: boolean;
 }) {
+  const abilities = heroAbilities(level, uses, turn).filter(
+    (ability) => !inBattle || ability.unlockLevel <= level,
+  );
   return (
-    <ol className="hero-power-list" aria-label="Capacités du héros">
-      {heroAbilities(level, uses, turn).map((ability, index) => (
-        <li key={ability.id} data-locked={ability.state === "level"}>
+    <ol
+      className="hero-power-list"
+      aria-label="Capacités du héros"
+      data-battle={inBattle}
+    >
+      {abilities.map((ability, index) => (
+        <li
+          key={ability.id}
+          data-locked={ability.state === "level"}
+          data-state={ability.state}
+        >
           <AbilityIcon
             kind={
-              index === 1
+              ability.id === "call_to_arms"
                 ? "reinforcement"
-                : index === 2
+                : ability.id === "heavenly_power"
                   ? "temporary"
                   : "power"
             }
           />
-          <div>
-            <strong>
-              {index + 1}. {ability.name}
-            </strong>
-            <span>
-              {inBattle && ability.state === "used"
-                ? "Utilisé"
-                : ability.state === "level"
-                  ? `Niveau ${ability.unlockLevel}`
-                  : inBattle && ability.state === "previous"
-                    ? "Pouvoir précédent requis"
-                    : inBattle && ability.state === "ready"
-                      ? "Prêt"
-                      : `À partir de ton tour ${ability.readyTurn}`}
-            </span>
+          <div className="hero-power-copy">
+            <div className="hero-power-title">
+              <strong>
+                {!inBattle && `${index + 1}. `}
+                {ability.name}
+              </strong>
+              <span className="hero-power-badge">
+                {inBattle && ability.state === "used" ? (
+                  <Check size={12} />
+                ) : ability.state === "level" ? (
+                  <LockKeyhole size={11} />
+                ) : ability.state === "turn" ? (
+                  <Clock3 size={12} />
+                ) : null}
+                {inBattle && ability.state === "used"
+                  ? "Utilisé"
+                  : ability.state === "level"
+                    ? `Niveau ${ability.unlockLevel}`
+                    : inBattle && ability.state === "previous"
+                      ? "En attente"
+                      : inBattle && ability.state === "ready"
+                        ? "Prêt"
+                        : inBattle
+                          ? `Tour ${ability.readyTurn}`
+                          : `À partir de ton tour ${ability.readyTurn}`}
+              </span>
+            </div>
             <p>{ability.description}</p>
           </div>
         </li>

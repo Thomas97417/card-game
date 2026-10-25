@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, Undo2 } from "lucide-react";
 import { useRef } from "react";
+import type { CSSProperties } from "react";
 import {
   HERO_HP,
   RARITY_LABELS,
@@ -122,7 +123,13 @@ export function DuelDetailsDialog({
       }}
     >
       <DialogContent
-        className="duel-details-dialog"
+        className={`duel-details-dialog ${inspection?.type === "hero" ? "hero-details-dialog" : ""}`}
+        style={
+          inspection?.type === "hero"
+            ? ({ "--hero-deck-count": player?.deck.length ?? 4 } as CSSProperties)
+            : undefined
+        }
+        data-power-pile={view.status === "active" && view.players[view.me]?.heroLevel !== undefined}
         appearance="game"
         placement={own ? "left" : "right"}
         showBackdrop={false}
@@ -365,19 +372,16 @@ export function DuelDetailsDialog({
               </>
             ) : (
               <>
-                <span className="eyebrow">
-                  {own ? "TON HÉROS" : "HÉROS ADVERSE"}
-                </span>
                 <DialogTitle ref={titleRef} tabIndex={-1}>
                   {player.name}
                 </DialogTitle>
-                <DialogDescription>
-                  Les caractéristiques du héros et les compagnons de son deck.
+                <DialogDescription className="sr-only">
+                  Caractéristiques, pouvoirs et deck de {player.name}.
                 </DialogDescription>
                 <div className="hero-details-summary">
                   <img
                     src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
-                    alt={own ? "Ton héros" : "Héros adverse"}
+                    alt={player.name}
                     width={120}
                     height={150}
                     draggable={false}
@@ -386,11 +390,11 @@ export function DuelDetailsDialog({
                     {player.heroLevel !== undefined && (
                       <>
                         <div>
-                          <dt>Niveau du héros</dt>
+                          <dt>Niveau</dt>
                           <dd>{player.heroLevel}</dd>
                         </div>
                         <div>
-                          <dt>Puissance du deck et du héros</dt>
+                          <dt>Puissance</dt>
                           <dd>{player.heroMight}</dd>
                         </div>
                       </>
