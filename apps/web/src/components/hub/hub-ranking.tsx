@@ -47,7 +47,6 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
         <header className="hub-ranking-heading">
           <GameIcon kind="ranking" size={44} />
           <div>
-            <span className="hub-ranking-eyebrow">Les gardiens de la Sylve</span>
             <h2 id={titleId}>Classement mondial</h2>
             <p>Les meilleurs gardiens, du rang 1 au rang 50.</p>
           </div>
@@ -129,12 +128,6 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
           )}
         </div>
 
-        <footer className="hub-ranking-footer">
-          <span className="hub-ranking-live">
-            {isError ? "Indisponible" : isPending ? "Connexion…" : "En direct"}
-          </span>
-          <span>Clique sur un gardien pour découvrir son deck.</span>
-        </footer>
       </section>
       <CardUpgradeDialog
         entry={inspectedCard ? { card: inspectedCard, copies: 0 } : undefined}
