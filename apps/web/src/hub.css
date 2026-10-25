@@ -12,6 +12,8 @@
   pointer-events: none;
 }
 .hub-dock {
+  --hub-panel-max-height: calc(100svh - 220px);
+  --hub-panel-max-height: calc(100dvh - 220px);
   position: relative;
   grid-column: 2;
   min-width: 0;
@@ -69,7 +71,7 @@
 .hub-dock-shortcut[aria-expanded="true"] > span {
   color: #ffe6a4;
 }
-.hub-footer button:focus-visible {
+.hub-footer :is(button, a):focus-visible {
   outline: 2px solid #f1d494;
   outline-offset: 3px;
 }
@@ -79,7 +81,7 @@
   gap: 9px;
   width: 100%;
   min-height: 42px;
-  padding: 10px 13px;
+  padding: 6px 13px;
   border: 1px solid #b99b60;
   border-radius: 8px;
   background-color: #142b21;
@@ -99,9 +101,12 @@
 .hub-chat-toggle[aria-expanded="true"] {
   border-color: #d4b779;
 }
-.hub-chat-globe {
+.hub-chat-icon {
   flex-shrink: 0;
-  color: #c7ad70;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #061a13aa);
 }
 .hub-chat-label {
   flex-shrink: 0;
@@ -127,70 +132,72 @@
 .hub-chat-toggle[aria-expanded="true"] > .hub-chat-chevron {
   transform: rotate(180deg);
 }
-.hub-world-chat {
+.hub-panel {
   position: absolute;
-  bottom: calc(100% + 18px);
+  bottom: calc(100% + 14px);
   left: 50%;
   display: flex;
   flex-direction: column;
-  width: min(536px, calc(100vw - 24px));
-  height: min(620px, calc(100svh - 245px));
-  height: min(620px, calc(100dvh - 245px));
+  width: min(620px, calc(100vw - 24px));
+  max-height: var(--hub-panel-max-height);
   overflow: hidden;
   border: 1px solid #b99b60;
-  border-radius: 12px;
-  background: linear-gradient(140deg, #263f30fa, #12291ffa);
-  box-shadow:
-    0 12px 32px #05181099,
-    inset 0 0 0 3px #e3c3820a;
+  border-radius: 14px;
+  background: linear-gradient(140deg, #2b4434fc, #11271ffc 65%);
+  box-shadow: 0 16px 50px #051810b3, inset 0 0 0 3px #e3c3820a;
   transform: translateX(-50%);
   pointer-events: auto;
 }
-.hub-world-chat:focus {
+.hub-panel:focus {
   outline: none;
 }
-.hub-world-chat-heading {
+.hub-panel-heading {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 13px 16px;
+  gap: 12px;
+  padding: 18px 20px 16px;
   border-bottom: 1px solid #c5a76b33;
-  background: #e3c38205;
+  background: linear-gradient(110deg, #d8b56d0d, transparent);
 }
-.hub-world-chat-heading h2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.hub-panel-heading > .game-icon {
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px #061a13aa);
+}
+.hub-panel-heading > div {
+  min-width: 0;
+}
+.hub-panel-heading h2 {
   margin: 0;
-  color: #f7e8bf;
-  font:
-    400 18px/1.2 Georgia,
-    serif;
+  color: #fff0cd;
+  font: 24px/1.2 Georgia, serif;
 }
-.hub-world-chat-heading h2 > svg {
-  color: #d4b779;
-}
-.hub-world-chat-heading p {
-  margin: 5px 0 0 25px;
-  color: #aabda6;
+.hub-panel-heading p {
+  margin-top: 5px;
+  color: #b4c3ad;
   font-size: 10px;
+  line-height: 1.5;
 }
-.hub-world-chat-close {
+.hub-panel-close {
   display: grid;
   flex-shrink: 0;
   place-items: center;
   width: 32px;
   height: 32px;
+  margin-left: auto;
   border: 1px solid #c5a76b33;
-  border-radius: 7px;
-  background: #0b211966;
-  color: #dbc897;
+  border-radius: 50%;
+  background: #10251d66;
+  color: #d6c18b;
   cursor: pointer;
 }
-.hub-world-chat-close:hover {
-  background: #38533b;
+.hub-panel-close:hover {
+  background: #c5a76b22;
+  color: #fff0cd;
+}
+.hub-world-chat {
+  height: min(620px, var(--hub-panel-max-height));
 }
 .hub-world-chat-messages {
   flex: 1;
@@ -424,63 +431,7 @@
   line-height: 1.7;
 }
 .hub-ranking {
-  position: absolute;
-  bottom: calc(100% + 14px);
-  left: 50%;
-  display: flex;
-  flex-direction: column;
-  width: min(620px, calc(100vw - 24px));
-  height: min(540px, calc(100svh - 220px));
-  overflow: hidden;
-  border: 1px solid #b99b60;
-  border-radius: 14px;
-  background: linear-gradient(140deg, #2b4434fc, #11271ffc 65%);
-  box-shadow: 0 16px 50px #051810b3, inset 0 0 0 3px #e3c3820a;
-  transform: translateX(-50%);
-  pointer-events: auto;
-}
-.hub-ranking-heading {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 20px 16px;
-  border-bottom: 1px solid #c5a76b33;
-  background: linear-gradient(110deg, #d8b56d0d, transparent);
-}
-.hub-ranking-heading > .game-icon {
-  flex-shrink: 0;
-  filter: drop-shadow(0 3px 6px #061a13aa);
-}
-.hub-ranking-heading > div {
-  min-width: 0;
-}
-.hub-ranking-heading h2 {
-  margin-top: 3px;
-  color: #fff0cd;
-  font: 24px/1.2 Georgia, serif;
-}
-.hub-ranking-heading p {
-  margin-top: 5px;
-  color: #b4c3ad;
-  font-size: 10px;
-  line-height: 1.5;
-}
-.hub-ranking-close {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  margin-left: auto;
-  border: 1px solid #c5a76b33;
-  border-radius: 50%;
-  background: #10251d66;
-  color: #d6c18b;
-}
-.hub-ranking-close:hover {
-  background: #c5a76b22;
-  color: #fff0cd;
+  height: min(540px, var(--hub-panel-max-height));
 }
 .hub-ranking-scroll {
   flex: 1;
@@ -826,7 +777,7 @@
   .hub-chat-toggle {
     gap: 7px;
     min-height: 42px;
-    padding: 10px;
+    padding: 6px 10px;
   }
   .hub-chat-label {
     font-size: 11px;
@@ -835,22 +786,18 @@
     padding-left: 8px;
     font-size: 10px;
   }
-  .hub-world-chat-heading {
-    gap: 8px;
-    padding-inline: 13px;
-  }
   .hub-world-chat-input-row > textarea {
     font-size: 16px;
     line-height: 1.4;
   }
-  .hub-ranking-heading {
+  .hub-panel-heading {
     gap: 9px;
     padding: 13px 12px;
   }
-  .hub-ranking-heading h2 {
+  .hub-panel-heading h2 {
     font-size: 21px;
   }
-  .hub-ranking-heading > .game-icon {
+  .hub-panel-heading > .game-icon {
     width: 34px;
     height: 34px;
   }
@@ -877,18 +824,14 @@
   }
 }
 @media (max-height: 580px) {
-  .hub-dock:has(.hub-world-chat) .hub-dock-shortcuts {
-    display: none;
+  .hub-dock {
+    --hub-panel-max-height: calc(100svh - 196px);
+    --hub-panel-max-height: calc(100dvh - 196px);
   }
-  .hub-world-chat {
-    bottom: calc(100% + 10px);
-    height: calc(100svh - 160px);
-    height: calc(100dvh - 160px);
-  }
-  .hub-world-chat-heading {
+  .hub-panel-heading {
     padding-block: 8px;
   }
-  .hub-world-chat-heading p,
+  .hub-panel-heading p,
   .hub-world-chat-hint > span:first-child {
     display: none;
   }
@@ -902,17 +845,6 @@
 @media (max-width: 480px) {
   .hub-ranking-deck {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (max-height: 500px) {
-  .hub-ranking {
-    height: calc(100svh - 190px);
-  }
-  .hub-ranking-heading p {
-    display: none;
-  }
-  .hub-ranking-heading {
-    padding-block: 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

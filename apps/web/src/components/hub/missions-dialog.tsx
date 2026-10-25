@@ -9,14 +9,9 @@ import type {
   MissionView,
 } from "@sylve/game/missions";
 import { chestName } from "@sylve/game/progression";
-import {
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { GameIcon } from "@/components/game/game-icon";
 import { EmeraldIcon } from "@/components/emerald-balance";
 import { MissionCheck, MissionSeal } from "./mission-icons";
+import { HubPanel } from "./hub-panel";
 
 export interface HubMissionsProps {
   board?: MissionBoard;
@@ -45,14 +40,16 @@ function resetTime(resetsAt: number, now: number) {
   return `${hours} h ${String(minutes % 60).padStart(2, "0")}`;
 }
 
-export function MissionsDialog({
+export function MissionsPanel({
+  id: panelId,
+  onClose,
   board,
   now,
   pending,
   onClaim,
   onOpenChest,
   onNavigate,
-}: HubMissionsProps) {
+}: HubMissionsProps & { id: string; onClose: () => void }) {
   const [tab, setTab] = useState<MissionTab>("daily");
   const id = useId();
   const track = tab === "epic" ? null : board?.[tab];
@@ -90,17 +87,15 @@ export function MissionsDialog({
   }
 
   return (
-    <DialogContent appearance="game" className="missions-dialog">
-      <header className="missions-heading">
-        <GameIcon kind="missions" size={64} />
-        <div>
-          <DialogTitle>Missions</DialogTitle>
-          <DialogDescription>
-            Chaque aventure mérite sa récompense.
-          </DialogDescription>
-        </div>
-      </header>
-
+    <HubPanel
+      id={panelId}
+      className="hub-missions"
+      title="Missions"
+      description="Chaque aventure mérite sa récompense."
+      icon="missions"
+      closeLabel="Fermer les missions"
+      onClose={onClose}
+    >
       <section
         key={tab}
         role="tabpanel"
@@ -258,7 +253,7 @@ export function MissionsDialog({
           </button>
         ))}
       </div>
-    </DialogContent>
+    </HubPanel>
   );
 }
 

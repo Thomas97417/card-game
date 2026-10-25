@@ -1,7 +1,7 @@
 import { useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronUp, Globe2 } from "lucide-react";
-import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
+import { ArrowRight, ChevronUp } from "lucide-react";
+import { GameIcon } from "@/components/game/game-icon";
 import { WorldChat } from "./world-chat";
 import { HubRanking } from "./hub-ranking";
 import {
@@ -11,69 +11,53 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MissionsDialog, type HubMissionsProps } from "./missions-dialog";
+import { MissionsPanel, type HubMissionsProps } from "./missions-dialog";
 import { MissionCheck } from "./mission-icons";
 
-const DESTINATIONS = [
-  {
-    id: "friends",
-    label: "Amis",
-    icon: "friends",
-    description: "La liste d’amis arrive bientôt au refuge.",
-    detail:
-      "En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou en rejoignant un défi amical.",
-    action: "Lancer un défi amical",
-  },
-  {
-    id: "missions",
-    label: "Missions",
-    icon: "missions",
-    description: "Chaque aventure mérite sa récompense.",
-    detail:
-      "Récupère des sceaux et des émeraudes en accomplissant tes missions.",
-    action: "Rejoindre l’arène",
-  },
-] as const satisfies readonly {
-  id: string;
-  label: string;
-  icon: GameIconKind;
-  description: string;
-  detail: string;
-  action: string;
-}[];
-
 export function HubDock({ missions }: { missions?: HubMissionsProps }) {
-  const [activeDestination, setActiveDestination] = useState<
-    (typeof DESTINATIONS)[number]
-  >(DESTINATIONS[0]);
-  const [destinationOpen, setDestinationOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [rankingOpen, setRankingOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<
+    "ranking" | "missions" | "chat" | null
+  >(null);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const chatOpen = activePanel === "chat";
+  const rankingOpen = activePanel === "ranking";
+  const missionsOpen = activePanel === "missions";
   const rankingId = useId();
   const rankingTrigger = useRef<HTMLButtonElement>(null);
+  const missionsId = useId();
+  const missionsTrigger = useRef<HTMLButtonElement>(null);
   const chatId = useId();
   const chatTitleId = useId();
   const chatTrigger = useRef<HTMLButtonElement>(null);
 
-  function closeChat() {
-    setChatOpen(false);
-    chatTrigger.current?.focus();
-  }
-
-  function closeRanking() {
-    setRankingOpen(false);
-    rankingTrigger.current?.focus();
+  function closePanel() {
+    setActivePanel(null);
+    const trigger =
+      activePanel === "chat"
+        ? chatTrigger
+        : activePanel === "missions"
+          ? missionsTrigger
+          : rankingTrigger;
+    trigger.current?.focus({ preventScroll: true });
   }
 
   return (
-    <Dialog open={destinationOpen} onOpenChange={setDestinationOpen}>
+    <Dialog open={friendsOpen} onOpenChange={setFriendsOpen}>
       <div className="hub-dock" role="region" aria-label="Vie du refuge">
-        {rankingOpen && <HubRanking id={rankingId} onClose={closeRanking} />}
+        {rankingOpen && <HubRanking id={rankingId} onClose={closePanel} />}
+        {missionsOpen && (
+          <MissionsPanel
+            {...missions}
+            id={missionsId}
+            onClose={closePanel}
+            onNavigate={() => setActivePanel(null)}
+          />
+        )}
         <WorldChat
           id={chatId}
           titleId={chatTitleId}
           open={chatOpen}
-          onClose={closeChat}
+          onClose={closePanel}
         />
 
         <nav className="hub-dock-shortcuts" aria-label="Communauté du refuge">
@@ -84,37 +68,39 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
             aria-expanded={rankingOpen}
             aria-controls={rankingOpen ? rankingId : undefined}
             onClick={() => {
-              setChatOpen(false);
-              setRankingOpen((open) => !open);
+              setActivePanel(rankingOpen ? null : "ranking");
             }}
           >
             <GameIcon kind="ranking" size={52} />
             <span>Classement</span>
           </button>
-          {DESTINATIONS.map((destination) => (
-            <DialogTrigger
-              key={destination.id}
-              className="hub-dock-shortcut"
-              onClick={() => {
-                setChatOpen(false);
-                setRankingOpen(false);
-                setActiveDestination(destination);
-              }}
-            >
-              <GameIcon kind={destination.icon} size={52} />
-              {destination.id === "missions" &&
-                missions?.board?.hasClaimable && (
-                  <span
-                    className="hub-missions-ready"
-                    role="img"
-                    aria-label="Récompenses à récupérer"
-                  >
-                    <MissionCheck />
-                  </span>
-                )}
-              <span>{destination.label}</span>
-            </DialogTrigger>
-          ))}
+          <DialogTrigger
+            className="hub-dock-shortcut"
+            onClick={() => setActivePanel(null)}
+          >
+            <GameIcon kind="friends" size={52} />
+            <span>Amis</span>
+          </DialogTrigger>
+          <button
+            ref={missionsTrigger}
+            type="button"
+            className="hub-dock-shortcut"
+            aria-expanded={missionsOpen}
+            aria-controls={missionsOpen ? missionsId : undefined}
+            onClick={() => setActivePanel(missionsOpen ? null : "missions")}
+          >
+            <GameIcon kind="missions" size={52} />
+            {missions?.board?.hasClaimable && (
+              <span
+                className="hub-missions-ready"
+                role="img"
+                aria-label="Récompenses à récupérer"
+              >
+                <MissionCheck />
+              </span>
+            )}
+            <span>Missions</span>
+          </button>
         </nav>
 
         <button
@@ -124,17 +110,16 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
           aria-expanded={chatOpen}
           aria-controls={chatOpen ? chatId : undefined}
           onClick={() => {
-            setRankingOpen(false);
-            setChatOpen((open) => !open);
+            setActivePanel(chatOpen ? null : "chat");
           }}
           onKeyDown={(event) => {
             if (event.key === "Escape" && chatOpen) {
               event.stopPropagation();
-              closeChat();
+              closePanel();
             }
           }}
         >
-          <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
+          <GameIcon kind="chat" size={28} className="hub-chat-icon" />
           <span className="hub-chat-label">Chat mondial</span>
           <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
           <ChevronUp
@@ -145,28 +130,21 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
         </button>
       </div>
 
-      {activeDestination.id === "missions" ? (
-        <MissionsDialog
-          {...missions}
-          onNavigate={() => setDestinationOpen(false)}
-        />
-      ) : (
-        <DialogContent appearance="game" className="hub-destination-dialog">
-          <GameIcon
-            kind={activeDestination.icon}
-            size={88}
-            className="hub-destination-art"
-          />
-          <span className="hub-coming-soon">Bientôt disponible</span>
-          <DialogTitle>{activeDestination.label}</DialogTitle>
-          <DialogDescription>{activeDestination.description}</DialogDescription>
-          <p className="hub-destination-detail">{activeDestination.detail}</p>
-          <Link to="/arena" className="sylve-button">
-            {activeDestination.action}{" "}
-            <ArrowRight size={15} aria-hidden="true" />
-          </Link>
-        </DialogContent>
-      )}
+      <DialogContent appearance="game" className="hub-destination-dialog">
+        <GameIcon kind="friends" size={88} className="hub-destination-art" />
+        <span className="hub-coming-soon">Bientôt disponible</span>
+        <DialogTitle>Amis</DialogTitle>
+        <DialogDescription>
+          La liste d’amis arrive bientôt au refuge.
+        </DialogDescription>
+        <p className="hub-destination-detail">
+          En attendant, tu peux déjà retrouver un ami dans l’arène en créant ou
+          en rejoignant un défi amical.
+        </p>
+        <Link to="/arena" className="sylve-button">
+          Lancer un défi amical <ArrowRight size={15} aria-hidden="true" />
+        </Link>
+      </DialogContent>
     </Dialog>
   );
 }

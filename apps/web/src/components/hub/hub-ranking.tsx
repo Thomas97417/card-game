@@ -1,7 +1,7 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
-import { Crown, RefreshCw, X } from "lucide-react";
+import { Crown, RefreshCw } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { getCombatType, RARITY_LABELS, type CardDefinition } from "@sylve/game";
 import { leagueAt } from "@sylve/game/leagues";
@@ -15,10 +15,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { HubPanel } from "./hub-panel";
 
 export function HubRanking({ id, onClose }: { id: string; onClose: () => void }) {
-  const titleId = useId();
-  const closeButton = useRef<HTMLButtonElement>(null);
   const [expandedPlayers, setExpandedPlayers] = useState<string[]>([]);
   const [inspectedCard, setInspectedCard] = useState<CardDefinition | null>(null);
   const cardTrigger = useRef<HTMLButtonElement>(null);
@@ -27,40 +26,17 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
     retry: false,
   });
 
-  useEffect(() => {
-    closeButton.current?.focus({ preventScroll: true });
-  }, []);
-
   return (
     <>
-      <section
+      <HubPanel
         id={id}
         className="hub-ranking"
-        aria-labelledby={titleId}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.stopPropagation();
-            onClose();
-          }
-        }}
+        title="Classement mondial"
+        description="Les meilleurs gardiens, du rang 1 au rang 50."
+        icon="ranking"
+        closeLabel="Fermer le classement"
+        onClose={onClose}
       >
-        <header className="hub-ranking-heading">
-          <GameIcon kind="ranking" size={44} />
-          <div>
-            <h2 id={titleId}>Classement mondial</h2>
-            <p>Les meilleurs gardiens, du rang 1 au rang 50.</p>
-          </div>
-          <button
-            ref={closeButton}
-            type="button"
-            className="hub-ranking-close"
-            aria-label="Fermer le classement"
-            onClick={onClose}
-          >
-            <X size={18} aria-hidden="true" />
-          </button>
-        </header>
-
         <div className="hub-ranking-scroll" aria-busy={isPending}>
           {isPending ? (
             <RankingLoading label="Chargement du classement…" />
@@ -127,8 +103,7 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
             </Accordion>
           )}
         </div>
-
-      </section>
+      </HubPanel>
       <CardUpgradeDialog
         entry={inspectedCard ? { card: inspectedCard, copies: 0 } : undefined}
         readOnly

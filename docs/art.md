@@ -1,5 +1,13 @@
 # Illustrations de Sylve
 
+## Panneaux communautaires harmonisés — 25 octobre 2026
+
+Le classement, les missions et le chat mondial utilisent le même composant `HubPanel` : largeur maximale de **620 px**, marge latérale de 12 px sur petit écran, bord inférieur à **14 px au-dessus des raccourcis**. Le cadre vert forêt, les bordures dorées, l’en-tête et la fermeture sont partagés. Le classement conserve une hauteur maximale de 540 px ; le chat dispose de 620 px et les missions de 660 px, limités par l’espace disponible. Les onglets des missions restent visibles pendant le défilement. Ouvrir un panneau replie le précédent ; le brouillon du chat est conservé.
+
+L’icône du chat est un globe émeraude dans une bulle dorée, généré avec **ImageGen intégré** et enregistré dans `apps/web/public/art/ui/world-chat-globe.webp` en **WebP transparent de 384 × 384 px**. Elle apparaît dans le bandeau, l’en-tête et l’état vide du chat. Le [manifeste](art-prompts-hub-dock.json) conserve son prompt complet et le PNG source.
+
+Les composants réels ont été vérifiés dans un aperçu local avec des données de démonstration à **1440 × 900**, **390 × 844**, **320 × 700**, **844 × 390** et **390 × 480 px** : largeur, position et habillage identiques, raccourcis fixes, défilement des missions, deck du classement, retour du focus et conservation du brouillon, sans débordement horizontal ni erreur JavaScript. Captures : missions [ordinateur](hub-panels-missions-desktop.webp) et [mobile](hub-panels-missions-mobile.webp), classement [ordinateur](hub-panels-ranking-desktop.webp) et [mobile](hub-panels-ranking-mobile.webp), chat [ordinateur](hub-panels-chat-desktop.webp) et [mobile](hub-panels-chat-mobile.webp).
+
 ## Barre communautaire du refuge
 
 Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton entoure uniquement le chat ; les icônes restent directement sur le décor, sans cadre au survol. Les commandes d’exploration du village encadrent la barre à gauche et à droite, à hauteur du chat. Le texte d’aide au déplacement est retiré. L’ensemble s’adapte aux petits écrans et à leur zone de sécurité.

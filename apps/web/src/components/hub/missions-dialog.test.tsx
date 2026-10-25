@@ -18,8 +18,11 @@ vi.mock("./world-chat", () => ({ WorldChat: () => null }));
 describe("carnet de missions du hub", () => {
   it("opens from the dock, switches between three tabs, and supports keyboard navigation", () => {
     render(<HubDock missions={{ board: missionBoard(null, now), now }} />);
-    fireEvent.click(screen.getByRole("button", { name: "Missions" }));
-    expect(screen.getByRole("dialog").textContent).toContain(
+    const trigger = screen.getByRole("button", { name: "Missions" });
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const panel = screen.getByRole("region", { name: "Missions" });
+    expect(panel.textContent).toContain(
       "Chaque aventure mérite sa récompense",
     );
     expect(
@@ -49,6 +52,13 @@ describe("carnet de missions du hub", () => {
     expect(
       screen.queryByRole("group", { name: "Coffres de mission" }),
     ).toBeNull();
+    fireEvent.keyDown(panel, { key: "Escape" });
+    expect(screen.queryByRole("region", { name: "Missions" })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("button", { name: "Fermer les missions" }));
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows a green check and lets players claim only completed missions and unlocked chests", () => {
