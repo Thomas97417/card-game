@@ -44,56 +44,95 @@ function summonViews() {
 describe("réactivité du placement", () => {
   it("keeps a pentagram visible and applies its bonus at the start-of-turn ability impact", () => {
     vi.useFakeTimers();
-    const state = createGame([
-      { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
-      { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
-    ], 0, () => 0.25, { field: false });
+    const state = createGame(
+      [
+        { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
+        { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+      ],
+      0,
+      () => 0.25,
+      { field: false },
+    );
     const owner = state.players[0]!;
     owner.pentagrams = [{ row: 0, depth: 0, attack: 2 }];
     const card = owner.cards[0]!;
     owner.board = [{ cardId: card.id, row: 0, depth: 0, hp: card.health }];
     state.activePlayer = 1;
-    const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
+    const initial = {
+      ...playerView(state, "alice"),
+      events: [] as GameEvent[],
+    };
     const transition = endTurn(state, 1, 1, 1, () => 0.25);
-    const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
-    const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), { initialProps: { view: initial } });
+    const confirmed = {
+      ...playerView(transition.state, "alice"),
+      events: transition.events,
+    };
+    const { result, rerender } = renderHook(
+      ({ view }) => useCombatPlayback(view),
+      { initialProps: { view: initial } },
+    );
     rerender({ view: confirmed });
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
     expect(result.current.display!.players[0]!.pentagrams).toHaveLength(1);
-    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack);
+    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(
+      card.attack,
+    );
     act(() => vi.advanceTimersByTime(1));
     expect(result.current.display!.players[0]!.pentagrams).toHaveLength(1);
-    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(card.attack + 2);
+    expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(
+      card.attack + 2,
+    );
     expect(result.current.display!.players[1]!.heroHp).toBe(30);
     act(() => vi.runAllTimers());
     expect(result.current.display).toEqual(confirmed);
   });
-  it.each(["rune", "pentagram"] as const)("removes a dead unit's %s at the death animation commit", (kind) => {
-    vi.useFakeTimers();
-    const state = createGame([
-      { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
-      { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
-    ], 0, () => 0.25, { field: false });
-    const owner = state.players[0]!;
-    const card = owner.cards[0]!;
-    owner.board = [{ cardId: card.id, row: 0, depth: 0, hp: 1 }];
-    const mark = { row: 0, depth: 0, attack: 2 };
-    if (kind === "rune") owner.runes = [{ ...mark, activated: true }];
-    else owner.pentagrams = [mark];
-    state.players[1]!.board = [{ cardId: card.id, row: 0, depth: 0, hp: card.health, attack: 20 }];
-    state.activePlayer = 1;
-    const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
-    const transition = endTurn(state, 1, 1, 1, () => 0.25);
-    const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
-    const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), { initialProps: { view: initial } });
-    rerender({ view: confirmed });
-    const key = kind === "rune" ? "runes" : "pentagrams";
-    act(() => vi.advanceTimersByTime(COMBAT_TIMING.attack + COMBAT_TIMING.death - 1));
-    expect(result.current.display!.players[0]![key]).toHaveLength(1);
-    act(() => vi.advanceTimersByTime(1));
-    expect(result.current.display!.players[0]![key]).toEqual([]);
-    expect(result.current.display!.players[0]!.board).toEqual([]);
-  });
+  it.each(["rune", "pentagram"] as const)(
+    "removes a dead unit's %s at the death animation commit",
+    (kind) => {
+      vi.useFakeTimers();
+      const state = createGame(
+        [
+          { userId: "alice", name: "Alice", cards: validateDeck(DEFAULT_DECK) },
+          { userId: "bob", name: "Bob", cards: validateDeck(DEFAULT_DECK) },
+        ],
+        0,
+        () => 0.25,
+        { field: false },
+      );
+      const owner = state.players[0]!;
+      const card = owner.cards[0]!;
+      owner.board = [{ cardId: card.id, row: 0, depth: 0, hp: 1 }];
+      const mark = { row: 0, depth: 0, attack: 2 };
+      if (kind === "rune") owner.runes = [{ ...mark, activated: true }];
+      else owner.pentagrams = [mark];
+      state.players[1]!.board = [
+        { cardId: card.id, row: 0, depth: 0, hp: card.health, attack: 20 },
+      ];
+      state.activePlayer = 1;
+      const initial = {
+        ...playerView(state, "alice"),
+        events: [] as GameEvent[],
+      };
+      const transition = endTurn(state, 1, 1, 1, () => 0.25);
+      const confirmed = {
+        ...playerView(transition.state, "alice"),
+        events: transition.events,
+      };
+      const { result, rerender } = renderHook(
+        ({ view }) => useCombatPlayback(view),
+        { initialProps: { view: initial } },
+      );
+      rerender({ view: confirmed });
+      const key = kind === "rune" ? "runes" : "pentagrams";
+      act(() =>
+        vi.advanceTimersByTime(COMBAT_TIMING.attack + COMBAT_TIMING.death - 1),
+      );
+      expect(result.current.display!.players[0]![key]).toHaveLength(1);
+      act(() => vi.advanceTimersByTime(1));
+      expect(result.current.display!.players[0]![key]).toEqual([]);
+      expect(result.current.display!.players[0]!.board).toEqual([]);
+    },
+  );
   it("renders a summon at the start of its animation and keeps damage at impact", () => {
     vi.useFakeTimers();
     const { initial, confirmed, card } = summonViews();
@@ -170,7 +209,7 @@ describe("animations des créatures répétées", () => {
   it("animates a summoned token from its event without inserting it into the deck", () => {
     vi.useFakeTimers();
     const cards = validateDeck([
-      "witch:common",
+      "captain:common",
       "guardian:common",
       "turtle:common",
       "wisp:common",
@@ -188,7 +227,16 @@ describe("animations des créatures répétées", () => {
       ...playerView(state, "alice"),
       events: [] as GameEvent[],
     };
-    const transition = summon(state, 0, "witch:common", 0, 2, 1, 1, () => 0.25);
+    const transition = summon(
+      state,
+      0,
+      "captain:common",
+      0,
+      0,
+      1,
+      1,
+      () => 0.25,
+    );
     const confirmed = {
       ...playerView(transition.state, "alice"),
       events: transition.events,
@@ -203,7 +251,7 @@ describe("animations des créatures répétées", () => {
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
     expect(result.current.event?.ability).toBe("Renfort");
     expect(result.current.display!.players[0]!.board[1]).toMatchObject({
-      card: { name: "Rejeton des spores", attack: 2, health: 2 },
+      card: { name: "Éclaireur des braises", attack: 5, health: 4 },
       row: 0,
       depth: 1,
     });
@@ -215,7 +263,7 @@ describe("animations des créatures répétées", () => {
   it("commits a health buff and its new maximum at the ability impact", () => {
     vi.useFakeTimers();
     const cards = validateDeck([
-      "bard:common",
+      "mushroom:common",
       "guardian:common",
       "turtle:common",
       "wisp:common",
@@ -236,7 +284,16 @@ describe("animations des créatures répétées", () => {
       ...playerView(state, "alice"),
       events: [] as GameEvent[],
     };
-    const transition = summon(state, 0, "bard:common", 1, 2, 1, 1, () => 0.25);
+    const transition = summon(
+      state,
+      0,
+      "mushroom:common",
+      1,
+      2,
+      1,
+      1,
+      () => 0.25,
+    );
     const confirmed = {
       ...playerView(transition.state, "alice"),
       events: transition.events,
@@ -249,13 +306,13 @@ describe("animations des créatures répétées", () => {
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon + 179));
     expect(result.current.display!.players[0]!.board[0]).toMatchObject({
       hp: 8,
-      card: { health: 8 },
+      card: { health: 10 },
     });
     act(() => vi.advanceTimersByTime(1));
     expect(result.current.display!.players[0]!.board[0]).toMatchObject({
-      hp: 10,
-      maxHp: 10,
-      card: { health: 10 },
+      hp: 9,
+      maxHp: 11,
+      card: { health: 11 },
     });
     expect(initial.players[0]!.board[0]!.hp).toBe(8);
     act(() => vi.runAllTimers());

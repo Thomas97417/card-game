@@ -1378,7 +1378,7 @@ describe("le sanctuaire", () => {
     await selectOption("Niveau de la carte", "Niveau 26");
     expect(within(dialog).getByText("Active · niv. 11")).toBeTruthy();
   });
-  it("explores Rare and Epic profiles through level 31 and clamps the level on returning to Common", async () => {
+  it("explores Rare and Epic profiles through level 26 and clamps the level on returning to Common", async () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
     const dialog = await screen.findByRole("dialog");
@@ -1393,7 +1393,7 @@ describe("le sanctuaire", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: /^Voir la forme rare/ }),
     );
-    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(
       within(dialog).getByRole("heading", { name: "Gardien des runes" }),
     ).toBeTruthy();
@@ -1402,14 +1402,14 @@ describe("le sanctuaire", () => {
         .getAllByAltText("Gardien des runes")[0]!
         .getAttribute("src"),
     ).toBe("/art/characters/evolutions/guardian-rare.webp");
-    await selectOption("Niveau de la carte", "Niveau 31");
+    await selectOption("Niveau de la carte", "Niveau 26");
     fireEvent.click(
       within(dialog).getByRole("button", { name: /^Voir la forme épique/ }),
     );
     expect(
       within(dialog).getByRole("heading", { name: "Colosse du serment" }),
     ).toBeTruthy();
-    expect(level.textContent).toContain("Niveau 31");
+    expect(level.textContent).toContain("Niveau 26");
     fireEvent.click(
       within(dialog).getByRole("button", { name: /^Voir la forme commune/ }),
     );
@@ -1418,7 +1418,7 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
     ).toBeTruthy();
   });
-  it("explores sourced Legendaries through 31 and labels both Sylve buildings with their own cap", async () => {
+  it("explores sourced Legendaries through 26 and gives former Sylve creations their CW profiles", async () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bestiaire" }));
     const dialog = await screen.findByRole("dialog");
@@ -1428,13 +1428,13 @@ describe("le sanctuaire", () => {
         name: "Découvrir Gardien du serment éternel",
       }),
     );
-    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(
       within(dialog).getByRole("heading", {
         name: "Gardien du serment éternel",
       }),
     ).toBeTruthy();
-    await selectOption("Niveau de la carte", "Niveau 31");
+    await selectOption("Niveau de la carte", "Niveau 26");
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
     );
@@ -1448,7 +1448,7 @@ describe("le sanctuaire", () => {
     });
     expect(buildingLevel.textContent).toContain("Niveau 26");
     expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
-    expect(within(dialog).getByText(/Création Sylve/)).toBeTruthy();
+    expect(within(dialog).queryByText(/Création Sylve/)).toBeNull();
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
     );
@@ -1457,6 +1457,6 @@ describe("le sanctuaire", () => {
         name: "Découvrir Gardien du serment éternel",
       }),
     );
-    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("31");
+    expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
   });
 });

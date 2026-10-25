@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import reference from "../../../docs/references/mighty-party/common-cards.json";
+import reference from "../../../docs/references/cunt-wars/rules.json";
 import {
   CATALOG,
+  availableRarities,
+  cardsOfRarity,
   DEFAULT_DECK,
   maxCardLevel,
   RARITIES,
@@ -15,6 +17,7 @@ import {
   variantCard,
   upgradeCost,
   upgradeGoldCost,
+  upgradeExperience,
 } from "./index";
 import {
   CHEST_TYPES,
@@ -50,21 +53,24 @@ describe("variantes et progression", () => {
     ]);
     expect(unlockedChestSlots(Number.NaN)).toEqual([0, 1]);
   });
-  it("requires duplicates and gold for each successive level", () => {
-    for (const rarity of RARITIES)
+  it("uses the collected CW copies, gold and XP for each successive level", () => {
+    for (const [index, rarity] of RARITIES.entries())
       for (let level = 1; level < maxCardLevel(rarity); level++) {
-        const target = reference.economy.byRarity[rarity][level]!;
-        expect(upgradeCost(level, rarity)).toBe(target.soulsToReach);
-        expect(upgradeGoldCost(level, rarity)).toBe(target.goldToReach);
+        const target = reference.Level_up_requirement.tables[index]!.rows.find(
+          (row) => row[0] === String(level + 1),
+        )!;
+        expect(upgradeCost(level, rarity)).toBe(Number(target[2]));
+        expect(upgradeGoldCost(level, rarity)).toBe(Number(target[1]));
+        expect(upgradeExperience(level, rarity)).toBe(Number(target[4]));
       }
   });
-  it("defines 88 independent identities, preserving zero attack for buildings", () => {
+  it("defines 84 CW identities, preserving zero attack for buildings", () => {
     const ids = new Set<string>();
     for (const base of CATALOG) {
-      for (const rarity of RARITIES) {
+      for (const rarity of availableRarities(base.id)) {
         const card = variantCard(base.id, rarity);
         ids.add(card.id);
-        expect(baseCardId(card)).toBe(base.id);
+        expect(baseCardId(card)).toBe(base.baseId);
         if (card.combatType === "building") expect(card.attack).toBe(0);
         else expect(card.attack).toBeGreaterThan(0);
         expect(card.health).toBeGreaterThan(0);
@@ -76,7 +82,7 @@ describe("variantes et progression", () => {
         expect(upgraded.health).toBeGreaterThan(card.health);
       }
     }
-    expect(ids.size).toBe(88);
+    expect(ids.size).toBe(84);
     expect(() => resolveCard("fox:mythic")).toThrow();
     expect(() => resolveCard("fox:rare:2")).toThrow();
     expect(() => resolveCard("fox:rare", 32)).toThrow();
@@ -264,11 +270,14 @@ describe("tirages des coffres", () => {
   it.each(CHEST_TYPES)(
     "allows every creature and charges only for the remaining time of %s",
     (type) => {
-      for (const [index, base] of CATALOG.entries()) {
-        const values = [0, 0, (index + 0.5) / CATALOG.length];
+      const rarity =
+        type === "common" ? "common" : type === "bigRare" ? "rare" : type;
+      const pool = cardsOfRarity(rarity);
+      for (const [index, base] of pool.entries()) {
+        const values = [0, 0, (index + 0.5) / pool.length];
         expect(
           chestLoot(type, () => values.shift()!)[0]!.variantId.split(":")[0],
-        ).toBe(base.id);
+        ).toBe(base.baseId);
       }
       const rule = chestRules(type, 2200);
       const chest = {

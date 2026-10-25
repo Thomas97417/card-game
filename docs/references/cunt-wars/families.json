@@ -1,0 +1,134 @@
+{
+  "guardian": [
+    "Warrior",
+    "Soulblade",
+    "Swordmaster",
+    "Prince"
+  ],
+  "fox": [
+    "Archer",
+    "Bowmaster",
+    "Ayfe the Arrow",
+    "Athena"
+  ],
+  "owl": [
+    "Apprentice",
+    "Acolyte",
+    "Battle Priest",
+    "Alexandria"
+  ],
+  "stag": [
+    "Pilgrim",
+    "Prophet",
+    "Lady Clair",
+    "D'Arc, Iron Maiden"
+  ],
+  "mushroom": [
+    "Dryad",
+    "Leaf Child",
+    "Lady Wild",
+    "Melia, Forest's Daughter"
+  ],
+  "dragon": [
+    "Shaman",
+    "Wood Spirit",
+    "Forest Song",
+    "Maeve"
+  ],
+  "turtle": [
+    "Big Toad",
+    "Mr. Toad",
+    "Lord Toad",
+    "Prince Nod"
+  ],
+  "wisp": [
+    "Raven",
+    "Karas",
+    "Forest Mage",
+    "Tengu, Ravencrest"
+  ],
+  "wolf": [
+    null,
+    "Red Orc",
+    "Orc Master",
+    "Chieftain Orc"
+  ],
+  "knight": [
+    "Defender",
+    "Squire",
+    "Knight",
+    "Sir Lancelot"
+  ],
+  "serpent": [
+    "Fire Mage",
+    "Dark Acolyte",
+    "Archwitch",
+    "Red Woman"
+  ],
+  "bear": [
+    "Lumberjack",
+    "Viking",
+    "Olaf the Red",
+    "Erik the Grey"
+  ],
+  "healer": [
+    "Cat Lady",
+    "Scratchy",
+    "Wrathy",
+    "Bastet"
+  ],
+  "gnome": [
+    "Gnome",
+    "Crafter",
+    "Engineer",
+    "High Tinker Gear"
+  ],
+  "idol": [
+    null,
+    "Totem",
+    "Luck Idol",
+    "Vanakauri"
+  ],
+  "enchantress": [
+    "Love Lady",
+    "Love Mage",
+    "Love Goddess",
+    "Aphrodite"
+  ],
+  "lynx": [
+    "Shinobi",
+    "Untouchable",
+    "Shinigami",
+    "Hanzo Sama"
+  ],
+  "bard": [
+    null,
+    "Minstrel",
+    "Bard",
+    "Apollo"
+  ],
+  "tree": [
+    null,
+    "Treant",
+    "Treebeard",
+    "Groot, Silent Guardian"
+  ],
+  "vampire": [
+    "Nosferatu",
+    "Chiropteran",
+    "Blood Lord",
+    "Count Vlad"
+  ],
+  "captain": [
+    "Warrioress",
+    "Valkyrie",
+    "Scarlet Warrior",
+    "Titania"
+  ],
+  "witch": [
+    "Witch",
+    "Dark Witch",
+    "Void Juggler",
+    "Neyda"
+  ]
+}

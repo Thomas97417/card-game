@@ -1,4 +1,4 @@
-import { CATALOG, RARITIES, type CardRarity } from "./index";
+import { cardsOfRarity, RARITIES, type CardRarity } from "./index";
 import type { LootReveal, LootStack } from "./progression";
 import { leagueAt } from "./leagues";
 import { rewardLeague, rewardRow, rollReward } from "./reward-tables";
@@ -280,8 +280,10 @@ export function summonLoot(
   ): LootStack => {
     const range = summonQuantity(id, rarity, peakTrophies, legendarySize);
     const copies = rollReward([range.min, range.max], random);
+    const pool = cardsOfRarity(rarity);
     return {
-      variantId: `${CATALOG[Math.floor(random() * CATALOG.length)]!.id}:${rarity}`,
+      variantId:
+        pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))]!.id,
       count: copies,
     };
   };

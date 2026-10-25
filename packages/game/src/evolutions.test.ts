@@ -1,17 +1,20 @@
+// Compatibility coverage for games whose full card snapshots predate CW.
 import { describe, expect, it } from "vitest";
-import reference from "../../../docs/references/mighty-party/evolution-cards.json";
-import commonReference from "../../../docs/references/mighty-party/common-cards.json";
 import {
   CATALOG,
-  createGame,
-  endTurn,
-  summon,
-  withdraw,
   resolveCard,
   variantCard,
   maxCardLevel,
   upgradeCost,
   upgradeGoldCost,
+} from "./test-fixtures/mighty-party/catalogue";
+import reference from "./test-fixtures/mighty-party/evolution-reference.json";
+import commonReference from "./test-fixtures/mighty-party/common-reference.json";
+import {
+  createGame,
+  endTurn,
+  summon,
+  withdraw,
   playerView,
   unitAttack,
   type GameState,
@@ -84,7 +87,7 @@ function attack(state: GameState, player = 0) {
   return endTurn(state, player, state.turn, 0, random);
 }
 
-describe("documented Rare and Epic evolutions", () => {
+describe("version-1 Rare and Epic snapshots", () => {
   it("retains 22 reciprocal chains, all 1364 stat pairs and all 85 skill schedules", () => {
     expect(reference.chains).toHaveLength(22);
     expect(reference.cards).toHaveLength(44);

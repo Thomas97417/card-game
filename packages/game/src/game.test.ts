@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { legacyDeck } from "./legacy-fixture";
+import { legacyDeck } from "./test-fixtures/pre-abilities";
 import {
   CATALOG,
   DEFAULT_DECK as STARTER_DECK,
@@ -74,14 +74,14 @@ describe("construction de deck", () => {
   });
   it("defines three combat types and infers them for legacy snapshots", () => {
     expect(CATALOG.filter((card) => card.combatType === "melee")).toHaveLength(
-      11,
+      12,
     );
     expect(CATALOG.filter((card) => card.combatType === "ranged")).toHaveLength(
       9,
     );
     expect(
       CATALOG.filter((card) => card.combatType === "building"),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     for (const { combatType, ...legacy } of CATALOG)
       expect(getCombatType(legacy)).toBe(combatType);
   });

@@ -7,7 +7,7 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CATALOG, getCombatType, variantCard } from "@sylve/game";
+import { CATALOG, cardsOfRarity, variantCard } from "@sylve/game";
 import { BestiaryDialog } from "./bestiary-dialog";
 import { selectOption } from "@/test-select";
 
@@ -30,7 +30,9 @@ describe("Bestiary navigation", () => {
     const dialog = await openBestiary();
     const gallerySlider = within(dialog).getByRole("slider");
     fireEvent.change(gallerySlider, { target: { value: "8" } });
-    expect(within(dialog).getAllByText("Niv. 8")).toHaveLength(CATALOG.length);
+    expect(within(dialog).getAllByText("Niv. 8")).toHaveLength(
+      cardsOfRarity("common").length,
+    );
     expect(
       within(dialog).getByRole("combobox", { name: "Niveau de la carte" })
         .textContent,
@@ -50,12 +52,16 @@ describe("Bestiary navigation", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
     );
-    expect(within(dialog).getAllByText("Niv. 11")).toHaveLength(CATALOG.length);
+    expect(within(dialog).getAllByText("Niv. 11")).toHaveLength(
+      cardsOfRarity("common").length,
+    );
     expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
       "11",
     );
     await selectOption("Niveau de la carte", "Niveau 3");
-    expect(within(dialog).getAllByText("Niv. 3")).toHaveLength(CATALOG.length);
+    expect(within(dialog).getAllByText("Niv. 3")).toHaveLength(
+      cardsOfRarity("common").length,
+    );
     expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
       "3",
     );
@@ -64,9 +70,9 @@ describe("Bestiary navigation", () => {
   it("clamps gallery levels when changing rarity and closes the level menu with Escape without closing the bestiary", async () => {
     const dialog = await openBestiary();
     await selectOption("Rareté de la carte", "Légendaire");
-    await selectOption("Niveau de la carte", "Niveau 31");
+    await selectOption("Niveau de la carte", "Niveau 26");
     expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
-      "31",
+      "26",
     );
     expect(
       within(
@@ -79,7 +85,9 @@ describe("Bestiary navigation", () => {
     expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
       "26",
     );
-    expect(within(dialog).getAllByText("Niv. 26")).toHaveLength(CATALOG.length);
+    expect(within(dialog).getAllByText("Niv. 26")).toHaveLength(
+      cardsOfRarity("common").length,
+    );
     const trigger = within(dialog).getByRole("combobox", {
       name: "Niveau de la carte",
     });
@@ -172,7 +180,7 @@ describe("Bestiary navigation", () => {
     );
     expect(
       within(dialog).getAllByRole("button", { name: /^Découvrir / }),
-    ).toHaveLength(CATALOG.length);
+    ).toHaveLength(cardsOfRarity("common").length);
   });
 
   it("searches every evolution name without accents and keeps the search on return", async () => {
@@ -229,26 +237,18 @@ describe("Bestiary navigation", () => {
     ).toHaveLength(CATALOG.length);
   });
 
-  it("navigates within the filtered creatures and recovers from an empty search", async () => {
+  it("filters the CW building forms and recovers from an empty search", async () => {
     const dialog = await openBestiary();
-    const buildings = CATALOG.filter(
-      (card) => getCombatType(card) === "building",
-    );
+    await selectOption("Rareté de la carte", "Rare");
     fireEvent.click(within(dialog).getByRole("button", { name: "Bâtiments" }));
     expect(
       within(dialog).getAllByRole("button", { name: /^Découvrir / }),
-    ).toHaveLength(buildings.length);
+    ).toHaveLength(1);
     fireEvent.click(
       within(dialog).getByRole("button", {
-        name: `Découvrir ${buildings[0]!.name}`,
+        name: "Découvrir Totem des couronnes",
       }),
     );
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Créature suivante" }),
-    );
-    expect(
-      within(dialog).getByRole("heading", { name: buildings[1]!.name }),
-    ).toBeTruthy();
     expect(
       (
         within(dialog).getByRole("button", {
@@ -259,11 +259,6 @@ describe("Bestiary navigation", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Tout le bestiaire" }),
     );
-    expect(
-      within(dialog)
-        .getByRole("button", { name: "Bâtiments" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
     fireEvent.change(within(dialog).getByRole("searchbox"), {
       target: { value: "introuvable" },
     });
@@ -276,7 +271,7 @@ describe("Bestiary navigation", () => {
     );
     expect(
       within(dialog).getAllByRole("button", { name: /^Découvrir / }),
-    ).toHaveLength(CATALOG.length);
+    ).toHaveLength(22);
   });
 
   it("updates level previews and clamps a legendary creature to a building's cap during navigation", async () => {
@@ -293,9 +288,9 @@ describe("Bestiary navigation", () => {
     });
     fireEvent.change(
       within(dialog).getByRole("slider", { name: "Parcourir les niveaux" }),
-      { target: { value: "31" } },
+      { target: { value: "26" } },
     );
-    expect(levels.textContent).toContain("Niveau 31");
+    expect(levels.textContent).toContain("Niveau 26");
     expect(
       (
         within(dialog).getByRole("button", {

@@ -12,6 +12,7 @@ import {
   DEFAULT_DECK,
   DECK_SIZE,
   variantCard,
+  availableRarities,
   type OwnedCard,
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -30,7 +31,7 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 const deckId = "saved-deck" as Id<"decks">;
 const fullCollection: OwnedCard[] = CATALOG.map((base) => ({
-  card: variantCard(base.id, "common"),
+  card: variantCard(base.id, availableRarities(base.id)[0]!),
   copies: 0,
 }));
 const savedDeck: WorkshopDeck = {
@@ -38,7 +39,7 @@ const savedDeck: WorkshopDeck = {
   name: "Les gardiens de la Sylve",
   cardIds: [
     ...CATALOG.slice(0, 7).map((card) => `${card.id}:common`),
-    "wolf:common",
+    "wolf:rare",
   ],
 };
 const starter = { ...savedDeck, cardIds: [...DEFAULT_DECK] };
@@ -239,9 +240,9 @@ describe("l’atelier et la collection", () => {
   it("opens the saved deck, shows only owned reserve cards, and exposes rarity filters", () => {
     setup();
     expect(deckCards()).toHaveLength(8);
-    expect(card(deckRow(), "Loup de lune")).toBeTruthy();
+    expect(card(deckRow(), "Loup de givre")).toBeTruthy();
     expect(
-      collection().queryByRole("button", { name: /^Loup de lune,/ }),
+      collection().queryByRole("button", { name: /^Loup de givre,/ }),
     ).toBeNull();
     expect(collection().getAllByRole("button")).toHaveLength(
       CATALOG.length - 8,
@@ -289,7 +290,9 @@ describe("l’atelier et la collection", () => {
         .map((button) => button.getAttribute("aria-label")!.split(",")[0]);
 
     expect(
-      screen.getByRole("button", { name: "Toutes" }).getAttribute("aria-pressed"),
+      screen
+        .getByRole("button", { name: "Toutes" })
+        .getAttribute("aria-pressed"),
     ).toBe("true");
     expect(visibleNames()).toEqual(expectedOrder);
     fireEvent.click(screen.getByRole("button", { name: "Bâtiments" }));
@@ -528,7 +531,7 @@ describe("l’atelier et la collection", () => {
   it("shows the level-dependent gold cost", async () => {
     const owned = fullCollection.map((entry) => ({
       ...entry,
-      card: variantCard(entry.card.baseId!, "common", 3),
+      card: variantCard(entry.card.baseId!, entry.card.rarity!, 3),
       copies: 75,
     }));
     setup(starter, owned, 150);
@@ -542,29 +545,29 @@ describe("l’atelier et la collection", () => {
   it("filters buildings and exposes their abilities", async () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Bâtiments" }));
-    expect(collection().getAllByRole("button")).toHaveLength(2);
-    fireEvent.click(card(collection(), "Totem de l’aurore"));
+    expect(collection().getAllByRole("button")).toHaveLength(1);
+    fireEvent.click(card(collection(), "Totem des couronnes"));
     const dialog = within(await screen.findByRole("dialog"));
     expect(
       dialog.getByText(
-        "Au début du tour : accorde 3 ATQ à un allié aléatoire.",
+        "À la fin du tour : inflige 1 dégât à tous les ennemis.",
       ),
     ).toBeTruthy();
     expect(dialog.getByText("Active · niv. 1")).toBeTruthy();
   });
   it("previews an ability unlock at a level that does not add attack or HP", async () => {
     const owned = [
-      { card: variantCard("guardian", "common", 2), copies: 50 },
+      { card: variantCard("guardian", "common", 10), copies: 450 },
       ...fullCollection.filter((e) => e.card.baseId !== "guardian"),
     ];
-    setup(starter, owned, 80);
+    setup(starter, owned, 3000);
     fireEvent.click(card(deckRow(), "Gardien de pierre"));
     const dialog = within(await screen.findByRole("dialog"));
-    expect(dialog.getByText(/Niv. 3 : Débloquée/)).toBeTruthy();
+    expect(dialog.getByText(/Niv. 11 : Débloquée/)).toBeTruthy();
     expect(
       (
         dialog.getByRole("button", {
-          name: "Améliorer au niveau 3",
+          name: "Améliorer au niveau 11",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(false);
