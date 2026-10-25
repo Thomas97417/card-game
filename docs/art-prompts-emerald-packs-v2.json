@@ -1,0 +1,56 @@
+{
+  "tool": "Built-in ImageGen",
+  "date": "2026-10-25",
+  "assets": [
+    {
+      "id": "small-pouch",
+      "prompt": "Use case: stylized-concept.\nAsset type: isolated transparent inventory item for a restrained five-tier emerald shop in the woodland fantasy card game Sylve.\nReference image 1: STYLE AND MATERIAL reference, and the UPPER LIMIT of richness for the final tier in the whole set. This requested asset is a SMALLER, SIMPLER earlier tier. Match its polished hand-painted fantasy brushwork, brown oak/leather, muted antique brass, faceted vivid GREEN emeralds and soft warm highlights. Redesign the subject as described below rather than copying the large chest.\nComposition: one complete centered object in three-quarter view, square image, full silhouette, 12 percent transparent padding, consistent slightly elevated viewing angle, readable at 180px. Grounded plausible handheld proportions and restrained materials. Keep all gems green. Emeralds are ordinary small gemstones, not gigantic boulders. Very subtle gem highlights.\nConstraints: real transparent alpha background. No environment or floor, no UI, no text or lettering, no watermark, no people, no crown, no royal symbols, no multiple containers, no mountains of gems, no huge treasure piles, no coins. A single modest container and a few gems only.\nSubject: Tier 1 of 5: a SMALL plain walnut-brown soft leather drawstring coin purse, slightly open to reveal only five or six small emerald gemstones. One tiny loose emerald beside it. Simple cord, a small brass eyelet, no decoration. An inexpensive humble purse, rounded compact silhouette, very little treasure.",
+      "referenceImage": "/Users/thomas/.codex/worktrees/b5a4/card-game/apps/web/public/art/treasures/emerald-chest.webp",
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16f1c-ddf4-7e81-8e1f-f7b6b64ff5e9/exec-42aa8644-3ab0-441a-92da-e91d0444974f.png",
+      "path": "apps/web/public/art/treasures/emerald-small-pouch.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true
+    },
+    {
+      "id": "leather-satchel",
+      "prompt": "Use case: stylized-concept.\nAsset type: isolated transparent inventory item for a restrained five-tier emerald shop in the woodland fantasy card game Sylve.\nReference image 1: STYLE AND MATERIAL reference, and the UPPER LIMIT of richness for the final tier in the whole set. This requested asset is a SMALLER, SIMPLER earlier tier. Match its polished hand-painted fantasy brushwork, brown oak/leather, muted antique brass, faceted vivid GREEN emeralds and soft warm highlights. Redesign the subject as described below rather than copying the large chest.\nComposition: one complete centered object in three-quarter view, square image, full silhouette, 12 percent transparent padding, consistent slightly elevated viewing angle, readable at 180px. Grounded plausible handheld proportions and restrained materials. Keep all gems green. Emeralds are ordinary small gemstones, not gigantic boulders. Very subtle gem highlights.\nConstraints: real transparent alpha background. No environment or floor, no UI, no text or lettering, no watermark, no people, no crown, no royal symbols, no multiple containers, no mountains of gems, no huge treasure piles, no coins. A single modest container and a few gems only.\nSubject: Tier 2 of 5: a medium brown leather travel SATCHEL, clearly rectangular and wider than a coin purse, with a short loop handle and its flap folded open. Roughly ten small faceted emeralds visible neatly inside the opening, two loose gems beside the bag. Subtle stitched edges and one small dull brass buckle. One simple practical leather bag, modest and unadorned, not an overstuffed sack.",
+      "referenceImage": "/Users/thomas/.codex/worktrees/b5a4/card-game/apps/web/public/art/treasures/emerald-chest.webp",
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16f1c-ddf4-7e81-8e1f-f7b6b64ff5e9/exec-d661eb13-2576-4afe-b5fd-0f7ea0d06686.png",
+      "path": "apps/web/public/art/treasures/emerald-leather-satchel.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true
+    },
+    {
+      "id": "wooden-case",
+      "prompt": "Use case: stylized-concept.\nAsset type: isolated transparent inventory item for a restrained five-tier emerald shop in the woodland fantasy card game Sylve.\nReference image 1: STYLE AND MATERIAL reference, and the UPPER LIMIT of richness for the final tier in the whole set. This requested asset is a SMALLER, SIMPLER earlier tier. Match its polished hand-painted fantasy brushwork, brown oak/leather, muted antique brass, faceted vivid GREEN emeralds and soft warm highlights. Redesign the subject as described below rather than copying the large chest.\nComposition: one complete centered object in three-quarter view, square image, full silhouette, 12 percent transparent padding, consistent slightly elevated viewing angle, readable at 180px. Grounded plausible handheld proportions and restrained materials. Keep all gems green. Emeralds are ordinary small gemstones, not gigantic boulders. Very subtle gem highlights.\nConstraints: real transparent alpha background. No environment or floor, no UI, no text or lettering, no watermark, no people, no crown, no royal symbols, no multiple containers, no mountains of gems, no huge treasure piles, no coins. A single modest container and a few gems only.\nSubject: Tier 3 of 5: a SMALL shallow dark oak JEWELRY CASE with an open FLAT hinged lid, a low rectangular profile, thin brass edging and a tiny plain latch. A neat single layer of about twelve small green emeralds resting inside on dark green lining, two small gems beside it. Quiet elegant keepsake case, restrained straight silhouette, no arched chest lid and no ornate gold filigree.",
+      "referenceImage": "/Users/thomas/.codex/worktrees/b5a4/card-game/apps/web/public/art/treasures/emerald-chest.webp",
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16f1c-ddf4-7e81-8e1f-f7b6b64ff5e9/exec-6de37fc0-e92a-4014-bc41-65f20e07310e.png",
+      "path": "apps/web/public/art/treasures/emerald-wooden-case.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true
+    },
+    {
+      "id": "carved-coffer",
+      "prompt": "Use case: stylized-concept.\nAsset type: isolated transparent inventory item for a restrained five-tier emerald shop in the woodland fantasy card game Sylve.\nReference image 1: STYLE AND MATERIAL reference, and the UPPER LIMIT of richness for the final tier in the whole set. This requested asset is a SMALLER, SIMPLER earlier tier. Match its polished hand-painted fantasy brushwork, brown oak/leather, muted antique brass, faceted vivid GREEN emeralds and soft warm highlights. Redesign the subject as described below rather than copying the large chest.\nComposition: one complete centered object in three-quarter view, square image, full silhouette, 12 percent transparent padding, consistent slightly elevated viewing angle, readable at 180px. Grounded plausible handheld proportions and restrained materials. Keep all gems green. Emeralds are ordinary small gemstones, not gigantic boulders. Very subtle gem highlights.\nConstraints: real transparent alpha background. No environment or floor, no UI, no text or lettering, no watermark, no people, no crown, no royal symbols, no multiple containers, no mountains of gems, no huge treasure piles, no coins. A single modest container and a few gems only.\nSubject: Tier 4 of 5: a medium-sized dark oak COFFER with an open slightly raised flat hinged lid, a taller rectangular body than a jewelry case but distinctly SMALLER and SIMPLER than the reference chest. Four narrow antique brass corner fittings, a small restrained carved oak-leaf motif and plain latch. A modest layer of about twenty green emeralds inside, only three loose gems at the base. A single practical crafted wooden box with no enormous overflowing heap.",
+      "referenceImage": "/Users/thomas/.codex/worktrees/b5a4/card-game/apps/web/public/art/treasures/emerald-chest.webp",
+      "sourcePath": "/Users/thomas/.codex/generated_images/01a16f1c-ddf4-7e81-8e1f-f7b6b64ff5e9/exec-7cef3bf4-a807-4a8e-aa8d-43f015615c5b.png",
+      "path": "apps/web/public/art/treasures/emerald-carved-coffer.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true
+    },
+    {
+      "id": "ancient-chest",
+      "sourcePath": "apps/web/public/art/treasures/emerald-chest.webp",
+      "path": "apps/web/public/art/treasures/emerald-ancient-chest.webp",
+      "width": 512,
+      "height": 512,
+      "transparentBackground": true,
+      "reused": true,
+      "prompt": "Reuse the original single Coffre des anciens artwork unchanged as the restrained final tier; original generation prompt is archived in art-prompts-emerald-packs.json under id chest."
+    }
+  ]
+}

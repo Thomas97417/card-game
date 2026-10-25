@@ -17,20 +17,31 @@ import { ensureEmeraldWallet } from "./lib/progression";
 import { polar } from "./polar";
 
 const packValidator = v.union(
-  v.literal("pouch"),
-  v.literal("coffer"),
-  v.literal("chest"),
-  v.literal("hoard"),
-  v.literal("royal"),
+  v.literal("small-pouch"),
+  v.literal("leather-satchel"),
+  v.literal("wooden-case"),
+  v.literal("carved-coffer"),
+  v.literal("ancient-chest"),
 );
 
 function configuredProducts(): Record<EmeraldPackId, string | undefined> {
   return {
-    pouch: process.env.POLAR_PRODUCT_EMERALDS_POUCH,
-    coffer: process.env.POLAR_PRODUCT_EMERALDS_COFFER,
-    chest: process.env.POLAR_PRODUCT_EMERALDS_CHEST,
-    hoard: process.env.POLAR_PRODUCT_EMERALDS_HOARD,
-    royal: process.env.POLAR_PRODUCT_EMERALDS_ROYAL,
+    // Preserve the existing product-to-quantity mapping during the catalog rename.
+    "small-pouch":
+      process.env.POLAR_PRODUCT_EMERALDS_SMALL_POUCH ??
+      process.env.POLAR_PRODUCT_EMERALDS_POUCH,
+    "leather-satchel":
+      process.env.POLAR_PRODUCT_EMERALDS_LEATHER_SATCHEL ??
+      process.env.POLAR_PRODUCT_EMERALDS_COFFER,
+    "wooden-case":
+      process.env.POLAR_PRODUCT_EMERALDS_WOODEN_CASE ??
+      process.env.POLAR_PRODUCT_EMERALDS_CHEST,
+    "carved-coffer":
+      process.env.POLAR_PRODUCT_EMERALDS_CARVED_COFFER ??
+      process.env.POLAR_PRODUCT_EMERALDS_HOARD,
+    "ancient-chest":
+      process.env.POLAR_PRODUCT_EMERALDS_ANCIENT_CHEST ??
+      process.env.POLAR_PRODUCT_EMERALDS_ROYAL,
   };
 }
 

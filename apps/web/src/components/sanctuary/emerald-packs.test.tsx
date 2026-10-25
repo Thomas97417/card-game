@@ -81,7 +81,7 @@ describe("packs d’émeraudes", () => {
     const buy = screen.getByRole("button", { name: /Acheter 500 émeraudes/ });
     fireEvent.click(buy);
     fireEvent.click(buy);
-    expect(onPurchase).toHaveBeenCalledExactlyOnceWith("pouch");
+    expect(onPurchase).toHaveBeenCalledExactlyOnceWith("small-pouch");
     expect(
       screen
         .getAllByRole("button")

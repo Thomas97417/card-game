@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
 import { Check, CreditCard, LoaderCircle, ShieldCheck, X } from "lucide-react";
 import {
@@ -55,7 +55,7 @@ export function EmeraldPacks({
       aria-busy={busy !== null}
     >
       <div className="emerald-pack-grid">
-        {EMERALD_PACKS.map((pack, index) => {
+        {EMERALD_PACKS.map((pack) => {
           const offer = offers?.find((item) => item.id === pack.id);
           const price =
             offer?.priceAmount != null && offer.priceCurrency
@@ -67,13 +67,11 @@ export function EmeraldPacks({
           const working = busy === pack.id;
           return (
             <article
-              className={`emerald-pack ${index === 4 ? "emerald-pack-royal" : ""}`}
+              className="emerald-pack"
               key={pack.id}
               aria-labelledby={`emerald-pack-${pack.id}`}
             >
-              <span className="emerald-pack-tag">
-                {index === 4 ? "Trésor souverain" : "Achat ponctuel"}
-              </span>
+              <span className="emerald-pack-tag">Achat ponctuel</span>
               <img
                 className="emerald-pack-art"
                 src={pack.image}
@@ -82,6 +80,9 @@ export function EmeraldPacks({
                 alt=""
                 draggable={false}
                 loading="lazy"
+                style={
+                  { "--treasure-art-scale": pack.artScale } as CSSProperties
+                }
               />
               <h2 id={`emerald-pack-${pack.id}`}>{pack.name}</h2>
               <p className="emerald-pack-description">{pack.description}</p>

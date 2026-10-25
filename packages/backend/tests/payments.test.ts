@@ -16,7 +16,7 @@ beforeEach(() => {
   vi.stubEnv("POLAR_SERVER", "sandbox");
   for (const pack of EMERALD_PACKS)
     vi.stubEnv(
-      `POLAR_PRODUCT_EMERALDS_${pack.id.toUpperCase()}`,
+      `POLAR_PRODUCT_EMERALDS_${pack.id.replaceAll("-", "_").toUpperCase()}`,
       `product-${pack.id}`,
     );
 });
@@ -63,7 +63,7 @@ async function player(t: Test, name = "alice") {
     client: t.withIdentity({ subject: user._id, sessionId: session._id }),
   };
 }
-function product(id = "pouch") {
+function product(id = "small-pouch") {
   const timestamp = new Date().toISOString();
   return {
     id: `product-${id}`,
@@ -100,8 +100,8 @@ async function pendingPurchase(
     ownerId,
     checkoutId,
     customerId: "customer-test",
-    productId: "product-pouch",
-    packId: "pouch",
+    productId: "product-small-pouch",
+    packId: "small-pouch",
     emeralds: 500,
     priceAmount: 499,
     priceCurrency: "eur",
@@ -112,7 +112,7 @@ const paidOrder = (checkoutId = "checkout-test", orderId = "order-test") => ({
   orderId,
   checkoutId,
   customerId: "customer-test",
-  productId: "product-pouch",
+  productId: "product-small-pouch",
   currency: "eur",
   paid: true,
   status: "paid",
@@ -159,7 +159,7 @@ function orderEvent(
       invoice_number: "TEST-001",
       is_invoice_generated: false,
       customer_id: "customer-test",
-      product_id: "product-pouch",
+      product_id: "product-small-pouch",
       discount_id: null,
       subscription_id: null,
       checkout_id: "checkout-test",
@@ -230,7 +230,7 @@ describe("achats d’émeraudes avec Polar", () => {
       "Connecte-toi",
     );
     await expect(
-      t.action(api.payments.createCheckout, { packId: "pouch" }),
+      t.action(api.payments.createCheckout, { packId: "small-pouch" }),
     ).rejects.toThrow("Connecte-toi");
     await expect(
       t.query(api.payments.checkoutStatus, { checkoutId: "x" }),
@@ -246,7 +246,7 @@ describe("achats d’émeraudes avec Polar", () => {
     const offers = await client.query(api.payments.offers, {});
     expect(offers).toHaveLength(5);
     expect(offers[0]).toEqual({
-      id: "pouch",
+      id: "small-pouch",
       priceAmount: 499,
       priceCurrency: "eur",
       available: true,
@@ -284,13 +284,16 @@ describe("achats d’émeraudes avec Polar", () => {
     if (invalid === "multiple-prices")
       item.prices.push({ ...item.prices[0], id: "price-second" });
     if (invalid === "duplicate-product")
-      vi.stubEnv("POLAR_PRODUCT_EMERALDS_COFFER", "product-pouch");
+      vi.stubEnv(
+        "POLAR_PRODUCT_EMERALDS_LEATHER_SATCHEL",
+        "product-small-pouch",
+      );
     await t.mutation(components.polar.lib.createProduct, { product: item });
     expect((await client.query(api.payments.offers, {}))[0].available).toBe(
       false,
     );
     await expect(
-      client.action(api.payments.createCheckout, { packId: "pouch" }),
+      client.action(api.payments.createCheckout, { packId: "small-pouch" }),
     ).rejects.toThrow("indisponible");
   });
 
@@ -310,20 +313,20 @@ describe("achats d’émeraudes avec Polar", () => {
       currency: "eur",
     } as Awaited<ReturnType<typeof polar.createCheckoutSession>>);
     const checkout = await alice.client.action(api.payments.createCheckout, {
-      packId: "pouch",
+      packId: "small-pouch",
     });
     expect(checkout.url).toBe(
       "https://sandbox.polar.sh/checkout/test?locale=fr",
     );
     expect(create.mock.calls[0][1]).toEqual({
-      productIds: ["product-pouch"],
+      productIds: ["product-small-pouch"],
       userId: alice.userId,
       email: "alice@example.invalid",
       origin: "https://sylve.example",
       successUrl: "https://sylve.example/sanctuary?checkout={CHECKOUT_ID}",
       metadata: {
         purpose: "emerald_pack",
-        packId: "pouch",
+        packId: "small-pouch",
         userId: alice.userId,
       },
     });
@@ -345,7 +348,7 @@ describe("achats d’émeraudes avec Polar", () => {
     ).toBeNull();
     await expect(
       alice.client.action(api.payments.createCheckout, {
-        packId: "pouch",
+        packId: "small-pouch",
         emeralds: 999999,
       } as never),
     ).rejects.toThrow();
@@ -365,7 +368,7 @@ describe("achats d’émeraudes avec Polar", () => {
       currency: "eur",
     } as Awaited<ReturnType<typeof polar.createCheckoutSession>>);
     await expect(
-      client.action(api.payments.createCheckout, { packId: "pouch" }),
+      client.action(api.payments.createCheckout, { packId: "small-pouch" }),
     ).rejects.toThrow("vient de changer");
     expect(
       await t.run((ctx) => ctx.db.query("emeraldPurchases").collect()),
@@ -516,6 +519,59 @@ describe("achats d’émeraudes avec Polar", () => {
     );
     await sendWebhook(t, orderEvent());
     expect(await balance(t, userId)).toBeNull();
+  });
+
+  it("keeps the old Polar product mapping usable with the renamed catalog", async () => {
+    const t = setup();
+    const { client } = await player(t);
+    vi.stubEnv("POLAR_PRODUCT_EMERALDS_SMALL_POUCH", undefined);
+    vi.stubEnv("POLAR_PRODUCT_EMERALDS_POUCH", "product-small-pouch");
+    await t.mutation(components.polar.lib.createProduct, {
+      product: product(),
+    });
+    expect((await client.query(api.payments.offers, {}))[0]).toEqual({
+      id: "small-pouch",
+      priceAmount: 499,
+      priceCurrency: "eur",
+      available: true,
+    });
+    vi.stubEnv("POLAR_PRODUCT_EMERALDS_SMALL_POUCH", "replacement-product");
+    expect((await client.query(api.payments.offers, {}))[0].available).toBe(
+      false,
+    );
+  });
+
+  it("fulfills an old pending royal purchase from its saved quantity after the catalog rename", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await t.run((ctx) =>
+      ctx.db.insert("emeraldPurchases", {
+        ownerId: userId,
+        checkoutId: "legacy-checkout",
+        customerId: "customer-test",
+        productId: "legacy-royal-product",
+        packId: "royal",
+        emeralds: 15_000,
+        priceAmount: 9999,
+        priceCurrency: "eur",
+        status: "pending",
+        creditedEmeralds: 0,
+        refundedEmeralds: 0,
+      }),
+    );
+    const event = orderEvent("order.paid", {
+      checkout_id: "legacy-checkout",
+      product_id: "legacy-royal-product",
+      subtotal_amount: 9999,
+      net_amount: 9999,
+      total_amount: 9999,
+      tax_amount: 0,
+    });
+    expect((await sendWebhook(t, event)).status).toBe(202);
+    await sendWebhook(t, event);
+    expect((await balance(t, userId))?.diamonds).toBe(
+      WELCOME_DIAMONDS + 15_000,
+    );
   });
 
   it("preserves a refund debt after already spending the purchased emeralds", async () => {

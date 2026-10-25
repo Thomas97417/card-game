@@ -178,12 +178,6 @@
     inset 0 1px #f7dc9d22;
   text-align: center;
 }
-.emerald-pack-royal {
-  border-color: #e5bf73b3;
-  background:
-    radial-gradient(ellipse at 50% 32%, #d4ae5a26, transparent 65%),
-    linear-gradient(155deg, #454431f2, #213224f5);
-}
 .emerald-pack-tag {
   align-self: flex-end;
   color: #dac58e;
@@ -197,6 +191,8 @@
   margin-block: auto 0;
   object-fit: contain;
   filter: drop-shadow(0 8px 10px #021a1499);
+  transform: scale(var(--treasure-art-scale, 1));
+  transform-origin: center bottom;
 }
 .emerald-pack h2 {
   color: #fff0d1;
