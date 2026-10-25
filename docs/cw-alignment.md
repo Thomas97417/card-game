@@ -81,7 +81,7 @@ Le Gardien de la Sylve reprend le barème d’[Adam](https://cwars.miraheze.org/
 
 La puissance du deck additionne celle des variantes équipées dans les emplacements débloqués, à leur niveau réel et avec leurs liens d’âme. Les exemplaires en réserve et le reste de la collection ne comptent pas. La puissance d’escouade ajoute la contribution du héros, qui augmente de 10 par promotion selon le wiki. **Sylve fixe cette contribution à zéro au niveau 1**, car la source ne précise pas sa valeur initiale : `puissance = somme des puissances des cartes du deck + 10 × (niveau du héros − 1)`.
 
-Le héros commence au niveau 1. Dès que le record de puissance atteint le seuil, le bouton de l’atelier permet de monter d’un niveau, sans coût en or ni en exemplaires. Les niveaux acquis et le record restent conservés après un changement de deck. Les améliorations, liens d’âme, sauvegardes de deck et créations de partie actualisent ce record côté serveur. Deux demandes concurrentes pour le même niveau ne donnent qu’une promotion. Le rang de compte lié à l’expérience reste indépendant.
+Le héros commence au niveau 1. Dès que le record de puissance atteint le seuil, le bouton de la Maison des gardiens (`/guardian`) permet de monter d’un niveau, sans coût en or ni en exemplaires. Les niveaux acquis et le record restent conservés après un changement de deck. Les améliorations, liens d’âme, sauvegardes de deck et créations de partie actualisent ce record côté serveur. Deux demandes concurrentes pour le même niveau ne donnent qu’une promotion. Le rang de compte lié à l’expérience reste indépendant.
 
 | Niveau | PV | Puissance pour le niveau suivant | Tempête | Éclaireuses ATQ/PV | Élan ATQ |
 |---|---:|---:|---:|---:|---:|
@@ -100,7 +100,7 @@ Le héros commence au niveau 1. Dès que le record de puissance atteint le seuil
 | 81 | 875 | 24 000 | 41 | 25/10 | +36 |
 | 91 | 1 475 | Maximum | 41 | 25/10 | +36 |
 
-La fiche du héros dans l’atelier affiche les 91 niveaux. En combat, les cartes de pouvoir sont empilées en bas à droite. Seule la première est utilisable ; il faut la dépenser avant d’accéder à la suivante. Les trois premiers pouvoirs sont utilisables une fois par partie, avant de poser la carte de personnage, sans terminer le tour ni modifier la main ou le chronomètre. Il est possible d’enchaîner plusieurs pouvoirs prêts avant la même invocation.
+La Maison des gardiens présente les pouvoirs actuels et un explorateur des 91 niveaux, avec comparaison des PV, de la puissance et des pouvoirs. L’atelier conserve un résumé de la puissance actuelle et du prochain seuil, avec un lien vers la Maison lorsqu’une promotion est disponible. En combat, les cartes de pouvoir sont empilées en bas à droite. Seule la première est utilisable ; il faut la dépenser avant d’accéder à la suivante. Les trois premiers pouvoirs sont utilisables une fois par partie, avant de poser la carte de personnage, sans terminer le tour ni modifier la main ou le chronomètre. Il est possible d’enchaîner plusieurs pouvoirs prêts avant la même invocation.
 
 | Pouvoir Sylve | Pouvoir Adam | Niveau requis | Disponible à partir de | Effet |
 |---|---|---:|---|---|
@@ -121,7 +121,7 @@ Contrôle visuel des composants réels : [pouvoirs sur ordinateur](hero-powers-d
 
 Commandes : `bun x turbo run test -- --maxWorkers=2`, `bun run check-types`, `bun run build`.
 
-Résultat du 25 octobre 2026 : **699 tests passent** (241 moteur, 202 backend, 256 interface), vérification TypeScript et compilation réussies.
+Résultat du 25 octobre 2026 après intégration d’`origin/main` : **705 tests passent** (241 moteur, 202 backend, 262 interface), vérification TypeScript et compilation réussies.
 
 Les tests comparent chaque paire ATQ/PV aux incréments sources indépendants, les noms et illustrations à l’ancien catalogue, les nouvelles mécaniques, les 336 prérequis, les accès et transactions concurrentes, les migrations et les contrôles de l’interface. Ils vérifient aussi les 91 niveaux du héros, les seuils et promotions concurrentes, la pile des pouvoirs, les effets, les échéances, les récompenses, les renforts, le comportement de l’IA et la reprise des animations. Les anciens profils restent isolés dans une fixture pour contrôler la compatibilité des combats enregistrés.
 

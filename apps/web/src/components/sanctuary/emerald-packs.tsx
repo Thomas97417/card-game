@@ -88,23 +88,27 @@ export function EmeraldPacks({
               <div className="emerald-pack-amount">
                 <EmeraldAmount amount={pack.emeralds} />
               </div>
-              <button
-                className="emerald-pack-button"
-                type="button"
-                disabled={!ready || !!busy || !offer?.available || !onPurchase}
-                aria-busy={working || !offers || undefined}
-                aria-label={`Acheter ${pack.emeralds.toLocaleString("fr-FR")} émeraudes — ${pack.name}${price ? `, ${price}` : ""}`}
-                title={
-                  !offers
-                    ? "Chargement du prix…"
-                    : !offer?.available
-                      ? "Ce pack est momentanément indisponible."
-                      : undefined
-                }
-                onClick={() => void buy(pack.id)}
-              >
-                <strong>{price ?? "—"}</strong>
-              </button>
+              <div className="sanctuary-purchase-footer">
+                <button
+                  className="emerald-pack-button"
+                  type="button"
+                  disabled={
+                    !ready || !!busy || !offer?.available || !onPurchase
+                  }
+                  aria-busy={working || !offers || undefined}
+                  aria-label={`Acheter ${pack.emeralds.toLocaleString("fr-FR")} émeraudes — ${pack.name}${price ? `, ${price}` : ""}`}
+                  title={
+                    !offers
+                      ? "Chargement du prix…"
+                      : !offer?.available
+                        ? "Ce pack est momentanément indisponible."
+                        : undefined
+                  }
+                  onClick={() => void buy(pack.id)}
+                >
+                  <strong>{price ?? "—"}</strong>
+                </button>
+              </div>
             </article>
           );
         })}

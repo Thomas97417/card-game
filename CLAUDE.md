@@ -14,7 +14,7 @@ bun run build            # Build all applications
 bun run check-types      # TypeScript type checking across all workspaces
 ```
 
-Convex environment variables from `packages/backend/.env.local` must be copied to `apps/web/.env`.
+Only copy the public Convex URLs into `apps/web/.env`, as `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL`. Configure authentication, email, OAuth and payment secrets on the Convex deployment. Never copy backend secrets into frontend environment files or prefix them with `VITE_`.
 
 ## Architecture
 
