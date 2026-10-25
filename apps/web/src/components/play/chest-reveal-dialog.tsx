@@ -5,8 +5,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { Link } from "@tanstack/react-router";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import {
   combatTypeLabel,
   maxCardLevel,
@@ -53,7 +52,6 @@ export function ChestRevealDialog({
   const [reveal, setReveal] = useState({ reward, count: 0 });
   const [inspected, setInspected] = useState<string | null>(null);
   const revealedCount = reveal.reward === reward ? reveal.count : 0;
-  const complete = !!reward && revealedCount > reward.reveals.length;
   const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
   const inspectedReveal = reward?.reveals.find(
     (item) => item.variantId === inspected,
@@ -218,15 +216,6 @@ export function ChestRevealDialog({
                 );
               })}
             </div>
-            <p className="chest-reveal-status" role="status">
-              {complete
-                ? "Touche une créature pour découvrir ses informations."
-                : "Les cartes se révèlent automatiquement…"}
-            </p>
-            <Link className="sylve-button" to="/decks" onClick={close}>
-              Voir mes compagnons
-              <ArrowRight size={17} />
-            </Link>
           </>
         )}
       </DialogContent>

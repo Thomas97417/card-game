@@ -581,7 +581,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin: 24px 0 12px;
+  margin: 24px 0 0;
 }
 .chest-reveal-item {
   position: relative;
@@ -632,9 +632,6 @@
 .chest-reveal-dialog .chest-reveal-item .rarity-label {
   margin-top: 0;
 }
-.chest-reveal-dialog > [data-slot="dialog-body"] > .sylve-button {
-  width: 100%;
-}
 .chest-reveal-caption > strong {
   font:
     600 12px/1.3 Georgia,
@@ -644,14 +641,6 @@
   font-size: 9px;
   color: var(--quiet);
   line-height: 1.6;
-}
-.chest-reveal-status {
-  min-height: 2.8em;
-  margin: 0 0 14px;
-  color: var(--quiet);
-  text-align: center;
-  font-size: 11px;
-  line-height: 1.4;
 }
 .chest-loot-quantity {
   padding: 3px 8px;
