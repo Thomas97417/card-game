@@ -1,5 +1,23 @@
 # Illustrations de Sylve
 
+## Barre communautaire du refuge
+
+Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton entoure uniquement le chat ; les icônes restent directement sur le décor, sans cadre au survol. Les commandes d’exploration du village encadrent la barre à gauche et à droite, à hauteur du chat. Le texte d’aide au déplacement est retiré. L’ensemble s’adapte aux petits écrans et à leur zone de sécurité.
+
+Les raccourcis sont regroupés au centre sur 280 px au maximum, avec des icônes de 52 px et des libellés de 14 px, à 2 px du chat. Sur mobile, le groupe mesure au maximum 252 px, les icônes 44 px et les textes 12 px ; aucun espace supplémentaire ne sépare les raccourcis du cadre du chat.
+
+Les trois icônes originales ont été créées par trois appels distincts à **ImageGen intégré**, avec un fond transparent :
+
+- `apps/web/public/art/ui/ranking-trophy.webp` : trophée doré avec une émeraude en forme de feuille.
+- `apps/web/public/art/ui/friends-handshake.webp` : poignée de main entre deux gardiens, cuir, laiton et émeraudes.
+- `apps/web/public/art/ui/missions-scroll.webp` : parchemin aux coches vertes et au sceau doré.
+
+Les assets sont encodés en WebP transparent de 384 × 384 px, avec conservation de l’alpha généré. Les [prompts complets, sources et chemins finaux](art-prompts-hub-dock.json) sont conservés dans le manifeste. Aucun fallback CLI n’a été utilisé.
+
+Cette modification prépare les points d’entrée de l’interface : le chat, le classement mondial, la liste d’amis et les missions sont explicitement indiqués comme **bientôt disponibles**, sans messages ni joueurs fictifs. Les panneaux proposent les actions déjà disponibles dans l’arène. Leur ouverture utilise les dialogues partagés avec navigation au clavier et retour du focus ; Échap replie le chat.
+
+Le composant réel a été vérifié dans un aperçu isolé, sans connexion à un compte, à 1440 × 900, 390 × 844, 320 × 568 et 844 × 390 px : centrage, maintien pendant le défilement de la carte, ouverture des panneaux, retour du focus, archives et réduction des animations. Les rendus sont conservés sur [ordinateur](hub-dock-desktop-validation.webp), sur [mobile](hub-dock-mobile-validation.webp), avec le [chat déplié](hub-chat-mobile-validation.webp) et avec le [panneau Amis](hub-friends-validation.webp). Un [détail de la barre](hub-dock-detail.webp) montre les trois icônes intégrées.
+
 ## En-tête et menu des paramètres
 
 L’icône `apps/web/public/art/ui/settings-gear.webp` a été créée avec **ImageGen intégré** : un engrenage de noyer sculpté, bordé de laiton doré, avec des incrustations de feuilles et un centre émeraude. Le WebP de 384 × 384 px conserve l’alpha généré et mesure environ 52 Ko. Le [prompt complet](art-prompts-settings.json) conserve aussi le chemin du PNG original.

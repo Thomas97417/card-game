@@ -33,6 +33,7 @@ import { EmeraldProvider } from "@/components/emerald-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
 import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
+import hubCss from "../hub.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -71,6 +72,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: bestiaryCss },
       { rel: "stylesheet", href: playerHeaderCss },
       { rel: "stylesheet", href: settingsCss },
+      { rel: "stylesheet", href: hubCss },
     ],
   }),
 

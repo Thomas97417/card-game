@@ -1,0 +1,30 @@
+{
+  "generator": "Built-in ImageGen",
+  "transparent_background": true,
+  "assets": [
+    {
+      "kind": "ranking",
+      "output": "apps/web/public/art/ui/ranking-trophy.webp",
+      "prompt": "Use case: stylized-concept.\nAsset type: production illustrated navigation icon for the bottom hub toolbar of Sylve, a woodland fantasy card game.\nStyle/medium: premium hand-painted 2D storybook fantasy inventory art. Thick aged golden-brass bevels, warm walnut wood, deep emerald enamel and small botanical details. Rich honey highlights from upper left, painterly material textures, fine dark contour and soft dimensional shading. Bold readable silhouette matching existing woodland fantasy game icons.\nComposition: square canvas, exactly one centered compact symbol, occupying 88 percent of the image with all extremities visible and a small margin; immediately readable at 48 to 64 pixels.\nBackground: genuinely alpha-transparent, including holes in the symbol.\nConstraints: render only the isolated finished icon. No surrounding interface, no lettering, no text, no numbers, no ground plane, no background, no backplate, no watermark, no painted checkerboard, no floating particles or glow cloud.\nPrimary request: one beautiful broad gold trophy cup with two large curled handles, a sturdy short walnut pedestal, a small emerald leaf-shaped jewel in the center of the cup, and a restrained small laurel leaf on each side of the stem. Clear compact nearly front-on silhouette. This is the icon for Classement, the player rankings.",
+      "source": "/Users/thomas/.codex/generated_images/01a1735a-2ba2-7f00-9451-904125f942bc/exec-273c6275-5bbb-4bc6-8e73-01cc93f974be.png",
+      "width": 384,
+      "height": 384
+    },
+    {
+      "kind": "friends",
+      "output": "apps/web/public/art/ui/friends-handshake.webp",
+      "prompt": "Use case: stylized-concept.\nAsset type: production illustrated navigation icon for the bottom hub toolbar of Sylve, a woodland fantasy card game.\nStyle/medium: premium hand-painted 2D storybook fantasy inventory art. Thick aged golden-brass bevels, warm walnut wood, deep emerald enamel and small botanical details. Rich honey highlights from upper left, painterly material textures, fine dark contour and soft dimensional shading. Bold readable silhouette matching existing woodland fantasy game icons.\nComposition: square canvas, exactly one centered compact symbol, occupying 88 percent of the image with all extremities visible and a small margin; immediately readable at 48 to 64 pixels.\nBackground: genuinely alpha-transparent, including holes in the symbol.\nConstraints: render only the isolated finished icon. No surrounding interface, no lettering, no text, no numbers, no ground plane, no background, no backplate, no watermark, no painted checkerboard, no floating particles or glow cloud.\nPrimary request: one unmistakable friendly handshake between two woodland guardians, two joined gloved hands crossing diagonally in a compact wide shape. One ivory silver leather glove and one warm brown leather glove with aged golden-brass cuffs, small emerald leaf clasps. Fingers wrap naturally around the opposite palm. Clear simple recognizable handshake silhouette, only hands and short cuffs, no arms or characters. This is the icon for Amis.",
+      "source": "/Users/thomas/.codex/generated_images/01a1735a-2ba2-7f00-9451-904125f942bc/exec-d95c1ff1-1802-4d6c-83e3-cdcc4051c270.png",
+      "width": 384,
+      "height": 384
+    },
+    {
+      "kind": "missions",
+      "output": "apps/web/public/art/ui/missions-scroll.webp",
+      "prompt": "Use case: stylized-concept.\nAsset type: production illustrated navigation icon for the bottom hub toolbar of Sylve, a woodland fantasy card game.\nStyle/medium: premium hand-painted 2D storybook fantasy inventory art. Thick aged golden-brass bevels, warm walnut wood, deep emerald enamel and small botanical details. Rich honey highlights from upper left, painterly material textures, fine dark contour and soft dimensional shading. Bold readable silhouette matching existing woodland fantasy game icons.\nComposition: square canvas, exactly one centered compact symbol, occupying 88 percent of the image with all extremities visible and a small margin; immediately readable at 48 to 64 pixels.\nBackground: genuinely alpha-transparent, including holes in the symbol.\nConstraints: render only the isolated finished icon. No surrounding interface, no lettering, no text, no numbers, no ground plane, no background, no backplate, no watermark, no painted checkerboard, no floating particles or glow cloud.\nPrimary request: one cream parchment quest scroll with sturdy curled walnut rollers capped in golden brass, shown nearly front-on, with exactly three bold emerald check marks paired with three short engraved non-letter lines. A small golden leaf seal with an emerald center at the lower right corner. Broad compact warm ivory silhouette. This is the icon for Missions, a fantasy quest journal.",
+      "source": "/Users/thomas/.codex/generated_images/01a1735a-2ba2-7f00-9451-904125f942bc/exec-d8aed53f-67aa-4842-94dc-30d8beb03407.png",
+      "width": 384,
+      "height": 384
+    }
+  ]
+}

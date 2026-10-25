@@ -6,9 +6,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Compass,
   MapPin,
-  MousePointer2,
   Shield,
   Swords,
 } from "lucide-react";
@@ -32,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
+import { HubDock } from "./hub-dock";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { AbilityLegend } from "@/components/game/ability-legend";
@@ -90,8 +89,6 @@ const PLACES: readonly Place[] = [
   },
 ];
 
-const focusStyle =
-  "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e9ca82]";
 const hotspotStyle = cn(
   "group absolute flex flex-col items-center justify-end rounded-[35%] pb-1 outline-none",
   "focus-visible:ring-2 focus-visible:ring-[#ffe4a0] focus-visible:bg-[#f5d88b]/10",
@@ -247,49 +244,28 @@ export function VillageHub({ activity }: VillageHubProps) {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center bg-gradient-to-t from-[#112a22]/70 to-transparent px-4 pt-12 pb-5 sm:pb-7">
-          <p
-            className={cn(
-              "flex items-center gap-2 rounded-full border border-[#d1be85]/30 bg-[#1a3026]/70 px-4 py-2 text-[11px] text-[#fff0cb] backdrop-blur-sm",
-              isPannable && "hidden",
-            )}
-          >
-            <MousePointer2 size={13} className="text-[#e4c381]" />
-            Clique sur un bâtiment pour entrer
-          </p>
-          <div
-            className={cn(
-              "pointer-events-auto flex w-full max-w-sm items-center justify-between gap-3",
-              !isPannable && "hidden",
-            )}
-          >
+        <div className="hub-footer">
+          {isPannable && (
             <button
               type="button"
               onClick={() => scrollMap(-1)}
               aria-label="Explorer la gauche du village"
-              className={cn(
-                "grid size-11 shrink-0 place-items-center rounded-full border border-[#d1be85]/60 bg-[#1a3026]/90 text-[#f1d28b] shadow-lg backdrop-blur-sm hover:bg-[#304a31]",
-                focusStyle,
-              )}
+              className="hub-map-arrow hub-map-arrow-left"
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="flex items-center justify-center gap-2 rounded-full bg-[#1a3026]/75 px-3 py-2 text-center text-[10px] text-[#fff0cb] backdrop-blur-sm">
-              <Compass size={13} className="shrink-0 text-[#e4c381]" />
-              Fais glisser la carte pour explorer
-            </span>
+          )}
+          <HubDock />
+          {isPannable && (
             <button
               type="button"
               onClick={() => scrollMap(1)}
               aria-label="Explorer la droite du village"
-              className={cn(
-                "grid size-11 shrink-0 place-items-center rounded-full border border-[#d1be85]/60 bg-[#1a3026]/90 text-[#f1d28b] shadow-lg backdrop-blur-sm hover:bg-[#304a31]",
-                focusStyle,
-              )}
+              className="hub-map-arrow hub-map-arrow-right"
             >
               <ChevronRight size={20} />
             </button>
-          </div>
+          )}
         </div>
       </main>
 
