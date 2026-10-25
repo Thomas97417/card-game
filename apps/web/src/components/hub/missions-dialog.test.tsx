@@ -18,14 +18,20 @@ vi.mock("./world-chat", () => ({ WorldChat: () => null }));
 describe("carnet de missions du hub", () => {
   it("opens from the dock, switches between three tabs, and supports keyboard navigation", () => {
     render(<HubDock missions={{ board: missionBoard(null, now), now }} />);
-    fireEvent.click(screen.getByRole("button", { name: "Missions" }));
-    expect(screen.getByRole("dialog").textContent).toContain(
+    const trigger = screen.getByRole("button", { name: "Missions" });
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    const panel = screen.getByRole("region", { name: "Missions" });
+    expect(panel.textContent).toContain(
       "Chaque aventure mérite sa récompense",
     );
     expect(
       screen.getByRole("tab", { name: "Jour" }).getAttribute("aria-selected"),
     ).toBe("true");
-    expect(screen.getAllByRole("progressbar")).toHaveLength(5);
+    expect(
+      within(screen.getByRole("list", { name: "Missions du jour" }))
+        .getAllByRole("progressbar"),
+    ).toHaveLength(5);
     expect(
       screen
         .getByRole("group", { name: "Coffres de mission" })
@@ -49,6 +55,13 @@ describe("carnet de missions du hub", () => {
     expect(
       screen.queryByRole("group", { name: "Coffres de mission" }),
     ).toBeNull();
+    fireEvent.keyDown(panel, { key: "Escape" });
+    expect(screen.queryByRole("region", { name: "Missions" })).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("button", { name: "Fermer les missions" }));
+    expect(document.activeElement).toBe(trigger);
   });
 
   it("shows a green check and lets players claim only completed missions and unlocked chests", () => {
@@ -58,7 +71,9 @@ describe("carnet de missions du hub", () => {
     const board = missionBoard(state, now);
     const onClaim = vi.fn();
     const onOpenChest = vi.fn();
-    render(<HubDock missions={{ board, now, onClaim, onOpenChest }} />);
+    const { rerender } = render(
+      <HubDock missions={{ board, now, onClaim, onOpenChest }} />,
+    );
     expect(screen.getByLabelText("Récompenses à récupérer")).toBeTruthy();
     expect(onClaim).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /Missions/ }));
@@ -69,7 +84,16 @@ describe("carnet de missions du hub", () => {
     const chests = within(
       screen.getByRole("group", { name: "Coffres de mission" }),
     );
-    fireEvent.click(chests.getByRole("button", { name: /20 sceaux, ouvrir/ }));
+    expect(
+      screen
+        .getByRole("progressbar", { name: "Progression des coffres de mission" })
+        .getAttribute("aria-valuenow"),
+    ).toBe("20");
+    const readyChest = chests.getByRole("button", { name: /20 sceaux, ouvrir/ });
+    expect(readyChest.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/chests/common.webp",
+    );
+    fireEvent.click(readyChest);
     expect(onOpenChest).toHaveBeenCalledExactlyOnceWith(
       "daily",
       board.daily,
@@ -97,6 +121,15 @@ describe("carnet de missions du hub", () => {
         .getByRole("link", { name: "Aller : Un peu plus fort" })
         .getAttribute("href"),
     ).toBe("/decks");
+    state.daily.chests.push({ index: 0, rarity: "common", reveals: [], gold: 0 });
+    rerender(
+      <HubDock missions={{ board: missionBoard(state, now), now, onClaim, onOpenChest }} />,
+    );
+    const openedChest = chests.getByRole("button", { name: /20 sceaux, récupéré/ });
+    expect((openedChest as HTMLButtonElement).disabled).toBe(true);
+    expect(openedChest.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/chests/common-open.webp",
+    );
   });
 
   it("disables reward actions while a request is pending and reflects claimed rewards immediately", () => {

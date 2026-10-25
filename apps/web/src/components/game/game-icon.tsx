@@ -14,6 +14,7 @@ const ICON_ARTWORK = {
   ranking: "ranking-trophy",
   friends: "friends-handshake",
   missions: "missions-scroll",
+  chat: "world-chat-globe",
 } as const;
 
 export type GameIconKind = keyof typeof ICON_ARTWORK;

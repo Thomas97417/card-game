@@ -69,7 +69,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("le chat mondial du refuge", () => {
-  it("preserves the draft when switching between the chat and the ranking", () => {
+  it("preserves the draft when switching between the chat, ranking and missions", () => {
     render(<HubDock />);
     const chatTrigger = openChat();
     fireEvent.change(screen.getByLabelText("Ton message"), {
@@ -91,6 +91,17 @@ describe("le chat mondial du refuge", () => {
       screen.queryByRole("region", { name: "Classement mondial" }),
     ).toBeNull();
     expect(rankingTrigger.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      (screen.getByLabelText("Ton message") as HTMLTextAreaElement).value,
+    ).toBe("Mon message en cours");
+    const missionsTrigger = screen.getByRole("button", { name: "Missions" });
+    fireEvent.click(missionsTrigger);
+    expect(screen.queryByRole("region", { name: "Chat mondial" })).toBeNull();
+    expect(screen.getByRole("region", { name: "Missions" })).toBeTruthy();
+    expect(vi.mocked(useQuery).mock.calls.at(-1)?.[1]).toBe("skip");
+    fireEvent.click(chatTrigger);
+    expect(screen.queryByRole("region", { name: "Missions" })).toBeNull();
+    expect(missionsTrigger.getAttribute("aria-expanded")).toBe("false");
     expect(
       (screen.getByLabelText("Ton message") as HTMLTextAreaElement).value,
     ).toBe("Mon message en cours");
