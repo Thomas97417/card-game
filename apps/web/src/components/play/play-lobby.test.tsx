@@ -1,6 +1,14 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { resolveCard } from "@sylve/game";
 import { PlayLobby, remainingTime, type LobbyChest } from "./play-lobby";
 import { ChestUnlockDialog } from "./chest-unlock-dialog";
 import { ChestRevealDialog } from "./chest-reveal-dialog";
@@ -191,40 +199,171 @@ describe("le salon de combat", () => {
     expect(remainingTime(60_001)).toBe("1:01");
     expect(remainingTime(3_600_000)).toBe("1:00:00");
   });
-  it("reveals exactly two rewards: gold and a stack of one card with its actual portrait", () => {
-    render(
-      <GoldContext.Provider value={150}>
-        <ChestRevealDialog
-          reward={{
-            rarity: "rare",
-            gold: 150,
-            reveals: [
-              {
-                variantId: "fox:rare",
-                count: 24,
-                isNew: true,
-                level: 1,
-                copies: 23,
-              },
-            ],
-          }}
-          onClose={vi.fn()}
-        />
-      </GoldContext.Provider>,
+  it("automatically flips identical backs into gold then a clickable creature", () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <GoldContext.Provider value={150}>
+          <ChestRevealDialog
+            reward={{
+              rarity: "rare",
+              gold: 150,
+              reveals: [
+                {
+                  variantId: "fox:rare",
+                  count: 24,
+                  isNew: true,
+                  level: 1,
+                  copies: 23,
+                },
+              ],
+            }}
+            collection={undefined}
+            onUpgrade={vi.fn().mockResolvedValue(undefined)}
+            onClose={vi.fn()}
+          />
+        </GoldContext.Provider>,
+      );
+      expect(screen.getByRole("dialog")).toBeTruthy();
+      expect(
+        screen.getByText(
+          "150 pièces d’or et 24 exemplaires rejoignent ta collection.",
+        ),
+      ).toBeTruthy();
+      expect(
+        [...document.querySelectorAll(".summon-card-back img")].map((image) =>
+          image.getAttribute("src"),
+        ),
+      ).toEqual(Array(2).fill("/art/ui/summon-card-back.webp"));
+      expect(screen.queryByText("+150")).toBeNull();
+      expect(
+        screen.queryByRole("button", { name: /voir les informations/ }),
+      ).toBeNull();
+      act(() => vi.advanceTimersByTime(650));
+      expect(screen.getByText("+150")).toBeTruthy();
+      expect(
+        screen.queryByRole("button", { name: /voir les informations/ }),
+      ).toBeNull();
+      act(() => vi.advanceTimersByTime(650));
+      expect(screen.getByText("Débloquée !")).toBeTruthy();
+      expect(screen.getByText("+150")).toBeTruthy();
+      expect(screen.getByText("×24")).toBeTruthy();
+      expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
+      expect(screen.getByAltText("Renard archerune").getAttribute("src")).toBe(
+        "/art/characters/evolutions/fox-rare.webp",
+      );
+      expect(
+        screen
+          .getByRole("button", {
+            name: /Renard archerune,.*voir les informations/,
+          })
+          .getAttribute("aria-haspopup"),
+      ).toBe("dialog");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("opens the creature menu with the current collection and returns to the chest on Escape", async () => {
+    const onClose = vi.fn();
+    const onUpgrade = vi.fn().mockResolvedValue(undefined);
+    const card = resolveCard("fox:rare", 2);
+    vi.useFakeTimers();
+    try {
+      render(
+        <GoldContext.Provider value={50_000}>
+          <ChestRevealDialog
+            reward={{
+              rarity: "rare",
+              gold: 150,
+              reveals: [
+                {
+                  variantId: card.id,
+                  count: 24,
+                  isNew: false,
+                  level: 1,
+                  copies: 23,
+                },
+              ],
+            }}
+            collection={[{ card, copies: 50 }]}
+            onUpgrade={onUpgrade}
+            onClose={onClose}
+          />
+        </GoldContext.Provider>,
+      );
+      act(() => vi.advanceTimersByTime(1_300));
+    } finally {
+      vi.useRealTimers();
+    }
+    const chest = screen.getByRole("dialog");
+    const trigger = within(chest).getByRole("button", {
+      name: /niveau 2, voir les informations/,
+    });
+    fireEvent.click(trigger);
+    const details = await screen.findByRole("dialog", { name: card.name });
+    expect(within(details).getByText("Caractéristiques")).toBeTruthy();
+    expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
+    fireEvent.click(
+      within(details).getByRole("button", { name: "Améliorer au niveau 3" }),
     );
-    expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "150 pièces d’or et 24 exemplaires rejoignent ta collection.",
-      ),
-    ).toBeTruthy();
-    expect(screen.getByText("Débloquée !")).toBeTruthy();
-    expect(screen.getByText("+150")).toBeTruthy();
-    expect(screen.getByText("×24")).toBeTruthy();
-    expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
-    expect(screen.getByAltText("Renard archerune").getAttribute("src")).toBe(
-      "/art/characters/evolutions/fox-rare.webp",
+    await waitFor(() =>
+      expect(onUpgrade).toHaveBeenCalledExactlyOnceWith(card.id),
     );
+    fireEvent.keyDown(details, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),
+    );
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Le trésor est à toi." })).toBe(
+      chest,
+    );
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it("restarts automatic reveals for each chest and cancels a closed chest", () => {
+    const reward = {
+      rarity: "rare" as const,
+      gold: 150,
+      reveals: [
+        {
+          variantId: "fox:rare",
+          count: 24,
+          isNew: true,
+          level: 1,
+          copies: 23,
+        },
+      ],
+    };
+    const props = { collection: undefined, onUpgrade: vi.fn(), onClose: vi.fn() };
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(
+        <ChestRevealDialog reward={reward} {...props} />,
+      );
+      act(() => vi.advanceTimersByTime(650));
+      const nextReward = { ...reward, gold: 180 };
+      rerender(<ChestRevealDialog reward={nextReward} {...props} />);
+      expect(screen.queryByText("+180")).toBeNull();
+      act(() => vi.advanceTimersByTime(650));
+      expect(screen.getByText("+180")).toBeTruthy();
+      expect(
+        screen.queryByRole("button", { name: /voir les informations/ }),
+      ).toBeNull();
+      rerender(<ChestRevealDialog reward={null} {...props} />);
+      act(() => vi.advanceTimersByTime(2_000));
+      expect(screen.queryByRole("dialog")).toBeNull();
+      rerender(<ChestRevealDialog reward={nextReward} {...props} />);
+      expect(
+        screen.queryByRole("button", { name: /voir les informations/ }),
+      ).toBeNull();
+      act(() => vi.advanceTimersByTime(1_300));
+      expect(
+        screen.getByRole("button", { name: /voir les informations/ }),
+      ).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

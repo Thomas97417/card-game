@@ -60,6 +60,8 @@ function ArenaPage() {
   const [copied, setCopied] = useState(false);
   const [privateOpen, setPrivateOpen] = useState(!!invite);
   const [reward, setReward] = useState<ChestReveal | null>(null);
+  const collection = useQuery(api.collection.list, reward ? {} : "skip");
+  const upgrade = useMutation(api.collection.upgrade);
   const [selectedChest, setSelectedChest] = useState<LobbyChest | null>(null);
   const actionLock = useRef(false);
   const [now, setNow] = useState(0);
@@ -268,7 +270,12 @@ function ArenaPage() {
           )}
         </DialogContent>
       </Dialog>
-      <ChestRevealDialog reward={reward} onClose={() => setReward(null)} />
+      <ChestRevealDialog
+        reward={reward}
+        collection={collection}
+        onUpgrade={(variantId) => upgrade({ variantId })}
+        onClose={() => setReward(null)}
+      />
       <ChestUnlockDialog
         chest={selectedChest}
         now={now}
