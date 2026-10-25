@@ -1199,8 +1199,13 @@
   font-size: 12px;
   cursor: pointer;
 }
+.summon-repeat-price {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 6px;
+  width: 100%;
+}
 .summon-repeat-button .emerald-amount {
-  flex-basis: 100%;
   justify-content: center;
   font-size: 18px;
 }
