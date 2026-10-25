@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ComponentProps } from "react";
 import {
   ArrowRight,
   ArrowUp,
@@ -52,6 +52,16 @@ type DeckActions =
       onMove?: never;
     };
 
+type UpgradeActions =
+  | {
+      readOnly: true;
+      onUpgrade?: never;
+    }
+  | {
+      readOnly?: false;
+      onUpgrade: (variantId: string) => Promise<unknown>;
+    };
+
 export function CardUpgradeDialog({
   entry,
   inDeck,
@@ -65,11 +75,14 @@ export function CardUpgradeDialog({
   onSoulbind,
   onSacrifice,
   onEvolve,
+  readOnly = false,
+  finalFocus,
 }: {
   entry: OwnedCard | undefined;
   onClose: () => void;
-  onUpgrade: (variantId: string) => Promise<unknown>;
-} & DeckActions &
+  finalFocus?: ComponentProps<typeof DialogContent>["finalFocus"];
+} & UpgradeActions &
+  DeckActions &
   CardProgressionActions) {
   const [busy, setBusy] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
@@ -82,7 +95,9 @@ export function CardUpgradeDialog({
   const goldCost = upgradeGoldCost(level, card?.rarity);
   const enoughGold = gold != null && gold >= goldCost;
   const next =
-    card && !max ? resolveCard(card.id, level + 1, card.soulbinds) : null;
+    card && !readOnly && !max
+      ? resolveCard(card.id, level + 1, card.soulbinds)
+      : null;
   const actionLabel = busy
     ? "Amélioration…"
     : max
@@ -90,7 +105,16 @@ export function CardUpgradeDialog({
       : `Améliorer au niveau ${level + 1}`;
 
   async function upgrade() {
-    if (!card || busy || max || !entry || entry.copies < cost || !enoughGold)
+    if (
+      readOnly ||
+      !onUpgrade ||
+      !card ||
+      busy ||
+      max ||
+      !entry ||
+      entry.copies < cost ||
+      !enoughGold
+    )
       return;
     setBusy(true);
     try {
@@ -112,6 +136,7 @@ export function CardUpgradeDialog({
       <DialogContent
         ref={popup}
         initialFocus={popup}
+        finalFocus={finalFocus}
         className="upgrade-dialog"
         appearance="game"
         data-rarity={card?.rarity ?? "common"}
@@ -160,56 +185,58 @@ export function CardUpgradeDialog({
                 <DialogDescription>{card.title}</DialogDescription>
               </header>
 
-              <section
-                className="upgrade-progression"
-                aria-label="Progression de la carte"
-                data-ready={max || entry.copies >= cost}
-              >
-                <div className="upgrade-section-heading">
-                  <h3>{max ? "Évolution accomplie" : "Évolution"}</h3>
-                  <span>
-                    {max ? "Niveau maximal" : `Vers le niveau ${level + 1}`}
-                  </span>
-                </div>
-                <div className="upgrade-progress-track">
-                  <progress
-                    className="upgrade-progress"
-                    max={max ? Math.max(1, entry.copies) : cost}
-                    value={max ? Math.max(1, entry.copies) : entry.copies}
-                    aria-label={
-                      max
-                        ? "Niveau maximal atteint"
-                        : "Exemplaires pour le prochain niveau"
-                    }
-                  />
-                  <span className="upgrade-copies">
-                    <img
-                      className="upgrade-copies-icon"
-                      src={`/art/ui/rarity-${card.rarity ?? "common"}.webp`}
-                      width={18}
-                      height={24}
-                      alt=""
-                      aria-hidden="true"
-                      draggable={false}
-                    />
+              {!readOnly && (
+                <section
+                  className="upgrade-progression"
+                  aria-label="Progression de la carte"
+                  data-ready={max || entry.copies >= cost}
+                >
+                  <div className="upgrade-section-heading">
+                    <h3>{max ? "Évolution accomplie" : "Évolution"}</h3>
                     <span>
-                      {max
-                        ? `Niveau ${level} / ${maximum}`
-                        : `${entry.copies} / ${cost} exemplaires`}
+                      {max ? "Niveau maximal" : `Vers le niveau ${level + 1}`}
                     </span>
-                  </span>
-                  <span className="upgrade-next-level" aria-hidden="true">
-                    {max ? <Crown size={23} /> : level + 1}
-                  </span>
-                </div>
-                <p className="upgrade-progress-note">
-                  {max
-                    ? `${entry.copies} ${entry.copies === 1 ? "exemplaire" : "exemplaires"} en réserve`
-                    : entry.copies >= cost
-                      ? "Exemplaires réunis pour le prochain niveau"
-                      : `Encore ${cost - entry.copies} ${cost - entry.copies === 1 ? "exemplaire" : "exemplaires"} à collectionner`}
-                </p>
-              </section>
+                  </div>
+                  <div className="upgrade-progress-track">
+                    <progress
+                      className="upgrade-progress"
+                      max={max ? Math.max(1, entry.copies) : cost}
+                      value={max ? Math.max(1, entry.copies) : entry.copies}
+                      aria-label={
+                        max
+                          ? "Niveau maximal atteint"
+                          : "Exemplaires pour le prochain niveau"
+                      }
+                    />
+                    <span className="upgrade-copies">
+                      <img
+                        className="upgrade-copies-icon"
+                        src={`/art/ui/rarity-${card.rarity ?? "common"}.webp`}
+                        width={18}
+                        height={24}
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                      />
+                      <span>
+                        {max
+                          ? `Niveau ${level} / ${maximum}`
+                          : `${entry.copies} / ${cost} exemplaires`}
+                      </span>
+                    </span>
+                    <span className="upgrade-next-level" aria-hidden="true">
+                      {max ? <Crown size={23} /> : level + 1}
+                    </span>
+                  </div>
+                  <p className="upgrade-progress-note">
+                    {max
+                      ? `${entry.copies} ${entry.copies === 1 ? "exemplaire" : "exemplaires"} en réserve`
+                      : entry.copies >= cost
+                        ? "Exemplaires réunis pour le prochain niveau"
+                        : `Encore ${cost - entry.copies} ${cost - entry.copies === 1 ? "exemplaire" : "exemplaires"} à collectionner`}
+                  </p>
+                </section>
+              )}
 
               <section
                 className="upgrade-statistics"
@@ -255,56 +282,60 @@ export function CardUpgradeDialog({
 
               <CardAbilities card={card} next={next} />
 
-              <div className="upgrade-evolution-action">
-                <div className="upgrade-section-heading">
-                  <h3>{max ? "Niveau maximal" : "Prochaine amélioration"}</h3>
-                  {next && (
-                    <span
-                      className="upgrade-gains"
-                      aria-label="Gains au prochain niveau"
-                    >
-                      <span>
-                        +{next.attack - card.attack}
-                        <GameIcon kind={getCombatType(card)} size={20} />
+              {!readOnly && (
+                <div className="upgrade-evolution-action">
+                  <div className="upgrade-section-heading">
+                    <h3>{max ? "Niveau maximal" : "Prochaine amélioration"}</h3>
+                    {next && (
+                      <span
+                        className="upgrade-gains"
+                        aria-label="Gains au prochain niveau"
+                      >
+                        <span>
+                          +{next.attack - card.attack}
+                          <GameIcon kind={getCombatType(card)} size={20} />
+                        </span>
+                        <span>
+                          +{next.health - card.health}
+                          <GameIcon kind="health" size={20} />
+                        </span>
                       </span>
-                      <span>
-                        +{next.health - card.health}
-                        <GameIcon kind="health" size={20} />
-                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="sylve-button upgrade-action"
+                    disabled={busy || max || entry.copies < cost || !enoughGold}
+                    aria-label={actionLabel}
+                    onClick={() => void upgrade()}
+                  >
+                    <span className="upgrade-action-label">
+                      {max ? <Crown size={19} /> : <ArrowUp size={17} />}
+                      {actionLabel}
                     </span>
-                  )}
+                    {!max && <GoldAmount amount={goldCost} />}
+                  </button>
                 </div>
-                <button
-                  className="sylve-button upgrade-action"
-                  disabled={busy || max || entry.copies < cost || !enoughGold}
-                  aria-label={actionLabel}
-                  onClick={() => void upgrade()}
-                >
-                  <span className="upgrade-action-label">
-                    {max ? <Crown size={19} /> : <ArrowUp size={17} />}
-                    {actionLabel}
-                  </span>
-                  {!max && <GoldAmount amount={goldCost} />}
-                </button>
-              </div>
+              )}
               <CardSoulbind
                 key={`soul-${card.id}`}
                 card={card}
-                collection={collection}
-                soulProgress={soulProgress}
-                onSoulbind={onSoulbind}
+                collection={readOnly ? undefined : collection}
+                soulProgress={readOnly ? undefined : soulProgress}
+                onSoulbind={readOnly ? undefined : onSoulbind}
               />
-              <CardEvolutionResources
-                key={`resources-${card.id}`}
-                entry={entry}
-                collection={collection}
-                soulProgress={soulProgress}
-                onSacrifice={onSacrifice}
-                onEvolve={onEvolve}
-              />
+              {!readOnly && (
+                <CardEvolutionResources
+                  key={`resources-${card.id}`}
+                  entry={entry}
+                  collection={collection}
+                  soulProgress={soulProgress}
+                  onSacrifice={onSacrifice}
+                  onEvolve={onEvolve}
+                />
+              )}
             </div>
 
-            {onMove && (
+            {!readOnly && onMove && (
               <aside
                 className="upgrade-deck-panel"
                 aria-label="Actions du deck"

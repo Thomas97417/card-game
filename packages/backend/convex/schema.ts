@@ -18,7 +18,9 @@ export default defineSchema({
     ownerId: v.string(),
     trophies: v.number(),
     peakTrophies: v.optional(v.number()),
-  }).index("by_owner", ["ownerId"]),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_trophies", ["trophies"]),
   wallets: defineTable({
     ownerId: v.string(),
     gold: v.number(),
