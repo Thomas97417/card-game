@@ -2644,6 +2644,10 @@ button:disabled {
   font-size: 0.62em;
   padding-left: 1px;
 }
+.occupied .field-mark-bonus {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
 .marked-cell .placement-hint {
   position: absolute;
   right: 9%;
