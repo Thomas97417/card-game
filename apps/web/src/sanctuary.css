@@ -35,18 +35,24 @@
     700 15px/1.2 "Avenir Next",
     sans-serif;
 }
-.emerald-balance-link {
+.emerald-balance-link,
+.gold-balance-link {
   display: inline-flex;
   flex-shrink: 0;
   border-radius: 24px;
   transition: filter 160ms;
 }
-.emerald-balance-link:hover {
+.emerald-balance-link:hover,
+.gold-balance-link:hover {
   filter: brightness(1.12);
 }
-.emerald-balance-link:focus-visible {
+.emerald-balance-link:focus-visible,
+.gold-balance-link:focus-visible {
   outline: 2px solid #c3f5ce;
   outline-offset: 3px;
+}
+.gold-balance-link:focus-visible {
+  outline-color: #ffe2a2;
 }
 .sanctuary-page {
   position: relative;

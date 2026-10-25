@@ -242,6 +242,11 @@ describe("le sanctuaire", () => {
     expect(
       screen.getByRole("status", { name: "Solde de pièces d’or" }),
     ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("link", { name: /^Acheter des pièces d’or/ })
+        .getAttribute("href"),
+    ).toBe("/sanctuary#gold-packs");
     expect(screen.getByText("2 %")).toBeTruthy();
     const sylve = screen.getByRole("article", { name: "Appel de la Sylve" });
     expect(within(sylve).getByText("82 %")).toBeTruthy();

@@ -7,7 +7,16 @@ import { ChestRevealDialog } from "./chest-reveal-dialog";
 import { GoldContext } from "@/components/gold-balance";
 import { leagueProgress } from "@sylve/game/leagues";
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+  Link: ({
+    children,
+    to,
+    hashScrollIntoView: _hashScrollIntoView,
+    ...props
+  }: {
+    children: ReactNode;
+    to: string;
+    hashScrollIntoView?: ScrollIntoViewOptions;
+  }) => (
     <a href={to} {...props}>
       {children}
     </a>
