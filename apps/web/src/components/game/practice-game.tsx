@@ -7,6 +7,7 @@ import {
   surrender,
   validateDeck,
   withdraw,
+  useHeroAbility,
   type GameState,
   type Transition,
 } from "@sylve/game";
@@ -16,6 +17,7 @@ import {
   PRACTICE_PLAYER_ID,
   COMPUTER_MEMORY_LENGTH,
   chooseComputerMove,
+  chooseComputerHeroAbility,
   createPracticeGame,
 } from "@sylve/game/practice";
 import { DuelScreen } from "./duel-screen";
@@ -108,6 +110,23 @@ function PracticeMatch({
         state.activePlayer !== 1
       )
         return;
+      const ability = chooseComputerHeroAbility(
+        playerView(state, PRACTICE_COMPUTER_ID),
+      );
+      if (ability) {
+        commit(
+          useHeroAbility(
+            state,
+            1,
+            ability.id,
+            state.players[1]!.heroAbilityUses ?? 0,
+            state.turn,
+            Date.now(),
+            Math.random,
+          ),
+        );
+        return;
+      }
       const move = chooseComputerMove(
         playerView(state, PRACTICE_COMPUTER_ID),
         Math.random,
@@ -136,6 +155,19 @@ function PracticeMatch({
       practice
       onRestart={onRestart}
       onPlaybackSettled={setSettledSequence}
+      onHeroAbility={async (abilityId, expectedUses, turn) =>
+        commit(
+          useHeroAbility(
+            current.current.state,
+            0,
+            abilityId,
+            expectedUses,
+            turn,
+            Date.now(),
+            Math.random,
+          ),
+        )
+      }
       onPlayCard={async (cardId, row, depth, turn) =>
         commit(
           summon(

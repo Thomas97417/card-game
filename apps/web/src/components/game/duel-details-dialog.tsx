@@ -1,5 +1,6 @@
 import { ArrowLeft, ArrowRight, Undo2 } from "lucide-react";
 import { useRef } from "react";
+import type { CSSProperties } from "react";
 import {
   HERO_HP,
   RARITY_LABELS,
@@ -11,6 +12,7 @@ import {
   fieldBonus,
   fieldMarkName,
   unitCard,
+  nextHeroAbility,
   GENDER_LABELS,
   type CardDefinition,
   type GameView,
@@ -28,6 +30,7 @@ import { StatBadge, statChange } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
 import { UnitEffectIcons } from "./ability-icons";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
+import { HeroPowerList } from "./hero-power-list";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
@@ -67,6 +70,15 @@ export function DuelDetailsDialog({
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
+  const localPlayer = view.players[view.me]!;
+  const hasPowerPile =
+    view.status === "active" &&
+    localPlayer.heroLevel !== undefined &&
+    nextHeroAbility(
+      localPlayer.heroLevel,
+      localPlayer.heroAbilityUses ?? 0,
+      view.turn,
+    ).unlockLevel <= localPlayer.heroLevel;
   const own = inspection?.playerIndex === view.me;
   const inspectedCard = inspection?.type === "card" ? inspection.card : null;
   const source = inspection?.type === "card" ? inspection.source : null;
@@ -121,7 +133,13 @@ export function DuelDetailsDialog({
       }}
     >
       <DialogContent
-        className="duel-details-dialog"
+        className={`duel-details-dialog ${inspection?.type === "hero" ? "hero-details-dialog" : ""}`}
+        style={
+          inspection?.type === "hero"
+            ? ({ "--hero-deck-count": player?.deck.length ?? 4 } as CSSProperties)
+            : undefined
+        }
+        data-power-pile={hasPowerPile}
         appearance="game"
         placement={own ? "left" : "right"}
         showBackdrop={false}
@@ -192,10 +210,9 @@ export function DuelDetailsDialog({
                     Retour au héros
                   </button>
                 )}
-                <span className="eyebrow">
-                  {source === "deck"
-                    ? `DECK DE ${player.name}`
-                    : neutral
+                {source !== "deck" && (
+                  <span className="eyebrow">
+                    {neutral
                       ? "BÂTIMENT NEUTRE"
                       : unit
                         ? own
@@ -204,7 +221,8 @@ export function DuelDetailsDialog({
                         : source === "hand"
                           ? "DANS TA MAIN"
                           : "FICHE DE CRÉATURE"}
-                </span>
+                  </span>
+                )}
                 <DialogTitle ref={titleRef} tabIndex={-1}>
                   {card.name}
                 </DialogTitle>
@@ -218,14 +236,12 @@ export function DuelDetailsDialog({
                     : `${RARITY_LABELS[card.rarity ?? "common"]} · Niveau ${card.level ?? 1}`}
                 </span>
                 <p className="details-note card-details-role">
-                  {combatTypeLabel(card)} ·{" "}
+                  {combatTypeLabel(card)}
                   {neutral
-                    ? "Présent dès le début du combat. N’attaque pas."
-                    : getCombatType(card) === "melee"
-                      ? "Déploiement au milieu ou vers l’ennemi."
-                      : getCombatType(card) === "building"
-                        ? "Déploiement sur toute case libre. N’attaque pas."
-                        : "Déploiement au milieu ou vers ton héros."}
+                    ? " · Présent dès le début du combat. N’attaque pas."
+                    : getCombatType(card) === "building"
+                      ? " · N’attaque pas."
+                      : ""}
                   {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
                   {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </p>
@@ -364,24 +380,33 @@ export function DuelDetailsDialog({
               </>
             ) : (
               <>
-                <span className="eyebrow">
-                  {own ? "TON HÉROS" : "HÉROS ADVERSE"}
-                </span>
                 <DialogTitle ref={titleRef} tabIndex={-1}>
                   {player.name}
                 </DialogTitle>
-                <DialogDescription>
-                  Les caractéristiques du héros et les compagnons de son deck.
+                <DialogDescription className="sr-only">
+                  Caractéristiques, pouvoirs et deck de {player.name}.
                 </DialogDescription>
                 <div className="hero-details-summary">
                   <img
                     src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
-                    alt={own ? "Ton héros" : "Héros adverse"}
+                    alt={player.name}
                     width={120}
                     height={150}
                     draggable={false}
                   />
                   <dl className="details-stats hero-details-stats">
+                    {player.heroLevel !== undefined && (
+                      <>
+                        <div>
+                          <dt>Niveau</dt>
+                          <dd>{player.heroLevel}</dd>
+                        </div>
+                        <div>
+                          <dt>Puissance</dt>
+                          <dd>{player.heroMight}</dd>
+                        </div>
+                      </>
+                    )}
                     <div>
                       <dt>Points de vie</dt>
                       <dd>
@@ -402,6 +427,14 @@ export function DuelDetailsDialog({
                     </div>
                   </dl>
                 </div>
+                {player.heroLevel !== undefined && (
+                  <HeroPowerList
+                    level={player.heroLevel}
+                    uses={player.heroAbilityUses}
+                    turn={view.turn}
+                    inBattle
+                  />
+                )}
                 <div className="section-label">
                   <h3>{own ? "Ton deck" : "Deck adverse"}</h3>
                   <span>{player.deck.length} CARTES</span>

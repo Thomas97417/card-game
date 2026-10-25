@@ -415,14 +415,15 @@ describe("inspection pendant un duel", () => {
     async (target) => {
       const { data } = setup();
       const own = target !== "enemy hero";
+      const player = data.players[own ? data.me : 1 - data.me]!;
       fireEvent.click(
         await screen.findByRole("button", {
           name:
             target === "own deck"
               ? "Voir mon deck"
               : own
-                ? "Voir ton héros, Alice, 30 PV"
-                : "Voir le héros adverse, Bob, 30 PV",
+                ? `Voir Alice, ${player.heroHp} PV`
+                : `Voir Bob, ${player.heroHp} PV`,
         }),
       );
       expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
@@ -432,7 +433,9 @@ describe("inspection pendant un duel", () => {
       expect(
         dialog.getByRole("heading", { name: own ? "Alice" : "Bob" }),
       ).toBeTruthy();
-      expect(dialog.getByText("30 / 30")).toBeTruthy();
+      expect(
+        dialog.getByText(`${player.heroHp} / ${player.heroMaxHp ?? player.heroHp}`),
+      ).toBeTruthy();
       expect(
         dialog.getByRole("heading", {
           name: own ? "Ton deck" : "Deck adverse",

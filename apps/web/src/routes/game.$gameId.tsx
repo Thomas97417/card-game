@@ -40,6 +40,7 @@ function GamePage() {
     optimisticallyPlayCard,
   );
   const withdrawCard = useMutation(api.games.withdrawCard);
+  const playHeroAbility = useMutation(api.games.playHeroAbility);
   const endTurn = useMutation(api.games.endTurn);
   const surrender = useMutation(api.games.surrender);
   const soloTurn = useMutation(api.games.soloTurn);
@@ -53,8 +54,11 @@ function GamePage() {
     )
       return;
     const expectedTurn = data.turn;
+    const expectedSequence = data.sequence;
     const timer = window.setTimeout(() => {
-      void soloTurn({ gameId, expectedTurn }).catch(showGameError);
+      void soloTurn({ gameId, expectedTurn, expectedSequence }).catch(
+        showGameError,
+      );
     }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
   }, [
@@ -74,6 +78,9 @@ function GamePage() {
       data={data}
       practice={data.mode === "solo"}
       onPlaybackSettled={setSettledSequence}
+      onHeroAbility={(abilityId, expectedUses, expectedTurn) =>
+        playHeroAbility({ gameId, abilityId, expectedUses, expectedTurn })
+      }
       onPlayCard={(cardId, row, depth, expectedTurn) =>
         playCard({ gameId, cardId, row, depth, expectedTurn })
       }

@@ -101,6 +101,27 @@ async function winSolo(t: Test, alice: Player, deckId: Id<"decks">) {
   });
   return gameId;
 }
+/** Each animation step can now be a spell before the creature deployment. */
+async function finishSoloTurn(
+  t: Test,
+  alice: Player,
+  gameId: Id<"games">,
+  expectedTurn: number,
+  scheduled = false,
+) {
+  for (let step = 0; step < 8; step++) {
+    const game = (await t.run((ctx) => ctx.db.get(gameId)))!;
+    if (game.state!.turn !== expectedTurn || game.status !== "active") return;
+    const args = {
+      gameId,
+      expectedTurn,
+      expectedSequence: game.state!.sequence,
+    };
+    if (scheduled) await t.mutation(internal.games.soloTurnFallback, args);
+    else await alice.mutation(api.games.soloTurn, args);
+  }
+  throw new Error("The computer did not finish its turn.");
+}
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
   vi.restoreAllMocks();
@@ -133,7 +154,7 @@ describe("ligues et trophées autoritaires", () => {
       state!.turn = 2;
       await ctx.db.patch(gameId, { state });
     });
-    await alice.mutation(api.games.soloTurn, { gameId, expectedTurn: 2 });
+    await finishSoloTurn(t, alice, gameId, 2);
     expect(await alice.query(api.collection.league, {})).toMatchObject({
       trophies: 185,
       peakTrophies: 200,
@@ -497,12 +518,7 @@ describe("gardien adapté aux ligues", () => {
         expectedTurn: human.turn,
       });
       const expectedTurn = human.turn + 1;
-      if (i % 2)
-        await t.mutation(internal.games.soloTurnFallback, {
-          gameId,
-          expectedTurn,
-        });
-      else await alice.mutation(api.games.soloTurn, { gameId, expectedTurn });
+      await finishSoloTurn(t, alice, gameId, expectedTurn, !!(i % 2));
       const game = await t.run((ctx) => ctx.db.get(gameId));
       const history = game!.soloRecentCards!;
       expect(history).toHaveLength(Math.min(3, i + 1));
@@ -661,6 +677,12 @@ describe("collection autoritaire", () => {
       state.players[0]!.cards = state.players[0]!.cards.map((c) =>
         c.id === "dragon:legendary" ? legacyCard(c.id) : c,
       );
+      // This fixture models an existing match from before hero progression.
+      state.players[0]!.heroHp = 30;
+      delete state.players[0]!.heroMaxHp;
+      delete state.players[0]!.heroLevel;
+      delete state.players[0]!.heroMight;
+      delete state.players[0]!.heroAbilityUses;
       for (const owner of state.players) {
         owner.board = [];
         owner.runes = [];
@@ -797,10 +819,7 @@ describe("collection autoritaire", () => {
       state.players[1]!.hand = ["captain:common"];
       await ctx.db.patch(gameId, { state });
     });
-    await alice.mutation(api.games.soloTurn, {
-      gameId,
-      expectedTurn: view.turn,
-    });
+    await finishSoloTurn(t, alice, gameId, view.turn);
     const stored = (await t.run((ctx) => ctx.db.get(gameId)))!;
     expect(
       stored.state!.players[1]!.board.some(

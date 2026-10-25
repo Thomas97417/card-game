@@ -34,6 +34,46 @@
   pointer-events: none;
   z-index: -2;
 }
+.workshop-hero {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  margin: 0 0 0 auto;
+  padding: 2px 10px;
+  border: 1px solid #ccbc8747;
+  border-radius: 24px;
+  background: #142e25e6;
+  box-shadow: 0 4px 14px #0a1e1755;
+  font-variant-numeric: tabular-nums;
+}
+.workshop-hero > strong {
+  color: #e9e8c1;
+  font-size: 15px;
+  font-weight: 600;
+}
+.workshop-hero-threshold {
+  color: #bfc9ae;
+  font-size: 12px;
+}
+.workshop-hero-upgrade {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin: -1px -6px -1px 2px;
+  border: 1px solid #ddc17c99;
+  border-radius: 50%;
+  background: #d5bf7826;
+  color: #f4d893;
+}
+.workshop-hero-upgrade:hover {
+  background: #d5bf7840;
+  border-color: #f2d58d;
+  color: #fff0bc;
+}
 .workshop-background {
   object-fit: cover;
   object-position: center;

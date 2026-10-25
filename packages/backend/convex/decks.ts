@@ -5,6 +5,7 @@ import type { MutationCtx } from "./_generated/server";
 import { currentDeck, requirePlayer, rules } from "./lib/game_service";
 import { ownedDeck } from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
+import { observeHero } from "./lib/heroes";
 
 export const list = query({
   args: {},
@@ -44,13 +45,18 @@ export async function ensureStarterDeck(ctx: MutationCtx, ownerId: string) {
         updatedAt: Math.max(Date.now(), existing.updatedAt + 1),
       });
   }
-  if (existing) return existing._id;
-  return ctx.db.insert("decks", {
+  if (existing) {
+    await observeHero(ctx, ownerId);
+    return existing._id;
+  }
+  const deckId = await ctx.db.insert("decks", {
     ownerId,
     name: "Les gardiens de la Sylve",
     cardIds: [...DEFAULT_DECK],
     updatedAt: Date.now(),
   });
+  await observeHero(ctx, ownerId);
+  return deckId;
 }
 export const save = mutation({
   args: {
@@ -73,12 +79,14 @@ export const save = mutation({
       throw new ConvexError("Donne un nom de 1 à 60 caractères à ton deck.");
     const cardIds = rules(() => args.cardIds.map(canonicalVariantId));
     rules(() => validateDeck(cardIds));
-    await ownedDeck(ctx, user.userId, cardIds);
+    const cards = await ownedDeck(ctx, user.userId, cardIds);
+    await observeHero(ctx, user.userId);
     await ctx.db.patch(deck._id, {
       name,
       cardIds,
       updatedAt: Math.max(Date.now(), deck.updatedAt + 1),
     });
+    await observeHero(ctx, user.userId, cards);
     return deck._id;
   },
 });

@@ -43,7 +43,7 @@ export function useCombatPlayback(latest: View | undefined) {
             ? COMBAT_TIMING.death
             : entry.type === "summon"
               ? COMBAT_TIMING.summon
-              : entry.type === "ability"
+              : entry.type === "ability" || entry.type === "hero_ability"
                 ? COMBAT_TIMING.ability
                 : entry.type === "withdraw"
                   ? COMBAT_TIMING.withdraw
@@ -66,6 +66,8 @@ export function useCombatPlayback(latest: View | undefined) {
             if (entry.type === "turn" || entry.type === "victory")
               return latest;
             const players = previous.players.map((player, index) => {
+              if (entry.type === "hero_ability" && index === entry.player)
+                return { ...player, heroAbilityUses: entry.heroAbilityUses };
               if (
                 entry.type === "summon" &&
                 index === entry.player &&

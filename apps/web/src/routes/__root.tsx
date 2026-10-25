@@ -35,6 +35,7 @@ import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
 import missionsCss from "../missions.css?url";
+import guardianCss from "../guardian.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -75,6 +76,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: settingsCss },
       { rel: "stylesheet", href: hubCss },
       { rel: "stylesheet", href: missionsCss },
+      { rel: "stylesheet", href: guardianCss },
     ],
   }),
 
@@ -106,6 +108,7 @@ function RootDocument() {
           "/arena",
           "/play",
           "/settings",
+          "/guardian",
           "/practice",
         ].includes(pathname) || pathname.startsWith("/game/")
       );

@@ -116,23 +116,26 @@ export function DuelArena({
 }) {
   function heroFigure(player: Player, index: number, own: boolean) {
     const hit =
-      combatEvent?.type === "attack" &&
+      (combatEvent?.type === "attack" || combatEvent?.type === "ability") &&
       combatEvent.targetPlayer === index &&
       !combatEvent.targetCardId;
     return (
       <div
         className={`hero-slot ${own ? "own" : "enemy"}`}
         role="group"
-        aria-label={`${own ? "Ton héros" : "Héros adverse"}, ${player.name}`}
+        aria-label={player.name}
       >
         <button
           type="button"
           className={`hero-figure ${hit ? "hero-hit" : ""}`}
-          aria-label={`Voir ${own ? "ton héros" : "le héros adverse"}, ${player.name}, ${player.heroHp} PV`}
+          aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
           onClick={() => onInspectHero(index)}
         >
           <span className="hero-ground-shadow" />
+          {player.heroLevel !== undefined && (
+            <span className="hero-level-badge">Niv. {player.heroLevel}</span>
+          )}
           <img
             src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
             alt={own ? "Gardien de la Sylve" : "Gardien mécanique d’ambre"}

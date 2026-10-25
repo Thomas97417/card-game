@@ -51,6 +51,11 @@ describe("le refuge", () => {
       screen
         .getByRole("link", { name: /Maison des gardiens/ })
         .getAttribute("href"),
+    ).toBe("/guardian");
+    expect(
+      screen
+        .getByRole("link", { name: /Les archives — Profil et paramètres/ })
+        .getAttribute("href"),
     ).toBe("/settings");
   });
 });

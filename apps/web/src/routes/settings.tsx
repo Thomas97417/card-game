@@ -6,11 +6,11 @@ import { SettingsPage } from "@/components/settings/settings-page";
 export const Route = createFileRoute("/settings")({
   head: () => ({
     meta: [
-      { title: "Paramètres — Sylve" },
+      { title: "Les archives · Paramètres — Sylve" },
       {
         name: "description",
         content:
-          "Gère ton profil, la sécurité de ton compte et tes appareils depuis la Maison des gardiens.",
+          "Gère ton profil, la sécurité de ton compte et tes appareils depuis les Archives.",
       },
     ],
     links: [{ rel: "preload", as: "image", href: "/art/guardian-house.webp" }],

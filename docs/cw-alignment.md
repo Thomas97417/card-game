@@ -73,14 +73,56 @@ La migration persistante est transactionnelle et marquée `catalogueVersion: 2` 
 - Les niveaux 27–31 deviennent 26 ; leurs dépenses historiques en exemplaires et en or sont remboursées. L’expérience des améliorations antérieures est créditée une seule fois.
 - Tous les decks, contenus de coffres et anciennes révélations sont normalisés. Les instantanés complets des parties déjà créées restent indépendants ; les nouvelles parties utilisent les profils CW et les Soulbinds actuels.
 
-Les règles générales de plateau, héros à 30 PV, coffres, invocations et ligues restent celles de Sylve. La renaissance/Reborn et un mode de troupes ne sont pas ajoutés ; le bonus de troupes figurant dans les tables Soulbind est conservé dans les données, sans effet sur les héros Sylve.
+Les règles générales de plateau, coffres, invocations et ligues restent celles de Sylve. Les nouvelles parties utilisent la progression du héros décrite ci-dessous ; les anciennes conservent leur vie et leurs effets enregistrés. La renaissance/Reborn et un mode de troupes ne sont pas ajoutés ; le bonus de troupes figurant dans les tables Soulbind est conservé dans les données, sans effet sur les héros Sylve.
+
+## Héros et puissance du deck
+
+Le Gardien de la Sylve reprend le barème d’[Adam](https://cwars.miraheze.org/wiki/Adam?oldid=23782), consulté le 25 octobre 2026 : **91 niveaux, de 45 à 1 475 PV**, avec les valeurs de Tempête, des archers et du bonus d’attaque à chaque niveau. Il s’agit du wiki historique, révisé en mai 2021. Le [relevé des 91 lignes](references/cunt-wars/adam.json) conserve la provenance ; `python3 scripts/import-cwars-hero.py` reconstruit `packages/game/src/data/hero-levels.json` sans réseau. La ligne N indique la puissance nécessaire pour passer de N à N+1, pas pour atteindre N.
+
+La puissance du deck additionne celle des variantes équipées dans les emplacements débloqués, à leur niveau réel et avec leurs liens d’âme. Les exemplaires en réserve et le reste de la collection ne comptent pas. La puissance d’escouade ajoute la contribution du héros, qui augmente de 10 par promotion selon le wiki. **Sylve fixe cette contribution à zéro au niveau 1**, car la source ne précise pas sa valeur initiale : `puissance = somme des puissances des cartes du deck + 10 × (niveau du héros − 1)`.
+
+Le héros commence au niveau 1. Dès que le record de puissance atteint le seuil, le bouton de la Maison des gardiens (`/guardian`) permet de monter d’un niveau, sans coût en or ni en exemplaires. Les niveaux acquis et le record restent conservés après un changement de deck. Les améliorations, liens d’âme, sauvegardes de deck et créations de partie actualisent ce record côté serveur. Deux demandes concurrentes pour le même niveau ne donnent qu’une promotion. Le rang de compte lié à l’expérience reste indépendant.
+
+| Niveau | PV | Puissance pour le niveau suivant | Tempête | Éclaireuses ATQ/PV | Élan ATQ |
+|---|---:|---:|---:|---:|---:|
+| 1 | 45 | 870 | 3 | — | — |
+| 2 | 49 | 1 000 | 3 | — | — |
+| 4 | 54 | 1 320 | 4 | — | — |
+| 11 | 80 | 2 100 | 5 | 6/1 | — |
+| 15 | 96 | 2 500 | 5 | 7/2 | — |
+| 21 | 120 | 3 100 | 6 | 7/2 | +7 |
+| 28 | 155 | 4 100 | 8 | 9/3 | +7 |
+| 31 | 170 | 4 700 | 8 | 9/3 | +9 |
+| 41 | 230 | 7 300 | 11 | 11/6 | +12 |
+| 51 | 330 | 10 500 | 15 | 15/6 | +17 |
+| 61 | 500 | 16 300 | 23 | 25/10 | +24 |
+| 71 | 650 | 19 400 | 31 | 25/10 | +29 |
+| 81 | 875 | 24 000 | 41 | 25/10 | +36 |
+| 91 | 1 475 | Maximum | 41 | 25/10 | +36 |
+
+La Maison des gardiens présente les pouvoirs actuels et un explorateur des 91 niveaux, avec comparaison des PV, de la puissance et des pouvoirs. L’atelier conserve un résumé de la puissance actuelle et du prochain seuil, avec un lien vers la Maison lorsqu’une promotion est disponible. En combat, les cartes de pouvoir sont empilées en bas à droite. Seule la première est utilisable ; il faut la dépenser avant d’accéder à la suivante. Les trois premiers pouvoirs sont utilisables une fois par partie, avant de poser la carte de personnage, sans terminer le tour ni modifier la main ou le chronomètre. Il est possible d’enchaîner plusieurs pouvoirs prêts avant la même invocation.
+
+| Pouvoir Sylve | Pouvoir Adam | Niveau requis | Disponible à partir de | Effet |
+|---|---|---:|---|---|
+| Tempête de feuilles | Storm | 1 | Son tour 1 | Dégâts magiques à toutes les unités ennemies, avec gestion du bouclier, de l’immunité et des morts. |
+| Appel des éclaireurs | Call To Arms | 11 | Son tour 3 | Jusqu’à deux unités de l’Ordre, féminines, à distance et sans capacité, sur des cases libres des deux colonnes de distance. Les arrivées déclenchent les réactions et les runes. |
+| Élan de la Sylve | Heavenly Power | 21 | Son tour 7 | Bonus d’attaque aux alliés présents, retiré après leurs attaques en fin de tour. |
+| Dernier souffle | Sudden Death | 21 | Son tour 11, puis chaque tour | Dégâts directs au héros adverse, après les trois pouvoirs précédents. Les cartes non utilisées s’accumulent dans la pile. |
+
+Le compteur de disponibilité désigne les **tours propres à chaque joueur** : son troisième passage correspond au tour global 5 ou 6. C’est la convention retenue dans Sylve pour les tours 3, 7 et 11 cités par le wiki. Le wiki ne chiffre pas l’augmentation de Sudden Death : Sylve utilise explicitement **dégâts de Tempête × numéro de la carte Dernier souffle** (6, 12, 18… pour un héros niveau 21). Cette formule est une adaptation, pas une valeur vérifiée du client CW. Les noms, l’ordre strict de la pile demandé pour Sylve et les illustrations sont propres au projet.
+
+Les parties solo, publiques, amicales et l’entraînement partagent le moteur. L’IA utilise les pouvoirs prêts avant son personnage, avec une étape d’animation par action et une reprise serveur après interruption. Les PV, le niveau, la puissance et la pile sont figés dans chaque partie : une promotion ultérieure ne change pas le duel en cours. Les demandes de pouvoirs vérifient le propriétaire, le tour, le délai, le niveau et le numéro de la carte de pile ; les relances ne rejouent pas le même pouvoir. Une victoire par pouvoir passe par les mêmes récompenses et missions que les autres victoires. Les éclaireuses ne comptent pas comme des cartes jouées depuis la main.
+
+Les instantanés antérieurs sans niveau de héros gardent leurs 30 PV de départ, leurs éventuels bonus de vie et leurs règles de combat. Les nouvelles parties prennent les PV du niveau acquis ; l’entraînement et l’adversaire mécanique calculent automatiquement le niveau correspondant à leur deck.
+
+Contrôle visuel des composants réels : [pouvoirs sur ordinateur](hero-powers-desktop.png), [pouvoirs sur mobile](hero-powers-mobile.png), progression dans l’atelier [sur ordinateur](hero-progression-desktop.png) et [sur mobile](hero-progression-mobile.png). Les captures de l’atelier utilisent une collection locale de démonstration.
 
 ## Vérification
 
-Commandes : `bun run test`, `bun run check-types`, `bun run build`.
+Commandes : `bun x turbo run test -- --maxWorkers=2`, `bun run check-types`, `bun run build`.
 
-Résultat du 25 octobre 2026 : **567 tests passent** (222 moteur, 134 backend, 211 interface), vérification TypeScript et compilation réussies.
+Résultat du 25 octobre 2026 après intégration d’`origin/main` : **705 tests passent** (241 moteur, 202 backend, 262 interface), vérification TypeScript et compilation réussies.
 
-Les tests comparent chaque paire ATQ/PV aux incréments sources indépendants, les noms et illustrations à l’ancien catalogue, les nouvelles mécaniques, les 336 prérequis, les accès et transactions concurrentes, les migrations et les contrôles de l’interface. Les anciens profils restent isolés dans une fixture pour contrôler la compatibilité des combats enregistrés.
+Les tests comparent chaque paire ATQ/PV aux incréments sources indépendants, les noms et illustrations à l’ancien catalogue, les nouvelles mécaniques, les 336 prérequis, les accès et transactions concurrentes, les migrations et les contrôles de l’interface. Ils vérifient aussi les 91 niveaux du héros, les seuils et promotions concurrentes, la pile des pouvoirs, les effets, les échéances, les récompenses, les renforts, le comportement de l’IA et la reprise des animations. Les anciens profils restent isolés dans une fixture pour contrôler la compatibilité des combats enregistrés.
 
 Aperçus locaux des composants réels avec une collection de démonstration : [bureau](cw-soulbind-desktop.png), [mobile](cw-soulbind-mobile.png). L’activation a été contrôlée dans cet aperçu ; les transactions sont vérifiées avec Convex Test. Aucun déploiement n’est effectué par cette modification.

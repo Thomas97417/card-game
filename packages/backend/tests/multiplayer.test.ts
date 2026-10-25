@@ -630,7 +630,9 @@ describe("tours autoritaires", () => {
     expect(
       redrawn.players[own.me]!.hand.some((entry) => entry.id === cardId),
     ).toBe(true);
-    expect(other.players[other.me]!.heroHp).toBe(30 - card.attack);
+    expect(other.players[other.me]!.heroHp).toBe(
+      own.players[other.me]!.heroHp - card.attack,
+    );
     expect(other.activePlayer).toBe(other.me);
     expect(other.turn).toBe(2);
     expect(other.events.map((event) => event.type)).toEqual([

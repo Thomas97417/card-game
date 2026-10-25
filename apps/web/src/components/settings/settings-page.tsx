@@ -66,6 +66,7 @@ export function SettingsPage({
           orientation={mobile ? "horizontal" : "vertical"}
         >
           <aside className="settings-sidebar">
+            <p className="settings-building">Les archives</p>
             <h1>Paramètres</h1>
             <Tabs.List
               className="settings-nav"
