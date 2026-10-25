@@ -121,8 +121,8 @@
   display: flex;
   flex-direction: column;
   width: min(536px, calc(100vw - 24px));
-  height: min(480px, calc(100svh - 245px));
-  height: min(480px, calc(100dvh - 245px));
+  height: min(620px, calc(100svh - 245px));
+  height: min(620px, calc(100dvh - 245px));
   overflow: hidden;
   border: 1px solid #b99b60;
   border-radius: 12px;
