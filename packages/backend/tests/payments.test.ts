@@ -8,7 +8,12 @@ import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
 const modules = import.meta.glob("../convex/**/*.ts");
-const webhookSecret = "polar-local-test-signing-secret";
+const prefixedWebhookSecret = `whsec_${btoa(
+  String.fromCharCode(
+    ...Array.from({ length: 32 }, (_, index) => (index * 37) % 256),
+  ),
+)}`;
+const webhookSecret = prefixedWebhookSecret;
 beforeEach(() => {
   vi.stubEnv("SITE_URL", "https://sylve.example");
   vi.stubEnv("POLAR_ORGANIZATION_TOKEN", "test-token");
@@ -128,7 +133,7 @@ async function balance(t: Test, ownerId: string) {
   );
 }
 
-// A real SDK payload and HMAC exercise the component's signature check and routing.
+// Independent Web Crypto signatures exercise the actual HTTP verification and routing.
 function orderEvent(
   type = "order.paid",
   changes: Record<string, unknown> = {},
@@ -192,16 +197,25 @@ function orderEvent(
 }
 async function sendWebhook(
   t: Test,
-  event: ReturnType<typeof orderEvent>,
+  event: unknown,
   secret = webhookSecret,
+  options: {
+    scheme?: "legacy" | "standard";
+    timestamp?: number;
+    deliveredBody?: string;
+  } = {},
 ) {
   const body = JSON.stringify(event);
   const id = crypto.randomUUID();
-  const timestamp = String(Math.floor(Date.now() / 1000));
+  const timestamp = String(options.timestamp ?? Math.floor(Date.now() / 1000));
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
-    encoder.encode(secret),
+    options.scheme === "standard"
+      ? Uint8Array.from(atob(secret.replace(/^whsec_/, "")), (char) =>
+          char.charCodeAt(0),
+        )
+      : encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
@@ -213,7 +227,7 @@ async function sendWebhook(
   );
   return t.fetch("/polar/events", {
     method: "POST",
-    body,
+    body: options.deliveredBody ?? body,
     headers: {
       "content-type": "application/json",
       "webhook-id": id,
@@ -409,6 +423,119 @@ describe("achats d’émeraudes avec Polar", () => {
       403,
     );
     expect(await balance(t, userId)).toBeNull();
+  });
+
+  it.each(["legacy", "standard"] as const)(
+    "accepts a whsec secret using the %s signing scheme and credits replays once",
+    async (scheme) => {
+      vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+      const t = setup();
+      const { userId } = await player(t);
+      await pendingPurchase(t, userId);
+      const event = { ...orderEvent(), api_version: "2026-10" };
+      for (let delivery = 0; delivery < 2; delivery++)
+        expect(
+          (await sendWebhook(t, event, prefixedWebhookSecret, { scheme })).status,
+        ).toBe(202);
+      expect((await balance(t, userId))?.diamonds).toBe(WELCOME_DIAMONDS + 500);
+    },
+  );
+
+  it("rejects tampered bodies, stale deliveries and incorrect Standard Webhooks keys", async () => {
+    vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+    const t = setup();
+    const { userId } = await player(t);
+    await pendingPurchase(t, userId);
+    const event = orderEvent();
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    const attempts = [
+      {
+        deliveredBody: JSON.stringify(orderEvent("order.paid", { net_amount: 1 })),
+      },
+      { timestamp: Math.floor(Date.now() / 1000) - 600 },
+      { timestamp: Math.floor(Date.now() / 1000) + 600 },
+    ];
+    for (const attempt of attempts)
+      expect(
+        (await sendWebhook(t, event, prefixedWebhookSecret, {
+          scheme: "standard",
+          ...attempt,
+        })).status,
+      ).toBe(403);
+    expect(
+      (await sendWebhook(t, event, "whsec_Zm9yZ2VkLXNpZ25pbmcta2V5", {
+        scheme: "standard",
+      })).status,
+    ).toBe(403);
+    expect(await balance(t, userId)).toBeNull();
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain(prefixedWebhookSecret);
+  });
+
+  it("applies refunds signed with Standard Webhooks", async () => {
+    vi.stubEnv("POLAR_WEBHOOK_SECRET", prefixedWebhookSecret);
+    const t = setup();
+    const { userId } = await player(t);
+    await pendingPurchase(t, userId);
+    expect(
+      (await sendWebhook(t, orderEvent(), prefixedWebhookSecret, {
+        scheme: "standard",
+      })).status,
+    ).toBe(202);
+    expect(
+      (await sendWebhook(
+        t,
+        orderEvent("order.refunded", { status: "refunded", refunded_amount: 499 }),
+        prefixedWebhookSecret,
+        { scheme: "standard" },
+      )).status,
+    ).toBe(202);
+    expect((await balance(t, userId))?.diamonds).toBe(WELCOME_DIAMONDS);
+  });
+
+  it.each(["product.created", "product.updated"])(
+    "syncs %s through the Polar component only after verifying the signature",
+    async (type) => {
+      const t = setup();
+      const { polar } = await import("../convex/polar");
+      const sync = vi.spyOn(polar, "syncProducts").mockResolvedValue();
+      const event = { type, api_version: "2026-10", data: { id: "product-test" } };
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      expect((await sendWebhook(t, event, "forged-secret")).status).toBe(403);
+      expect(sync).not.toHaveBeenCalled();
+      expect(
+        (await sendWebhook(t, event, prefixedWebhookSecret, {
+          scheme: "standard",
+        })).status,
+      ).toBe(202);
+      expect(sync).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("rejects malformed signed orders and acknowledges unrelated events without crediting", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await pendingPurchase(t, userId);
+    expect(
+      (await sendWebhook(t, orderEvent("order.paid", { net_amount: "499" }))).status,
+    ).toBe(400);
+    expect(
+      (await sendWebhook(t, orderEvent("order.paid", { checkout_id: null }))).status,
+    ).toBe(400);
+    expect(
+      (await sendWebhook(t, orderEvent("order.paid", { metadata: {} }))).status,
+    ).toBe(202);
+    expect(
+      (await sendWebhook(t, { type: "future.event", data: {} })).status,
+    ).toBe(202);
+    expect(await balance(t, userId)).toBeNull();
+  });
+
+  it("never accepts a webhook without a configured server secret", async () => {
+    const t = setup();
+    vi.stubEnv("POLAR_WEBHOOK_SECRET", "");
+    await expect(sendWebhook(t, orderEvent())).rejects.toThrow(
+      "POLAR_WEBHOOK_SECRET is not configured on Convex",
+    );
   });
 
   it("does not fulfill an unpaid order or acknowledge a missing checkout", async () => {

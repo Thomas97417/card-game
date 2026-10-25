@@ -156,7 +156,7 @@ export const recordCheckout = internalMutation({
   },
 });
 
-/** Only called by the component after verifying the Polar webhook signature. */
+/** Only called by our HTTP handler after verifying the Polar webhook signature. */
 export const processOrder = internalMutation({
   args: {
     kind: v.union(v.literal("paid"), v.literal("refunded")),

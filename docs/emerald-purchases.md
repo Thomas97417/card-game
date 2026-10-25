@@ -34,6 +34,8 @@ Dans les paramètres du déploiement Convex, renseigner :
 
 Ces variables sont configurables dans le dashboard Convex ou avec `bunx --bun convex env set NOM_VARIABLE 'valeur'` depuis `packages/backend`. Ne pas coller de secret dans une conversation ni dans un fichier versionné.
 
+Même quand le frontend tourne sur `localhost`, les fonctions et le webhook s’exécutent sur le déploiement Convex configuré. Ajouter les secrets à `.env.local` ne les transfère pas à ce déploiement. Le secret complet `whsec_…` de l’endpoint **sandbox** doit être copié tel quel dans `POLAR_WEBHOOK_SECRET` sur Convex ; le jeton d’organisation est un autre secret.
+
 ### 2. Publier les fonctions et brancher le webhook
 
 La dépendance `@convex-dev/polar` est déclarée dans le backend, puis installée par `app.use(polar)`. Le SDK `@polar-sh/sdk` est limité à la série compatible `0.47.x` : sa version majeure `1.x` supprime les chemins importés par le composant `0.9.2`.
@@ -52,7 +54,11 @@ Dans Polar, créer un webhook vers **`https://<déploiement>.convex.site/polar/e
 - `order.paid` pour créditer les émeraudes ;
 - `order.refunded` pour retirer les émeraudes remboursées.
 
-Le secret de ce webhook doit correspondre à `POLAR_WEBHOOK_SECRET`. Utiliser le domaine **`.site`**, comme pour les routes HTTP d’authentification.
+Choisir le format **Raw** et fixer l’API Version à **`2026-10`**. Le secret de ce webhook doit correspondre à `POLAR_WEBHOOK_SECRET`. Utiliser le domaine **`.site`**, comme pour les routes HTTP d’authentification.
+
+Le SDK `0.47.x` du composant ne connaît que l’ancien mode de signature Polar. Notre route vérifie donc le corps brut avec `standardwebhooks`, en acceptant l’ancienne clé UTF-8 et la nouvelle clé Standard Webhooks, introduite le 8 septembre 2026. Elle valide ensuite les champs nécessaires au journal d’achat. Les événements produit déclenchent une synchronisation via le composant. Voir la [documentation de signature Polar](https://polar.sh/docs/integrate/webhooks/delivery).
+
+Une erreur `No matching signature found` signifie que la livraison a atteint Convex mais que sa signature a été rejetée. Vérifier la correspondance du secret de l’endpoint avec la variable du déploiement, puis que les dernières fonctions sont publiées. Après correction, renvoyer la livraison `order.paid` en échec depuis Polar ; il n’est pas nécessaire de payer à nouveau. Réactiver l’endpoint s’il a été désactivé après les échecs successifs.
 
 Synchroniser une première fois les produits déjà créés :
 
@@ -62,7 +68,7 @@ bunx --bun convex run payments:syncProducts '{}'
 
 `syncProducts` est une action interne accessible au dashboard et à la CLI authentifiée. Les mises à jour suivantes sont reçues par webhook.
 
-Tant que la configuration ou les produits sont absents, les cinq trésors restent visibles avec des boutons **Indisponible**. Le 24 octobre 2026, aucune variable `POLAR_*` n’était configurée sur le déploiement de développement consulté ; aucune création de produit ni aucun paiement réel n’ont été exécutés pour cette implémentation.
+Tant que la configuration ou les produits sont absents, les cinq trésors restent visibles avec des boutons **Indisponible**.
 
 ### 3. Vérifier puis activer les paiements réels
 
@@ -74,7 +80,7 @@ Pour encaisser réellement, créer les produits et le webhook dans l’organisat
 
 `payments:createCheckout` accepte seulement l’identifiant du pack. Le backend retrouve le joueur via Better Auth, choisit le produit autorisé et fixe la quantité. Il vérifie que le montant renvoyé par Polar correspond à l’offre synchronisée avant de renvoyer le lien. Le checkout est lié à ce joueur dans `emeraldPurchases`, avec une copie de la quantité et du prix au moment de l’achat.
 
-Le composant crée le checkout et vérifie la signature de chaque webhook. Seul **`order.paid`** déclenche le crédit, via une mutation interne. Le retour du navigateur, un identifiant inventé, `order.created` ou un paiement non abouti ne donnent aucune émeraude. Le destinataire, le produit et la devise doivent correspondre au checkout enregistré. Le rapprochement du portefeuille et du journal d’achat est atomique ; les notifications répétées et concurrentes créditent une seule fois.
+Le composant crée le checkout, puis notre route HTTP vérifie la signature de chaque webhook avant tout traitement. Seul **`order.paid`** déclenche le crédit, via une mutation interne. Le retour du navigateur, un identifiant inventé, `order.created` ou un paiement non abouti ne donnent aucune émeraude. Le destinataire, le produit et la devise doivent correspondre au checkout enregistré. Le rapprochement du portefeuille et du journal d’achat est atomique ; les notifications répétées et concurrentes créditent une seule fois.
 
 `payments:checkoutStatus` ne retourne que les achats du joueur connecté. Le navigateur suit cette requête réactive et le solde existant `collection:diamonds`. Si le webhook tarde, l’interface explique que la confirmation peut arriver après avoir quitté la page. Les noms internes historiques `diamonds` sont conservés pour garder tous les portefeuilles existants.
 
@@ -82,10 +88,11 @@ Les remboursements retirent la fraction correspondante des émeraudes, arrondie 
 
 ## Validation
 
-- Les 24 tests backend de paiement exercent les vrais composants Better Auth et Polar, dont des webhooks signés par HMAC et leur vérification réelle par le SDK. Deux scénarios couvrent les anciennes variables Polar et les achats en attente avant le changement d’identifiants.
+- Les 32 tests backend de paiement exercent les vrais composants Better Auth et Polar et la route HTTP, avec des signatures HMAC calculées indépendamment via Web Crypto. Ils couvrent les signatures Polar historiques et Standard Webhooks, les corps altérés, les timestamps expirés ou futurs, les clés incorrectes, les remboursements et les synchronisations produit. Deux scénarios couvrent les anciennes variables Polar et les achats en attente avant le changement d’identifiants.
 - Les tests couvrent les accès anonymes, les produits inadaptés, les prix modifiés, la confidentialité, l’absence de crédit au retour du navigateur, les doublons, la concurrence, les anciens portefeuilles et les remboursements.
 - Quatre tests d’interface couvrent les cinq images et quantités, les prix synchronisés, les états indisponibles, les clics répétés, les erreurs et la confirmation serveur.
-- La suite complète compte **551 tests réussis**, avec Node 24 pour Vitest ; TypeScript et la compilation de production passent.
+- La suite complète compte **605 tests réussis** après intégration de `origin/main`, avec Node 24 pour Vitest ; les vérifications TypeScript et la synchronisation Convex passent.
+- Le 25 octobre 2026, le déploiement de développement a accepté deux événements de diagnostic signés indépendamment avec son secret configuré : Standard Webhooks et Polar historique ont tous deux reçu HTTP 202. Ces événements sans commande ne modifient aucun portefeuille ; ils ne remplacent pas la relivraison du paiement sandbox depuis Polar.
 - Les composants réels sont vérifiés dans un aperçu local avec des prix et achats **simulés** à 1 440 × 900, 390 × 844 et 320 × 700 px : images chargées, accès aux cinq packs, aucun débordement horizontal de la page, aucune erreur JavaScript. Ces contrôles ne constituent pas une transaction Polar sandbox de bout en bout ; celle-ci demande la configuration de l’organisation.
 
 Aperçus : [ordinateur](emerald-packs-desktop.jpg), [mobile](emerald-packs-mobile.jpg), [petit mobile](emerald-packs-small-mobile.jpg), [confirmation simulée](emerald-payment-confirmed.jpg).

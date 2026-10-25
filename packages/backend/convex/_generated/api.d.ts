@@ -18,6 +18,7 @@ import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
 import type * as lib_game_service from "../lib/game_service.js";
+import type * as lib_polar_webhook from "../lib/polar_webhook.js";
 import type * as lib_progression from "../lib/progression.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as lib_wallet from "../lib/wallet.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/catalogue": typeof lib_catalogue;
   "lib/game_service": typeof lib_game_service;
+  "lib/polar_webhook": typeof lib_polar_webhook;
   "lib/progression": typeof lib_progression;
   "lib/validators": typeof lib_validators;
   "lib/wallet": typeof lib_wallet;
