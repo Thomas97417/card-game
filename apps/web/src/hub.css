@@ -47,16 +47,20 @@
   height: 52px;
   object-fit: contain;
   filter: drop-shadow(0 4px 3px #05170da6);
+}
+.hub-dock-shortcut > :is(.game-icon, .hub-missions-ready) {
   transition: transform 160ms;
 }
 .hub-dock-shortcut > span {
-  font: 600 14px/1.1 Georgia, serif;
+  font:
+    600 14px/1.1 Georgia,
+    serif;
   color: #fff1d0;
 }
-.hub-dock-shortcut:hover > .game-icon {
+.hub-dock-shortcut:hover > :is(.game-icon, .hub-missions-ready) {
   transform: translateY(-2px);
 }
-.hub-dock-shortcut:active > .game-icon {
+.hub-dock-shortcut:active > :is(.game-icon, .hub-missions-ready) {
   transform: translateY(0) scale(0.95);
 }
 .hub-footer button:focus-visible {
@@ -132,7 +136,9 @@
   border: 1px solid #b99b60;
   border-radius: 12px;
   background: linear-gradient(140deg, #263f30fa, #12291ffa);
-  box-shadow: 0 12px 32px #05181099, inset 0 0 0 3px #e3c3820a;
+  box-shadow:
+    0 12px 32px #05181099,
+    inset 0 0 0 3px #e3c3820a;
   pointer-events: auto;
 }
 .hub-world-chat-heading {
@@ -171,7 +177,9 @@
   color: #baa36a;
 }
 .hub-world-chat-empty > strong {
-  font: 400 21px/1.3 Georgia, serif;
+  font:
+    400 21px/1.3 Georgia,
+    serif;
 }
 .hub-world-chat-empty > p {
   max-width: 300px;
@@ -276,7 +284,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hub-dock-shortcut,
-  .hub-dock-shortcut > .game-icon,
+  .hub-dock-shortcut > :is(.game-icon, .hub-missions-ready),
   .hub-chat-toggle,
   .hub-chat-chevron {
     transition: none;

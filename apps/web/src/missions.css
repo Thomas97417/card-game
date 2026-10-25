@@ -218,13 +218,6 @@
   color: #f7db88;
   font-weight: 700;
 }
-.mission-track-note {
-  margin-top: 5px;
-  color: #a2b39b;
-  font-size: 9px;
-  text-align: center;
-  line-height: 1.5;
-}
 .missions-list-heading {
   display: flex;
   align-items: center;
@@ -461,15 +454,14 @@
     inset 0 1px #fff4c7,
     0 3px #7e6533;
 }
-.missions-tab-ready {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
+.missions-tabs > button[data-rewards="true"]:not([aria-selected="true"]) {
+  color: #f7db88;
 }
-.missions-tab-ready > .mission-check {
-  width: 100%;
-  height: 100%;
+.missions-tabs > button[data-rewards="true"] > .missions-tab-label {
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }
 .missions-panel > .missions-list-heading:first-child {
   margin-top: 0;
@@ -522,10 +514,6 @@
   }
   .mission-road-line {
     top: 28px;
-  }
-  .mission-track-note {
-    margin-top: 2px;
-    font-size: 8px;
   }
   .missions-list-heading {
     margin-top: 14px;
@@ -616,9 +604,6 @@
   .mission-chest-state {
     font-size: 8px;
   }
-  .mission-track-note {
-    font-size: 8px;
-  }
   .missions-list-heading {
     margin-top: 16px;
   }
@@ -680,10 +665,6 @@
     gap: 6px;
     min-height: 43px;
     font-size: 12px;
-  }
-  .missions-tab-ready {
-    width: 20px;
-    height: 20px;
   }
   .hub-dock-shortcut > .hub-missions-ready {
     right: calc(50% - 26px);

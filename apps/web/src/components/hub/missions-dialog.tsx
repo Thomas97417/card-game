@@ -243,21 +243,16 @@ export function MissionsDialog({
             role="tab"
             id={`${id}-${kind}`}
             key={kind}
+            data-rewards={hasRewards(kind)}
             aria-selected={tab === kind}
             aria-controls={`${id}-panel`}
             tabIndex={tab === kind ? 0 : -1}
             onClick={() => setTab(kind)}
             onKeyDown={(event) => changeTab(event, index)}
           >
-            <span>{label}</span>
+            <span className="missions-tab-label">{label}</span>
             {hasRewards(kind) && (
-              <span
-                className="missions-tab-ready"
-                role="img"
-                aria-label="Récompenses à récupérer"
-              >
-                <MissionCheck />
-              </span>
+              <span className="sr-only">Récompenses à récupérer</span>
             )}
           </button>
         ))}
@@ -344,9 +339,6 @@ function MissionChestTrack({
           </button>
         ))}
       </div>
-      <p className="mission-track-note">
-        Les sceaux restent acquis sur ce parcours jusqu’au renouvellement.
-      </p>
     </div>
   );
 }
