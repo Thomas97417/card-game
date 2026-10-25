@@ -112,17 +112,13 @@ export function GuardianHouse({
                   aria-labelledby="guardian-progression-title"
                 >
                   <header className="guardian-panel-heading">
-                    <Sparkles size={24} aria-hidden="true" />
-                    <div>
-                      <span className="guardian-eyebrow">Progression</span>
-                      <h2 id="guardian-progression-title">
-                        {!next
-                          ? "Niveau maximum atteint"
-                          : progress.canUpgrade
-                            ? "Amélioration disponible"
-                            : `Vers le niveau ${next.level}`}
-                      </h2>
-                    </div>
+                    <h2 id="guardian-progression-title">
+                      {!next
+                        ? "Niveau maximum atteint"
+                        : progress.canUpgrade
+                          ? "Amélioration disponible"
+                          : `Vers le niveau ${next.level}`}
+                    </h2>
                   </header>
                   <div className="guardian-might">
                     <span>Puissance actuelle</span>

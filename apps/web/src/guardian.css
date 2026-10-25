@@ -180,19 +180,12 @@
   gap: 14px;
   margin-bottom: 24px;
 }
-.guardian-panel-heading > svg {
-  flex-shrink: 0;
-  color: #d8c18b;
-}
 .guardian-panel h2 {
   margin: 0;
   color: #f8e8bf;
   font:
     400 25px/1.2 Georgia,
     serif;
-}
-.guardian-panel-heading .guardian-eyebrow {
-  margin-bottom: 6px;
 }
 .guardian-might,
 .guardian-next-level > div {
