@@ -70,10 +70,10 @@
   align-items: center;
   gap: 9px;
   width: 100%;
-  min-height: 60px;
-  padding: 18px 21px;
+  min-height: 42px;
+  padding: 10px 13px;
   border: 1px solid #b99b60;
-  border-radius: 12px;
+  border-radius: 8px;
   background: linear-gradient(150deg, #314d3af5, #182e24fa 60%, #11251efc);
   box-shadow: 0 14px 35px #061a13aa;
   text-align: left;
@@ -482,8 +482,8 @@
   }
   .hub-chat-toggle {
     gap: 7px;
-    min-height: 56px;
-    padding: 16px 17px;
+    min-height: 42px;
+    padding: 10px;
   }
   .hub-chat-label {
     font-size: 11px;
