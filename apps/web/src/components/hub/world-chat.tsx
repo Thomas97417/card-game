@@ -16,10 +16,31 @@ import {
   Message,
   MessageAvatar,
   MessageContent,
+  MessageGroup,
   MessageHeader,
 } from "@/components/ui/message";
 
 type ChatMessage = FunctionReturnType<typeof api.worldChat.list>[number];
+
+function groupMessages(messages: ChatMessage[]) {
+  const groups: ChatMessage[][] = [];
+  for (const message of messages) {
+    const group = groups.at(-1);
+    const previous = group?.at(-1);
+    if (
+      group &&
+      previous &&
+      message.continuesPrevious &&
+      new Date(previous.sentAt).toDateString() ===
+        new Date(message.sentAt).toDateString()
+    ) {
+      group.push(message);
+    } else {
+      groups.push([message]);
+    }
+  }
+  return groups;
+}
 
 export function WorldChat({
   id,
@@ -116,6 +137,7 @@ export function WorldChat({
   }
 
   if (!open) return null;
+  const messageGroups = groupMessages(messages ?? []);
 
   return (
     <section
@@ -195,14 +217,15 @@ export function WorldChat({
             <p>Salue les gardiens et partage tes aventures dans la Sylve.</p>
           </div>
         ) : (
-          messages.map((message, index) => (
-            <ChatRow
-              key={message.id}
-              message={message}
+          messageGroups.map((group, index) => (
+            <ChatMessageGroup
+              key={group[0]!.id}
+              messages={group}
               showDate={
                 index === 0 ||
-                new Date(messages[index - 1]!.sentAt).toDateString() !==
-                  new Date(message.sentAt).toDateString()
+                new Date(
+                  messageGroups[index - 1]![0]!.sentAt,
+                ).toDateString() !== new Date(group[0]!.sentAt).toDateString()
               }
             />
           ))
@@ -298,49 +321,97 @@ export function WorldChat({
   );
 }
 
-function ChatRow({
-  message,
+function ChatMessageGroup({
+  messages,
   showDate,
 }: {
-  message: ChatMessage;
+  messages: ChatMessage[];
   showDate: boolean;
+}) {
+  const first = messages[0]!;
+
+  return (
+    <>
+      {showDate && (
+        <div className="hub-world-chat-date">
+          {new Date(first.sentAt).toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          })}
+        </div>
+      )}
+      <MessageGroup
+        className="hub-world-chat-group"
+        role="group"
+        aria-label={
+          first.isOwn ? "Tes messages" : `Messages de ${first.senderName}`
+        }
+      >
+        {messages.map((message, index) => (
+          <ChatRow
+            key={message.id}
+            message={message}
+            first={index === 0}
+            last={index === messages.length - 1}
+          />
+        ))}
+      </MessageGroup>
+    </>
+  );
+}
+
+function ChatRow({
+  message,
+  first,
+  last,
+}: {
+  message: ChatMessage;
+  first: boolean;
+  last: boolean;
 }) {
   const date = new Date(message.sentAt);
   const initials = Array.from(message.senderName)
     .slice(0, 2)
     .join("")
     .toLocaleUpperCase("fr-FR");
+  const time = (
+    <time
+      className={first ? undefined : "sr-only"}
+      dateTime={date.toISOString()}
+      title={date.toLocaleString("fr-FR")}
+    >
+      {date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}
+    </time>
+  );
 
   return (
-    <>
-      {showDate && (
-        <div className="hub-world-chat-date">
-          {date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
-        </div>
-      )}
-      <Message
-        align={message.isOwn ? "end" : "start"}
-        className="hub-world-chat-message"
-      >
-        <MessageAvatar className="hub-world-chat-avatar" aria-hidden="true">
-          {initials}
-        </MessageAvatar>
-        <MessageContent className="hub-world-chat-content">
+    <Message
+      align={message.isOwn ? "end" : "start"}
+      className="hub-world-chat-message"
+      data-group-end={last}
+    >
+      <MessageAvatar className="hub-world-chat-avatar" aria-hidden="true">
+        {last ? initials : null}
+      </MessageAvatar>
+      <MessageContent className="hub-world-chat-content">
+        {first ? (
           <MessageHeader className="hub-world-chat-meta">
             <span>{message.isOwn ? "Toi" : message.senderName}</span>
-            <time
-              dateTime={date.toISOString()}
-              title={date.toLocaleString("fr-FR")}
-            >
-              {date.toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </time>
+            {time}
           </MessageHeader>
-          <p className="hub-world-chat-bubble">{message.body}</p>
-        </MessageContent>
-      </Message>
-    </>
+        ) : (
+          time
+        )}
+        <p
+          className="hub-world-chat-bubble"
+          title={date.toLocaleString("fr-FR")}
+        >
+          {message.body}
+        </p>
+      </MessageContent>
+    </Message>
   );
 }

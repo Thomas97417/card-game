@@ -15,14 +15,18 @@ function setup() {
   return t;
 }
 
-async function player(t: ReturnType<typeof setup>, name: string) {
+async function player(
+  t: ReturnType<typeof setup>,
+  name: string,
+  account = name,
+) {
   const now = Date.now();
   const user = await t.mutation(components.betterAuth.adapter.create, {
     input: {
       model: "user",
       data: {
         name,
-        email: `${name}@example.invalid`,
+        email: `${account}@example.invalid`,
         emailVerified: true,
         createdAt: now,
         updatedAt: now,
@@ -34,7 +38,7 @@ async function player(t: ReturnType<typeof setup>, name: string) {
       model: "session",
       data: {
         userId: user._id,
-        token: `${name}-session`,
+        token: `${account}-session`,
         createdAt: now,
         updatedAt: now,
         expiresAt: now + 3_600_000,
@@ -58,7 +62,10 @@ describe("le chat mondial", () => {
     ).rejects.toThrow("Connecte-toi");
     await expect(
       t
-        .withIdentity({ subject: "invented-player", sessionId: "invented-session" })
+        .withIdentity({
+          subject: "invented-player",
+          sessionId: "invented-session",
+        })
         .mutation(api.worldChat.send, { body: "Bonjour" }),
     ).rejects.toThrow("Connecte-toi");
   });
@@ -108,6 +115,36 @@ describe("le chat mondial", () => {
     );
   });
 
+  it("marks consecutive messages by player identity even when players share a name", async () => {
+    const t = setup();
+    const alice = await player(t, "Gardien", "alice");
+    const bob = await player(t, "Gardien", "bob");
+    await alice.mutation(api.worldChat.send, { body: "Bonjour" });
+    vi.advanceTimersByTime(WORLD_CHAT_SEND_INTERVAL_MS + 1);
+    await alice.mutation(api.worldChat.send, { body: "Encore moi" });
+    await bob.mutation(api.worldChat.send, {
+      body: "Même pseudo, autre joueur",
+    });
+    vi.advanceTimersByTime(WORLD_CHAT_SEND_INTERVAL_MS + 1);
+    await bob.mutation(api.worldChat.send, { body: "Mon deuxième message" });
+    await alice.mutation(api.worldChat.send, { body: "Je reviens" });
+
+    for (const viewer of [alice, bob]) {
+      const messages = await viewer.query(api.worldChat.list, {});
+      expect(messages.map((message) => message.continuesPrevious)).toEqual([
+        false,
+        true,
+        false,
+        true,
+        false,
+      ]);
+      expect(
+        messages.every((message) => message.senderName === "Gardien"),
+      ).toBe(true);
+      expect(messages.every((message) => !("senderId" in message))).toBe(true);
+    }
+  });
+
   it("enforces the send interval per player while allowing other players to reply", async () => {
     const t = setup();
     const alice = await player(t, "Alice");
@@ -142,6 +179,10 @@ describe("le chat mondial", () => {
     const messages = await alice.query(api.worldChat.list, {});
     expect(messages).toHaveLength(WORLD_CHAT_HISTORY_LIMIT);
     expect(messages[0]!.body).toBe("Message 5");
+    expect(messages[0]!.continuesPrevious).toBe(false);
+    expect(
+      messages.slice(1).every((message) => message.continuesPrevious),
+    ).toBe(true);
     expect(messages.at(-1)!.body).toBe("Message 104");
     expect(
       await t.run((ctx) => ctx.db.query("worldMessages").collect()),

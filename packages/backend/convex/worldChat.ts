@@ -16,12 +16,14 @@ export const list = query({
       .order("desc")
       .take(WORLD_CHAT_HISTORY_LIMIT);
 
-    return messages.reverse().map((message) => ({
+    return messages.reverse().map((message, index, history) => ({
       id: message._id,
       sentAt: message._creationTime,
       senderName: message.senderName,
       body: message.body,
       isOwn: message.senderId === userId,
+      continuesPrevious:
+        index > 0 && history[index - 1]!.senderId === message.senderId,
     }));
   },
 });

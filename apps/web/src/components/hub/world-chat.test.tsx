@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConvexError } from "convex/values";
 import { useQuery } from "convex/react";
@@ -11,6 +17,7 @@ type Message = {
   senderName: string;
   body: string;
   isOwn: boolean;
+  continuesPrevious?: boolean;
 };
 const state = vi.hoisted(() => ({
   messages: [] as Message[] | undefined,
@@ -251,5 +258,139 @@ describe("le chat mondial du refuge", () => {
     fireEvent.scroll(log);
     state.resize();
     expect(log.scrollTop).toBe(100);
+  });
+
+  it("groups consecutive messages with one header and an avatar on the last row, on both sides", () => {
+    const sentAt = new Date(2026, 9, 25, 14).getTime();
+    state.messages = [
+      {
+        id: "one",
+        sentAt,
+        senderName: "Léa",
+        body: "Bonjour !",
+        isOwn: false,
+        continuesPrevious: false,
+      },
+      {
+        id: "two",
+        sentAt: sentAt + 60_000,
+        senderName: "Léa",
+        body: "Un défi amical ?",
+        isOwn: false,
+        continuesPrevious: true,
+      },
+      {
+        id: "three",
+        sentAt: sentAt + 120_000,
+        senderName: "Alice",
+        body: "Avec plaisir !",
+        isOwn: true,
+        continuesPrevious: false,
+      },
+      {
+        id: "four",
+        sentAt: sentAt + 180_000,
+        senderName: "Alice",
+        body: "Je prépare mon deck.",
+        isOwn: true,
+        continuesPrevious: true,
+      },
+      {
+        id: "five",
+        sentAt: sentAt + 240_000,
+        senderName: "Léa",
+        body: "À tout de suite !",
+        isOwn: false,
+        continuesPrevious: false,
+      },
+    ];
+    render(<HubDock />);
+    openChat();
+
+    const received = screen.getAllByRole("group", { name: "Messages de Léa" });
+    const own = screen.getByRole("group", { name: "Tes messages" });
+    expect(received).toHaveLength(2);
+    expect(within(received[0]!).getByText("Bonjour !")).toBeTruthy();
+    expect(within(received[0]!).getByText("Un défi amical ?")).toBeTruthy();
+    expect(within(received[1]!).getByText("À tout de suite !")).toBeTruthy();
+    expect(within(own).getByText("Avec plaisir !")).toBeTruthy();
+    expect(within(own).getByText("Je prépare mon deck.")).toBeTruthy();
+    expect(screen.getAllByText("Léa")).toHaveLength(2);
+    expect(screen.getAllByText("Toi")).toHaveLength(1);
+    for (const group of [received[0]!, own]) {
+      const avatars = group.querySelectorAll('[data-slot="message-avatar"]');
+      expect(avatars).toHaveLength(2);
+      expect(avatars[0]!.textContent).toBe("");
+      expect(avatars[1]!.textContent).not.toBe("");
+      expect(group.querySelectorAll("time")).toHaveLength(2);
+    }
+  });
+
+  it("starts another group at a day boundary even when the sender continues", () => {
+    state.messages = [
+      {
+        id: "one",
+        sentAt: new Date(2026, 9, 24, 23, 59).getTime(),
+        senderName: "Léa",
+        body: "Bonne nuit !",
+        isOwn: false,
+        continuesPrevious: false,
+      },
+      {
+        id: "two",
+        sentAt: new Date(2026, 9, 25, 0, 1).getTime(),
+        senderName: "Léa",
+        body: "Un dernier duel ?",
+        isOwn: false,
+        continuesPrevious: true,
+      },
+    ];
+    render(<HubDock />);
+    openChat();
+    expect(
+      screen.getAllByRole("group", { name: "Messages de Léa" }),
+    ).toHaveLength(2);
+    expect(screen.getByText("24 octobre")).toBeTruthy();
+    expect(screen.getByText("25 octobre")).toBeTruthy();
+  });
+
+  it("extends a live group and moves the avatar to the new last message", () => {
+    state.messages = [
+      {
+        id: "one",
+        sentAt: Date.now(),
+        senderName: "Léa",
+        body: "Bonjour !",
+        isOwn: false,
+        continuesPrevious: false,
+      },
+    ];
+    const view = render(<HubDock />);
+    openChat();
+    const firstAvatar = screen
+      .getByRole("group", { name: "Messages de Léa" })
+      .querySelector('[data-slot="message-avatar"]');
+    expect(firstAvatar!.textContent).toBe("LÉ");
+
+    state.messages = [
+      ...state.messages!,
+      {
+        id: "two",
+        sentAt: Date.now(),
+        senderName: "Léa",
+        body: "Encore moi !",
+        isOwn: false,
+        continuesPrevious: true,
+      },
+    ];
+    view.rerender(<HubDock />);
+    const group = screen.getByRole("group", { name: "Messages de Léa" });
+    expect(within(group).getByText("Bonjour !")).toBeTruthy();
+    expect(within(group).getByText("Encore moi !")).toBeTruthy();
+    expect(screen.getAllByText("Léa")).toHaveLength(1);
+    expect(firstAvatar!.textContent).toBe("");
+    expect(
+      group.querySelectorAll('[data-slot="message-avatar"]')[1]!.textContent,
+    ).toBe("LÉ");
   });
 });

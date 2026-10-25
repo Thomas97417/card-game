@@ -240,10 +240,13 @@
   background: #c5a76b26;
   content: "";
 }
+.hub-world-chat-group {
+  gap: 4px;
+  margin-top: 15px;
+}
 .hub-world-chat-message {
   align-items: flex-end;
   gap: 8px;
-  margin-top: 15px;
 }
 .hub-world-chat-avatar {
   width: 30px;
@@ -256,6 +259,9 @@
   font:
     600 11px Georgia,
     serif;
+}
+.hub-world-chat-avatar:empty {
+  visibility: hidden;
 }
 .hub-world-chat-content {
   flex: 0 1 auto;
@@ -306,6 +312,9 @@
   border-radius: 10px 10px 3px 10px;
   background: linear-gradient(135deg, #4b5433, #3c492e);
   color: #fff0cd;
+}
+.hub-world-chat-message[data-group-end="false"] .hub-world-chat-bubble {
+  border-radius: 10px;
 }
 .hub-world-chat-latest {
   display: flex;
