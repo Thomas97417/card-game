@@ -14,7 +14,6 @@ import {
   createGame,
   endTurn,
   summon,
-  withdraw,
   playerView,
   unitAttack,
   type GameState,
@@ -306,11 +305,9 @@ describe("evolution combat skills", () => {
     expect(unitAttack(lynx, next.players[0]!)).toBe(
       resolveCard("lynx:epic").attack + 4,
     );
-    next.activePlayer = 0;
-    next = withdraw(next, 0, "guardian:common", next.turn, 0, {
-      row: 1,
-      depth: 1,
-    }).state;
+    next.players[0]!.board.find((u) => u.cardId === "guardian:common")!.hp = 1;
+    put(next, 1, "guardian:common", 1, 0, { attack: 100 });
+    next = attack(next, 1).state;
     expect(next.players[0]!.board[0]!.formationHealth).toBe(0);
     const other = fresh("bear:epic");
     const bear = put(other, 0, "bear:epic", 0, 0);
@@ -350,8 +347,9 @@ describe("evolution combat skills", () => {
       state.players[0]!.board.find((u) => u.cardId === "guardian:common")!
         .attack,
     ).toBe(7);
+    state.players[0]!.board.find((u) => u.cardId === "guardian:common")!.hp = 1;
+    put(state, 1, "guardian:common", rune.row, 0, { attack: 100 });
     state = attack(state, 1).state;
-    state = withdraw(state, 0, "guardian:common", state.turn, 0).state;
     expect(state.players[0]!.runes).toEqual([]);
   });
   it("applies end-of-turn damage and resolves start-of-turn hero kills", () => {

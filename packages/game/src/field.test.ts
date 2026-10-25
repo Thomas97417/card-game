@@ -494,7 +494,7 @@ describe("sceaux du terrain", () => {
   );
 
   it.each(["rune", "pentagram"] as const)(
-    "clears a %s on voluntary withdrawal and prevents farming its bonus",
+    "preserves a %s and its bonuses when voluntary withdrawal is rejected",
     (kind) => {
       const state = fresh();
       const owner = state.players[0]!;
@@ -508,23 +508,13 @@ describe("sceaux du terrain", () => {
       const mark = { row: 0, depth: 0, attack: 2 };
       if (kind === "rune") owner.runes = [{ ...mark, activated: true }];
       else owner.pentagrams = [mark];
-      const removed = withdraw(state, 0, "guardian:common", 1, 1);
-      const key = kind === "rune" ? "runes" : "pentagrams";
-      expect(removed.state.players[0]![key]).toEqual([]);
-      expect(removed.events[0]![key]).toEqual([]);
-      const again = summon(
-        removed.state,
-        0,
-        "guardian:common",
-        0,
-        0,
-        1,
-        1,
-        random,
+      const before = structuredClone(state);
+      expect(() => withdraw(state, 0, "guardian:common", 1, 1)).toThrow(
+        "ne peuvent pas être retirées",
       );
-      expect(
-        unitAttack(again.state.players[0]!.board[0]!, again.state.players[0]!),
-      ).toBe(owner.cards[0]!.attack);
+      expect(state).toEqual(before);
+      expect(() => summon(state, 0, "guardian:common", 0, 0, 1, 1, random))
+        .toThrow("occupée");
     },
   );
 
