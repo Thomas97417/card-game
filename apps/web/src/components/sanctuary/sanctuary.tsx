@@ -11,11 +11,8 @@ import { ConvexError } from "convex/values";
 import {
   ArrowRight,
   Check,
-  Gem,
   History,
-  KeyRound,
   LoaderCircle,
-  Sparkles,
 } from "lucide-react";
 import type {
   EmeraldPackId,
@@ -153,14 +150,6 @@ export function Sanctuary({
       !purchasedChestSlots.includes(key.slot) &&
       !unlockedKeys.includes(key.slot),
   );
-
-  function showOffers(id: string) {
-    offersRow.current?.querySelector(`#${id}`)?.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start",
-    });
-  }
 
   function openSaved(draw: SummonResult) {
     // Finding the paid draw also resolves a previously lost purchase response.
@@ -304,26 +293,6 @@ export function Sanctuary({
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
-          <nav
-            className="sanctuary-categories"
-            aria-label="Offres du sanctuaire"
-          >
-            <button type="button" onClick={() => showOffers("summon-packs")}>
-              <Sparkles size={15} /> Invocations
-            </button>
-            {availableKeys.length > 0 && (
-              <button type="button" onClick={() => showOffers("chest-keys")}>
-                <KeyRound size={15} /> Clés de coffre
-              </button>
-            )}
-            <button
-              type="button"
-              className="sanctuary-emerald-link"
-              onClick={() => showOffers("emerald-packs")}
-            >
-              <Gem size={15} /> Émeraudes
-            </button>
-          </nav>
           {paymentFeedback}
           <div
             ref={offersRow}

@@ -19,7 +19,7 @@ const offers = EMERALD_PACKS.map((pack, index) => ({
 }));
 
 describe("packs d’émeraudes", () => {
-  it("shows five progressively richer treasures with the provider prices and explicit real-money copy", () => {
+  it("shows five progressively richer treasures with the provider prices", () => {
     render(<EmeraldPacks offers={offers} ready onPurchase={vi.fn()} />);
     const shop = screen.getByRole("region", { name: "Packs d’émeraudes" });
     expect(within(shop).getAllByRole("article")).toHaveLength(5);
@@ -31,7 +31,7 @@ describe("packs d’émeraudes", () => {
         name: /Acheter 15.*000 émeraudes.*99,99/,
       }),
     ).toBeTruthy();
-    expect(screen.getByText(/Achats en argent réel/)).toBeTruthy();
+    expect(screen.queryByText(/Achats en argent réel/)).toBeNull();
     expect(within(shop).getAllByText(/sans abonnement/)).toHaveLength(5);
     expect(
       [...shop.querySelectorAll("img.emerald-pack-art")].map((img) =>

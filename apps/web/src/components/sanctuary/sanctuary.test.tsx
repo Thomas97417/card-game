@@ -969,7 +969,7 @@ describe("le sanctuaire", () => {
     expect((repeat as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(repeat);
     expect(onSummon).not.toHaveBeenCalled();
-    expect(within(dialog).getByText("Émeraudes insuffisantes")).toBeTruthy();
+    expect(within(dialog).queryByText("Émeraudes insuffisantes")).toBeNull();
   });
 
   it.each([1, 10] as const)(

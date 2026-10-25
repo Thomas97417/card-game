@@ -118,11 +118,6 @@ export function EmeraldPacks({
           );
         })}
       </div>
-      <p className="emerald-shop-note">
-        Achats en argent réel. Le montant final et les taxes éventuelles sont
-        indiqués avant de payer. Les émeraudes sont ajoutées après confirmation
-        du paiement.
-      </p>
       {error && (
         <p className="sanctuary-error" role="alert">
           {error}
