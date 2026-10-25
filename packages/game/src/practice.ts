@@ -13,6 +13,7 @@ import {
   availableRarities,
   getCombatType,
   unitAttack,
+  nextHeroAbility,
   type CardDefinition,
   type GameState,
   type GameView,
@@ -156,6 +157,10 @@ function visibleState(view: GameView): GameState {
       userId: String(index),
       name: player.name,
       heroHp: player.heroHp,
+      heroMaxHp: player.heroMaxHp,
+      heroLevel: player.heroLevel,
+      heroMight: player.heroMight,
+      heroAbilityUses: player.heroAbilityUses,
       cards: player.deck.map((card) => ({ ...card })),
       hand: player.hand.map((card) => card.id),
       drawPile: [],
@@ -188,6 +193,39 @@ function evaluate(state: GameState, computer: number): number {
   const own = state.players[computer]!;
   const enemy = state.players[1 - computer]!;
   return (own.heroHp - enemy.heroHp) * 30 + boardValue(own) - boardValue(enemy);
+}
+
+/** Spend a useful spell, or clear an empty first effect to reach a ready successor. */
+export function chooseComputerHeroAbility(view: GameView) {
+  if (
+    view.status !== "active" ||
+    view.activePlayer !== view.me ||
+    view.hasSummoned
+  )
+    return null;
+  const own = view.players[view.me]!;
+  if (own.heroLevel === undefined) return null;
+  const ability = nextHeroAbility(
+    own.heroLevel,
+    own.heroAbilityUses ?? 0,
+    view.turn,
+  );
+  if (ability.state !== "ready") return null;
+  const enemy = view.players[1 - view.me]!;
+  const useful =
+    ability.id === "storm"
+      ? enemy.board.length > 0
+      : ability.id === "call_to_arms"
+        ? own.board.filter((u) => u.depth >= 1).length < 8
+        : ability.id === "heavenly_power"
+          ? own.board.some((u) => getCombatType(u.card) !== "building")
+          : true;
+  const next = nextHeroAbility(
+    own.heroLevel,
+    (own.heroAbilityUses ?? 0) + 1,
+    view.turn,
+  );
+  return useful || next.state === "ready" ? ability : null;
 }
 
 /** Compare our attack and the visible counterattack for every legal placement. */

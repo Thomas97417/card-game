@@ -26,6 +26,36 @@ import {
 import { migratePlayerCatalogue } from "./lib/catalogue";
 import { recordMissionProgress } from "./lib/missions";
 import { authComponent } from "./auth";
+import {
+  heroDeckCards,
+  heroRecord,
+  observeHero,
+  readHeroProgress,
+} from "./lib/heroes";
+
+export const hero = query({
+  args: {},
+  handler: async (ctx) =>
+    readHeroProgress(ctx, (await requirePlayer(ctx)).userId),
+});
+export const upgradeHero = mutation({
+  args: { expectedLevel: v.number() },
+  handler: async (ctx, { expectedLevel }) => {
+    const { userId } = await requirePlayer(ctx);
+    await migratePlayerCatalogue(ctx, userId);
+    const cards = await heroDeckCards(ctx, userId);
+    const progress = await observeHero(ctx, userId, cards);
+    if (progress.level !== expectedLevel)
+      throw new ConvexError("Le niveau du héros a changé.");
+    if (!progress.canUpgrade)
+      throw new ConvexError(
+        "La puissance du deck est insuffisante pour ce niveau.",
+      );
+    const record = (await heroRecord(ctx, userId))!;
+    await ctx.db.patch(record._id, { level: record.level + 1 });
+    return observeHero(ctx, userId, cards);
+  },
+});
 
 export const league = query({
   args: {},
@@ -82,7 +112,10 @@ export const playerProfile = query({
     // A read projection also supports players who have not migrated their old
     // collection yet. Their reserves and other collection cards remain private.
     const owned = new Map(
-      catalogueMigration(entries).cards.map((entry) => [entry.variantId, entry]),
+      catalogueMigration(entries).cards.map((entry) => [
+        entry.variantId,
+        entry,
+      ]),
     );
     const cardIds = [...new Set(deck?.cardIds.map(canonicalVariantId) ?? [])];
     const cards = cardIds.flatMap((id) => {
@@ -172,6 +205,7 @@ export const upgrade = mutation({
       copies: entry.copies - cost,
     });
     await recordMissionProgress(ctx, userId, { upgrades: 1 });
+    await observeHero(ctx, userId);
     return { card, copies: entry.copies - cost, gold: wallet.gold - goldCost };
   },
 });
@@ -230,6 +264,7 @@ export const soulbind = mutation({
     await ctx.db.patch(wallet._id, {
       soulDust: (wallet.soulDust ?? 0) - link.cost,
     });
+    await observeHero(ctx, userId);
     return {
       card: resolveCard(entry!.variantId, entry!.level, soulbinds),
       soulDust: (wallet.soulDust ?? 0) - link.cost,

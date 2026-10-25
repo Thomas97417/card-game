@@ -82,7 +82,9 @@ describe("réactivité du placement", () => {
     expect(result.current.display!.players[0]!.board[0]!.card.attack).toBe(
       card.attack + 2,
     );
-    expect(result.current.display!.players[1]!.heroHp).toBe(30);
+    expect(result.current.display!.players[1]!.heroHp).toBe(
+      initial.players[1]!.heroHp,
+    );
     act(() => vi.runAllTimers());
     expect(result.current.display).toEqual(confirmed);
   });

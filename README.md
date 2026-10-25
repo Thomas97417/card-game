@@ -64,6 +64,14 @@ Les quatre anciennes communes sans équivalent CW deviennent rares ; les niveaux
 
 Les changements du deck sont enregistrés automatiquement dans leur ordre, avec reprise après une erreur réseau. Les niveaux sont lus depuis la collection par le serveur. Les caractéristiques sont figées à la création de l’invitation ou à l’entrée en file, puis conservées pendant le combat. Au premier passage dans la nouvelle progression, les anciens decks de développement sont remplacés par les quatre cartes de départ ; cette initialisation ne se répète pas.
 
+### Héros et pouvoirs
+
+Le héros progresse du **niveau 1 au niveau 91**, de **45 à 1 475 PV**, selon le barème d’Adam dans Cunt Wars. La puissance additionne les cartes équipées à leur niveau réel, leurs liens d’âme et **10 points par niveau de héros acquis après le premier**. Les cartes en réserve ne comptent pas. Dans l’atelier, atteindre le seuil permet de monter d’un niveau gratuitement ; les niveaux et le record de puissance restent acquis après un changement de deck. La fiche présente les 91 paliers et l’évolution des pouvoirs.
+
+En combat, les **cartes de pouvoir empilées en bas à droite** s’utilisent avant de poser une créature, sans terminer le tour ni modifier la main. Il faut utiliser la première avant les suivantes : **Tempête de feuilles** dès le niveau 1 et le premier tour ; **Appel des éclaireurs**, deux renforts à distance, dès le niveau 11 et son troisième tour ; **Élan de la Sylve**, un bonus d’attaque pour le tour, dès le niveau 21 et son septième tour. Chaque pouvoir s’utilise une seule fois. Au niveau 21, **Dernier souffle** ajoute une carte de dégâts directs croissants à chacun de ses tours à partir du onzième, après les trois pouvoirs initiaux. Les cartes non dépensées restent empilées.
+
+L’IA utilise aussi ces pouvoirs en solo et en entraînement. Les parties déjà commencées conservent leurs caractéristiques. Les [sources, seuils et adaptations](docs/cw-alignment.md#héros-et-puissance-du-deck) précisent les valeurs historiques et le calcul Sylve de Dernier souffle.
+
 ### Règles du combat
 
 La main contient quatre variantes distinctes. Chaque carte jouée est immédiatement remplacée par un tirage aléatoire parmi toutes les variantes du deck absentes de la main. La carte qui vient d’être posée est éligible, même si elle reste sur le terrain ; plusieurs créatures de cette variante peuvent donc coexister. Les cartes déjà en main sont exclues du tirage. Avec le deck de départ à quatre cartes, la carte jouée revient toujours. Jouer une carte déclenche les attaques puis le tour adverse. En multijoueur, le délai de soixante secondes déclenche aussi les attaques. Si aucun placement n’est possible, « Attaquer sans invoquer » permet de poursuivre.

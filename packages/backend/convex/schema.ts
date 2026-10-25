@@ -15,6 +15,11 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  heroes: defineTable({
+    ownerId: v.string(),
+    level: v.number(),
+    peakMight: v.number(),
+  }).index("by_owner", ["ownerId"]),
   missionProgress: defineTable({
     ownerId: v.string(),
     ...missionStateFields,
@@ -192,6 +197,7 @@ export default defineSchema({
     hostId: v.string(),
     hostName: v.string(),
     hostCards: v.array(cardValidator),
+    hostHeroLevel: v.optional(v.number()),
     guestId: v.optional(v.string()),
     inviteCode: v.optional(v.string()),
     waitingExpiresAt: v.optional(v.number()),
@@ -206,6 +212,7 @@ export default defineSchema({
     userId: v.string(),
     name: v.string(),
     cards: v.array(cardValidator),
+    heroLevel: v.optional(v.number()),
     expiresAt: v.number(),
   }).index("by_user", ["userId"]),
 });

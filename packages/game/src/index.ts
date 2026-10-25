@@ -2,6 +2,16 @@ export * from "./cards";
 export * from "./field";
 export * from "./soulbind";
 export * from "./catalogue-migration";
+export * from "./heroes";
+import {
+  heroStats,
+  heroLevelForDeck,
+  deckMight,
+  heroMight,
+  heroArcherLevel,
+  nextHeroAbility,
+  type HeroAbilityId,
+} from "./heroes";
 import { populateField, type FieldBuildingKind } from "./field";
 import { legacyTokenDefinition } from "./legacy/summon-definition";
 import {
@@ -17,6 +27,7 @@ import {
 export const DECK_SIZE = 8;
 export const MIN_DECK_SIZE = 4;
 export const HAND_SIZE = 4;
+/** Historical default for saved matches without hero-level metadata. */
 export const HERO_HP = 30;
 export const ROWS = 4;
 export const DEPTHS = 3;
@@ -279,6 +290,10 @@ export interface PlayerState {
   name: string;
   heroHp: number;
   heroMaxHp?: number;
+  /** Absent in saved matches from before hero progression. */
+  heroLevel?: number;
+  heroMight?: number;
+  heroAbilityUses?: number;
   cards: CardDefinition[];
   hand: string[];
   /** Variants outside the hand, all eligible even while deployed. */
@@ -308,6 +323,7 @@ export interface GameEvent {
     | "death"
     | "turn"
     | "victory"
+    | "hero_ability"
     | "ability";
   player: number;
   cardId?: string;
@@ -320,6 +336,8 @@ export interface GameEvent {
   damage?: number;
   hp?: number;
   heroMaxHp?: number;
+  heroAbility?: HeroAbilityId;
+  heroAbilityUses?: number;
   ability?: string;
   amount?: number;
   unit?: Unit;
@@ -334,6 +352,7 @@ export interface PlayerInput {
   userId: string;
   name: string;
   cards: CardDefinition[];
+  heroLevel?: number;
 }
 
 function cloneGame(input: GameState): GameState {
@@ -392,18 +411,34 @@ export function createGame(
   if (players.length !== 2 || players[0]!.userId === players[1]!.userId)
     throw new GameError("Il faut deux joueurs différents.");
   const state: GameState = {
-    players: players.map((player) => ({
-      ...player,
-      cards: player.cards.map((c) => ({
-        ...cloneCard(c),
-        combatType: getCombatType(c),
-      })),
-      heroHp: HERO_HP,
-      hand: [],
-      drawPile: [],
-      discard: [],
-      board: [],
-    })),
+    players: players.map((player) => {
+      const level =
+        player.heroLevel ??
+        (player.cards.some((c) => c.rulesVersion === 2)
+          ? heroLevelForDeck(player.cards)
+          : undefined);
+      return {
+        userId: player.userId,
+        name: player.name,
+        cards: player.cards.map((c) => ({
+          ...cloneCard(c),
+          combatType: getCombatType(c),
+        })),
+        heroHp: level === undefined ? HERO_HP : heroStats(level).health,
+        ...(level === undefined
+          ? {}
+          : {
+              heroLevel: level,
+              heroMaxHp: heroStats(level).health,
+              heroMight: deckMight(player.cards) + heroMight(level),
+              heroAbilityUses: 0,
+            }),
+        hand: [],
+        drawPile: [],
+        discard: [],
+        board: [],
+      };
+    }),
     activePlayer: random() < 0.5 ? 0 : 1,
     turn: 1,
     hasSummoned: false,
@@ -827,6 +862,25 @@ function tokenDefinition(
   source: CardDefinition,
   spec: NonNullable<CardAbility["summon"]>,
 ): CardDefinition {
+  if (source.id === "hero" && spec.kind === "archer")
+    return {
+      id: `token-hero-archer-${source.level}`,
+      baseId: "fox",
+      artId: "fox",
+      name: "Éclaireuse de la Sylve",
+      title: "Renfort du héros",
+      kind: "archer",
+      color: "#d6844d",
+      rulesVersion: 2,
+      attack: spec.attack,
+      health: spec.health,
+      level: spec.level,
+      rarity: "common",
+      faction: "order",
+      gender: "female",
+      combatType: "ranged",
+      abilities: [],
+    };
   if (source.rulesVersion === 2 && spec.profileId) {
     const profile = CW_TOKENS.find((p) => p.id === spec.profileId)!;
     const point = profile.levels.find((p) => p.minionLevel === spec.level)!;
@@ -1727,6 +1781,110 @@ function victory(state: GameState, events: GameEvent[]) {
   return true;
 }
 
+/** A spell resolves before deployment and never launches attacks or resets the timer. */
+export function useHeroAbility(
+  input: GameState,
+  playerIndex: number,
+  abilityId: HeroAbilityId,
+  expectedUses: number,
+  turn: number,
+  now: number,
+  random: () => number,
+): Transition {
+  checkTurn(input, playerIndex, turn);
+  if (now >= input.turnEndsAt)
+    throw new GameError("Le temps du tour est écoulé.");
+  if (input.hasSummoned)
+    throw new GameError("Utilise les pouvoirs avant d’invoquer une créature.");
+  const original = input.players[playerIndex]!;
+  if (original.heroLevel === undefined)
+    throw new GameError(
+      "Les pouvoirs ne sont pas disponibles dans cette ancienne partie.",
+    );
+  const uses = original.heroAbilityUses ?? 0;
+  if (uses !== expectedUses)
+    throw new GameError("La pile de pouvoirs a changé.");
+  const ability = nextHeroAbility(original.heroLevel, uses, input.turn);
+  if (ability.id !== abilityId)
+    throw new GameError("Utilise d’abord le premier pouvoir de la pile.");
+  if (ability.state === "level")
+    throw new GameError(
+      `Ce pouvoir se débloque au niveau ${ability.unlockLevel}.`,
+    );
+  if (ability.state !== "ready")
+    throw new GameError(
+      `Ce pouvoir sera prêt à ton tour ${ability.readyTurn}.`,
+    );
+  const state = cloneGame(input);
+  const owner = state.players[playerIndex]!;
+  owner.heroAbilityUses = uses + 1;
+  const events: GameEvent[] = [];
+  emit(state, events, {
+    type: "hero_ability",
+    player: playerIndex,
+    heroAbility: ability.id,
+    heroAbilityUses: uses + 1,
+    ability: ability.name,
+  });
+  const stats = heroStats(owner.heroLevel!);
+  const skill: CardAbility = {
+    id: ability.id,
+    name: ability.name,
+    description: ability.description,
+    unlockLevel: 1,
+    active: true,
+    trigger: "deploy",
+    value: ability.value,
+    effect:
+      ability.id === "call_to_arms"
+        ? "summon"
+        : ability.id === "heavenly_power"
+          ? "attack"
+          : "damage",
+    target:
+      ability.id === "storm"
+        ? "all_enemies"
+        : ability.id === "sudden_death"
+          ? "enemy_hero"
+          : "all_allies",
+    ...(ability.id === "heavenly_power" ? { temporary: true } : {}),
+    ...(ability.id === "call_to_arms"
+      ? {
+          count: 2,
+          summon: {
+            kind: "archer",
+            placement: "random_ranged",
+            attack: stats.archerAttack,
+            health: stats.archerHealth,
+            level: heroArcherLevel(owner.heroLevel!),
+          },
+        }
+      : {}),
+  };
+  const source: Unit = {
+    cardId: "hero",
+    row: -1,
+    depth: -1,
+    hp: owner.heroHp,
+    definition: {
+      id: "hero",
+      name: owner.name,
+      title: "Héros",
+      kind: "hero",
+      color: "#b0c78f",
+      attack: 0,
+      health: owner.heroMaxHp!,
+      rulesVersion: 2,
+      level: owner.heroLevel,
+      abilities: [skill],
+    },
+  };
+  applyAbilities(state, playerIndex, source, "deploy", events, random);
+  removeDead(state, events, random);
+  victory(state, events);
+  return { state, events };
+}
+
 export function endTurn(
   input: GameState,
   playerIndex: number,
@@ -2080,6 +2238,13 @@ export function playerView(state: GameState, userId: string) {
       name: player.name,
       heroHp: player.heroHp,
       ...(player.heroMaxHp ? { heroMaxHp: player.heroMaxHp } : {}),
+      ...(player.heroLevel !== undefined
+        ? {
+            heroLevel: player.heroLevel,
+            heroMight: player.heroMight,
+            heroAbilityUses: player.heroAbilityUses ?? 0,
+          }
+        : {}),
       // Deck composition is public; hand contents and draw order stay private.
       deck: player.cards.map((card) => ({ ...card })),
       runes: player.runes?.map((r) => ({ ...r })),

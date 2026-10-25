@@ -18,6 +18,7 @@ import type {
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { CardArtwork } from "./card-artwork";
+import { HeroProgressPanel, type HeroProgress } from "./hero-progress-panel";
 import type { CardProgressionActions } from "./card-soulbind";
 import { ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
@@ -45,6 +46,8 @@ interface Draft {
 }
 
 interface DeckWorkshopProps extends CardProgressionActions {
+  hero?: HeroProgress;
+  onUpgradeHero?: (expectedLevel: number) => Promise<unknown>;
   league?: LeagueProgress;
   deck: WorkshopDeck | undefined;
   collection: OwnedCard[] | undefined;
@@ -74,6 +77,8 @@ export function DeckWorkshop({
   onSoulbind,
   onSacrifice,
   onEvolve,
+  hero,
+  onUpgradeHero,
 }: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
@@ -347,6 +352,13 @@ export function DeckWorkshop({
       <div className="workshop-shade" />
 
       <GameHeader league={ready ? league : undefined} />
+      {ready && hero && (
+        <HeroProgressPanel
+          progress={hero}
+          onUpgrade={onUpgradeHero}
+          disabled={status !== "saved"}
+        />
+      )}
 
       <div className="workshop-content">
         <section

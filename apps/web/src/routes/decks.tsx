@@ -23,6 +23,8 @@ function DecksPage() {
   const collection = useQuery(api.collection.list);
   const league = useQuery(api.collection.league);
   const upgrade = useMutation(api.collection.upgrade);
+  const hero = useQuery(api.collection.hero);
+  const upgradeHero = useMutation(api.collection.upgradeHero);
   const soulProgress = useQuery(api.collection.soulProgress);
   const soulbind = useMutation(api.collection.soulbind);
   const sacrifice = useMutation(api.collection.sacrifice);
@@ -44,6 +46,8 @@ function DecksPage() {
   return (
     <DeckWorkshop
       league={league}
+      hero={hero}
+      onUpgradeHero={(expectedLevel) => upgradeHero({ expectedLevel })}
       deck={initialized && league ? decks?.[0] : undefined}
       collection={collection}
       onSave={save}

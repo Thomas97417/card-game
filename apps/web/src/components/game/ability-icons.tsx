@@ -407,6 +407,10 @@ export function UnitEffectIcons({
 }
 
 const eventIcons: Record<string, AbilityIconKind> = {
+  "Tempête de feuilles": "power",
+  "Appel des éclaireurs": "reinforcement",
+  "Élan de la Sylve": "temporary",
+  "Dernier souffle": "power",
   "Dégâts de zone": "power",
   "Reflet des dégâts": "spikes",
   Puissance: "power",

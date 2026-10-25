@@ -28,6 +28,7 @@ import { StatBadge, statChange } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
 import { UnitEffectIcons } from "./ability-icons";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
+import { HeroPowerList } from "./hero-power-list";
 
 export type DuelInspection =
   | { type: "hero"; playerIndex: number }
@@ -382,6 +383,18 @@ export function DuelDetailsDialog({
                     draggable={false}
                   />
                   <dl className="details-stats hero-details-stats">
+                    {player.heroLevel !== undefined && (
+                      <>
+                        <div>
+                          <dt>Niveau du héros</dt>
+                          <dd>{player.heroLevel}</dd>
+                        </div>
+                        <div>
+                          <dt>Puissance du deck et du héros</dt>
+                          <dd>{player.heroMight}</dd>
+                        </div>
+                      </>
+                    )}
                     <div>
                       <dt>Points de vie</dt>
                       <dd>
@@ -402,6 +415,14 @@ export function DuelDetailsDialog({
                     </div>
                   </dl>
                 </div>
+                {player.heroLevel !== undefined && (
+                  <HeroPowerList
+                    level={player.heroLevel}
+                    uses={player.heroAbilityUses}
+                    turn={view.turn}
+                    inBattle
+                  />
+                )}
                 <div className="section-label">
                   <h3>{own ? "Ton deck" : "Deck adverse"}</h3>
                   <span>{player.deck.length} CARTES</span>

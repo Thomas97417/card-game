@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
 import type * as lib_chat from "../lib/chat.js";
 import type * as lib_game_service from "../lib/game_service.js";
+import type * as lib_heroes from "../lib/heroes.js";
 import type * as lib_missions from "../lib/missions.js";
 import type * as lib_polar_webhook from "../lib/polar_webhook.js";
 import type * as lib_progression from "../lib/progression.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "lib/catalogue": typeof lib_catalogue;
   "lib/chat": typeof lib_chat;
   "lib/game_service": typeof lib_game_service;
+  "lib/heroes": typeof lib_heroes;
   "lib/missions": typeof lib_missions;
   "lib/polar_webhook": typeof lib_polar_webhook;
   "lib/progression": typeof lib_progression;

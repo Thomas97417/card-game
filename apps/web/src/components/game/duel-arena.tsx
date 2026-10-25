@@ -116,7 +116,7 @@ export function DuelArena({
 }) {
   function heroFigure(player: Player, index: number, own: boolean) {
     const hit =
-      combatEvent?.type === "attack" &&
+      (combatEvent?.type === "attack" || combatEvent?.type === "ability") &&
       combatEvent.targetPlayer === index &&
       !combatEvent.targetCardId;
     return (
@@ -133,6 +133,9 @@ export function DuelArena({
           onClick={() => onInspectHero(index)}
         >
           <span className="hero-ground-shadow" />
+          {player.heroLevel !== undefined && (
+            <span className="hero-level-badge">Niv. {player.heroLevel}</span>
+          )}
           <img
             src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
             alt={own ? "Gardien de la Sylve" : "Gardien mécanique d’ambre"}

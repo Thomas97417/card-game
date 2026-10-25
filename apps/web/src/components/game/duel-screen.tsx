@@ -12,6 +12,7 @@ import {
   type GameView,
   type GameEvent,
   type UnitPosition,
+  type HeroAbilityId,
 } from "@sylve/game";
 import {
   ArrowRight,
@@ -38,6 +39,7 @@ import {
 } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
 import { LeagueResult, TrophyIcon } from "@/components/leagues/league-progress";
+import { HeroAbilityStack } from "./hero-ability-stack";
 import type { TrophyChange } from "@sylve/game/leagues";
 
 export type DuelData = GameView & {
@@ -67,6 +69,11 @@ interface DuelScreenProps {
     position: UnitPosition,
   ) => Promise<unknown>;
   onEndTurn: (turn: number) => Promise<unknown>;
+  onHeroAbility?: (
+    abilityId: HeroAbilityId,
+    expectedUses: number,
+    turn: number,
+  ) => Promise<unknown>;
   onSurrender: () => Promise<unknown>;
   practice?: boolean;
   onRestart?: () => void;
@@ -78,6 +85,7 @@ export function DuelScreen({
   onPlayCard,
   onWithdrawCard,
   onEndTurn,
+  onHeroAbility,
   onSurrender,
   practice = false,
   onRestart,
@@ -136,16 +144,18 @@ export function DuelScreen({
     (card) => legalPlacements(card, mine.board).length > 0,
   );
   const cardName = (id: string | undefined) =>
-    display.players
-      .flatMap((player) => player.deck)
-      .find((card) => card.id === id)?.name ??
-    display.players
-      .flatMap((player) => player.board)
-      .find((unit) => unit.cardId === id)?.card.name ??
-    Object.values(FIELD_BUILDINGS).find((card) => card.id === id)?.name ??
-    data.events.find((e) => e.cardId === id && e.unit?.definition)?.unit
-      ?.definition?.name ??
-    "une créature";
+    id === "hero"
+      ? "Héros"
+      : (display.players
+          .flatMap((player) => player.deck)
+          .find((card) => card.id === id)?.name ??
+        display.players
+          .flatMap((player) => player.board)
+          .find((unit) => unit.cardId === id)?.card.name ??
+        Object.values(FIELD_BUILDINGS).find((card) => card.id === id)?.name ??
+        data.events.find((e) => e.cardId === id && e.unit?.definition)?.unit
+          ?.definition?.name ??
+        "une créature");
   const selectedUnit =
     inspection?.type === "card" &&
     inspection.source === "board" &&
@@ -195,6 +205,18 @@ export function DuelScreen({
     setPending(true);
     try {
       await onEndTurn(data.turn);
+    } catch (error) {
+      showGameError(error);
+    } finally {
+      setPending(false);
+    }
+  }
+  async function castHeroAbility(id: HeroAbilityId, uses: number) {
+    if (!canSummon || !onHeroAbility) return;
+    setPending(true);
+    setSelected(null);
+    try {
+      await onHeroAbility(id, uses, data.turn);
     } catch (error) {
       showGameError(error);
     } finally {
@@ -365,7 +387,12 @@ export function DuelScreen({
         }}
         onInspectHero={(playerIndex) => inspect({ type: "hero", playerIndex })}
         onInspectField={(kind, playerIndex, row, depth) =>
-          inspect({ type: "field", kind, playerIndex, position: { row, depth } })
+          inspect({
+            type: "field",
+            kind,
+            playerIndex,
+            position: { row, depth },
+          })
         }
       />
       <section className="hand-area" aria-label="Ta main">
@@ -420,6 +447,15 @@ export function DuelScreen({
             )}
         </div>
       </section>
+      {data.status === "active" && (
+        <HeroAbilityStack
+          player={mine}
+          turn={display.turn}
+          canUse={canSummon && !!onHeroAbility}
+          onUse={(id, uses) => void castHeroAbility(id, uses)}
+          onInspect={() => inspect({ type: "hero", playerIndex: data.me })}
+        />
+      )}
       <dialog
         className="sylve-dialog game-dialog combat-history"
         ref={historyDialog}
@@ -429,7 +465,10 @@ export function DuelScreen({
         <ol>
           {data.events
             .filter(
-              (entry) => entry.type === "attack" || entry.type === "ability",
+              (entry) =>
+                entry.type === "attack" ||
+                entry.type === "ability" ||
+                entry.type === "hero_ability",
             )
             .slice(-12)
             .reverse()
@@ -439,7 +478,9 @@ export function DuelScreen({
                   <AbilityIcon kind={eventIconKind(entry)!} />
                 )}
                 <span>
-                  {entry.type === "ability" ? (
+                  {entry.type === "hero_ability" ? (
+                    `${display.players[entry.player]!.name} utilise ${entry.ability}.`
+                  ) : entry.type === "ability" ? (
                     `${cardName(entry.cardId)} · ${entry.ability}${entry.amount ? ` (${entry.amount > 0 ? "+" : ""}${entry.amount})` : ""}`
                   ) : (
                     <>
@@ -613,17 +654,16 @@ export function DuelScreen({
         <p>
           Chaque partie tire un terrain différent pour chaque camp : de 0 à 3
           bâtiments neutres, de 0 à 2 runes et de 0 à 2 pentagrammes. Chaque
-          sceau donne de la vie (+3 PV) ou de la puissance (+2 attaque).
-          Les quantités restent proches,
-          mais les positions et les petits avantages varient. Chaque camp garde
-          plusieurs cases libres pour invoquer. Les bâtiments bloquent leur case et doivent
-          être détruits ; ils ne peuvent pas être retirés. Une rune donne son
-          bonus immédiatement à l’arrivée de l’unité, une seule fois. Un
-          pentagramme ne donne rien à la pose : il ajoute son bonus à chaque
-          début de tour du propriétaire de l’unité, en cumulant les gains.
-          Les bonus de vie augmentent les PV actuels et maximum. Les deux
-          sceaux disparaissent quand leur porteur meurt ou est retiré.
-          Sélectionne un bâtiment ou un sceau pour voir ses effets.
+          sceau donne de la vie (+3 PV) ou de la puissance (+2 attaque). Les
+          quantités restent proches, mais les positions et les petits avantages
+          varient. Chaque camp garde plusieurs cases libres pour invoquer. Les
+          bâtiments bloquent leur case et doivent être détruits ; ils ne peuvent
+          pas être retirés. Une rune donne son bonus immédiatement à l’arrivée
+          de l’unité, une seule fois. Un pentagramme ne donne rien à la pose :
+          il ajoute son bonus à chaque début de tour du propriétaire de l’unité,
+          en cumulant les gains. Les bonus de vie augmentent les PV actuels et
+          maximum. Les deux sceaux disparaissent quand leur porteur meurt ou est
+          retiré. Sélectionne un bâtiment ou un sceau pour voir ses effets.
         </p>
         <p>
           Pas de déplacement. Ton deck contient de {MIN_DECK_SIZE} à {DECK_SIZE}{" "}
@@ -641,6 +681,16 @@ export function DuelScreen({
           quitte sa case ; ta main ne change pas. Fais tes retraits avant de
           jouer ta carte. Si aucun placement n’est possible, « Attaquer sans
           invoquer » permet de continuer le combat.
+        </p>
+        <p>
+          Le niveau du héros dépend de la puissance de son deck et améliore ses
+          PV et ses pouvoirs. Les cartes de pouvoir se trouvent en bas à droite
+          : utilise toujours la première avant les suivantes, avant de poser ta
+          créature. Tempête est prête dès ton premier tour ; les renforts à ton
+          troisième tour (niveau 11) et Élan à ton septième (niveau 21). Un
+          pouvoir ne termine pas le tour et ne consomme pas de carte en main. À
+          partir de ton onzième tour, Dernier souffle ajoute des dégâts directs
+          croissants, après utilisation des trois pouvoirs (niveau 21).
         </p>
         <p>Le premier héros à 0 PV perd le duel.</p>
         <AbilityLegend />

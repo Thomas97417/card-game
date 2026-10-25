@@ -1,0 +1,216 @@
+import type { ReactNode } from "react";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  DEFAULT_DECK,
+  createGame,
+  heroProgress,
+  playerView,
+  useHeroAbility,
+  validateDeck,
+} from "@sylve/game";
+import { DuelScreen } from "./duel-screen";
+import { HeroProgressPanel } from "../decks/hero-progress-panel";
+import { HeroAbilityStack } from "./hero-ability-stack";
+import { useCombatPlayback } from "./use-combat-playback";
+import { COMBAT_TIMING } from "./combat-timing";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}));
+afterEach(() => vi.useRealTimers());
+function fixture(level = 21, turn = 13, uses = 0) {
+  const cards = validateDeck(DEFAULT_DECK);
+  const state = createGame(
+    [
+      { userId: "alice", name: "Alice", cards, heroLevel: level },
+      { userId: "bob", name: "Bob", cards, heroLevel: 1 },
+    ],
+    Date.now(),
+    () => 0.25,
+    { field: false },
+  );
+  state.activePlayer = 0;
+  state.turn = turn;
+  state.players[0]!.heroAbilityUses = uses;
+  return state;
+}
+function callbacks() {
+  return {
+    onPlayCard: vi.fn().mockResolvedValue(undefined),
+    onWithdrawCard: vi.fn().mockResolvedValue(undefined),
+    onEndTurn: vi.fn().mockResolvedValue(undefined),
+    onSurrender: vi.fn().mockResolvedValue(undefined),
+    onHeroAbility: vi.fn().mockResolvedValue(undefined),
+  };
+}
+describe("interface des héros", () => {
+  it("offers only the first stacked spell and sends its turn and use count without deploying", async () => {
+    const state = fixture(),
+      actions = callbacks();
+    render(
+      <DuelScreen
+        data={{ ...playerView(state, "alice"), events: [] }}
+        {...actions}
+        practice
+      />,
+    );
+    const pile = screen.getByRole("complementary", {
+      name: "Pouvoirs du héros",
+    });
+    expect(
+      within(pile).queryByRole("button", { name: /^Utiliser Appel/ }),
+    ).toBeNull();
+    fireEvent.click(
+      within(pile).getByRole("button", { name: /^Utiliser Tempête/ }),
+    );
+    await waitFor(() =>
+      expect(actions.onHeroAbility).toHaveBeenCalledWith("storm", 0, 13),
+    );
+    expect(actions.onPlayCard).not.toHaveBeenCalled();
+    expect(actions.onEndTurn).not.toHaveBeenCalled();
+  });
+  it.each(["level", "turn", "opponent", "deployed"])(
+    "locks a spell for %s and explains its unlock",
+    (reason) => {
+      const state = fixture(
+        reason === "level" ? 1 : 21,
+        reason === "turn" ? 3 : 13,
+        reason === "level" || reason === "turn" ? 1 : 0,
+      );
+      if (reason === "opponent") state.activePlayer = 1;
+      if (reason === "deployed") state.hasSummoned = true;
+      const actions = callbacks();
+      render(
+        <DuelScreen
+          data={{ ...playerView(state, "alice"), events: [] }}
+          {...actions}
+          practice
+        />,
+      );
+      const button = within(
+        screen.getByRole("complementary", { name: "Pouvoirs du héros" }),
+      ).getByRole("button", { name: /^Utiliser / });
+      expect(button.hasAttribute("disabled")).toBe(true);
+      fireEvent.click(button);
+      expect(actions.onHeroAbility).not.toHaveBeenCalled();
+      if (reason === "level") expect(button.textContent).toContain("Niveau 11");
+      if (reason === "turn") expect(button.textContent).toContain("Ton tour 3");
+    },
+  );
+  it("updates the top of the pile after a cast and exposes full power details", async () => {
+    const state = fixture();
+    const data = playerView(state, "alice");
+    const onUse = vi.fn(),
+      onInspect = vi.fn();
+    const { rerender } = render(
+      <HeroAbilityStack
+        player={data.players[0]!}
+        turn={13}
+        canUse
+        onUse={onUse}
+        onInspect={onInspect}
+      />,
+    );
+    const next = playerView(
+      useHeroAbility(state, 0, "storm", 0, 13, Date.now(), () => 0.25).state,
+      "alice",
+    );
+    rerender(
+      <HeroAbilityStack
+        player={next.players[0]!}
+        turn={13}
+        canUse
+        onUse={onUse}
+        onInspect={onInspect}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^Utiliser Appel/ }));
+    expect(onUse).toHaveBeenCalledWith("call_to_arms", 1);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Voir les pouvoirs du héros" }),
+    );
+    expect(onInspect).toHaveBeenCalledOnce();
+  });
+  it("shows hero progression, upgrades with a version check, and presents all 91 levels", async () => {
+    const progress = heroProgress([{ id: "deck", might: 870 }]);
+    const onUpgrade = vi.fn().mockResolvedValue(undefined);
+    render(<HeroProgressPanel progress={progress} onUpgrade={onUpgrade} />);
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 2/ }));
+    await waitFor(() => expect(onUpgrade).toHaveBeenCalledWith(1));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Voir la progression et les pouvoirs du héros",
+      }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Puissance du deck")).toBeTruthy();
+    fireEvent.click(within(dialog).getByText("Les 91 niveaux du héros"));
+    expect(within(dialog).getAllByRole("row")).toHaveLength(92);
+    expect(within(dialog).getByText("1475")).toBeTruthy();
+    expect(within(dialog).getAllByText("Niveau 21").length).toBeGreaterThan(0);
+  });
+  it("does not permit a promotion while the deck is being saved", () => {
+    const onUpgrade = vi.fn();
+    render(
+      <HeroProgressPanel
+        progress={heroProgress([{ id: "deck", might: 900 }])}
+        onUpgrade={onUpgrade}
+        disabled
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 2/ }));
+    expect(onUpgrade).not.toHaveBeenCalled();
+  });
+  it("plays a hero cast before its damage and commits the spent spell without replaying on reload", () => {
+    vi.useFakeTimers();
+    const state = fixture(1, 1);
+    const card = state.players[1]!.cards[0]!;
+    state.players[1]!.board.push({ cardId: card.id, row: 0, depth: 0, hp: 10 });
+    const initial = {
+      ...playerView(state, "alice"),
+      events: [] as ReturnType<typeof useHeroAbility>["events"],
+    };
+    const transition = useHeroAbility(
+      state,
+      0,
+      "storm",
+      0,
+      1,
+      Date.now(),
+      () => 0.25,
+    );
+    const confirmed = {
+      ...playerView(transition.state, "alice"),
+      events: transition.events,
+    };
+    const { result, rerender, unmount } = renderHook(
+      ({ view }) => useCombatPlayback(view),
+      { initialProps: { view: initial } },
+    );
+    rerender({ view: confirmed });
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.ability));
+    expect(result.current.display!.players[0]!.heroAbilityUses).toBe(1);
+    expect(result.current.display!.players[1]!.board[0]!.hp).toBe(10);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact));
+    expect(result.current.display!.players[1]!.board[0]!.hp).toBe(7);
+    act(() => vi.runAllTimers());
+    expect(result.current.display).toEqual(confirmed);
+    unmount();
+    const remounted = renderHook(() => useCombatPlayback(confirmed));
+    expect(remounted.result.current.playing).toBe(false);
+    expect(remounted.result.current.display).toEqual(confirmed);
+  });
+});

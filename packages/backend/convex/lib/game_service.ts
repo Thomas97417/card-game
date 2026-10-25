@@ -17,6 +17,7 @@ import {
 import { awardMatchRewards, ownedDeck, playerLeague } from "./progression";
 import { migratePlayerCatalogue } from "./catalogue";
 import { recordMissionProgress } from "./missions";
+import { observeHero, readHeroProgress } from "./heroes";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -89,7 +90,9 @@ export async function deckSnapshot(
   if (!deck || deck._id !== deckId)
     throw new ConvexError("Ce deck ne t’appartient pas.");
   rules(() => validateDeck(deck.cardIds));
-  return ownedDeck(ctx, userId, deck.cardIds);
+  const cards = await ownedDeck(ctx, userId, deck.cardIds);
+  await observeHero(ctx, userId, cards);
+  return cards;
 }
 export async function startMatch(
   ctx: MutationCtx,
@@ -105,12 +108,20 @@ export async function startMatch(
       {
         userId: game.hostId,
         name: game.hostName,
+        heroLevel:
+          game.hostHeroLevel ??
+          (await readHeroProgress(ctx, game.hostId, game.hostCards)).level,
         cards:
           game.hostCards.length === 10
             ? game.hostCards.slice(0, DECK_SIZE)
             : game.hostCards,
       },
-      { ...guest, cards: guestCards },
+      {
+        ...guest,
+        cards: guestCards,
+        heroLevel: (await readHeroProgress(ctx, guest.userId, guestCards))
+          .level,
+      },
     ],
     Date.now(),
     Math.random,
@@ -180,7 +191,9 @@ export async function saveTransition(
   }
   if (
     state.status === "active" &&
-    events.some((event) => event.type === "turn")
+    (events.some((event) => event.type === "turn") ||
+      (game.mode === "solo" &&
+        events.some((event) => event.type === "hero_ability")))
   ) {
     if (game.mode === "solo") {
       if (state.activePlayer === 1)
@@ -189,6 +202,7 @@ export async function saveTransition(
         await ctx.scheduler.runAfter(30_000, internal.games.soloTurnFallback, {
           gameId,
           expectedTurn: state.turn,
+          expectedSequence: state.sequence,
         });
     } else
       await ctx.scheduler.runAt(state.turnEndsAt, internal.games.expireTurn, {

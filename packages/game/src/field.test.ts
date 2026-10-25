@@ -371,7 +371,9 @@ describe("sceaux du terrain", () => {
     expect(effect.seq).toBeLessThan(
       result.events.find((event) => event.type === "attack")!.seq,
     );
-    expect(result.state.players[1]!.heroHp).toBe(30 - base - 2);
+    expect(result.state.players[1]!.heroHp).toBe(
+      state.players[1]!.heroHp - base - 2,
+    );
     const next = endTurn(result.state, 1, 2, 2, random).state;
     expect(unitAttack(next.players[0]!.board[0]!, next.players[0]!)).toBe(
       base + 2,
