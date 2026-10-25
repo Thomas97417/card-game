@@ -97,9 +97,7 @@ export function SummonRevealDialog({
   const insufficient =
     emeralds == null || (offer != null && emeralds < offer.cost);
   const repeatHint =
-    lastRound && !enabled
-      ? "Cet appel est temporairement indisponible."
-      : null;
+    lastRound && !enabled ? "Cet appel est temporairement indisponible." : null;
   useEffect(() => {
     const timers = celebrationTimers.current;
     return () => {
@@ -369,7 +367,16 @@ export function SummonRevealDialog({
                   }}
                 >
                   {lastRound ? (
-                    <EmeraldAmount amount={offer.cost} />
+                    <span className="summon-button-price summon-repeat-price">
+                      {offer.cost < offer.baseCost && (
+                        <del
+                          aria-label={`Au lieu de ${offer.baseCost} émeraudes`}
+                        >
+                          {offer.baseCost.toLocaleString("fr-FR")}
+                        </del>
+                      )}
+                      <EmeraldAmount amount={offer.cost} />
+                    </span>
                   ) : (
                     <>
                       <ArrowRight size={15} />
