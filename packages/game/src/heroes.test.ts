@@ -133,29 +133,69 @@ describe("progression du héros", () => {
 });
 
 describe("pile de pouvoirs du héros", () => {
-  it("unlocks skills at levels 1, 11, 21 and at each player's turns 1, 3, 7", () => {
+  it.each([
+    ["storm", 2, 1, 0],
+    ["call_to_arms", 3, 11, 1],
+    ["heavenly_power", 7, 21, 2],
+    ["sudden_death", 11, 21, 3],
+  ] as const)(
+    "unlocks %s at personal turn %i for either starting position",
+    (id, readyTurn, level, uses) => {
+      for (const offset of [0, 1]) {
+        const turn = readyTurn * 2 - 1 + offset;
+        expect(nextHeroAbility(level, uses, turn - 2)).toMatchObject({
+          id,
+          readyTurn,
+          state: "turn",
+        });
+        expect(nextHeroAbility(level, uses, turn)).toMatchObject({
+          id,
+          readyTurn,
+          state: "ready",
+        });
+      }
+    },
+  );
+  it("still enforces hero levels and pile order after the required turn", () => {
     expect(heroAbilities(1, 1, 99)[1]!.state).toBe("level");
-    expect(heroAbilities(11, 1, 4)[1]!.state).toBe("turn");
-    expect(heroAbilities(11, 1, 5)[1]!.state).toBe("ready");
-    expect(heroAbilities(11, 1, 6)[1]!.state).toBe("ready");
-    expect(heroAbilities(21, 2, 12)[2]!.state).toBe("turn");
-    expect(heroAbilities(21, 2, 13)[2]!.state).toBe("ready");
+    expect(heroAbilities(11, 2, 99)[2]!.state).toBe("level");
+    expect(heroAbilities(11, 3, 99)[3]!.state).toBe("level");
     expect(heroAbilities(21, 0, 99)[1]!.state).toBe("previous");
   });
+  it.each([0, 1])(
+    "blocks player %i's first Storm until their second personal turn",
+    (player) => {
+      for (const firstTurn of [1, 2]) {
+        const state = match(1);
+        state.activePlayer = player;
+        state.turn = firstTurn;
+        const original = structuredClone(state);
+        expect(() =>
+          useHeroAbility(state, player, "storm", 0, firstTurn, 1, random),
+        ).toThrow("tour 2");
+        expect(state).toEqual(original);
+        state.turn += 2;
+        const result = useHeroAbility(
+          state, player, "storm", 0, state.turn, 1, random,
+        );
+        expect(result.state.players[player]!.heroAbilityUses).toBe(1);
+      }
+    },
+  );
   it("enforces order, single use, turn, deadline and deployment on the server rules", () => {
-    const state = match();
+    const state = match(21, 2);
     expect(() => cast(state, "call_to_arms")).toThrow("premier pouvoir");
-    expect(() => useHeroAbility(state, 1, "storm", 0, 1, 1, random)).toThrow(
+    expect(() => useHeroAbility(state, 1, "storm", 0, 3, 1, random)).toThrow(
       "ton tour",
     );
-    expect(() => useHeroAbility(state, 0, "storm", 0, 2, 1, random)).toThrow(
+    expect(() => useHeroAbility(state, 0, "storm", 0, 4, 1, random)).toThrow(
       "tour a changé",
     );
     expect(() =>
-      useHeroAbility(state, 0, "storm", 0, 1, state.turnEndsAt, random),
+      useHeroAbility(state, 0, "storm", 0, 3, state.turnEndsAt, random),
     ).toThrow("écoulé");
     const next = cast(state).state;
-    expect(() => useHeroAbility(next, 0, "storm", 0, 1, 1, random)).toThrow(
+    expect(() => useHeroAbility(next, 0, "storm", 0, 3, 1, random)).toThrow(
       "pile",
     );
     expect(() => cast(next)).toThrow("tour 3");
@@ -165,7 +205,7 @@ describe("pile de pouvoirs du héros", () => {
     expect(() => cast(state)).toThrow("terminée");
   });
   it("damages enemy units with shields, immunity and deaths, keeping the hand and timer intact", () => {
-    const state = match(1);
+    const state = match(1, 2);
     unit(state, 1, { hp: 2 });
     unit(state, 1, { row: 1, shield: true, hp: 8 });
     unit(state, 1, { row: 2, immune: true, hp: 8 });
@@ -182,7 +222,7 @@ describe("pile de pouvoirs du héros", () => {
     expect(result.state.players[0]!.hand).toEqual(state.players[0]!.hand);
     expect(result.state).toMatchObject({
       activePlayer: 0,
-      turn: 1,
+      turn: 3,
       hasSummoned: false,
       turnEndsAt: state.turnEndsAt,
     });
@@ -194,7 +234,7 @@ describe("pile de pouvoirs du héros", () => {
     });
   });
   it("allows an empty first spell to expose the next one and still permits character deployment", () => {
-    const result = cast(match(1));
+    const result = cast(match(1, 2));
     expect(result.state.players[0]!.heroAbilityUses).toBe(1);
     const deployed = summon(
       result.state,
@@ -202,11 +242,11 @@ describe("pile de pouvoirs du héros", () => {
       result.state.players[0]!.hand[0]!,
       0,
       1,
-      1,
+      result.state.turn,
       2,
       random,
     );
-    expect(deployed.state.turn).toBe(2);
+    expect(deployed.state.turn).toBe(4);
     expect(deployed.state.players[0]!.heroAbilityUses).toBe(1);
   });
   it("summons plain ranged Order reinforcements, reacts to their arrival and activates field runes", () => {
@@ -306,5 +346,15 @@ describe("pile de pouvoirs du héros", () => {
     );
     expect(chooseComputerHeroAbility(playerView(state, "b"))).toBeNull();
     expect(chooseComputerHeroAbility(playerView(match(1), "a"))).toBeNull();
+  });
+  it("makes the computer wait for its second turn even when Storm has a target", () => {
+    const state = match(1);
+    unit(state, 1);
+    for (const firstTurn of [1, 2]) {
+      state.turn = firstTurn;
+      expect(chooseComputerHeroAbility(playerView(state, "a"))).toBeNull();
+      state.turn += 2;
+      expect(chooseComputerHeroAbility(playerView(state, "a"))?.id).toBe("storm");
+    }
   });
 });

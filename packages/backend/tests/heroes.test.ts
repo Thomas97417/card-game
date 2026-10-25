@@ -204,13 +204,22 @@ describe("niveaux et pouvoirs persistants du héros", () => {
         abilityId: "call_to_arms",
       }),
     ).rejects.toThrow("premier pouvoir");
+    const before = (await t.run((ctx) => ctx.db.get(gameId)))!.state!;
+    await expect(
+      alice.mutation(api.games.playHeroAbility, args),
+    ).rejects.toThrow("tour 2");
+    expect((await t.run((ctx) => ctx.db.get(gameId)))!.state).toEqual(before);
+    await t.run((ctx) =>
+      ctx.db.patch(gameId, { state: { ...before, turn: 3 } }),
+    );
+    args.expectedTurn = 3;
     await alice.mutation(api.games.playHeroAbility, args);
     await expect(
       alice.mutation(api.games.playHeroAbility, args),
     ).rejects.toThrow("pile");
     const game = await alice.query(api.games.get, { gameId });
     expect(game).toMatchObject({
-      turn: 1,
+      turn: 3,
       activePlayer: 0,
       hasSummoned: false,
     });
@@ -263,6 +272,7 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     await t.run(async (ctx) => {
       const state = (await ctx.db.get(gameId))!.state!;
       state.activePlayer = 0;
+      state.turn = 3;
       for (const player of state.players) {
         player.board = [];
         player.runes = [];
@@ -280,14 +290,14 @@ describe("niveaux et pouvoirs persistants du héros", () => {
       gameId,
       abilityId: "storm",
       expectedUses: 0,
-      expectedTurn: 1,
+      expectedTurn: 3,
     });
     const other = await bob.query(api.games.get, { gameId });
     expect(other.players[0]!.heroAbilityUses).toBe(1);
     expect(other.players[1]!.board).toHaveLength(0);
     expect(other.players[0]!.hand).toEqual([]);
     expect(other).toMatchObject({
-      turn: 1,
+      turn: 3,
       activePlayer: 0,
       hasSummoned: false,
     });
@@ -296,7 +306,7 @@ describe("niveaux et pouvoirs persistants du héros", () => {
         gameId,
         abilityId: "storm",
         expectedUses: 0,
-        expectedTurn: 1,
+        expectedTurn: 3,
       }),
     ).rejects.toThrow("ton tour");
   });
@@ -338,7 +348,7 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     const gameId = await alice.mutation(api.games.createSolo, { deckId });
     await t.run(async (ctx) => {
       const state = (await ctx.db.get(gameId))!.state!;
-      state.turn = 2;
+      state.turn = 4;
       state.activePlayer = 1;
       for (const player of state.players) {
         player.board = [];
@@ -356,15 +366,15 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     });
     await alice.mutation(api.games.soloTurn, {
       gameId,
-      expectedTurn: 2,
+      expectedTurn: 4,
       expectedSequence: 0,
     });
     const cast = await alice.query(api.games.get, { gameId });
-    expect(cast).toMatchObject({ turn: 2, activePlayer: 1 });
+    expect(cast).toMatchObject({ turn: 4, activePlayer: 1 });
     expect(cast.players[1]!.heroAbilityUses).toBe(1);
     await alice.mutation(api.games.soloTurn, {
       gameId,
-      expectedTurn: 2,
+      expectedTurn: 4,
       expectedSequence: 0,
     });
     expect((await alice.query(api.games.get, { gameId })).sequence).toBe(
@@ -372,7 +382,7 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     );
     await t.mutation(internal.games.soloTurnFallback, {
       gameId,
-      expectedTurn: 2,
+      expectedTurn: 4,
       expectedSequence: 0,
     });
     expect((await alice.query(api.games.get, { gameId })).sequence).toBe(
@@ -380,9 +390,9 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     );
     await alice.mutation(api.games.soloTurn, {
       gameId,
-      expectedTurn: 2,
+      expectedTurn: 4,
       expectedSequence: cast.sequence,
     });
-    expect((await alice.query(api.games.get, { gameId })).turn).toBe(3);
+    expect((await alice.query(api.games.get, { gameId })).turn).toBe(5);
   });
 });

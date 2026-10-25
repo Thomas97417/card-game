@@ -99,7 +99,7 @@ export function heroAbilities(
       id: "storm",
       name: "Tempête de feuilles",
       unlockLevel: 1,
-      readyTurn: 1,
+      readyTurn: 2,
       value: stats.storm,
       description: `Inflige ${stats.storm} dégâts à toutes les unités ennemies.`,
     },

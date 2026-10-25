@@ -18,6 +18,7 @@ import {
 } from "@sylve/game";
 import { DuelScreen } from "./duel-screen";
 import { HeroAbilityStack } from "./hero-ability-stack";
+import { HeroPowerList } from "./hero-power-list";
 import { useCombatPlayback } from "./use-combat-playback";
 import { COMBAT_TIMING } from "./combat-timing";
 
@@ -55,6 +56,39 @@ function callbacks() {
   };
 }
 describe("interface des héros", () => {
+  it.each([1, 2, 3, 4])(
+    "offers Storm only from the second personal turn at global turn %i",
+    async (turn) => {
+      const state = fixture(1, turn);
+      const actions = callbacks();
+      render(
+        <DuelScreen
+          data={{ ...playerView(state, "alice"), events: [] }}
+          {...actions}
+          practice
+        />,
+      );
+      const button = screen.getByRole("button", {
+        name: /^Utiliser Tempête/,
+      });
+      expect(button.hasAttribute("disabled")).toBe(turn < 3);
+      expect(button.textContent).toContain(turn < 3 ? "Ton tour 2" : "Prêt");
+      fireEvent.click(button);
+      if (turn < 3) {
+        expect(actions.onHeroAbility).not.toHaveBeenCalled();
+      } else {
+        await waitFor(() =>
+          expect(actions.onHeroAbility).toHaveBeenCalledWith("storm", 0, turn),
+        );
+      }
+    },
+  );
+  it("shows all four personal unlock turns in the hero's power descriptions", () => {
+    render(<HeroPowerList level={21} />);
+    for (const turn of [2, 3, 7, 11]) {
+      expect(screen.getByText(`À partir de ton tour ${turn}`)).toBeTruthy();
+    }
+  });
   it("offers only the first stacked spell and sends its turn and use count without deploying", async () => {
     const state = fixture(),
       actions = callbacks();
@@ -194,7 +228,7 @@ describe("interface des héros", () => {
   });
   it("plays a hero cast before its damage and commits the spent spell without replaying on reload", () => {
     vi.useFakeTimers();
-    const state = fixture(1, 1);
+    const state = fixture(1, 3);
     const card = state.players[1]!.cards[0]!;
     state.players[1]!.board.push({ cardId: card.id, row: 0, depth: 0, hp: 10 });
     const initial = {
@@ -206,7 +240,7 @@ describe("interface des héros", () => {
       0,
       "storm",
       0,
-      1,
+      3,
       Date.now(),
       () => 0.25,
     );
