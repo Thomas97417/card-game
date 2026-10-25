@@ -10,6 +10,7 @@ import { ArrowRight, ArrowUp, Check, Heart, Sparkles } from "lucide-react";
 import { GameHeader } from "@/components/game-header";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
+import { GuardianLevelExplorer } from "./guardian-level-explorer";
 
 export type HeroProgress = ReturnType<typeof heroProgress>;
 const number = (value: number) => value.toLocaleString("fr-FR");
@@ -102,6 +103,7 @@ export function GuardianHouse({
               <Check size={14} aria-hidden="true" />
               Les niveaux acquis sont permanents.
             </p>
+            {progress && <GuardianLevelExplorer progress={progress} />}
           </section>
 
           <div className="guardian-panels">
@@ -139,7 +141,11 @@ export function GuardianHouse({
                     aria-label="Record de puissance pour le prochain niveau du Gardien"
                   />
                   <p className="guardian-power-record">
-                    Record : {number(progress.peakMight)}
+                    {progress.canUpgrade &&
+                    progress.nextMight != null &&
+                    progress.might < progress.nextMight
+                      ? `Ce niveau reste disponible grâce à ton record de ${number(progress.peakMight)} de puissance.`
+                      : `Record : ${number(progress.peakMight)}`}
                     {missingMight > 0 &&
                       ` · Encore ${number(missingMight)} de puissance pour le prochain niveau.`}
                   </p>
@@ -238,49 +244,6 @@ export function GuardianHouse({
                     avant de poser ta créature. Ils ne terminent pas ton tour.
                   </p>
                 </section>
-
-                <details className="guardian-panel hero-level-table">
-                  <summary>Les {HERO_LEVELS.length} niveaux du Gardien</summary>
-                  <div className="guardian-table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th scope="col">Niv.</th>
-                          <th scope="col">PV</th>
-                          <th scope="col">Puissance → suivant</th>
-                          <th scope="col">Tempête</th>
-                          <th scope="col">Éclaireuses ATQ/PV</th>
-                          <th scope="col">Élan ATQ</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {HERO_LEVELS.map((row) => (
-                          <tr
-                            key={row.level}
-                            aria-current={
-                              row.level === progress.level ? "true" : undefined
-                            }
-                          >
-                            <th scope="row">{row.level}</th>
-                            <td>{row.health}</td>
-                            <td>
-                              {row.nextMight == null
-                                ? "Max."
-                                : number(row.nextMight)}
-                            </td>
-                            <td>{row.storm}</td>
-                            <td>
-                              {row.level >= 11
-                                ? `${row.archerAttack}/${row.archerHealth}`
-                                : "—"}
-                            </td>
-                            <td>{row.attackBonus || "—"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </details>
               </>
             ) : (
               <div className="guardian-panel guardian-loading" role="status">

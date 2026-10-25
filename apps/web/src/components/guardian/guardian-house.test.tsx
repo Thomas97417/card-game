@@ -60,9 +60,10 @@ describe("la Maison des gardiens", () => {
     expect(onUpgrade).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps permanent eligibility from the record, previews the next power and lists every hero level", () => {
+  it("explains eligibility from the record and explores future levels without promoting the hero", async () => {
     const progress = heroProgress([], { level: 10, peakMight: 100_000 });
-    render(<GuardianHouse progress={progress} onUpgrade={vi.fn()} />);
+    const onUpgrade = vi.fn();
+    render(<GuardianHouse progress={progress} onUpgrade={onUpgrade} />);
     expect(
       (
         screen.getByRole("button", {
@@ -74,9 +75,69 @@ describe("la Maison des gardiens", () => {
       screen.getByText("Nouveau pouvoir : Appel des éclaireurs"),
     ).toBeTruthy();
     expect(screen.getAllByText("Niveau 21").length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByText("Les 91 niveaux du Gardien"));
-    expect(screen.getAllByRole("row")).toHaveLength(92);
-    expect(screen.getByText("1475")).toBeTruthy();
+    expect(
+      screen.getByText(/Ce niveau reste disponible grâce à ton record/),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Explorer les niveaux" }),
+    );
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByRole("heading", { name: "Niveau 11" })).toBeTruthy();
+    expect(dialog.getByText("2 éclaireuses · 6 ATQ / 1 PV")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Élan · 21" }));
+    expect(dialog.getByText("+7 ATQ aux alliés pour un tour")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Maximum · 91" }));
+    expect(dialog.getByText(/^1\s475$/)).toBeTruthy();
+    expect(dialog.getByText(/^46\s550$/)).toBeTruthy();
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Niveau suivant",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(onUpgrade).not.toHaveBeenCalled();
+  });
+
+  it("shows the threshold for entering a level and supports browsing from the first to the final level", async () => {
+    render(
+      <GuardianHouse
+        progress={heroProgress([], { level: 2, peakMight: 870 })}
+        onUpgrade={vi.fn()}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Explorer les niveaux" }),
+    );
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByRole("heading", { name: "Niveau 3" })).toBeTruthy();
+    expect(dialog.getByText(/^1\s000$/)).toBeTruthy();
+    const slider = dialog.getByRole("slider", { name: "Niveau à consulter" });
+    fireEvent.change(slider, { target: { value: "1" } });
+    expect(dialog.getByText("Niveau de départ")).toBeTruthy();
+    expect(
+      (
+        dialog.getByRole("button", {
+          name: "Niveau précédent",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    fireEvent.click(dialog.getByRole("button", { name: "Niveau suivant" }));
+    expect(dialog.getByText("870")).toBeTruthy();
+    fireEvent.change(slider, { target: { value: "91" } });
+    expect(dialog.getByRole("heading", { name: "Niveau 91" })).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Niveau précédent" }));
+    expect(dialog.getByRole("heading", { name: "Niveau 90" })).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Explorer les niveaux" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog")).getByRole("heading", {
+        name: "Niveau 3",
+      }),
+    ).toBeTruthy();
   });
 
   it("does not offer a promotion before loading or beyond the final level", () => {
