@@ -1,7 +1,8 @@
 import { useId, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronUp, Globe2, MessageCircle } from "lucide-react";
+import { ArrowRight, ChevronUp, Globe2 } from "lucide-react";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
+import { WorldChat } from "./world-chat";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +45,7 @@ const DESTINATIONS = [
   action: string;
 }[];
 
-/** The hub's social entry points. Feature availability stays explicit until connected. */
+/** The hub's social entry points and live world chat. */
 export function HubDock() {
   const [activeDestination, setActiveDestination] = useState<
     (typeof DESTINATIONS)[number]
@@ -63,34 +64,12 @@ export function HubDock() {
   return (
     <Dialog open={destinationOpen} onOpenChange={setDestinationOpen}>
       <div className="hub-dock" role="region" aria-label="Vie du refuge">
-        {chatOpen && (
-          <section
-            id={chatId}
-            className="hub-world-chat"
-            aria-labelledby={chatTitleId}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.stopPropagation();
-                closeChat();
-              }
-            }}
-          >
-            <div className="hub-world-chat-heading">
-              <span id={chatTitleId}>
-                <Globe2 size={16} aria-hidden="true" /> Chat mondial
-              </span>
-              <span className="hub-coming-soon">Bientôt disponible</span>
-            </div>
-            <div className="hub-world-chat-empty">
-              <MessageCircle size={32} strokeWidth={1.25} aria-hidden="true" />
-              <strong>Un lieu pour se retrouver</strong>
-              <p>
-                Tu pourras bientôt échanger ici avec tous les gardiens de la
-                Sylve.
-              </p>
-            </div>
-          </section>
-        )}
+        <WorldChat
+          id={chatId}
+          titleId={chatTitleId}
+          open={chatOpen}
+          onClose={closeChat}
+        />
 
         <nav className="hub-dock-shortcuts" aria-label="Communauté du refuge">
           {DESTINATIONS.map((destination) => (

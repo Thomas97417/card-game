@@ -6,7 +6,7 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, au compte, aux règles et au sanctuaire d’invocation. La carte se parcourt à la molette, par glisser à la souris, au clavier et au tactile, avec une barre de défilement horizontale masquée.
 
-Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. Ces fonctions sociales sont présentées comme bientôt disponibles ; leurs panneaux permettent déjà de rejoindre l’arène et ses défis amicaux. La barre s’adapte aux écrans mobiles.
+Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. Le chat partage les 100 derniers messages en temps réel entre les joueurs connectés et conserve leur historique dans Convex. Les messages utilisent le composant Message de shadcn, adapté au refuge. Entrée envoie le message et Maj + Entrée ajoute une ligne ; chaque message est limité à 500 caractères, avec deux secondes entre deux envois. Le brouillon est conservé à la fermeture du panneau ou en cas d’échec. Les autres fonctions sociales sont présentées comme bientôt disponibles ; leurs panneaux permettent déjà de rejoindre l’arène et ses défis amicaux. La barre s’adapte aux écrans mobiles.
 
 ### Arène et trésors
 
