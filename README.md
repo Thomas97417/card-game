@@ -6,7 +6,7 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, au compte, aux règles et au sanctuaire d’invocation. La carte se parcourt à la molette, par glisser à la souris, au clavier et au tactile, avec une barre de défilement horizontale masquée.
 
-Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. Ces fonctions sociales sont présentées comme bientôt disponibles ; leurs panneaux permettent déjà de rejoindre l’arène et ses défis amicaux. La barre s’adapte aux écrans mobiles.
+Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. **Classement** ouvre juste au-dessus des icônes un panneau défilant avec les 50 meilleurs gardiens ayant terminé un combat à trophées, du rang 1 au rang 50, avec leur pseudo, leur ligue et leurs trophées actualisés en direct. Cliquer sur un joueur déplie sa ligne vers le bas : record de trophées, meilleure ligue et deck actuel avec les niveaux, raretés et statistiques des cartes. Une seule ligne s’ouvre à la fois ; le clavier permet de parcourir les joueurs et Échap ferme le panneau. Amis, Missions et Chat mondial sont encore présentés comme bientôt disponibles. La barre s’adapte aux écrans mobiles.
 
 ### Arène et trésors
 

@@ -16,15 +16,84 @@ import {
 import { leagueAt } from "@sylve/game/leagues";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requirePlayer, rules } from "./lib/game_service";
-import { ownedCard, playerWallet, playerLeague } from "./lib/progression";
+import { currentDeck, requirePlayer, rules } from "./lib/game_service";
+import {
+  ownedCard,
+  playerWallet,
+  playerLeague,
+  playerProgress,
+} from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
+import { authComponent } from "./auth";
 
 export const league = query({
   args: {},
   handler: async (ctx) => {
     const { userId } = await requirePlayer(ctx);
     return playerLeague(ctx, userId);
+  },
+});
+
+/** Only public game information leaves these queries; auth records stay private. */
+export const leaderboard = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    const leaders = await ctx.db
+      .query("leagueProgress")
+      .withIndex("by_trophies")
+      .order("desc")
+      .take(50);
+    const players = await Promise.all(
+      leaders.map(async (progress) => {
+        const user = await authComponent.getAnyUserById(ctx, progress.ownerId);
+        if (!user) return null;
+        return {
+          ownerId: progress.ownerId,
+          name: user.name,
+          trophies: progress.trophies,
+          isCurrentPlayer: progress.ownerId === userId,
+        };
+      }),
+    );
+    return players
+      .filter((player) => player !== null)
+      .map((player, index) => ({ ...player, rank: index + 1 }));
+  },
+});
+
+export const playerProfile = query({
+  args: { ownerId: v.string() },
+  handler: async (ctx, { ownerId }) => {
+    await requirePlayer(ctx);
+    const progress = await playerProgress(ctx, ownerId);
+    if (!progress) return null;
+    const user = await authComponent.getAnyUserById(ctx, ownerId);
+    if (!user) return null;
+    const [deck, league, entries] = await Promise.all([
+      currentDeck(ctx, ownerId),
+      playerLeague(ctx, ownerId),
+      ctx.db
+        .query("collection")
+        .withIndex("by_owner_variant", (q) => q.eq("ownerId", ownerId))
+        .collect(),
+    ]);
+    // A read projection also supports players who have not migrated their old
+    // collection yet. Their reserves and other collection cards remain private.
+    const owned = new Map(
+      catalogueMigration(entries).cards.map((entry) => [entry.variantId, entry]),
+    );
+    const cardIds = [...new Set(deck?.cardIds.map(canonicalVariantId) ?? [])];
+    const cards = cardIds.flatMap((id) => {
+      const entry = owned.get(id);
+      return entry ? [resolveCard(id, entry.level, entry.soulbinds)] : [];
+    });
+    return {
+      trophies: league.trophies,
+      peakTrophies: league.peakTrophies,
+      deckCapacity: league.deckCapacity,
+      deck: deck ? { name: deck.name, cards } : null,
+    };
   },
 });
 
