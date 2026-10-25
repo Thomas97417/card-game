@@ -2,14 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ConvexError } from "convex/values";
-import {
-  ArrowDown,
-  Globe2,
-  LoaderCircle,
-  MessageCircle,
-  Send,
-  X,
-} from "lucide-react";
+import { ArrowDown, LoaderCircle, Send } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { WORLD_CHAT_MESSAGE_LIMIT } from "@my-better-t-app/backend/convex/lib/chat";
 import {
@@ -19,6 +12,8 @@ import {
   MessageGroup,
   MessageHeader,
 } from "@/components/ui/message";
+import { GameIcon } from "@/components/game/game-icon";
+import { HubPanel } from "./hub-panel";
 
 type ChatMessage = FunctionReturnType<typeof api.worldChat.list>[number];
 
@@ -60,7 +55,6 @@ export function WorldChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unseen, setUnseen] = useState(false);
-  const panel = useRef<HTMLElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const viewportSize = useRef({ width: 0, height: 0 });
   const input = useRef<HTMLTextAreaElement>(null);
@@ -73,7 +67,6 @@ export function WorldChat({
     if (open) {
       following.current = true;
       setUnseen(false);
-      panel.current?.focus({ preventScroll: true });
     }
   }, [open]);
 
@@ -140,36 +133,17 @@ export function WorldChat({
   const messageGroups = groupMessages(messages ?? []);
 
   return (
-    <section
-      ref={panel}
+    <HubPanel
       id={id}
+      titleId={titleId}
       className="hub-world-chat"
-      aria-labelledby={titleId}
-      tabIndex={-1}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.stopPropagation();
-          onClose();
-        }
-      }}
+      title="Chat mondial"
+      description="Le rendez-vous des gardiens"
+      icon="chat"
+      closeLabel="Fermer le chat mondial"
+      onClose={onClose}
+      initialFocus="panel"
     >
-      <div className="hub-world-chat-heading">
-        <div>
-          <h2 id={titleId}>
-            <Globe2 size={17} aria-hidden="true" /> Chat mondial
-          </h2>
-          <p>Le rendez-vous des gardiens</p>
-        </div>
-        <button
-          type="button"
-          className="hub-world-chat-close"
-          onClick={onClose}
-          aria-label="Fermer le chat mondial"
-        >
-          <X size={17} aria-hidden="true" />
-        </button>
-      </div>
-
       <div
         ref={viewport}
         className="hub-world-chat-messages"
@@ -204,7 +178,7 @@ export function WorldChat({
           </div>
         ) : messages.length === 0 ? (
           <div className="hub-world-chat-empty">
-            <MessageCircle size={32} strokeWidth={1.25} aria-hidden="true" />
+            <GameIcon kind="chat" size={64} />
             <strong>La conversation commence ici</strong>
             <p>Salue les gardiens et partage tes aventures dans la Sylve.</p>
           </div>
@@ -309,7 +283,7 @@ export function WorldChat({
           </span>
         </div>
       </form>
-    </section>
+    </HubPanel>
   );
 }
 

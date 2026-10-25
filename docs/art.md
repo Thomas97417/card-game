@@ -1,5 +1,27 @@
 # Illustrations de Sylve
 
+## Coffres de missions réellement ouverts — 25 octobre 2026
+
+Trois versions ouvertes ont été générées avec **ImageGen intégré**, en éditant séparément les coffres fermés correspondants : `apps/web/public/art/chests/common-open.webp`, `rare-open.webp` et `bigRare-open.webp`. Leurs matériaux, couleurs et perspective sont conservés ; le couvercle est relevé et l’intérieur vide est visible. Les fichiers sont en **WebP de 512 × 512 px avec alpha**, vérifié par `webpinfo`. Le [manifeste](art-prompts-open-chests.json) conserve les trois prompts, les références et les PNG sources.
+
+Le chemin des missions affiche ces images dès que le coffre passe à l’état récupéré. Les coffres ouverts gardent leurs couleurs pour que l’intérieur et le couvercle restent lisibles. Le passage de l’image fermée à l’image ouverte et la désactivation après récupération sont vérifiés par le test existant des récompenses.
+
+Le rendu réel a été contrôlé dans le navigateur à **1280 × 720** et **390 × 844 px**, avec trois coffres communs récupérés, un disponible et un verrouillé : [ordinateur](missions-open-chests-desktop.png), [mobile](missions-open-chests-mobile.png). Les 23 tests du hub, TypeScript et la compilation passent.
+
+## Coffres de missions par palier — 25 octobre 2026
+
+Les cinq coffres sont reliés par un chemin fin de 4 px qui traverse la rangée derrière les illustrations. Le remplissage doré s’arrête au centre du palier atteint ; les seuils intermédiaires sont interpolés entre les coffres. Les images restent opaques pour masquer le trait sous leur silhouette. Les coffres récupérés portent une coche dans leur pastille de seuil et le libellé « Ouvert » ; le coffre disponible possède une pastille et un halo dorés ; les suivants portent un cadenas. Les coffres restent directement sur le fond commun, sans écrin individuel ni jauge séparée.
+
+Les illustrations existantes sont conservées. Le rendu réel des missions quotidiennes et hebdomadaires a été contrôlé dans le navigateur sur ordinateur, à 390 px et à 320 px de large. Détails : [ordinateur](missions-chest-track-desktop.png), [mobile](missions-chest-track-mobile.png). Les 23 tests du hub, TypeScript et la compilation passent.
+
+## Panneaux communautaires harmonisés — 25 octobre 2026
+
+Le classement, les missions et le chat mondial utilisent le même composant `HubPanel` : largeur maximale de **620 px**, marge latérale de 12 px sur petit écran, bord inférieur à **14 px au-dessus des raccourcis**. Le cadre vert forêt, les bordures dorées, l’en-tête et la fermeture sont partagés. Leur hauteur commune reprend celle des missions : **660 px**, limités par l’espace disponible. Les onglets des missions restent visibles pendant le défilement. Ouvrir un panneau replie le précédent ; le brouillon du chat est conservé.
+
+L’icône du chat est un globe émeraude dans une bulle dorée, généré avec **ImageGen intégré** et enregistré dans `apps/web/public/art/ui/world-chat-globe.webp` en **WebP transparent de 384 × 384 px**. Elle apparaît dans le bandeau, l’en-tête et l’état vide du chat. Le [manifeste](art-prompts-hub-dock.json) conserve son prompt complet et le PNG source.
+
+Les composants réels ont été vérifiés dans un aperçu local avec des données de démonstration à **1440 × 900**, **390 × 844**, **320 × 700**, **844 × 390** et **390 × 480 px** : largeur, position et habillage identiques, raccourcis fixes, défilement des missions, deck du classement, retour du focus et conservation du brouillon, sans débordement horizontal ni erreur JavaScript. Captures de l’harmonisation initiale, avant l’égalisation des hauteurs : missions [ordinateur](hub-panels-missions-desktop.webp) et [mobile](hub-panels-missions-mobile.webp), classement [ordinateur](hub-panels-ranking-desktop.webp) et [mobile](hub-panels-ranking-mobile.webp), chat [ordinateur](hub-panels-chat-desktop.webp) et [mobile](hub-panels-chat-mobile.webp).
+
 ## Barre communautaire du refuge
 
 Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton entoure uniquement le chat ; les icônes restent directement sur le décor, sans cadre au survol. Les commandes d’exploration du village encadrent la barre à gauche et à droite, à hauteur du chat. Le texte d’aide au déplacement est retiré. L’ensemble s’adapte aux petits écrans et à leur zone de sécurité.
