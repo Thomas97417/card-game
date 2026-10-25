@@ -190,24 +190,27 @@
     linear-gradient(155deg, #3d4930f2, #192c20f5);
 }
 .emerald-pack-art,
-.gold-pack-art {
+.gold-pack-art,
+.sanctuary-key-art {
   width: 100%;
   height: clamp(160px, 23svh, 230px);
-  margin-block: auto 0;
+  margin-block: 0;
   object-fit: contain;
   filter: drop-shadow(0 8px 10px #021a1499);
   transform: scale(var(--treasure-art-scale, 1));
   transform-origin: center bottom;
 }
 .emerald-pack h2,
-.gold-pack h2 {
+.gold-pack h2,
+.sanctuary-key-copy h2 {
   color: #fff0d1;
   font:
     400 22px/1.25 Georgia,
     serif;
 }
 .emerald-pack-description,
-.gold-pack-description {
+.gold-pack-description,
+.sanctuary-key-copy p {
   min-height: 32px;
   margin-top: 7px;
   color: #c1cfb9;
@@ -372,34 +375,8 @@
     0 10px 24px #051c1566,
     inset 0 1px #f7dc9d22;
 }
-.sanctuary-key-tag {
-  align-self: flex-end;
-  color: #dbc48c;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-}
-.sanctuary-key-art {
-  width: 200px;
-  height: clamp(180px, 24svh, 240px);
-  margin-block: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 8px #061e1680);
-}
 .sanctuary-key-copy {
   text-align: center;
-}
-.sanctuary-key-copy h2 {
-  color: #f7e6b8;
-  font:
-    400 21px/1.25 Georgia,
-    serif;
-}
-.sanctuary-key-copy p {
-  margin: 7px 0 15px;
-  color: #c6d0b5;
-  font-size: 10px;
-  line-height: 1.5;
 }
 .sanctuary-key-button {
   display: flex;

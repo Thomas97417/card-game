@@ -345,7 +345,6 @@ export function Sanctuary({
                         key={key.slot}
                         aria-labelledby={`key-${key.slot}`}
                       >
-                        <span className="sanctuary-key-tag">Achat unique</span>
                         <img
                           className="sanctuary-key-art"
                           src={key.image}
