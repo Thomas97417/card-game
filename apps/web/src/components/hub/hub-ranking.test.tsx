@@ -94,6 +94,54 @@ describe("le classement du refuge", () => {
     expect(screen.queryByRole("region", { name: "Chat mondial" })).toBeNull();
   });
 
+  it("opens each card with the player's exact rarity, level, stats and soulbind bonuses", async () => {
+    const rare = resolveCard("fox:rare", 11, [1, 3]);
+    const legendary = resolveCard("fox:legendary", 19, [2]);
+    profileState = {
+      data: { ...profile!, deck: { name: "Les renards", cards: [rare, legendary] } },
+    };
+    const { panel } = openRanking();
+    fireEvent.click(within(panel).getByRole("button", { name: /#1.*Aëlys/ }));
+
+    for (const card of [rare, legendary]) {
+      fireEvent.click(within(panel).getByRole("button", {
+        name: new RegExp(`Voir ${card.name}, .*niveau ${card.level}`),
+      }));
+      const dialog = await screen.findByRole("dialog", { name: card.name });
+      const stats = within(dialog).getByRole("region", { name: "Caractéristiques" });
+      expect(dialog.getAttribute("data-rarity")).toBe(card.rarity);
+      expect(within(stats).getByText(`Niv. ${card.level}`)).toBeDefined();
+      expect(within(stats).getByLabelText(`${card.attack} de puissance`)).toBeDefined();
+      expect(within(stats).getByLabelText(`${card.health} points de vie`)).toBeDefined();
+      for (const ability of card.abilities ?? []) {
+        expect(within(dialog).getAllByText(ability.description).length).toBeGreaterThan(0);
+      }
+      expect(dialog.querySelector(".soulbind-panel > summary")?.textContent).toContain(`${card.soulbinds!.length} / 4`);
+      expect(within(dialog).queryByRole("region", { name: "Progression de la carte" })).toBeNull();
+      expect(within(dialog).queryByRole("button", { name: /Améliorer|Ajouter au deck|Activer/ })).toBeNull();
+      expect(within(dialog).queryByText("Prochaine amélioration")).toBeNull();
+      fireEvent.click(within(dialog).getByRole("button", { name: "Fermer la fenêtre" }));
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    }
+  });
+
+  it("closes only the card dialog with Escape and restores focus to the card in the expanded deck", async () => {
+    const { panel } = openRanking();
+    const player = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
+    fireEvent.click(player);
+    const card = within(panel).getByRole("button", { name: /Voir Gardien de pierre, Commune, niveau 5/ });
+    expect(card.getAttribute("aria-haspopup")).toBe("dialog");
+    card.focus();
+    fireEvent.click(card);
+    const dialog = await screen.findByRole("dialog", { name: "Gardien de pierre" });
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByRole("region", { name: "Classement mondial" })).toBe(panel);
+    expect(player.getAttribute("aria-expanded")).toBe("true");
+    expect(within(panel).getByRole("list", { name: "Deck du joueur" })).toBeDefined();
+    await waitFor(() => expect(document.activeElement).toBe(card));
+  });
+
   it("handles a loading, empty or unavailable ranking with a retry action", () => {
     rankingState = { data: undefined, isPending: true };
     const { panel } = openRanking();

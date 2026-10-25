@@ -403,6 +403,12 @@
   gap: 8px;
 }
 .hub-ranking-deck > li {
+  display: flex;
+  min-width: 0;
+}
+.hub-ranking-card {
+  display: block;
+  width: 100%;
   min-width: 0;
   overflow: hidden;
   padding-bottom: 7px;
@@ -410,12 +416,21 @@
   border-radius: 6px;
   background: #203b2c;
   text-align: center;
+  transition: background-color 160ms, border-color 160ms;
 }
-.hub-ranking-deck > [data-rarity="rare"] { border-color: #659bd8; }
-.hub-ranking-deck > [data-rarity="epic"] { border-color: #b585d5; }
-.hub-ranking-deck > [data-rarity="legendary"] { border-color: #dfbc64; }
+.hub-ranking-card:hover {
+  border-color: #d6c18b;
+  background: #2c4a35;
+}
+.hub-ranking-card:focus-visible {
+  outline-offset: -3px;
+}
+.hub-ranking-card[data-rarity="rare"] { border-color: #659bd8; }
+.hub-ranking-card[data-rarity="epic"] { border-color: #b585d5; }
+.hub-ranking-card[data-rarity="legendary"] { border-color: #dfbc64; }
 .hub-ranking-card-art {
   position: relative;
+  display: block;
   aspect-ratio: 1.25;
   background: radial-gradient(ellipse at bottom, #79925b66, #10251d33);
 }
@@ -680,7 +695,8 @@
   .hub-dock-shortcut > .game-icon,
   .hub-chat-toggle,
   .hub-chat-chevron,
-  .hub-ranking-trigger {
+  .hub-ranking-trigger,
+  .hub-ranking-card {
     transition: none;
   }
 }
