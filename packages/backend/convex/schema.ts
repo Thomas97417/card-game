@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { missionStateFields } from "./lib/missions";
 
 import {
   cardValidator,
@@ -14,6 +15,10 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  missionProgress: defineTable({
+    ownerId: v.string(),
+    ...missionStateFields,
+  }).index("by_owner", ["ownerId"]),
   worldMessages: defineTable({
     senderId: v.string(),
     senderName: v.string(),

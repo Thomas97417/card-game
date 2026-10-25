@@ -47,6 +47,8 @@
   height: 52px;
   object-fit: contain;
   filter: drop-shadow(0 4px 3px #05170da6);
+}
+.hub-dock-shortcut > :is(.game-icon, .hub-missions-ready) {
   transition: transform 160ms;
 }
 .hub-dock-shortcut > span {
@@ -55,10 +57,10 @@
     serif;
   color: #fff1d0;
 }
-.hub-dock-shortcut:hover > .game-icon {
+.hub-dock-shortcut:hover > :is(.game-icon, .hub-missions-ready) {
   transform: translateY(-2px);
 }
-.hub-dock-shortcut:active > .game-icon {
+.hub-dock-shortcut:active > :is(.game-icon, .hub-missions-ready) {
   transform: translateY(0) scale(0.95);
 }
 .hub-dock-shortcut[aria-expanded="true"] > .game-icon {
@@ -915,7 +917,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .hub-dock-shortcut,
-  .hub-dock-shortcut > .game-icon,
+  .hub-dock-shortcut > :is(.game-icon, .hub-missions-ready),
   .hub-chat-toggle,
   .hub-chat-chevron,
   .hub-ranking-trigger,

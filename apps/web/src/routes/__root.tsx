@@ -34,6 +34,7 @@ import { PlayerHeaderProvider } from "@/components/player-header";
 import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
+import missionsCss from "../missions.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -73,6 +74,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: playerHeaderCss },
       { rel: "stylesheet", href: settingsCss },
       { rel: "stylesheet", href: hubCss },
+      { rel: "stylesheet", href: missionsCss },
     ],
   }),
 

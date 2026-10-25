@@ -11,6 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { MissionsDialog, type HubMissionsProps } from "./missions-dialog";
+import { MissionCheck } from "./mission-icons";
 
 const DESTINATIONS = [
   {
@@ -26,9 +28,9 @@ const DESTINATIONS = [
     id: "missions",
     label: "Missions",
     icon: "missions",
-    description: "De nouvelles missions se préparent dans la Sylve.",
+    description: "Chaque aventure mérite sa récompense.",
     detail:
-      "En attendant, remporte trois victoires dans l’arène pour déverrouiller ton coffre commun.",
+      "Récupère des sceaux et des émeraudes en accomplissant tes missions.",
     action: "Rejoindre l’arène",
   },
 ] as const satisfies readonly {
@@ -40,8 +42,7 @@ const DESTINATIONS = [
   action: string;
 }[];
 
-/** Social panels share the space directly above the hub's shortcuts. */
-export function HubDock() {
+export function HubDock({ missions }: { missions?: HubMissionsProps }) {
   const [activeDestination, setActiveDestination] = useState<
     (typeof DESTINATIONS)[number]
   >(DESTINATIONS[0]);
@@ -101,6 +102,16 @@ export function HubDock() {
               }}
             >
               <GameIcon kind={destination.icon} size={52} />
+              {destination.id === "missions" &&
+                missions?.board?.hasClaimable && (
+                  <span
+                    className="hub-missions-ready"
+                    role="img"
+                    aria-label="Récompenses à récupérer"
+                  >
+                    <MissionCheck />
+                  </span>
+                )}
               <span>{destination.label}</span>
             </DialogTrigger>
           ))}
@@ -134,20 +145,28 @@ export function HubDock() {
         </button>
       </div>
 
-      <DialogContent appearance="game" className="hub-destination-dialog">
-        <GameIcon
-          kind={activeDestination.icon}
-          size={88}
-          className="hub-destination-art"
+      {activeDestination.id === "missions" ? (
+        <MissionsDialog
+          {...missions}
+          onNavigate={() => setDestinationOpen(false)}
         />
-        <span className="hub-coming-soon">Bientôt disponible</span>
-        <DialogTitle>{activeDestination.label}</DialogTitle>
-        <DialogDescription>{activeDestination.description}</DialogDescription>
-        <p className="hub-destination-detail">{activeDestination.detail}</p>
-        <Link to="/arena" className="sylve-button">
-          {activeDestination.action} <ArrowRight size={15} aria-hidden="true" />
-        </Link>
-      </DialogContent>
+      ) : (
+        <DialogContent appearance="game" className="hub-destination-dialog">
+          <GameIcon
+            kind={activeDestination.icon}
+            size={88}
+            className="hub-destination-art"
+          />
+          <span className="hub-coming-soon">Bientôt disponible</span>
+          <DialogTitle>{activeDestination.label}</DialogTitle>
+          <DialogDescription>{activeDestination.description}</DialogDescription>
+          <p className="hub-destination-detail">{activeDestination.detail}</p>
+          <Link to="/arena" className="sylve-button">
+            {activeDestination.action}{" "}
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </DialogContent>
+      )}
     </Dialog>
   );
 }

@@ -1,0 +1,16 @@
+{
+  "mode": "built-in image_gen",
+  "transparent_background": true,
+  "assets": [
+    {
+      "asset": "mission-seal",
+      "prompt": "Use case: stylized-concept. Asset type: a single transparent inventory currency icon for Sylve, a richly illustrated woodland fantasy card game. Subject: one substantial hexagonal antique bronze and warm muted gold mission token, facing almost straight forward. Thick double beveled metal rim, darker bronze side edge, luminous simple ivory oak leaf embossed at the center; the leaf is the main recognizable symbol. The icon must remain extremely legible at 28 to 40 pixels. Style: hand-painted premium fantasy game UI item, dimensional painterly metal, clean broad shapes, restrained surface texture, crisp readable silhouette, warm highlights from upper left, soft occlusion shading. Composition: one centered token filling about 85 percent of a square image, equal small padding, isolated on real transparent alpha. Colors: bronze, soft gold and ivory, no green jewels to avoid confusion with emerald currency. No words, no letters, no numbers, no extra objects, no environment, no background, no cast shadow outside the token, no diffuse glow, no watermark.",
+      "path": "apps/web/public/art/ui/mission-seal.webp"
+    },
+    {
+      "asset": "mission-check",
+      "prompt": "Use case: stylized-concept. Asset type: a single transparent reward-ready checkmark icon for Sylve, a richly illustrated woodland fantasy card game. Subject: one bold emerald-green tick/checkmark, short lower-left stroke joining a long upward-right stroke, conventional unmistakable checkmark silhouette. Solid thick green enamel or jade-like body with a slender antique-gold beveled edge, vibrant light green face with forest-green sides and a few carefully painted highlights. Style: hand-painted premium fantasy game UI, dimensional painterly polish, simple broad forms readable at 18 to 28 pixels, matching fantasy bronze currency and woodland green panels. Composition: front view, one centered isolated checkmark filling about 85 percent of a square image, balanced small padding, real transparent alpha everywhere outside the checkmark. No circle, no badge, no seal, no coin, no background plate, no words, no numbers, no text, no other symbols, no scenery, no glow, no cast shadow outside the shape, no watermark.",
+      "path": "apps/web/public/art/ui/mission-check.webp"
+    }
+  ]
+}

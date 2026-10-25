@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
 import { HubDock } from "./hub-dock";
+import type { HubMissionsProps } from "./missions-dialog";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { AbilityLegend } from "@/components/game/ability-legend";
@@ -95,6 +96,7 @@ const hotspotStyle = cn(
 );
 
 interface VillageHubProps {
+  missions?: HubMissionsProps;
   activity?: {
     gameId: Id<"games"> | null;
     status: string | null;
@@ -102,7 +104,7 @@ interface VillageHubProps {
   };
 }
 
-export function VillageHub({ activity }: VillageHubProps) {
+export function VillageHub({ activity, missions }: VillageHubProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
@@ -255,7 +257,7 @@ export function VillageHub({ activity }: VillageHubProps) {
               <ChevronLeft size={20} />
             </button>
           )}
-          <HubDock />
+          <HubDock missions={missions} />
           {isPannable && (
             <button
               type="button"

@@ -16,6 +16,7 @@ import {
 } from "@sylve/game/practice";
 import { awardMatchRewards, ownedDeck, playerLeague } from "./progression";
 import { migratePlayerCatalogue } from "./catalogue";
+import { recordMissionProgress } from "./missions";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -161,6 +162,22 @@ export async function saveTransition(
   });
   for (const event of events)
     await ctx.db.insert("gameEvents", { gameId, seq: event.seq, event });
+  if (game.mode === "solo" || game.mode === "public") {
+    for (const [index, player] of state.players.entries()) {
+      if (game.mode === "solo" && player.userId !== game.hostId) continue;
+      await recordMissionProgress(ctx, player.userId, {
+        cardsPlayed: events.filter(
+          (event) =>
+            event.type === "summon" &&
+            event.player === index &&
+            event.cardId &&
+            !event.unit?.definition,
+        ).length,
+        battles: state.status === "finished" ? 1 : 0,
+        wins: state.status === "finished" && state.winner === index ? 1 : 0,
+      });
+    }
+  }
   if (
     state.status === "active" &&
     events.some((event) => event.type === "turn")
