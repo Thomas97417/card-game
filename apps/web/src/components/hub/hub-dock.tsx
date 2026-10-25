@@ -108,25 +108,27 @@ export function HubDock() {
           ))}
         </nav>
 
-        <button
-          ref={chatTrigger}
-          type="button"
-          className="hub-chat-toggle"
-          aria-expanded={chatOpen}
-          aria-controls={chatOpen ? chatId : undefined}
-          onClick={() => setChatOpen((open) => !open)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape" && chatOpen) {
-              event.stopPropagation();
-              closeChat();
-            }
-          }}
-        >
-          <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
-          <span className="hub-chat-label">Chat mondial</span>
-          <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
-          <ChevronUp size={17} className="hub-chat-chevron" aria-hidden="true" />
-        </button>
+        <div className="hub-chat-frame">
+          <button
+            ref={chatTrigger}
+            type="button"
+            className="hub-chat-toggle"
+            aria-expanded={chatOpen}
+            aria-controls={chatOpen ? chatId : undefined}
+            onClick={() => setChatOpen((open) => !open)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && chatOpen) {
+                event.stopPropagation();
+                closeChat();
+              }
+            }}
+          >
+            <Globe2 size={17} className="hub-chat-globe" aria-hidden="true" />
+            <span className="hub-chat-label">Chat mondial</span>
+            <span className="hub-chat-preview">Le rendez-vous des gardiens</span>
+            <ChevronUp size={17} className="hub-chat-chevron" aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       <DialogContent appearance="game" className="hub-destination-dialog">

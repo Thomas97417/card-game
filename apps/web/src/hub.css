@@ -1,41 +1,23 @@
-.hub-dock {
+.hub-footer {
   position: absolute;
   z-index: 30;
   bottom: max(16px, env(safe-area-inset-bottom));
   left: 50%;
-  width: min(560px, calc(100% - 32px));
-  padding: 0 9px 9px;
-  border: 1px solid #b99b60;
-  border-radius: 15px;
-  background: linear-gradient(150deg, #314d3af5, #182e24fa 60%, #11251efc);
-  box-shadow:
-    0 7px 0 -3px #0d1c16,
-    0 14px 35px #061a13aa,
-    inset 0 0 0 3px #e3c3820d,
-    inset 0 1px #ffe5a74d;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: end;
+  gap: 12px;
+  width: min(672px, calc(100% - 32px));
   transform: translateX(-50%);
+  pointer-events: none;
+}
+.hub-dock {
+  position: relative;
+  grid-column: 2;
+  min-width: 0;
   font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
   color: #fff0cd;
   color-scheme: dark;
-}
-.hub-dock::before,
-.hub-dock::after {
-  position: absolute;
-  top: 13px;
-  width: 4px;
-  height: 4px;
-  border-radius: 1px;
-  background: #d6b974;
-  box-shadow: 0 1px 2px #0008;
-  content: "";
-  transform: rotate(45deg);
-  pointer-events: none;
-}
-.hub-dock::before {
-  left: 13px;
-}
-.hub-dock::after {
-  right: 13px;
 }
 .hub-dock-shortcuts {
   display: grid;
@@ -51,16 +33,12 @@
   gap: 1px;
   min-width: 0;
   min-height: 98px;
-  margin-top: -15px;
   padding: 0 6px 7px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: radial-gradient(ellipse at 50% 70%, #d3bb6820, transparent 65%);
+  border: 0;
+  background: transparent;
   cursor: pointer;
+  pointer-events: auto;
   text-shadow: 0 2px 3px #05160f;
-  transition:
-    background-color 160ms,
-    border-color 160ms;
 }
 .hub-dock-shortcut > .game-icon {
   width: 72px;
@@ -73,20 +51,26 @@
   font: 600 19px/1.25 Georgia, serif;
   color: #fff1d0;
 }
-.hub-dock-shortcut:hover,
-.hub-dock-shortcut[data-popup-open] {
-  border-color: #d0b37545;
-  background-color: #c1ac5e12;
-}
 .hub-dock-shortcut:hover > .game-icon {
   transform: translateY(-4px);
 }
 .hub-dock-shortcut:active > .game-icon {
   transform: translateY(0) scale(0.95);
 }
-.hub-dock button:focus-visible {
+.hub-footer button:focus-visible {
   outline: 2px solid #f1d494;
   outline-offset: 3px;
+}
+.hub-chat-frame {
+  padding: 8px;
+  border: 1px solid #b99b60;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #314d3af5, #182e24fa 60%, #11251efc);
+  box-shadow:
+    0 7px 0 -3px #0d1c16,
+    0 14px 35px #061a13aa,
+    inset 0 0 0 3px #e3c3820d,
+    inset 0 1px #ffe5a74d;
 }
 .hub-chat-toggle {
   display: flex;
@@ -101,6 +85,7 @@
   box-shadow: inset 0 2px 5px #03140c66;
   text-align: left;
   cursor: pointer;
+  pointer-events: auto;
   transition: background-color 160ms;
 }
 .hub-chat-toggle:hover,
@@ -146,6 +131,7 @@
   border-radius: 12px;
   background: linear-gradient(140deg, #263f30fa, #12291ffa);
   box-shadow: 0 12px 32px #05181099, inset 0 0 0 3px #e3c3820a;
+  pointer-events: auto;
 }
 .hub-world-chat-heading {
   display: flex;
@@ -213,31 +199,56 @@
   font-size: 12px;
   line-height: 1.8;
 }
-.hub-map-controls {
-  bottom: max(180px, calc(env(safe-area-inset-bottom) + 164px));
+.hub-map-arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 8px;
+  border: 1px solid #d1be8599;
+  border-radius: 50%;
+  background: #1a3026e6;
+  color: #f1d28b;
+  box-shadow: 0 4px 12px #071b1277;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hub-map-arrow:hover {
+  background: #304a31;
+}
+.hub-map-arrow-left {
+  grid-column: 1;
+  grid-row: 1;
+}
+.hub-map-arrow-right {
+  grid-column: 3;
+  grid-row: 1;
 }
 @media (max-width: 600px) {
-  .hub-dock {
+  .hub-footer {
     bottom: max(12px, env(safe-area-inset-bottom));
-    width: calc(100% - 24px);
-    max-width: 440px;
-    padding: 0 7px 7px;
-    border-radius: 12px;
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    gap: 6px;
+    width: calc(100% - 16px);
+    max-width: 524px;
   }
   .hub-dock-shortcuts {
-    padding: 0 8px 7px;
+    padding: 0 0 7px;
   }
   .hub-dock-shortcut {
     min-height: 87px;
-    margin-top: -12px;
-    padding-bottom: 6px;
+    padding: 0 2px 6px;
   }
   .hub-dock-shortcut > .game-icon {
     width: 62px;
     height: 62px;
   }
   .hub-dock-shortcut > span {
-    font-size: 16px;
+    font-size: clamp(12px, 3.6vw, 16px);
+  }
+  .hub-chat-frame {
+    padding: 6px;
   }
   .hub-chat-toggle {
     gap: 7px;
@@ -254,8 +265,10 @@
     gap: 8px;
     padding-inline: 13px;
   }
-  .hub-map-controls {
-    bottom: max(156px, calc(env(safe-area-inset-bottom) + 144px));
+  .hub-map-arrow {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

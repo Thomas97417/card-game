@@ -2,7 +2,7 @@
 
 ## Barre communautaire du refuge
 
-Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton reprend le style du jeu ; ses dimensions s’adaptent aux petits écrans et à leur zone de sécurité. Les commandes d’exploration du village sont placées au-dessus.
+Le hub possède une barre ancrée en bas au centre, indépendante du défilement de la carte. Trois raccourcis illustrés, **Classement**, **Amis** et **Missions**, surmontent un bandeau **Chat mondial** repliable. Le cadre vert forêt et laiton entoure uniquement le chat ; les icônes restent directement sur le décor, sans cadre au survol. Les commandes d’exploration du village encadrent la barre à gauche et à droite, à hauteur du chat. Le texte d’aide au déplacement est retiré. L’ensemble s’adapte aux petits écrans et à leur zone de sécurité.
 
 Les trois icônes originales ont été créées par trois appels distincts à **ImageGen intégré**, avec un fond transparent :
 
