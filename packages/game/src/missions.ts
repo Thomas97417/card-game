@@ -199,15 +199,15 @@ export const MISSION_CHESTS: Record<
     { threshold: 20, rarity: "common" },
     { threshold: 40, rarity: "common" },
     { threshold: 60, rarity: "common" },
-    { threshold: 80, rarity: "rare" },
+    { threshold: 80, rarity: "common" },
     { threshold: 100, rarity: "rare" },
   ],
   weekly: [
-    { threshold: 100, rarity: "rare" },
-    { threshold: 200, rarity: "bigRare" },
-    { threshold: 300, rarity: "epic" },
-    { threshold: 400, rarity: "epic" },
-    { threshold: 500, rarity: "legendary" },
+    { threshold: 100, rarity: "common" },
+    { threshold: 200, rarity: "common" },
+    { threshold: 300, rarity: "rare" },
+    { threshold: 400, rarity: "rare" },
+    { threshold: 500, rarity: "bigRare" },
   ],
 };
 

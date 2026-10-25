@@ -307,6 +307,7 @@ function MissionChestTrack({
             key={chest.index}
             type="button"
             className="mission-chest"
+            data-chest-type={chest.rarity}
             data-status={chest.status}
             disabled={chest.status !== "ready" || !!pending || !onOpen}
             onClick={() => onOpen?.(kind, track, chest.index)}

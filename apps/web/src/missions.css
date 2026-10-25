@@ -169,6 +169,10 @@
     transform 160ms,
     filter 160ms;
 }
+.mission-chest[data-chest-type="bigRare"] > img {
+  scale: 1.16;
+  transform-origin: center bottom;
+}
 .mission-chest[data-status="active"] > img {
   filter: saturate(0.55) brightness(0.7) drop-shadow(0 3px 3px #0005);
 }
@@ -591,6 +595,9 @@
   }
   .mission-chest > img {
     height: 59px;
+  }
+  .mission-chest[data-chest-type="bigRare"] > img {
+    scale: 1.12;
   }
   .mission-road-line {
     top: 30px;
