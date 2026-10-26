@@ -1,5 +1,11 @@
 # Illustrations de Sylve
 
+## Étiquettes et icônes des mines — 26 octobre 2026
+
+Les panneaux des deux mines sont ramenés au format des autres bâtiments du refuge : icône de 32 px, nom, rendement et réserve, accompagnés d’une barre de remplissage de 2 px. Les informations complémentaires restent accessibles au survol et aux lecteurs d’écran.
+
+Deux nouvelles icônes ont été créées avec **ImageGen intégré**, par deux appels distincts avec fond transparent : `apps/web/public/art/ui/gold-mine.webp` et `apps/web/public/art/ui/emerald-mine.webp`. Une pioche et du minerai aurifère identifient la mine d’or ; une pioche et des cristaux verts identifient la mine d’émeraudes. Les sources de 1 254 × 1 254 px sont encodées en WebP sans perte de 256 × 256 px, avec alpha conservé. Les prompts exacts et les chemins des originaux sont enregistrés dans [art-prompts-mine-icons.json](art-prompts-mine-icons.json).
+
 ## Collecte optimiste des mines — 26 octobre 2026
 
 Le retour visuel de collecte démarre désormais dès le clic : le cache Convex crédite provisoirement le compteur concerné, vide la réserve affichée et déclenche le « + X » avec son icône. La validation transactionnelle reste côté serveur. Une réponse identique ne rejoue pas l’animation et n’ajoute aucun second crédit ; un montant différent corrige l’affichage, et un refus retire l’animation puis restaure automatiquement les valeurs serveur. Chaque mine possède sa propre protection contre les doubles clics, ce qui permet de récupérer les deux monnaies sans attendre entre les clics.

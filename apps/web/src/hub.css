@@ -21,49 +21,53 @@
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: 252px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  min-width: 180px;
+  max-width: 224px;
+  padding: 10px 14px;
   overflow: hidden;
   border: 1px solid #d1be85b3;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #284032f5, #10271ff5);
-  box-shadow: 0 5px 22px #071b1680;
+  border-radius: 8px;
+  background: #1a3026f2;
+  box-shadow: 0 4px 16px #10251d60;
   transform: translateX(-50%);
   backdrop-filter: blur(6px);
 }
-.hub-mine-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 12px 13px 10px;
-  border-bottom: 1px solid #d1be852e;
-  color: var(--mine-color);
+.hub-mine-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
-.hub-mine-title h2 {
+.hub-mine-content {
   flex: 1;
-  color: #fff2d1;
-  font: 17px/1.2 Georgia, serif;
+  min-width: 0;
 }
-.hub-mine-title > span {
-  padding: 3px 5px;
-  border: 1px solid #d1be853d;
-  border-radius: 5px;
-  font-size: 9px;
+.hub-mine-title {
+  margin: 0;
+  color: #fff6dd;
+  font: 17px/1.2 Georgia, serif;
   white-space: nowrap;
 }
-.hub-mine-details { padding: 10px 13px 12px; }
+.hub-mine-details { margin-top: 4px; }
 .hub-mine-details p {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
   color: #d0d8ba;
-  font-size: 10px;
-  line-height: 1.5;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 .hub-mine-details p strong { color: var(--mine-color); }
 .hub-mine-details p > span:last-child { margin-left: auto; }
 .hub-mine-storage {
-  height: 5px;
-  margin-top: 10px;
+  height: 2px;
+  margin-top: 5px;
   overflow: hidden;
   border-radius: 4px;
   background: #071d17;
@@ -77,12 +81,8 @@
   box-shadow: 0 0 8px var(--mine-glow);
   transition: width 1s linear;
 }
-.hub-mine-details .hub-mine-reserve { margin-top: 6px; font-size: 9px; }
 .hub-mine-details .hub-mine-next {
-  justify-content: center;
-  margin-top: 8px;
   color: #b5c2a8;
-  font-size: 10px;
 }
 .hub-mine-collect {
   position: absolute;

@@ -1,5 +1,4 @@
 import { useEffect, useId, useState } from "react";
-import { Pickaxe } from "lucide-react";
 import {
   MINE_KINDS,
   MINE_STORAGE_HOURS,
@@ -10,6 +9,7 @@ import {
 import { GoldIcon } from "@/components/gold-balance";
 import { EmeraldIcon } from "@/components/emerald-balance";
 import { useMineClock } from "@/hooks/use-mine-clock";
+import { GameIcon } from "@/components/game/game-icon";
 
 export interface HubMinesProps {
   board?: MineBoard;
@@ -94,50 +94,45 @@ function MineBuilding({
           </span>
         </button>
       )}
-      <div className="hub-mine-label">
-        <div className="hub-mine-title">
-          <Pickaxe size={17} aria-hidden="true" />
-          <h2>{name}</h2>
-          <span>Niv. {state?.heroLevel ?? board?.heroLevel ?? "…"}</span>
-        </div>
-        <div id={descriptionId} className="hub-mine-details">
-          {view ? (
-            <>
-              <p>
-                <strong>{view.perHour.toLocaleString("fr-FR")}</strong> {unit} / h
-                <span>Héros niv. {state!.heroLevel}</span>
-              </p>
-              <div
-                className="hub-mine-storage"
-                role="progressbar"
-                aria-label={`Réserve de la ${name.toLocaleLowerCase("fr-FR")}`}
-                aria-valuemin={0}
-                aria-valuemax={view.capacity}
-                aria-valuenow={view.available}
-              >
-                <span style={{ width: `${view.progress * 100}%` }} />
-              </div>
-              <p className="hub-mine-reserve">
-                <span>
-                  {view.available.toLocaleString("fr-FR")} /{" "}
-                  {view.capacity.toLocaleString("fr-FR")}
-                </span>
-                <span>
-                  {view.full
-                    ? "Production en pause"
-                    : `${MINE_STORAGE_HOURS} h de réserve`}
-                </span>
-              </p>
-              {!ready && (
-                <p className="hub-mine-next">
-                  Prochaine {kind === "gold" ? "pièce" : "émeraude"} dans{" "}
-                  {minutes} min
+      <div
+        className="hub-mine-label"
+        title={view ? [
+          `Héros niv. ${state!.heroLevel} · ${view.perHour.toLocaleString("fr-FR")} ${unit} / h`,
+          `Réserve : ${view.available.toLocaleString("fr-FR")} / ${view.capacity.toLocaleString("fr-FR")} · ${MINE_STORAGE_HOURS} h de stockage`,
+          view.full ? "Production en pause" : !ready ? `Prochaine ${kind === "gold" ? "pièce" : "émeraude"} dans ${minutes} min` : "",
+        ].filter(Boolean).join("\n") : undefined}
+      >
+        <GameIcon kind={kind === "gold" ? "goldMine" : "emeraldMine"} size={32} className="hub-mine-icon" />
+        <div className="hub-mine-content">
+          <h2 className="hub-mine-title">{name}</h2>
+          <div id={descriptionId} className="hub-mine-details">
+            {view ? (
+              <>
+                <p aria-hidden="true">
+                  <strong>{view.perHour.toLocaleString("fr-FR")} / h</strong>
+                  <span>{view.available.toLocaleString("fr-FR")} / {view.capacity.toLocaleString("fr-FR")}</span>
                 </p>
-              )}
-            </>
-          ) : (
-            <p className="hub-mine-next">Préparation de la mine…</p>
-          )}
+                <div
+                  className="hub-mine-storage"
+                  role="progressbar"
+                  aria-label={`Réserve de la ${name.toLocaleLowerCase("fr-FR")}`}
+                  aria-valuemin={0}
+                  aria-valuemax={view.capacity}
+                  aria-valuenow={view.available}
+                >
+                  <span style={{ width: `${view.progress * 100}%` }} />
+                </div>
+                <span className="sr-only">
+                  Héros niv. {state!.heroLevel}. {view.perHour} {unit} par heure.
+                  {MINE_STORAGE_HOURS} h de réserve.
+                  {view.full && <span>Production en pause</span>}
+                  {!ready && <>Prochaine {kind === "gold" ? "pièce" : "émeraude"} dans {minutes} min.</>}
+                </span>
+              </>
+            ) : (
+              <p className="hub-mine-next">Préparation…</p>
+            )}
+          </div>
         </div>
       </div>
     </section>
