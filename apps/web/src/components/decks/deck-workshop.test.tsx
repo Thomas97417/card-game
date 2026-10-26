@@ -13,6 +13,8 @@ import {
   DECK_SIZE,
   variantCard,
   availableRarities,
+  maxCardLevel,
+  upgradeCost,
   type OwnedCard,
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -174,7 +176,7 @@ describe("l’atelier et la collection", () => {
       expect(deckCards()).toHaveLength(8);
       expect(onSave).not.toHaveBeenCalled();
 
-      const guardian = card(deckRow(), "Gardien de pierre");
+      const guardian = card(deckRow(), "Gardien du rempart");
       pointer(guardian, "pointerdown");
       pointer(guardian, "pointerup");
       fireEvent.click(guardian, { detail: 1 });
@@ -222,10 +224,10 @@ describe("l’atelier et la collection", () => {
     expect(locked[0]!.getAttribute("aria-label")).toContain(
       "Fer III à 200 trophées",
     );
-    dragCard(card(collection(), "Renard des braises"), locked[0]!);
+    dragCard(card(collection(), "Archère du bastion"), locked[0]!);
     expect(deckCards()).toHaveLength(4);
     expect(onSave).not.toHaveBeenCalled();
-    fireEvent.click(card(collection(), "Renard des braises"), { detail: 0 });
+    fireEvent.click(card(collection(), "Archère du bastion"), { detail: 0 });
     expect(
       await screen.findByRole("button", { name: "Remplacer une carte" }),
     ).toBeTruthy();
@@ -240,7 +242,7 @@ describe("l’atelier et la collection", () => {
       deckRow().getAllByRole("img", { name: /Emplacement .* verrouillé/ }),
     ).toHaveLength(3);
     dragCard(
-      card(collection(), "Renard des braises"),
+      card(collection(), "Archère du bastion"),
       deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
     );
     await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
@@ -249,9 +251,9 @@ describe("l’atelier et la collection", () => {
   it("opens the saved deck, shows only owned reserve cards, and exposes rarity filters", () => {
     setup();
     expect(deckCards()).toHaveLength(8);
-    expect(card(deckRow(), "Loup de givre")).toBeTruthy();
+    expect(card(deckRow(), "Loup des failles")).toBeTruthy();
     expect(
-      collection().queryByRole("button", { name: /^Loup de givre,/ }),
+      collection().queryByRole("button", { name: /^Loup des failles,/ }),
     ).toBeNull();
     expect(collection().getAllByRole("button")).toHaveLength(
       CATALOG.length - 8,
@@ -325,15 +327,15 @@ describe("l’atelier et la collection", () => {
     async (pointerType) => {
       const { onSave } = setup();
       dragCard(
-        card(collection(), "Chevalier ronce"),
-        card(deckRow(), "Gardien de pierre"),
+        card(collection(), "Écuyer du royaume"),
+        card(deckRow(), "Gardien du rempart"),
         pointerType,
       );
       expect(deckCards()).toHaveLength(DECK_SIZE);
       expect(
-        card(deckRow(), "Chevalier ronce").getAttribute("aria-label"),
+        card(deckRow(), "Écuyer du royaume").getAttribute("aria-label"),
       ).toContain("carte 1 du deck");
-      expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+      expect(card(collection(), "Gardien du rempart")).toBeTruthy();
       expect(
         screen.getByRole("region", { name: "Cartes de la collection" })
           .scrollLeft,
@@ -349,22 +351,22 @@ describe("l’atelier et la collection", () => {
   it("swaps cards within the deck without duplicating or losing one", () => {
     setup();
     dragCard(
-      card(deckRow(), "Gardien de pierre"),
-      card(deckRow(), "Renard des braises"),
+      card(deckRow(), "Gardien du rempart"),
+      card(deckRow(), "Archère du bastion"),
     );
     expect(
-      card(deckRow(), "Renard des braises").getAttribute("aria-label"),
+      card(deckRow(), "Archère du bastion").getAttribute("aria-label"),
     ).toContain("carte 1 du deck");
     expect(
-      card(deckRow(), "Gardien de pierre").getAttribute("aria-label"),
+      card(deckRow(), "Gardien du rempart").getAttribute("aria-label"),
     ).toContain("carte 2 du deck");
     expect(deckCards()).toHaveLength(8);
   });
   it("ignores invalid drops and cancels dragging with Escape", () => {
     setup();
-    const source = card(collection(), "Chevalier ronce");
+    const source = card(collection(), "Écuyer du royaume");
     dragCard(source, screen.getByRole("main", { name: "Deck et collection" }));
-    expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
+    expect(card(deckRow(), "Gardien du rempart")).toBeTruthy();
     fireEvent.pointerDown(source, {
       button: 0,
       pointerId: 1,
@@ -374,7 +376,7 @@ describe("l’atelier et la collection", () => {
     fireEvent.pointerMove(source, { pointerId: 1, clientX: 100, clientY: 200 });
     fireEvent.keyDown(source, { key: "Escape" });
     fireEvent.pointerUp(source, { pointerId: 1, clientX: 100, clientY: 200 });
-    expect(card(deckRow(), "Gardien de pierre")).toBeTruthy();
+    expect(card(deckRow(), "Gardien du rempart")).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
   it("combines multiple rarity toggles with combat type and leaves the deck intact", () => {
@@ -399,7 +401,7 @@ describe("l’atelier et la collection", () => {
     expect(card(collection(), "Colosse du serment")).toBeTruthy();
     expect(card(collection(), "Loup de l’astre rouge")).toBeTruthy();
     expect(
-      collection().queryByRole("button", { name: /^Renard des comètes,/ }),
+      collection().queryByRole("button", { name: /^Flèche de la citadelle,/ }),
     ).toBeNull();
     expect(deckCards()).toHaveLength(8);
 
@@ -411,7 +413,9 @@ describe("l’atelier et la collection", () => {
 
     fireEvent.click(legendary);
     expect(
-      collection().getByRole("button", { name: /Gardien des runes,.*Rare,/ }),
+      collection().getByRole("button", {
+        name: /Gardien des remparts,.*Rare,/,
+      }),
     ).toBeTruthy();
     fireEvent.click(epic);
     fireEvent.click(screen.getByRole("button", { name: "Toutes" }));
@@ -425,10 +429,60 @@ describe("l’atelier et la collection", () => {
       CATALOG.length - 8 + 5,
     );
   });
-  it("resets both filter groups from an empty result", () => {
-    setup();
+  it("combines family selections with type and rarity without modifying the saved deck", () => {
+    const { onSave } = setup(starter, [
+      ...fullCollection,
+      { card: variantCard("guardian", "epic"), copies: 0 },
+      { card: variantCard("wolf", "legendary"), copies: 0 },
+      { card: variantCard("dragon", "legendary"), copies: 0 },
+    ]);
+    const families = within(
+      screen.getByRole("group", { name: "Filtrer par famille" }),
+    );
+    const order = families.getByRole("button", { name: "Ordre" });
+    const chaos = families.getByRole("button", { name: "Chaos" });
+    const nature = families.getByRole("button", { name: "Nature" });
+    const all = screen.getByRole("button", { name: "Toutes" });
+    const buttons = () => collection().getAllByRole("button");
+    const deckBefore = deckCards().map((card) =>
+      card.getAttribute("aria-label"),
+    );
+
+    fireEvent.click(order);
+    expect(order.getAttribute("aria-pressed")).toBe("true");
+    expect(all.getAttribute("aria-pressed")).toBe("false");
+    expect(
+      buttons().every((button) => button.dataset.faction === "order"),
+    ).toBe(true);
+    fireEvent.click(chaos);
+    expect(new Set(buttons().map((button) => button.dataset.faction))).toEqual(
+      new Set(["order", "chaos"]),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
+    expect(buttons()).toHaveLength(1);
+    expect(buttons()[0]!.dataset.faction).toBe("chaos");
+    fireEvent.click(nature);
+    expect(buttons()).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "À distance" }));
-    expect(collection().getAllByRole("button")).toHaveLength(5);
+    expect(buttons()).toHaveLength(1);
+    expect(buttons()[0]!.dataset.faction).toBe("nature");
+    fireEvent.click(all);
+    expect(all.getAttribute("aria-pressed")).toBe("true");
+    for (const button of [order, chaos, nature])
+      expect(button.getAttribute("aria-pressed")).toBe("false");
+    expect(buttons()).toHaveLength(
+      fullCollection.length - starter.cardIds.length + 3,
+    );
+    expect(deckCards().map((card) => card.getAttribute("aria-label"))).toEqual(
+      deckBefore,
+    );
+    expect(onSave).not.toHaveBeenCalled();
+  });
+  it("resets all three filter groups from an empty result", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Chaos" }));
+    fireEvent.click(screen.getByRole("button", { name: "À distance" }));
+    expect(collection().getAllByRole("button")).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Épique" }));
     fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
     expect(
@@ -445,7 +499,7 @@ describe("l’atelier et la collection", () => {
         .getByRole("button", { name: "Toutes" })
         .getAttribute("aria-pressed"),
     ).toBe("true");
-    for (const name of ["Épique", "Légendaire"]) {
+    for (const name of ["Épique", "Légendaire", "Chaos"]) {
       expect(
         screen.getByRole("button", { name }).getAttribute("aria-pressed"),
       ).toBe("false");
@@ -453,31 +507,31 @@ describe("l’atelier et la collection", () => {
   });
   it("opens the card dialog on click and permits keyboard replacement with cancellation", async () => {
     setup();
-    fireEvent.click(card(collection(), "Chevalier ronce"), { detail: 0 });
+    fireEvent.click(card(collection(), "Écuyer du royaume"), { detail: 0 });
     expect(await screen.findByRole("dialog")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Remplacer une carte" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    fireEvent.keyDown(card(deckRow(), "Gardien de pierre"), { key: "Escape" });
+    fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: "Escape" });
     expect(
       screen.getByRole("status", { name: "Conseils pour ton deck" })
         .textContent,
     ).not.toContain("Choisis une carte");
-    fireEvent.click(card(collection(), "Chevalier ronce"), { detail: 0 });
+    fireEvent.click(card(collection(), "Écuyer du royaume"), { detail: 0 });
     fireEvent.click(
       await screen.findByRole("button", { name: "Remplacer une carte" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    fireEvent.click(card(deckRow(), "Gardien de pierre"), { detail: 0 });
-    expect(card(deckRow(), "Chevalier ronce")).toBeTruthy();
-    expect(card(collection(), "Gardien de pierre")).toBeTruthy();
+    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
+    expect(card(deckRow(), "Écuyer du royaume")).toBeTruthy();
+    expect(card(collection(), "Gardien du rempart")).toBeTruthy();
   });
   it("grows a starter deck through an empty slot and saves the added card", async () => {
     const { onSave } = setup(starter);
     expect(deckCards()).toHaveLength(4);
     dragCard(
-      card(collection(), "Renard des braises"),
+      card(collection(), "Archère du bastion"),
       deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
     );
     expect(deckCards()).toHaveLength(5);
@@ -492,7 +546,7 @@ describe("l’atelier et la collection", () => {
     const rare = { card: variantCard("guardian", "rare"), copies: 25 };
     const { onUpgrade } = setup(starter, [...fullCollection, rare]);
     const rareButton = collection().getByRole("button", {
-      name: /Gardien des runes,.*Rare, niveau 1/,
+      name: /Gardien des remparts,.*Rare, niveau 1/,
     });
     expect(rareButton.getAttribute("data-rarity")).toBe("rare");
     expect(rareButton.querySelector("img")?.getAttribute("src")).toBe(
@@ -508,15 +562,60 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ajouter au deck" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(
-      deckRow().getAllByRole("button", { name: /^Gardien de pierre,/ }),
+      deckRow().getAllByRole("button", { name: /^Gardien du rempart,/ }),
     ).toHaveLength(1);
     expect(
-      deckRow().getByRole("button", { name: /^Gardien des runes,/ }),
+      deckRow().getByRole("button", { name: /^Gardien des remparts,/ }),
     ).toBeTruthy();
   });
+  it("keeps only the name below deck and collection artwork", () => {
+    setup();
+    for (const label of ["Cartes du deck", "Cartes de la collection"]) {
+      const row = screen.getByRole("region", { name: label });
+      expect(row.querySelector(".workshop-card-type")).toBeNull();
+      expect(row.querySelector(".workshop-copies")).toBeNull();
+      expect(row.querySelector(".workshop-card-name")).toBeTruthy();
+    }
+  });
+  it.each(["common", "rare", "epic", "legendary"] as const)(
+    "marks %s cards beside their level at the copy threshold, regardless of gold",
+    (rarity) => {
+      const ready = variantCard("guardian", rarity, 3);
+      const readyReserve = variantCard("mushroom", rarity, 3);
+      const missing = variantCard("fox", rarity, 3);
+      const maximum = variantCard(
+        "dragon",
+        rarity,
+        maxCardLevel(rarity, "dragon"),
+      );
+      const owned = [
+        { card: ready, copies: upgradeCost(3, rarity) },
+        { card: readyReserve, copies: upgradeCost(3, rarity) },
+        { card: missing, copies: upgradeCost(3, rarity) - 1 },
+        { card: maximum, copies: 100_000 },
+      ];
+      setup({ ...savedDeck, cardIds: [ready.id] }, owned, 0);
+      const indicator = within(card(deckRow(), ready.name)).getByRole("img", {
+        name: "Assez de cartes pour améliorer",
+      });
+      expect(indicator.closest(".card-level")?.textContent).toBe("Niv. 3");
+      expect(
+        within(card(collection(), readyReserve.name)).getByRole("img", {
+          name: "Assez de cartes pour améliorer",
+        }),
+      ).toBeTruthy();
+      for (const entry of [missing, maximum]) {
+        expect(
+          within(card(collection(), entry.name)).queryByRole("img", {
+            name: "Assez de cartes pour améliorer",
+          }),
+        ).toBeNull();
+      }
+    },
+  );
   it("keeps improvement disabled when there are not enough copies", async () => {
     setup(starter);
-    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    fireEvent.click(card(deckRow(), "Gardien du rempart"));
     expect(
       (
         (await screen.findByRole("button", {
@@ -529,7 +628,7 @@ describe("l’atelier et la collection", () => {
   it("disables an upgrade when copies are ready but gold is missing", async () => {
     const owned = fullCollection.map((entry) => ({ ...entry, copies: 25 }));
     const { onUpgrade } = setup(starter, owned, 49);
-    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    fireEvent.click(card(deckRow(), "Gardien du rempart"));
     const action = await screen.findByRole("button", {
       name: "Améliorer au niveau 2",
     });
@@ -544,7 +643,7 @@ describe("l’atelier et la collection", () => {
       copies: 75,
     }));
     setup(starter, owned, 150);
-    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    fireEvent.click(card(deckRow(), "Gardien du rempart"));
     const action = await screen.findByRole("button", {
       name: "Améliorer au niveau 4",
     });
@@ -570,7 +669,7 @@ describe("l’atelier et la collection", () => {
       ...fullCollection.filter((e) => e.card.baseId !== "guardian"),
     ];
     setup(starter, owned, 3000);
-    fireEvent.click(card(deckRow(), "Gardien de pierre"));
+    fireEvent.click(card(deckRow(), "Gardien du rempart"));
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByText(/Niv. 11 : Débloquée/)).toBeTruthy();
     expect(

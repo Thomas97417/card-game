@@ -246,13 +246,13 @@ describe("le salon de combat", () => {
       expect(screen.getByText("+150")).toBeTruthy();
       expect(screen.getByText("×24")).toBeTruthy();
       expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
-      expect(screen.getByAltText("Renard archerune").getAttribute("src")).toBe(
+      expect(screen.getByAltText("Archère de la garde").getAttribute("src")).toBe(
         "/art/characters/evolutions/fox-rare.webp",
       );
       expect(
         screen
           .getByRole("button", {
-            name: /Renard archerune,.*voir les informations/,
+            name: /Archère de la garde,.*voir les informations/,
           })
           .getAttribute("aria-haspopup"),
       ).toBe("dialog");

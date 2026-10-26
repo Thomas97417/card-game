@@ -52,12 +52,24 @@ describe("CW catalogue from the collected wiki tables", () => {
       expect(() => variantCard(source.baseId, source.rarity, 27)).toThrow();
     }
   });
-  it("keeps every retained Sylve name and illustration", () => {
+  it("retains variant identities and artwork paths while giving every family descriptive lore", () => {
     for (const card of CARD_VARIANTS) {
       const previous = legacyCard(card.baseId!, card.rarity!);
-      expect(card.name).toBe(previous.name);
+      expect(card.id).toBe(previous.id);
       expect(card.artId).toBe(previous.artId);
+      expect(card.title.length).toBeGreaterThan(80);
+      expect(card.title).not.toMatch(/^Évolution /);
+      expect(card.faction).toBe(
+        CW_CATALOGUE.find(
+          (source) =>
+            source.baseId === card.baseId && source.rarity === card.rarity,
+        )!.faction,
+      );
     }
+    expect(resolveCard("owl:legendary").name).toBe("Souveraine du Saint-Siège");
+    expect(resolveCard("owl:legendary").title).toContain("cathédrale");
+    expect(resolveCard("mushroom:common").title).toContain("dryade");
+    expect(resolveCard("wolf:rare").title).toContain("démoniaque");
   });
   it("uses actual CW rarities and families without creating missing common forms", () => {
     for (const id of ["wolf", "bard", "idol", "tree"]) {

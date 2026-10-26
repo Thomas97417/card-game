@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreatureCard } from "./creature-card";
 import { CreaturePortrait } from "./creature-portrait";
+import { FactionBackdrop, FactionIcon } from "./faction-artwork";
 import { StatBadge, statChange } from "./stat-badge";
 import { CardAbilities } from "./card-abilities";
 import { UnitEffectIcons } from "./ability-icons";
@@ -106,8 +107,16 @@ export function DuelDetailsDialog({
       : undefined;
   const inHand = own && player?.hand.some((entry) => entry.id === card?.id);
   const bonus = fieldMark ? fieldBonus(fieldMark) : undefined;
-  const occupiedRune = unit && player?.runes?.find((mark) => mark.row === unit.row && mark.depth === unit.depth);
-  const occupiedPentagram = unit && player?.pentagrams?.find((mark) => mark.row === unit.row && mark.depth === unit.depth);
+  const occupiedRune =
+    unit &&
+    player?.runes?.find(
+      (mark) => mark.row === unit.row && mark.depth === unit.depth,
+    );
+  const occupiedPentagram =
+    unit &&
+    player?.pentagrams?.find(
+      (mark) => mark.row === unit.row && mark.depth === unit.depth,
+    );
   const hasPlacement =
     !!card && !!player && legalPlacements(card, player.board).length > 0;
   const canChooseCell = canSummon && inHand && hasPlacement;
@@ -132,7 +141,9 @@ export function DuelDetailsDialog({
         className={`duel-details-dialog ${inspection?.type === "hero" ? "hero-details-dialog" : ""}`}
         style={
           inspection?.type === "hero"
-            ? ({ "--hero-deck-count": player?.deck.length ?? 4 } as CSSProperties)
+            ? ({
+                "--hero-deck-count": player?.deck.length ?? 4,
+              } as CSSProperties)
             : undefined
         }
         data-power-pile={hasPowerPile}
@@ -146,10 +157,15 @@ export function DuelDetailsDialog({
             {inspection.type === "field" ? (
               <>
                 <span className="eyebrow">
-                  SCEAU DU TERRAIN · {inspection.kind === "rune" ? "BONUS À L’ARRIVÉE" : "BONUS À CHAQUE TOUR"}
+                  SCEAU DU TERRAIN ·{" "}
+                  {inspection.kind === "rune"
+                    ? "BONUS À L’ARRIVÉE"
+                    : "BONUS À CHAQUE TOUR"}
                 </span>
                 <DialogTitle ref={titleRef} tabIndex={-1}>
-                  {fieldMark ? fieldMarkName(inspection.kind, fieldMark) : "Sceau disparu"}
+                  {fieldMark
+                    ? fieldMarkName(inspection.kind, fieldMark)
+                    : "Sceau disparu"}
                 </DialogTitle>
                 <DialogDescription>
                   {bonus?.stat === "health"
@@ -163,7 +179,10 @@ export function DuelDetailsDialog({
                         kind={inspection.kind}
                         stat={bonus.stat}
                         amount={bonus.value}
-                        activated={"activated" in fieldMark && fieldMark.activated === true}
+                        activated={
+                          "activated" in fieldMark &&
+                          fieldMark.activated === true
+                        }
                       />
                     </div>
                     <p className="details-note">
@@ -174,19 +193,25 @@ export function DuelDetailsDialog({
                         {bonus.stat === "health"
                           ? `+${bonus.value} PV actuels et maximum`
                           : `+${bonus.value} attaque`}
-                      </strong>.
-                      {inspection.kind === "pentagram" && " Aucun bonus n’est accordé à la pose. Les gains se cumulent à chaque tour."}
+                      </strong>
+                      .
+                      {inspection.kind === "pentagram" &&
+                        " Aucun bonus n’est accordé à la pose. Les gains se cumulent à chaque tour."}
                     </p>
                     <p className="details-note">
                       Le sceau reste lié à son porteur et disparaît à sa mort.
                       {inspection.kind === "rune"
                         ? " La rune ne se réactive pas aux tours suivants."
                         : " Les bonus précédemment gagnés restent acquis tant que le porteur reste en jeu."}
-                      {"activated" in fieldMark && fieldMark.activated === true && " Cette rune a déjà accordé son bonus."}
+                      {"activated" in fieldMark &&
+                        fieldMark.activated === true &&
+                        " Cette rune a déjà accordé son bonus."}
                     </p>
                   </>
                 ) : (
-                  <p className="details-note">Ce sceau a quitté le terrain avec son porteur.</p>
+                  <p className="details-note">
+                    Ce sceau a quitté le terrain avec son porteur.
+                  </p>
                 )}
               </>
             ) : card ? (
@@ -238,14 +263,21 @@ export function DuelDetailsDialog({
                     : getCombatType(card) === "building"
                       ? " · N’attaque pas."
                       : ""}
-                  {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.faction && (
+                    <>
+                      <FactionIcon faction={card.faction} size={18} />
+                      {FACTION_LABELS[card.faction]}
+                    </>
+                  )}
                   {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </p>
                 <div className="card-details-layout">
                   <div
                     className="card-details-portrait"
+                    data-faction={card.faction}
                     style={{ backgroundColor: `${card.color}30` }}
                   >
+                    <FactionBackdrop card={card} />
                     <CreaturePortrait card={card} />
                   </div>
                   <div className="card-details-copy">
@@ -273,7 +305,10 @@ export function DuelDetailsDialog({
                           {unit && (
                             <span
                               className="stat-limit"
-                              data-stat-change={statChange(card.health, baseCard?.health)}
+                              data-stat-change={statChange(
+                                card.health,
+                                baseCard?.health,
+                              )}
                               title={`Vie maximale normale : ${baseCard?.health}`}
                             >
                               / {card.health}
@@ -292,15 +327,22 @@ export function DuelDetailsDialog({
                       <button
                         type="button"
                         className="text-link"
-                        onClick={() => onInspect({
-                          type: "field",
-                          kind: occupiedRune ? "rune" : "pentagram",
-                          playerIndex: inspection.playerIndex,
-                          position: { row: unit.row, depth: unit.depth },
-                        })}
+                        onClick={() =>
+                          onInspect({
+                            type: "field",
+                            kind: occupiedRune ? "rune" : "pentagram",
+                            playerIndex: inspection.playerIndex,
+                            position: { row: unit.row, depth: unit.depth },
+                          })
+                        }
                       >
-                        {fieldMarkName(occupiedRune ? "rune" : "pentagram", (occupiedRune ?? occupiedPentagram)!)}
-                        {occupiedRune ? " · bonus déjà accordé" : " · bonus cumulatif au début du tour"}
+                        {fieldMarkName(
+                          occupiedRune ? "rune" : "pentagram",
+                          (occupiedRune ?? occupiedPentagram)!,
+                        )}
+                        {occupiedRune
+                          ? " · bonus déjà accordé"
+                          : " · bonus cumulatif au début du tour"}
                       </button>
                     )}
                     <p className="details-note">

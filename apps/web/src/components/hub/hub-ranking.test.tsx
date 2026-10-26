@@ -143,11 +143,11 @@ describe("le classement du refuge", () => {
     const { panel } = openRanking();
     const player = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
     fireEvent.click(player);
-    const card = within(panel).getByRole("button", { name: /Voir Gardien de pierre, Commune, niveau 5/ });
+    const card = within(panel).getByRole("button", { name: /Voir Gardien du rempart, Commune, niveau 5/ });
     expect(card.getAttribute("aria-haspopup")).toBe("dialog");
     card.focus();
     fireEvent.click(card);
-    const dialog = await screen.findByRole("dialog", { name: "Gardien de pierre" });
+    const dialog = await screen.findByRole("dialog", { name: "Gardien du rempart" });
     fireEvent.keyDown(dialog, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.getByRole("region", { name: "Classement mondial" })).toBe(panel);

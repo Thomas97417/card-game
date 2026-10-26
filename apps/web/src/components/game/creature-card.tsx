@@ -3,12 +3,14 @@ import {
   combatTypeLabel,
   getCombatType,
   RARITY_LABELS,
+  FACTION_LABELS,
   type CardDefinition,
 } from "@sylve/game";
 import { Check } from "lucide-react";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { CardAbilityIcons } from "./ability-icons";
+import { CardFactionBadge, FactionBackdrop } from "./faction-artwork";
 
 export function CreatureCard({
   card,
@@ -32,18 +34,20 @@ export function CreatureCard({
       type="button"
       className={`creature-card ${compact ? "compact" : ""} ${selected ? "selected" : ""}`}
       data-rarity={card.rarity ?? "common"}
+      data-faction={card.faction}
       disabled={disabled}
       onClick={onClick}
       onPointerDown={onPointerDown}
       aria-pressed={inspectable ? undefined : selected}
       aria-haspopup={inspectable ? "dialog" : undefined}
       aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}${selected ? ", sélectionnée" : ""}${inspectable ? ", voir les informations" : ""}`}
-      title={`${card.name} · ${combatTypeLabel(card)}`}
+      title={`${card.name} · ${combatTypeLabel(card)}${card.faction ? ` · ${FACTION_LABELS[card.faction]}` : ""}`}
     >
       <div
         className="card-portrait"
         style={{ backgroundColor: `${card.color}55` }}
       >
+        <FactionBackdrop card={card} />
         <CreaturePortrait card={card} />
       </div>
       <div className="card-stats">
@@ -55,6 +59,7 @@ export function CreatureCard({
         <StatBadge kind="health" value={card.health} />
       </div>
       <span className="card-level">Niv. {card.level ?? 1}</span>
+      <CardFactionBadge card={card} />
       <CardAbilityIcons card={card} />
       {selected && (
         <span className="card-check">

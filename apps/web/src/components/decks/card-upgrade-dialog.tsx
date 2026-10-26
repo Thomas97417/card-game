@@ -26,6 +26,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import {
+  CardFactionBadge,
+  FactionBackdrop,
+  FactionIcon,
+} from "@/components/game/faction-artwork";
 import { StatBadge } from "@/components/game/stat-badge";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
@@ -143,7 +148,8 @@ export function CardUpgradeDialog({
       >
         {card && entry && (
           <div className="upgrade-showcase" data-deck-actions={!!onMove}>
-            <div className="upgrade-portrait">
+            <div className="upgrade-portrait" data-faction={card.faction}>
+              <FactionBackdrop card={card} />
               <div className="upgrade-portrait-stats">
                 <StatBadge
                   kind="attack"
@@ -154,6 +160,7 @@ export function CardUpgradeDialog({
               </div>
               <span className="upgrade-card-level">Niv. {level}</span>
               <CreaturePortrait card={card} />
+              <CardFactionBadge card={card} />
               <CardAbilityIcons
                 card={card}
                 className="upgrade-portrait-abilities"
@@ -171,7 +178,12 @@ export function CardUpgradeDialog({
                 <span className="upgrade-card-type">
                   <GameIcon kind={getCombatType(card)} size={18} />
                   {combatTypeLabel(card)}
-                  {card.faction && ` · ${FACTION_LABELS[card.faction]}`}
+                  {card.faction && (
+                    <>
+                      <FactionIcon faction={card.faction} size={18} />
+                      {FACTION_LABELS[card.faction]}
+                    </>
+                  )}
                   {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
                 </span>
               </div>

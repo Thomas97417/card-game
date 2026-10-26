@@ -34,11 +34,10 @@ interface SkillPoint {
   summonLevel?: number;
   profileId?: string;
 }
-interface SourceSkill
-  extends Omit<
-    CardAbility,
-    "name" | "active" | "value" | "description" | "summon"
-  > {
+interface SourceSkill extends Omit<
+  CardAbility,
+  "name" | "active" | "value" | "description" | "summon"
+> {
   descriptionFr: string;
   progression: SkillPoint[];
   placement?: NonNullable<CardAbility["summon"]>["placement"];
@@ -76,7 +75,15 @@ interface TokenProfile {
   }[];
 }
 export const CW_CATALOGUE = data.cards as unknown as readonly CwProfile[];
-export const CW_TOKENS = data.tokens as unknown as readonly TokenProfile[];
+export const CW_TOKENS = data.tokens.map((token) => ({
+  ...token,
+  name:
+    token.artId === "root-coil"
+      ? "Tourelle du chapitre"
+      : token.artId === "life-palace"
+        ? "Chapelle consacrée"
+        : token.name,
+})) as unknown as readonly TokenProfile[];
 const rarityOrder: CardRarity[] = ["common", "rare", "epic", "legendary"];
 const families = data.families as Record<string, (string | null)[]>;
 const profiles = new Map(
@@ -158,6 +165,8 @@ export function cwAbility(skill: SourceSkill, level: number): CardAbility {
           ? "Alliance de l’Ordre"
           : effectNames[skill.effect],
     description: descriptionFr
+      .replaceAll("Bobine des racines", "Tourelle du chapitre")
+      .replaceAll("Autel des sources", "Chapelle consacrée")
       .replace(/\{(\w+)\}/g, (_, key: string) =>
         String(
           key === "count"
@@ -232,10 +241,7 @@ export function buildCwCard(
       rarity === "legendary"
         ? (legendary[base.id] ?? base.name)
         : (names[base.id]?.[rarity] ?? base.name),
-    title:
-      rarity === "common"
-        ? base.title
-        : `Évolution ${{ rare: "rare", epic: "épique", legendary: "légendaire" }[rarity]} · ${base.name}`,
+    title: base.title,
     color: base.color,
     kind: base.kind,
     rarity,

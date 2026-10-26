@@ -300,6 +300,7 @@ export function SummonRevealDialog({
                                   <button
                                     type="button"
                                     className="workshop-card"
+                                    data-faction={card.faction}
                                     data-rarity={card.rarity}
                                     style={
                                       {

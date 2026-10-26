@@ -107,10 +107,12 @@ const purchase = (pack: "Sylve" | "anciens" | "divinités", count: 1 | 10) =>
   }) as HTMLButtonElement;
 
 function turnAll(dialog: HTMLElement) {
-  for (const button of within(dialog).queryAllByRole("button", {
+  const buttons = within(dialog).queryAllByRole("button", {
     name: /^Révéler la carte/,
-  }))
-    fireEvent.click(button);
+  });
+  act(() => {
+    for (const button of buttons) fireEvent.click(button);
+  });
 }
 
 afterEach(() => window.localStorage.clear());
@@ -903,14 +905,14 @@ describe("le sanctuaire", () => {
       };
       fireEvent.click(purchase(pack, count));
       for (const [index, price] of prices.slice(1).entries()) {
-        const dialog = await screen.findByRole("dialog");
         await waitFor(() =>
           expect(
-            within(dialog).getAllByRole("button", {
+            within(screen.getByRole("dialog")).getAllByRole("button", {
               name: /^Révéler la carte/,
             }),
           ).toHaveLength(6),
         );
+        const dialog = screen.getByRole("dialog");
         finishBatch(dialog);
         const repeat = within(dialog).getByRole("button", {
           name: `Réinvoquer ×${count}, ${price} émeraudes`,
@@ -922,14 +924,14 @@ describe("le sanctuaire", () => {
         fireEvent.click(repeat);
         await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(index + 2));
       }
-      const last = await screen.findByRole("dialog");
       await waitFor(() =>
         expect(
-          within(last).getAllByRole("button", {
+          within(screen.getByRole("dialog")).getAllByRole("button", {
             name: /^Révéler la carte/,
           }),
         ).toHaveLength(6),
       );
+      const last = screen.getByRole("dialog");
       finishBatch(last);
       expect(
         within(last).getByRole("button", {
@@ -1516,7 +1518,7 @@ describe("le sanctuaire", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(
       within(dialog).getByRole("button", {
-        name: "Découvrir Gardien de pierre",
+        name: "Découvrir Gardien du rempart",
       }),
     );
     const level = within(dialog).getByRole("combobox", {
@@ -1527,11 +1529,11 @@ describe("le sanctuaire", () => {
     );
     expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(
-      within(dialog).getByRole("heading", { name: "Gardien des runes" }),
+      within(dialog).getByRole("heading", { name: "Gardien des remparts" }),
     ).toBeTruthy();
     expect(
       within(dialog)
-        .getAllByAltText("Gardien des runes")[0]!
+        .getAllByAltText("Gardien des remparts")[0]!
         .getAttribute("src"),
     ).toBe("/art/characters/evolutions/guardian-rare.webp");
     await selectOption("Niveau de la carte", "Niveau 26");
@@ -1547,7 +1549,7 @@ describe("le sanctuaire", () => {
     );
     expect(level.textContent).toContain("Niveau 26");
     expect(
-      within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
+      within(dialog).getByRole("heading", { name: "Gardien du rempart" }),
     ).toBeTruthy();
   });
   it("explores sourced Legendaries through 26 and gives former Sylve creations their CW profiles", async () => {

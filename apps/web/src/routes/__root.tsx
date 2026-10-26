@@ -38,6 +38,7 @@ import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
 import missionsCss from "../missions.css?url";
 import guardianCss from "../guardian.css?url";
+import factionsCss from "../factions.css?url";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -79,6 +80,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: hubCss },
       { rel: "stylesheet", href: missionsCss },
       { rel: "stylesheet", href: guardianCss },
+      { rel: "stylesheet", href: factionsCss },
     ],
   }),
 

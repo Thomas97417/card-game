@@ -1,23 +1,23 @@
 {
   "guardian": {
-    "rare": "Gardien des runes",
+    "rare": "Gardien des remparts",
     "epic": "Colosse du serment"
   },
   "fox": {
-    "rare": "Renard archerune",
-    "epic": "Renard des comètes"
+    "rare": "Archère de la garde",
+    "epic": "Flèche de la citadelle"
   },
   "owl": {
-    "rare": "Oracle des clairières",
-    "epic": "Hiérophante des brumes"
+    "rare": "Prêtresse des vitraux",
+    "epic": "Grande abbesse"
   },
   "stag": {
-    "rare": "Cerf prophète",
-    "epic": "Cerf des astres"
+    "rare": "Pèlerine consacrée",
+    "epic": "Paladine du reliquaire"
   },
   "mushroom": {
-    "rare": "Veilleur des fougères",
-    "epic": "Ancien des floraisons"
+    "rare": "Dryade des floraisons",
+    "epic": "Ancienne des bosquets"
   },
   "dragon": {
     "rare": "Dragon sylvestre",
@@ -32,16 +32,16 @@
     "epic": "Esprit des pluies"
   },
   "wolf": {
-    "rare": "Loup de givre",
+    "rare": "Loup des failles",
     "epic": "Loup de l’éclipse"
   },
   "knight": {
-    "rare": "Écuyer des ronces",
-    "epic": "Paladin des bosquets"
+    "rare": "Chevalier du bastion",
+    "epic": "Paladin du royaume"
   },
   "serpent": {
     "rare": "Vipère des ombres",
-    "epic": "Basilic de jade"
+    "epic": "Basilic des enfers"
   },
   "bear": {
     "rare": "Ours des fjords",
@@ -52,39 +52,39 @@
     "epic": "Féline des neuf aurores"
   },
   "gnome": {
-    "rare": "Maître des racines",
-    "epic": "Forgeron des anciens"
+    "rare": "Maître de la forge",
+    "epic": "Forgeron des reliques"
   },
   "idol": {
     "rare": "Totem des couronnes",
     "epic": "Idole du soleil"
   },
   "enchantress": {
-    "rare": "Enchanteresse des runes",
-    "epic": "Archimage des pétales"
+    "rare": "Enchanteresse des sceaux",
+    "epic": "Archimage du chapitre"
   },
   "lynx": {
-    "rare": "Lynx insaisissable",
-    "epic": "Lynx des miroirs"
+    "rare": "Lame des remparts",
+    "epic": "Lame du haut conseil"
   },
   "bard": {
-    "rare": "Ménestrel des branches",
-    "epic": "Maestro des frondaisons"
+    "rare": "Cantatrice du cloître",
+    "epic": "Maîtresse des cantiques"
   },
   "tree": {
     "rare": "Saule obscur",
     "epic": "Ancêtre des murmures"
   },
   "vampire": {
-    "rare": "Aile de velours",
+    "rare": "Vampire des cryptes",
     "epic": "Seigneur des ailes pourpres"
   },
   "captain": {
-    "rare": "Capitaine ailée",
-    "epic": "Maréchale des aurores"
+    "rare": "Capitaine du bastion",
+    "epic": "Maréchale du royaume"
   },
   "witch": {
-    "rare": "Sorcière des ombres",
-    "epic": "Matriarche des spores"
+    "rare": "Sorcière des braises",
+    "epic": "Matriarche des maléfices"
   }
 }
