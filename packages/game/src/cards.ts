@@ -408,7 +408,7 @@ const definitions = [
     id: "witch",
     name: "Sorcière des enfers",
     title:
-      "Couronnée de cornes, cette sorcière démoniaque puise ses maléfices dans les braises des enfers et rallie les créatures du Chaos.",
+      "Cette ensorceleuse des cryptes du Néant tisse des maléfices pourpres et lie les créatures du Chaos à sa volonté. Son sceptre d’ivoire concentre une puissance toujours plus impérieuse.",
     color: "#ad527d",
     kind: "witch",
     reference: "Witch",
