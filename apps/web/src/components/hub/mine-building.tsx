@@ -84,14 +84,13 @@ function MineBuilding({
           disabled={collecting}
           onClick={() => onCollect(kind)}
         >
-          <span className="hub-mine-collect-art" aria-hidden="true">
-            <Icon />
-          </span>
-          <span className="hub-mine-collect-amount">
-            {view.available.toLocaleString("fr-FR")}
-          </span>
-          <span className="hub-mine-collect-hint">
-            {view.full ? "Réserve pleine !" : "Récupérer"}
+          <span className="hub-mine-collect-content" aria-hidden="true">
+            <span className="hub-mine-collect-art">
+              <Icon />
+            </span>
+            <span className="hub-mine-collect-amount">
+              {view.available.toLocaleString("fr-FR")}
+            </span>
           </span>
         </button>
       )}

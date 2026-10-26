@@ -89,11 +89,10 @@
   z-index: 2;
   top: 0;
   left: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  place-items: center;
   min-width: 110px;
-  padding: 0 10px 8px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 18px;
   color: #fff2d1;
@@ -110,12 +109,18 @@
   content: "";
   pointer-events: none;
 }
+.hub-mine-collect-content {
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  animation: hub-mine-float 2.8s ease-in-out infinite;
+}
 .hub-mine-collect-art {
   display: grid;
+  flex-shrink: 0;
   place-items: center;
   width: 76px;
   height: 76px;
-  animation: hub-mine-float 2.8s ease-in-out infinite;
 }
 .hub-mine-collect-art :is(.gold-icon, .emerald-icon) {
   width: 76px;
@@ -124,19 +129,19 @@
   filter: drop-shadow(0 3px 5px #061b16aa) drop-shadow(0 0 14px var(--mine-glow));
 }
 .hub-mine-collect-amount {
-  min-width: 52px;
-  margin-top: -3px;
-  padding: 3px 12px;
-  border: 1px solid var(--mine-color);
-  border-radius: 18px;
-  background: #163025f5;
-  color: var(--mine-color);
-  font: 700 20px/1.2 Georgia, serif;
-  box-shadow: 0 3px 9px #061b165e;
+  position: relative;
+  z-index: 1;
+  margin-top: 26px;
+  margin-left: -22px;
+  color: #fff2d1;
+  font: 700 22px/1 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow: -1px -1px 1px #10271f, 1px -1px 1px #10271f, -1px 1px 1px #10271f, 1px 1px 1px #10271f, 0 3px 5px #061b16;
+  transition: color 160ms ease;
 }
-.hub-mine-collect-hint { margin-top: 5px; font-size: 10px; font-weight: 600; }
-.hub-mine-collect:hover .hub-mine-collect-amount { background: #304a31; }
-.hub-mine-collect[data-full] .hub-mine-collect-hint { color: var(--mine-color); }
+.hub-mine-collect:hover .hub-mine-collect-amount { color: #fffaf0; }
+.hub-mine-collect[data-full] .hub-mine-collect-amount { color: var(--mine-color); }
 .hub-mine-collect:disabled { cursor: pointer; }
 .hub-mine-collect:focus-visible {
   outline: 2px solid #ffe4a0;
@@ -144,14 +149,13 @@
 }
 @keyframes hub-mine-float { 50% { transform: translateY(-6px); } }
 @media (max-height: 560px) {
-  .hub-mine-collect { top: 10%; padding-bottom: 0; transform: translate(-50%, -20%); }
+  .hub-mine-collect { top: 10%; padding-block: 6px; transform: translate(-50%, -20%); }
   .hub-mine-collect-art,
   .hub-mine-collect-art :is(.gold-icon, .emerald-icon) { width: 52px; height: 52px; }
-  .hub-mine-collect-amount { margin-top: -6px; padding-block: 2px; font-size: 16px; }
-  .hub-mine-collect-hint { display: none; }
+  .hub-mine-collect-amount { margin-top: 18px; margin-left: -15px; font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hub-mine-collect-art { animation: none; }
+  .hub-mine-collect-content { animation: none; }
   .hub-mine-storage > span { transition: none; }
 }
 
