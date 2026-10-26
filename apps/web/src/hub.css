@@ -4,12 +4,17 @@
   width: 18%;
   height: 41%;
   outline: none;
+  /* Cart positions within each mine's area of the village illustration. */
+  --mine-cart-x: 60%;
+  --mine-cart-y: 55%;
   --mine-color: #efc967;
   --mine-glow: #e8b73b5c;
 }
 .hub-mine-gold { left: 2%; }
 .hub-mine-emeralds {
   left: 81%;
+  --mine-cart-x: 42%;
+  --mine-cart-y: 58%;
   --mine-color: #83e7b4;
   --mine-glow: #4ee6a14a;
 }
@@ -87,8 +92,8 @@
 .hub-mine-collect {
   position: absolute;
   z-index: 2;
-  top: 0;
-  left: 50%;
+  top: var(--mine-cart-y);
+  left: var(--mine-cart-x);
   display: grid;
   place-items: center;
   min-width: 110px;
@@ -97,7 +102,7 @@
   border-radius: 18px;
   color: #fff2d1;
   text-shadow: 0 2px 4px #061c14;
-  transform: translate(-50%, -70%);
+  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 .hub-mine-collect::before {
@@ -149,7 +154,7 @@
 }
 @keyframes hub-mine-float { 50% { transform: translateY(-6px); } }
 @media (max-height: 560px) {
-  .hub-mine-collect { top: 10%; padding-block: 6px; transform: translate(-50%, -20%); }
+  .hub-mine-collect { padding-block: 6px; }
   .hub-mine-collect-art,
   .hub-mine-collect-art :is(.gold-icon, .emerald-icon) { width: 52px; height: 52px; }
   .hub-mine-collect-amount { margin-top: 18px; margin-left: -15px; font-size: 18px; }
