@@ -30,7 +30,7 @@
   padding: 10px 14px;
   overflow: hidden;
   border: 1px solid #d1be85b3;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: #1a3026f2;
   box-shadow: 0 4px 16px #10251d60;
   transform: translateX(-50%);
