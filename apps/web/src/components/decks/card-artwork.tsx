@@ -20,16 +20,18 @@ export function CardArtwork({
   copies = 0,
   showCopies = true,
   appearance = "default",
+  showUpgradeIndicator = appearance === "deck",
 }: {
   card: CardDefinition;
   copies?: number;
   showCopies?: boolean;
   appearance?: "default" | "deck";
+  showUpgradeIndicator?: boolean;
 }) {
   const type = getCombatType(card);
   const level = card.level ?? 1;
   const canUpgrade =
-    appearance === "deck" &&
+    showUpgradeIndicator &&
     level < maxCardLevel(card.rarity, card.baseId) &&
     copies >= upgradeCost(level, card.rarity);
   return (

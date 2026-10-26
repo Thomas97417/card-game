@@ -199,7 +199,11 @@ export function ChestRevealDialog({
                           setInspected(item.variantId);
                         }}
                       >
-                        <CardArtwork card={card} copies={copies} />
+                        <CardArtwork
+                          card={card}
+                          copies={copies}
+                          showUpgradeIndicator={canUpgrade}
+                        />
                       </button>
                     </ChestRewardCard>
                     <div className="chest-reveal-caption">
@@ -216,11 +220,9 @@ export function ChestRevealDialog({
                               ×{item.count}
                             </span>
                           </div>
-                          {!item.isNew && (
+                          {!item.isNew && !canUpgrade && (
                             <small>
-                              {canUpgrade
-                                ? "Amélioration disponible"
-                                : `${copies} exemplaires en réserve`}
+                              {copies} exemplaires en réserve
                             </small>
                           )}
                         </>
