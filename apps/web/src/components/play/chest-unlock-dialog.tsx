@@ -54,16 +54,11 @@ export function ChestUnlockDialog({
                 : "Ton coffre est prêt. Tu peux l’ouvrir gratuitement."}
             </DialogDescription>
             {cost > 0 && (
-              <>
-                <p className="chest-unlock-timer">
-                  <Hourglass size={17} />
-                  Ouverture gratuite dans{" "}
-                  <time>{remainingTime(chest.unlockAt - now)}</time>
-                </p>
-                <p className="chest-unlock-note">
-                  Le prix diminue avec le temps restant.
-                </p>
-              </>
+              <p className="chest-unlock-timer">
+                <Hourglass size={17} />
+                Ouverture gratuite dans{" "}
+                <time>{remainingTime(chest.unlockAt - now)}</time>
+              </p>
             )}
             {insufficient && (
               <p className="chest-unlock-note" role="status">
