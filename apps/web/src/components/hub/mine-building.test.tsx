@@ -4,6 +4,7 @@ import { HOUR_MS, type MineBoard } from "@sylve/game/mines";
 import { MineBuildings } from "./mine-building";
 
 const board: MineBoard = {
+  ownerId: "alice",
   serverNow: 10 * HOUR_MS,
   heroLevel: 2,
   mines: {
@@ -60,5 +61,24 @@ describe("mines du refuge", () => {
       ...empty.mines, gold: { ...empty.mines.gold, updatedAt: 600_000, revision: 1 },
     } }} />);
     expect(screen.queryByRole("button", { name: /Récupérer/ })).toBeNull();
+  });
+
+  it("immediately restores the collectible icon after a failed collection without rewinding production", () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "performance"] });
+    const snapshot: MineBoard = { ...board, serverNow: 599_000, mines: {
+      gold: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },
+      emeralds: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },
+    } };
+    const props = { pending: [], onCollect: vi.fn() } as const;
+    const { rerender } = render(<MineBuildings {...props} board={snapshot} />);
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByRole("button", { name: "Récupérer 1 pièce d’or" })).toBeTruthy();
+    rerender(<MineBuildings {...props} board={{ ...snapshot, serverNow: 600_000, mines: {
+      ...snapshot.mines!, gold: { ...snapshot.mines!.gold, updatedAt: 600_000, revision: 1 },
+    } }} />);
+    expect(screen.queryByRole("button", { name: /Récupérer/ })).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
+    rerender(<MineBuildings {...props} board={snapshot} />);
+    expect(screen.getByRole("button", { name: "Récupérer 1 pièce d’or" }).hasAttribute("disabled")).toBe(false);
   });
 });

@@ -72,6 +72,7 @@ export const mineBoard = query({
       heroRecord(ctx, userId),
     ]);
     return {
+      ownerId: userId,
       serverNow: Date.now(),
       heroLevel: guardian?.level ?? 1,
       mines: wallet?.mines ?? null,
@@ -105,9 +106,14 @@ export const collectMine = mutation({
   args: {
     kind: v.union(v.literal("gold"), v.literal("emeralds")),
     revision: v.number(),
+    expectedOwnerId: v.string(),
   },
-  handler: async (ctx, { kind, revision }) => {
+  handler: async (ctx, { kind, revision, expectedOwnerId }) => {
     const { userId } = await requirePlayer(ctx);
+    // Pending mutations can be retried after reconnecting with another account.
+    // This is a precondition, never an owner selected by the client.
+    if (userId !== expectedOwnerId)
+      throw new ConvexError("Ta session a changé. Recharge le refuge avant de collecter.");
     if (!Number.isSafeInteger(revision) || revision < 0)
       throw new ConvexError("Cette collecte est invalide.");
     const wallet = await playerWallet(ctx, userId);

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Pickaxe } from "lucide-react";
 import {
   MINE_KINDS,
@@ -9,6 +9,7 @@ import {
 } from "@sylve/game/mines";
 import { GoldIcon } from "@/components/gold-balance";
 import { EmeraldIcon } from "@/components/emerald-balance";
+import { useMineClock } from "@/hooks/use-mine-clock";
 
 export interface HubMinesProps {
   board?: MineBoard;
@@ -23,16 +24,12 @@ export const MINE_LABELS: Record<MineKind, string> = {
 
 export function MineBuildings({ board, pending, onCollect }: HubMinesProps) {
   const [, tick] = useState(0);
-  // Use elapsed monotonic time, so changing the device clock cannot fill a mine.
-  const clock = useMemo(
-    () => ({ serverNow: board?.serverNow ?? 0, receivedAt: performance.now() }),
-    [board],
-  );
+  const mineNow = useMineClock(board);
   useEffect(() => {
     const timer = window.setInterval(() => tick((value) => value + 1), 1000);
     return () => window.clearInterval(timer);
   }, []);
-  const now = clock.serverNow + Math.max(0, performance.now() - clock.receivedAt);
+  const now = mineNow();
 
   return MINE_KINDS.map((kind) => (
     <MineBuilding

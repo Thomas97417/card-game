@@ -22,12 +22,15 @@ export function projectMineCollection(kind: MineKind, state: MineState, now: num
  * A fixed click time keeps replays deterministic while the request is pending. */
 export function optimisticallyCollectMine(
   store: OptimisticLocalStore,
-  { kind, revision }: FunctionArgs<typeof api.collection.collectMine>,
+  { kind, revision, expectedOwnerId }: FunctionArgs<typeof api.collection.collectMine>,
   clickedAt: number,
 ) {
+  const user = store.getQuery(api.auth.getCurrentUser, {});
+  if (!user || String(user._id) !== expectedOwnerId) return;
   const queries = store.getAllQueries(api.collection.mineBoard);
   let latest: (typeof queries)[number] | undefined;
   for (const query of queries) {
+    if (query.value?.ownerId !== expectedOwnerId) continue;
     const state = query.value?.mines?.[kind];
     if (!state) continue;
     const previous = latest?.value?.mines?.[kind];
@@ -50,7 +53,7 @@ export function optimisticallyCollectMine(
   // Refresh keys may change during a request. Update every loaded version so
   // switching subscriptions cannot make a collected reserve reappear.
   for (const { args, value } of queries) {
-    if (!value?.mines || value.mines[kind].revision !== revision) continue;
+    if (value?.ownerId !== expectedOwnerId || !value.mines || value.mines[kind].revision !== revision) continue;
     store.setQuery(api.collection.mineBoard, args, {
       ...value,
       serverNow: Math.max(value.serverNow, projection.mine.updatedAt),

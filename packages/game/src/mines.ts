@@ -12,6 +12,7 @@ export interface MineState {
 }
 
 export interface MineBoard {
+  ownerId: string;
   serverNow: number;
   heroLevel: number;
   mines: Record<MineKind, MineState> | null;

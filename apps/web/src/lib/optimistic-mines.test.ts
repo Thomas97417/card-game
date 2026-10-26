@@ -6,6 +6,7 @@ import { HOUR_MS, type MineBoard } from "@sylve/game/mines";
 import { optimisticallyCollectMine, projectMineCollection } from "./optimistic-mines";
 
 const board: MineBoard = {
+  ownerId: "alice",
   serverNow: 4 * HOUR_MS,
   heroLevel: 1,
   mines: {
@@ -28,6 +29,7 @@ function setup() {
       cache.set(key(query, args), { name: getFunctionName(query), args, value });
     }),
   };
+  cache.set(key(api.auth.getCurrentUser, {}), { name: "auth:getCurrentUser", args: {}, value: { _id: board.ownerId } });
   store.setQuery(api.collection.gold, {}, 100);
   store.setQuery(api.collection.diamonds, {}, 200);
   store.setQuery(api.collection.mineBoard, { refreshKey: 1 }, structuredClone(board));
@@ -41,7 +43,7 @@ describe("collecte optimiste des mines", () => {
     const store = setup();
     const original = structuredClone(store.getQuery(api.collection.mineBoard, { refreshKey: 1 }));
     const source = store.getQuery(api.collection.mineBoard, { refreshKey: 1 });
-    optimisticallyCollectMine(store, { kind, revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind, revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.getQuery(api.collection.gold, {})).toBe(kind === "gold" ? 106 : 100);
     expect(store.getQuery(api.collection.diamonds, {})).toBe(kind === "emeralds" ? 202 : 200);
     for (const refreshKey of [1, 2]) {
@@ -64,17 +66,17 @@ describe("collecte optimiste des mines", () => {
 
   it("never credits a revision twice when an optimistic update is replayed", () => {
     const store = setup();
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     const updates = vi.mocked(store.setQuery).mock.calls.length;
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.setQuery).toHaveBeenCalledTimes(updates);
     expect(store.getQuery(api.collection.gold, {})).toBe(106);
   });
 
   it("supports both currencies in flight without overwriting either reserve or balance", () => {
     const store = setup();
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.serverNow);
-    optimisticallyCollectMine(store, { kind: "emeralds", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "emeralds", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.getQuery(api.collection.gold, {})).toBe(106);
     expect(store.getQuery(api.collection.diamonds, {})).toBe(202);
     const next = store.getQuery(api.collection.mineBoard, { refreshKey: 2 })!;
@@ -89,24 +91,43 @@ describe("collecte optimiste des mines", () => {
       mines: { ...board.mines!, gold: { ...board.mines!.gold, revision: 1 } },
     });
     vi.mocked(store.setQuery).mockClear();
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.setQuery).not.toHaveBeenCalled();
   });
 
   it("does not invent a loading balance or consume an empty or uninitialized mine", () => {
     const store = setup();
     store.setQuery(api.collection.gold, {}, undefined);
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.getQuery(api.collection.gold, {})).toBeUndefined();
     const empty = { ...board, mines: null };
     store.setQuery(api.collection.mineBoard, { refreshKey: 1 }, empty);
     store.setQuery(api.collection.mineBoard, { refreshKey: 2 }, undefined);
     vi.mocked(store.setQuery).mockClear();
-    optimisticallyCollectMine(store, { kind: "emeralds", revision: 0 }, board.serverNow);
+    optimisticallyCollectMine(store, { kind: "emeralds", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
     expect(store.setQuery).not.toHaveBeenCalled();
     store.setQuery(api.collection.mineBoard, { refreshKey: 1 }, board);
     vi.mocked(store.setQuery).mockClear();
-    optimisticallyCollectMine(store, { kind: "gold", revision: 0 }, board.mines!.gold.updatedAt);
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.mines!.gold.updatedAt);
     expect(store.setQuery).not.toHaveBeenCalled();
+  });
+
+  it("does not apply an old account's optimism to another account's data", () => {
+    const store = setup();
+    vi.mocked(store.getQuery).mockReturnValue({ _id: "bob" });
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
+    expect(store.setQuery).not.toHaveBeenCalled();
+  });
+
+  it("ignores cached boards belonging to another account", () => {
+    const store = setup();
+    store.setQuery(api.collection.mineBoard, { refreshKey: 2 }, {
+      ...board, ownerId: "bob", serverNow: board.serverNow + 1000,
+      mines: { ...board.mines!, gold: { ...board.mines!.gold, revision: 99 } },
+    });
+    vi.mocked(store.setQuery).mockClear();
+    optimisticallyCollectMine(store, { kind: "gold", revision: 0, expectedOwnerId: board.ownerId }, board.serverNow);
+    expect(store.getQuery(api.collection.gold, {})).toBe(106);
+    expect(store.getQuery(api.collection.mineBoard, { refreshKey: 2 })!.mines!.gold.revision).toBe(99);
   });
 });

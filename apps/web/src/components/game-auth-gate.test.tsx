@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName } from "convex/server";
 import { useQuery } from "convex/react";
@@ -8,6 +8,10 @@ import { GameAuthGate } from "./game-auth-gate";
 import { GoldProvider } from "./gold-balance";
 import { EmeraldProvider } from "./emerald-balance";
 import { PlayerHeaderProvider } from "./player-header";
+import { CurrencyGain, CurrencyGainProvider } from "./currency-gain";
+import { useMineCollection } from "@/hooks/use-mine-collection";
+import type { MineBoard } from "@sylve/game/mines";
+import * as feedback from "@/components/game/shared";
 
 const mocks = vi.hoisted(() => ({
   auth: { isLoading: true, isAuthenticated: false },
@@ -16,11 +20,15 @@ const mocks = vi.hoisted(() => ({
   query: vi.fn(),
   ensureWallet: vi.fn(),
   redirect: vi.fn(),
+  collect: vi.fn(),
 }));
 vi.mock("convex/react", () => ({
   useConvexAuth: () => mocks.auth,
   useQuery: (...args: unknown[]) => mocks.query(...args),
-  useMutation: () => mocks.ensureWallet,
+  useMutation: (mutation: Parameters<typeof getFunctionName>[0]) =>
+    getFunctionName(mutation) === "collection:collectMine"
+      ? Object.assign(mocks.collect, { withOptimisticUpdate: () => mocks.collect })
+      : mocks.ensureWallet,
 }));
 vi.mock("@tanstack/react-router", () => ({
   useRouterState: () => mocks.href,
@@ -132,5 +140,44 @@ describe("validation de la connexion avant les requêtes du jeu", () => {
     expect(playerSubscriptions()).toHaveLength(0);
     expect(mocks.ensureWallet).not.toHaveBeenCalled();
     expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it.each(["success", "failure"])("discards a collection's late %s after the session expires", async (outcome) => {
+    const error = vi.spyOn(feedback, "showGameError").mockImplementation(() => {});
+    let resolve!: (value: { kind: "gold"; amount: number; alreadyCollected: boolean }) => void;
+    let reject!: (reason: Error) => void;
+    const response = new Promise((yes, no) => { resolve = yes; reject = no; });
+    mocks.collect.mockReturnValue(response);
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "player" };
+    const board: MineBoard = { ownerId: "player", serverNow: 0, heroLevel: 1, mines: {
+      gold: { amount: 6, updatedAt: 0, heroLevel: 1, revision: 0 },
+      emeralds: { amount: 2, updatedAt: 0, heroLevel: 1, revision: 0 },
+    } };
+    function MineScreen() {
+      const { collectResource } = useMineCollection(board);
+      return <>
+        <button onClick={() => void collectResource("gold")}>Récupérer l’or</button>
+        <CurrencyGain currency="gold"><span>or</span></CurrencyGain>
+      </>;
+    }
+    function MineApp() {
+      return <GameAuthGate required><CurrencyGainProvider><MineScreen /></CurrencyGainProvider></GameAuthGate>;
+    }
+    const { rerender } = render(<MineApp />);
+    fireEvent.click(screen.getByRole("button", { name: "Récupérer l’or" }));
+    expect(screen.getByRole("status", { name: "Or récupéré" }).textContent).toContain("+ 6");
+    mocks.user = null;
+    rerender(<MineApp />);
+    expect(screen.queryByRole("status", { name: "Or récupéré" })).toBeNull();
+    expect(mocks.redirect).toHaveBeenCalled();
+    await act(async () => {
+      if (outcome === "success") resolve({ kind: "gold", amount: 7, alreadyCollected: false });
+      else reject(new Error("Connecte-toi pour jouer."));
+      await response.catch(() => {});
+    });
+    expect(screen.queryByRole("status", { name: "Or récupéré" })).toBeNull();
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
   });
 });

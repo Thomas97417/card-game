@@ -6,6 +6,7 @@ import { HOUR_MS, type MineBoard } from "@sylve/game/mines";
 import { useMineBoard } from "./use-mine-collection";
 
 const board: MineBoard = {
+  ownerId: "alice",
   serverNow: HOUR_MS,
   heroLevel: 1,
   mines: {

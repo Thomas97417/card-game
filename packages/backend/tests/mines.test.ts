@@ -52,16 +52,16 @@ afterEach(() => vi.useRealTimers());
 describe("collecte des mines côté serveur", () => {
   it("requires authentication and rejects forged collection arguments", async () => {
     const t = setup();
+    const { client, userId } = await player(t);
     await expect(t.query(api.collection.mineBoard, { refreshKey: 0 })).rejects.toThrow("Connecte-toi");
     await expect(t.mutation(api.collection.ensureMines, {})).rejects.toThrow("Connecte-toi");
-    await expect(t.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).rejects.toThrow("Connecte-toi");
-    const { client } = await player(t);
+    await expect(t.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 0 })).rejects.toThrow("Connecte-toi");
     await client.mutation(api.collection.ensureMines, {});
-    await expect(client.mutation(api.collection.collectMine, { kind: "gold", revision: -1 })).rejects.toThrow("invalide");
+    await expect(client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: -1 })).rejects.toThrow("invalide");
     await expect(client.mutation(api.collection.collectMine, {
-      kind: "gold", revision: 0, amount: 999999, now: startedAt + HOUR_MS * 9,
-    } as { kind: MineKind; revision: number })).rejects.toThrow();
-    await expect(client.mutation(api.collection.collectMine, { kind: "forged" as MineKind, revision: 0 })).rejects.toThrow();
+      expectedOwnerId: userId, kind: "gold", revision: 0, amount: 999999, now: startedAt + HOUR_MS * 9,
+    } as { expectedOwnerId: string; kind: MineKind; revision: number })).rejects.toThrow();
+    await expect(client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "forged" as MineKind, revision: 0 })).rejects.toThrow();
     expect(await client.query(api.collection.gold, {})).toBe(0);
   });
 
@@ -79,10 +79,10 @@ describe("collecte des mines côté serveur", () => {
     await client.mutation(api.collection.ensureMines, {});
     const board = await client.query(api.collection.mineBoard, { refreshKey: -999999 });
     expect(board.mines!.gold.updatedAt).toBe(startedAt);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 6 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 6 });
     expect(await client.query(api.collection.gold, {})).toBe(731);
     expect(await client.query(api.collection.diamonds, {})).toBe(0);
-    expect(await client.mutation(api.collection.collectMine, { kind: "emeralds", revision: 0 })).toMatchObject({ amount: 2 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "emeralds", revision: 0 })).toMatchObject({ amount: 2 });
     expect(await client.query(api.collection.diamonds, {})).toBe(2);
     const wallet = await t.run((ctx) => ctx.db.query("wallets").unique());
     expect(wallet).toMatchObject({ soulDust: 9, experience: 0 });
@@ -90,23 +90,23 @@ describe("collecte des mines côté serveur", () => {
 
   it("caps long offline production and discards overflow before restarting", async () => {
     const t = setup();
-    const { client } = await player(t);
+    const { client, userId } = await player(t);
     await client.mutation(api.collection.ensureMines, {});
     const initialEmeralds = await client.query(api.collection.diamonds, {});
     vi.setSystemTime(startedAt + HOUR_MS * 12);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 48 });
-    expect(await client.mutation(api.collection.collectMine, { kind: "emeralds", revision: 0 })).toMatchObject({ amount: 16 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 48 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "emeralds", revision: 0 })).toMatchObject({ amount: 16 });
     vi.setSystemTime(startedAt + HOUR_MS * 13);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 1 })).toMatchObject({ amount: 6 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 1 })).toMatchObject({ amount: 6 });
     expect(await client.query(api.collection.diamonds, {})).toBe(initialEmeralds + 16);
   });
 
   it("deduplicates simultaneous collections, stale retries and requests across tabs", async () => {
     const t = setup();
-    const { client } = await player(t);
+    const { client, userId } = await player(t);
     await client.mutation(api.collection.ensureMines, {});
     vi.setSystemTime(startedAt + HOUR_MS);
-    const request = { kind: "gold", revision: 0 } as const;
+    const request = { expectedOwnerId: userId, kind: "gold", revision: 0 } as const;
     const results = await Promise.all([
       client.mutation(api.collection.collectMine, request),
       client.mutation(api.collection.collectMine, request),
@@ -120,16 +120,16 @@ describe("collecte des mines côté serveur", () => {
 
   it("retains fractional production and leaves an empty collection untouched", async () => {
     const t = setup();
-    const { client } = await player(t);
+    const { client, userId } = await player(t);
     await client.mutation(api.collection.ensureMines, {});
     vi.setSystemTime(startedAt + 750_000);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 1 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 1 });
     vi.setSystemTime(startedAt + HOUR_MS / 4);
-    expect(await client.mutation(api.collection.collectMine, { kind: "emeralds", revision: 0 })).toMatchObject({ amount: 0 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "emeralds", revision: 0 })).toMatchObject({ amount: 0 });
     vi.setSystemTime(startedAt + 1_200_000);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 1 })).toMatchObject({ amount: 1 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 1 })).toMatchObject({ amount: 1 });
     vi.setSystemTime(startedAt + HOUR_MS / 2);
-    expect(await client.mutation(api.collection.collectMine, { kind: "emeralds", revision: 0 })).toMatchObject({ amount: 1 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "emeralds", revision: 0 })).toMatchObject({ amount: 1 });
   });
 
   it("uses the Guardian level and applies a promotion prospectively", async () => {
@@ -152,7 +152,7 @@ describe("collecte des mines côté serveur", () => {
     expect(board.mines!.gold).toMatchObject({ amount: 6, heroLevel: 2 });
     expect(board.mines!.emeralds).toMatchObject({ amount: 2, heroLevel: 2 });
     vi.setSystemTime(startedAt + HOUR_MS * 2);
-    expect(await client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 18 });
+    expect(await client.mutation(api.collection.collectMine, { expectedOwnerId: userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 18 });
   });
 
   it("keeps each player's production private and balances isolated", async () => {
@@ -162,8 +162,57 @@ describe("collecte des mines côté serveur", () => {
     await alice.client.mutation(api.collection.ensureMines, {});
     vi.setSystemTime(startedAt + HOUR_MS);
     await bob.client.mutation(api.collection.ensureMines, {});
-    expect(await bob.client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 0 });
-    expect(await alice.client.mutation(api.collection.collectMine, { kind: "gold", revision: 0 })).toMatchObject({ amount: 6 });
+    expect(await bob.client.mutation(api.collection.collectMine, { expectedOwnerId: bob.userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 0 });
+    expect(await alice.client.mutation(api.collection.collectMine, { expectedOwnerId: alice.userId, kind: "gold", revision: 0 })).toMatchObject({ amount: 6 });
     expect(await bob.client.query(api.collection.gold, {})).toBe(0);
+  });
+
+  it.each(["gold", "emeralds"] as const)("leaves balances and reserves untouched when the session expires before collecting %s", async (kind) => {
+    const t = setup();
+    const { client, userId } = await player(t);
+    await client.mutation(api.collection.ensureMines, {});
+    const before = await t.run((ctx) => ctx.db.query("wallets").unique());
+    vi.setSystemTime(startedAt + 24 * HOUR_MS);
+    expect(await client.query(api.auth.getCurrentUser, {})).toBeNull();
+    await expect(client.mutation(api.collection.collectMine, {
+      kind, revision: 0, expectedOwnerId: userId,
+    })).rejects.toThrow("Connecte-toi");
+    expect(await t.run((ctx) => ctx.db.query("wallets").unique())).toEqual(before);
+  });
+
+  it("rejects a queued collection sent under a different account with the same revision", async () => {
+    const t = setup();
+    const alice = await player(t), bob = await player(t, "bob");
+    await alice.client.mutation(api.collection.ensureMines, {});
+    await bob.client.mutation(api.collection.ensureMines, {});
+    vi.setSystemTime(startedAt + HOUR_MS);
+    const before = await t.run((ctx) => ctx.db.query("wallets").collect());
+    await expect(bob.client.mutation(api.collection.collectMine, {
+      kind: "gold", revision: 0, expectedOwnerId: alice.userId,
+    })).rejects.toThrow("session a changé");
+    expect(await t.run((ctx) => ctx.db.query("wallets").collect())).toEqual(before);
+    expect(await bob.client.mutation(api.collection.collectMine, {
+      kind: "gold", revision: 0, expectedOwnerId: bob.userId,
+    })).toMatchObject({ amount: 6 });
+    expect(await alice.client.query(api.collection.gold, {})).toBe(0);
+  });
+
+  it("does not credit twice when a committed collection is retried after signing in again", async () => {
+    const t = setup();
+    const { client, userId } = await player(t);
+    await client.mutation(api.collection.ensureMines, {});
+    vi.setSystemTime(startedAt + HOUR_MS);
+    const request = { kind: "gold", revision: 0, expectedOwnerId: userId } as const;
+    expect(await client.mutation(api.collection.collectMine, request)).toMatchObject({ amount: 6 });
+    vi.setSystemTime(startedAt + 24 * HOUR_MS);
+    await expect(client.mutation(api.collection.collectMine, request)).rejects.toThrow("Connecte-toi");
+    const session = await t.mutation(components.betterAuth.adapter.create, { input: {
+      model: "session", data: {
+        userId, token: "alice-renewed", createdAt: Date.now(), updatedAt: Date.now(), expiresAt: Date.now() + HOUR_MS,
+      },
+    } });
+    const renewed = t.withIdentity({ subject: userId, sessionId: session._id });
+    expect(await renewed.mutation(api.collection.collectMine, request)).toMatchObject({ amount: 0, alreadyCollected: true });
+    expect(await renewed.query(api.collection.gold, {})).toBe(6);
   });
 });
