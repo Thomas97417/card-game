@@ -16,5 +16,11 @@ export async function ensureEmeralds(ctx: MutationCtx, ownerId: string) {
     gold: 0,
     diamonds: WELCOME_DIAMONDS,
   });
-  return { _id: id, ownerId, gold: 0, diamonds: WELCOME_DIAMONDS };
+  return {
+    _id: id,
+    ownerId,
+    gold: 0,
+    diamonds: WELCOME_DIAMONDS,
+    friendshipTokens: 0,
+  };
 }

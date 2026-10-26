@@ -21,7 +21,6 @@ import {
   ownedCard,
   playerWallet,
   playerLeague,
-  playerProgress,
 } from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
 import { recordMissionProgress } from "./lib/missions";
@@ -97,8 +96,6 @@ export const playerProfile = query({
   args: { ownerId: v.string() },
   handler: async (ctx, { ownerId }) => {
     await requirePlayer(ctx);
-    const progress = await playerProgress(ctx, ownerId);
-    if (!progress) return null;
     const user = await authComponent.getAnyUserById(ctx, ownerId);
     if (!user) return null;
     const [deck, league, entries] = await Promise.all([

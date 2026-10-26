@@ -34,6 +34,7 @@ import {
 } from "@sylve/game/summoning";
 import { GameHeader } from "@/components/game-header";
 import { EmeraldAmount } from "@/components/emerald-balance";
+import { FriendshipAmount } from "@/components/friendship-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { BestiaryDialog } from "./bestiary-dialog";
@@ -54,6 +55,7 @@ export interface SummonRequest {
 
 interface SanctuaryProps {
   emeralds: number | null | undefined;
+  friendshipTokens?: number | null;
   ready: boolean;
   peakTrophies?: number;
   latest?: SummonResult | null;
@@ -73,6 +75,7 @@ interface SanctuaryProps {
 
 export function Sanctuary({
   emeralds,
+  friendshipTokens,
   ready,
   peakTrophies = 0,
   latest,
@@ -191,10 +194,14 @@ export function Sanctuary({
       pending.current?.packId === packId &&
       pending.current.count === count &&
       pending.current.repeatToken === repeatToken;
+    const balance =
+      summonPack(packId).currency === "friendshipTokens"
+        ? friendshipTokens
+        : emeralds;
     if (
       lock.current ||
       !ready ||
-      (!retry && (emeralds == null || emeralds < cost))
+      (!retry && (balance == null || balance < cost))
     )
       return;
     lock.current = true;
@@ -316,6 +323,7 @@ export function Sanctuary({
                   pack={pack}
                   peakTrophies={peakTrophies}
                   emeralds={emeralds}
+                  friendshipTokens={friendshipTokens}
                   ready={ready && busyKey === null}
                   busy={busy}
                   onInvoke={invoke}
@@ -472,6 +480,7 @@ export function Sanctuary({
         onProgress={viewingHistory ? undefined : saveProgress}
         collection={collection}
         emeralds={emeralds}
+        friendshipTokens={friendshipTokens}
         ready={ready}
         busy={!!busy}
         error={error}
@@ -503,6 +512,7 @@ function PackChoice({
   pack,
   peakTrophies,
   emeralds,
+  friendshipTokens,
   ready,
   busy,
   onInvoke,
@@ -510,25 +520,33 @@ function PackChoice({
   pack: SummonPack;
   peakTrophies: number;
   emeralds: number | null | undefined;
+  friendshipTokens?: number | null;
   ready: boolean;
   busy: { packId: SummonPackId; count: SummonCount } | null;
   onInvoke: (id: SummonPackId, count: SummonCount) => void;
 }) {
-  const premium = pack.id !== "sylve";
+  const friendship = pack.currency === "friendshipTokens";
+  const balance = friendship ? friendshipTokens : emeralds;
+  const currencyLabel = friendship ? "jetons d’entraide" : "émeraudes";
+  const premium = pack.id === "ancients" || pack.id === "divine";
   const divine = pack.id === "divine";
-  const guarantee = divine
-    ? `${pack.guaranteedLegendaries} compagnons légendaires`
-    : pack.guaranteedLegendaries === 1
-      ? "1 compagnon légendaire garanti"
-      : `${pack.guaranteedLegendaries} compagnons légendaires garantis`;
-  const rarities = divine
-    ? ["legendary", "legendary", "legendary"]
-    : premium
-      ? ["epic", "legendary", "epic"]
-      : ["rare", "legendary", "epic"];
+  const guarantee = friendship
+    ? "50 lots communs ou rares"
+    : divine
+      ? `${pack.guaranteedLegendaries} compagnons légendaires`
+      : pack.guaranteedLegendaries === 1
+        ? "1 compagnon légendaire garanti"
+        : `${pack.guaranteedLegendaries} compagnons légendaires garantis`;
+  const rarities = friendship
+    ? ["common", "rare", "common"]
+    : divine
+      ? ["legendary", "legendary", "legendary"]
+      : premium
+        ? ["epic", "legendary", "epic"]
+        : ["rare", "legendary", "epic"];
   return (
     <article
-      className={`summon-pack ${premium ? "summon-pack-premium" : ""} ${divine ? "summon-pack-divine" : ""}`}
+      className={`summon-pack ${friendship ? "summon-pack-friendship" : ""} ${premium ? "summon-pack-premium" : ""} ${divine ? "summon-pack-divine" : ""}`}
       aria-labelledby={`pack-${pack.id}`}
     >
       <div className="summon-pack-art" aria-hidden="true">
@@ -599,7 +617,7 @@ function PackChoice({
         {([1, 10] as const).map((count) => {
           const price = count === 10 ? pack.tenPrice : pack.price;
           const working = busy?.packId === pack.id && busy.count === count;
-          const insufficient = emeralds != null && emeralds < price;
+          const insufficient = balance != null && balance < price;
           return (
             <div className="summon-purchase" key={count}>
               <span
@@ -611,9 +629,9 @@ function PackChoice({
               <button
                 type="button"
                 className={`summon-button ${count === 10 ? "summon-button-ten" : ""}`}
-                disabled={!ready || !!busy || emeralds == null || insufficient}
+                disabled={!ready || !!busy || balance == null || insufficient}
                 aria-busy={working || undefined}
-                aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} émeraudes`}
+                aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} ${currencyLabel}`}
                 aria-describedby={
                   count === 10
                     ? `pack-${pack.id}-offer-${count} pack-${pack.id}-guarantee`
@@ -621,18 +639,24 @@ function PackChoice({
                 }
                 title={
                   insufficient
-                    ? `Il te manque ${(price - emeralds!).toLocaleString("fr-FR")} émeraudes.`
+                    ? `Il te manque ${(price - balance!).toLocaleString("fr-FR")} ${currencyLabel}.`
                     : undefined
                 }
                 onClick={() => onInvoke(pack.id, count)}
               >
                 <span className="summon-button-price">
                   {count === 10 && (
-                    <del aria-label={`Au lieu de ${pack.price * 10} émeraudes`}>
+                    <del
+                      aria-label={`Au lieu de ${pack.price * 10} ${currencyLabel}`}
+                    >
                       {(pack.price * 10).toLocaleString("fr-FR")}
                     </del>
                   )}
-                  <EmeraldAmount amount={price} />
+                  {friendship ? (
+                    <FriendshipAmount amount={price} />
+                  ) : (
+                    <EmeraldAmount amount={price} />
+                  )}
                 </span>
               </button>
               {count === 10 && (

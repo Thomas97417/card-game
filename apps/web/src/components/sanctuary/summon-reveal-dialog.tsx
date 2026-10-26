@@ -17,6 +17,7 @@ import {
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { EmeraldAmount } from "@/components/emerald-balance";
+import { FriendshipAmount } from "@/components/friendship-balance";
 import { GoldIcon } from "@/components/gold-balance";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
@@ -27,6 +28,7 @@ export function SummonRevealDialog({
   onProgress,
   collection,
   emeralds,
+  friendshipTokens,
   busy = false,
   ready = true,
   error,
@@ -41,6 +43,7 @@ export function SummonRevealDialog({
   onProgress?: (progress: SummonRevealProgress) => void;
   collection: OwnedCard[] | undefined;
   emeralds?: number | null;
+  friendshipTokens?: number | null;
   busy?: boolean;
   ready?: boolean;
   error?: string | null;
@@ -94,8 +97,13 @@ export function SummonRevealDialog({
         result.cost,
       )
     : null;
+  const friendship = result
+    ? summonPack(result.packId).currency === "friendshipTokens"
+    : false;
+  const balance = friendship ? friendshipTokens : emeralds;
+  const currencyLabel = friendship ? "jetons d’entraide" : "émeraudes";
   const insufficient =
-    emeralds == null || (offer != null && emeralds < offer.cost);
+    balance == null || (offer != null && balance < offer.cost);
   const repeatHint =
     lastRound && !enabled ? "Cet appel est temporairement indisponible." : null;
   useEffect(() => {
@@ -350,7 +358,7 @@ export function SummonRevealDialog({
                   aria-label={
                     !lastRound
                       ? `Invocation suivante — ${round + 2} sur ${result.count}`
-                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes`
+                      : `Réinvoquer ×${result.count}, ${offer.cost} ${currencyLabel}`
                   }
                   onClick={() => {
                     if (!lastRound) {
@@ -370,12 +378,16 @@ export function SummonRevealDialog({
                     <span className="summon-button-price summon-repeat-price">
                       {offer.cost < offer.baseCost && (
                         <del
-                          aria-label={`Au lieu de ${offer.baseCost} émeraudes`}
+                          aria-label={`Au lieu de ${offer.baseCost} ${currencyLabel}`}
                         >
                           {offer.baseCost.toLocaleString("fr-FR")}
                         </del>
                       )}
-                      <EmeraldAmount amount={offer.cost} />
+                      {friendship ? (
+                        <FriendshipAmount amount={offer.cost} />
+                      ) : (
+                        <EmeraldAmount amount={offer.cost} />
+                      )}
                     </span>
                   ) : (
                     <>

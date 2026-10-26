@@ -301,7 +301,7 @@
 }
 @media (max-width: 760px) {
   :root {
-    --game-header-height: 88px;
+    --game-header-height: 100px;
     --game-header-padding-y: 12px;
     --game-header-padding-x: 12px;
   }
@@ -364,23 +364,26 @@
     grid-column: 2;
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
   }
   .player-header-actions .gold-balance,
-  .player-header-actions .emerald-balance {
-    min-height: 30px;
-    padding: 2px 8px 2px 4px;
+  .player-header-actions .emerald-balance,
+  .player-header-actions .friendship-balance {
+    min-height: 24px;
+    padding: 1px 7px 1px 3px;
     gap: 4px;
-    font-size: 11px;
+    font-size: 10px;
   }
   .player-header-actions .gold-amount,
-  .player-header-actions .emerald-amount {
+  .player-header-actions .emerald-amount,
+  .player-header-actions .friendship-amount {
     gap: 4px;
   }
   .player-header-actions .gold-icon,
-  .player-header-actions .emerald-icon {
-    width: 24px;
-    height: 24px;
+  .player-header-actions .emerald-icon,
+  .player-header-actions .friendship-icon {
+    width: 20px;
+    height: 20px;
   }
   .sylve-settings-trigger {
     grid-column: 3;

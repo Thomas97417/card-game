@@ -268,6 +268,7 @@ describe("sanctuaire autoritaire", () => {
           ownerId: userId,
           gold: 0,
           diamonds: 100_000,
+          friendshipTokens: 100_000,
         }),
       );
       let roll = 0;
@@ -284,9 +285,14 @@ describe("sanctuaire autoritaire", () => {
       expect(
         result.reveals.filter((item) => item.variantId.endsWith(":legendary")),
       ).toHaveLength(pack.guaranteedLegendaries);
-      expect(await client.query(api.collection.diamonds, {})).toBe(
-        100_000 - pack.tenPrice,
-      );
+      expect(
+        await client.query(
+          pack.id === "friendship"
+            ? api.social.balance
+            : api.collection.diamonds,
+          {},
+        ),
+      ).toBe(100_000 - pack.tenPrice);
       const collection = await client.query(api.collection.list, {});
       const totalCopies = collection.reduce(
         (sum, entry) => sum + entry.copies + 1,
@@ -597,11 +603,12 @@ describe("sanctuaire autoritaire", () => {
           ownerId: userId,
           gold: 0,
           diamonds: 300000,
+          friendshipTokens: 300000,
         }),
       );
       vi.spyOn(Math, "random").mockReturnValue(0);
       const before = await client.query(api.sanctuary.offers, {});
-      expect(before).toHaveLength(4);
+      expect(before).toHaveLength(ACTIVE_SUMMON_PACKS.length * 2);
       expect(before.every((offer) => offer.cost === offer.baseCost)).toBe(true);
       const request = { packId, count, requestId: requestId(1) };
       const first = await client.mutation(api.sanctuary.summon, request);
@@ -648,21 +655,30 @@ describe("sanctuaire autoritaire", () => {
         repeatToken: third.repeatToken,
       });
       const cappedCost =
-        packId === "sylve"
+        packId === "friendship"
           ? count === 1
-            ? 129
-            : 999
-          : count === 1
-            ? 4499
-            : 34999;
+            ? 130
+            : 1000
+          : packId === "sylve"
+            ? count === 1
+              ? 129
+              : 999
+            : count === 1
+              ? 4499
+              : 34999;
       expect(third.cost).toBe(cappedCost);
       expect(fourth.cost).toBe(cappedCost);
       expect(await client.mutation(api.sanctuary.summon, thirdRequest)).toEqual(
         history(third),
       );
-      expect(await client.query(api.collection.diamonds, {})).toBe(
-        300000 - first.cost - second.cost - third.cost - fourth.cost,
-      );
+      expect(
+        await client.query(
+          packId === "friendship"
+            ? api.social.balance
+            : api.collection.diamonds,
+          {},
+        ),
+      ).toBe(300000 - first.cost - second.cost - third.cost - fourth.cost);
       expect(await client.query(api.sanctuary.offers, {})).toEqual(before);
       // Buying from the shop always uses its base price, even with an open circle.
       const fresh = await client.mutation(api.sanctuary.summon, {

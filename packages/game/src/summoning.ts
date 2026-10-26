@@ -6,7 +6,8 @@ import ancientsReference from "./data/ancients-summoning.json";
 import sylveReference from "./data/sylve-summoning.json";
 
 export const WELCOME_DIAMONDS = 3_000;
-export type SummonPackId = "sylve" | "ancients" | "divine";
+export type SummonPackId = "friendship" | "sylve" | "ancients" | "divine";
+export type SummonCurrency = "emeralds" | "friendshipTokens";
 export type SummonCount = 1 | 10;
 export const HEROES_PER_SUMMON = 5;
 export const SUMMON_REVEAL_SLOTS = 6;
@@ -16,6 +17,7 @@ export interface SummonPack {
   enabled: boolean;
   name: string;
   description: string;
+  currency: SummonCurrency;
   price: number;
   tenPrice: number;
   repeatPrices: readonly number[];
@@ -28,9 +30,24 @@ export interface SummonPack {
 
 export const SUMMON_PACKS: readonly SummonPack[] = [
   {
+    id: "friendship",
+    enabled: true,
+    name: "Appel de l’entraide",
+    description:
+      "Cinq compagnons communs ou rares et une carte d’or, grâce à tes amis.",
+    currency: "friendshipTokens",
+    price: 150,
+    tenPrice: 1_300,
+    repeatPrices: [140, 130],
+    repeatTenPrices: [1_150, 1_000],
+    guaranteedLegendaries: 0,
+    rates: { common: 80, rare: 20, epic: 0, legendary: 0 },
+  },
+  {
     id: "sylve",
     enabled: true,
     name: "Appel de la Sylve",
+    currency: "emeralds",
     description:
       "Cinq compagnons rares, épiques ou légendaires et une carte d’or en bonus.",
     price: 149,
@@ -44,6 +61,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     id: "ancients",
     enabled: true,
     name: "Appel des anciens",
+    currency: "emeralds",
     description:
       "Cinq compagnons, dont au moins deux légendaires, et une carte d’or en bonus.",
     price: 4_999,
@@ -59,6 +77,7 @@ export const SUMMON_PACKS: readonly SummonPack[] = [
     id: "divine",
     enabled: false,
     name: "Appel des divinités",
+    currency: "emeralds",
     description:
       "Cinq légendaires, une carte d’or et une chance de doubler un compagnon.",
     price: 4_499,
@@ -197,6 +216,11 @@ export function summonQuantity(
 ) {
   if (summonPack(id).rates[rarity] === 0)
     throw new Error("Rareté absente de cette invocation.");
+  if (id === "friendship") {
+    const index = leagueAt(peakTrophies).index;
+    const count = rarity === "common" ? 30 + index * 2 : 10 + index;
+    return { min: count, max: count };
+  }
   if (id === "sylve") {
     const row =
       sylveReference.leagues[
