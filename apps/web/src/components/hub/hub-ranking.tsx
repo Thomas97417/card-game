@@ -114,7 +114,7 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
   );
 }
 
-function RankedPlayerDetails({
+export function RankedPlayerDetails({
   ownerId,
   onInspect,
 }: {

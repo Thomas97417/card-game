@@ -52,6 +52,7 @@
   filter: drop-shadow(0 1px 1px #10271455);
 }
 .mission-seal-balance {
+  position: relative;
   display: grid;
   grid-template-columns: 31px auto;
   align-items: center;
@@ -79,6 +80,60 @@
   color: #b9bc9e;
   font-size: 9px;
 }
+.mission-seal-gain {
+  position: absolute;
+  z-index: 2;
+  top: -10px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid #d8b97488;
+  border-radius: 16px;
+  background: #20382bed;
+  box-shadow: 0 2px 12px #dfbd6226;
+  color: #ffe5a2;
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: mission-seal-gain-float 1600ms ease-out both;
+}
+.mission-seal-balance .mission-seal-gain .mission-seal {
+  width: 20px;
+  height: 22px;
+}
+@keyframes mission-seal-gain-float {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.85);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05);
+  }
+  35%,
+  65% {
+    opacity: 1;
+    transform: translateY(-9px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1);
+  }
+}
+@keyframes mission-seal-gain-fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  18%,
+  65% {
+    opacity: 1;
+  }
+}
 .mission-chest-road {
   --mission-chest-art-height: 74px;
   position: relative;
@@ -98,7 +153,9 @@
   border: 1px solid #b29a604d;
   border-radius: 4px;
   background: #203327;
-  box-shadow: inset 0 1px 2px #04160e99, 0 1px #c9b27c0d;
+  box-shadow:
+    inset 0 1px 2px #04160e99,
+    0 1px #c9b27c0d;
 }
 .mission-road-line > span {
   display: block;
@@ -137,7 +194,9 @@
   height: var(--mission-chest-art-height);
   object-fit: contain;
   filter: drop-shadow(0 4px 4px #0007);
-  transition: transform 160ms, filter 160ms;
+  transition:
+    transform 160ms,
+    filter 160ms;
 }
 .mission-chest[data-chest-type="bigRare"] .mission-chest-art > img {
   scale: 1.16;
@@ -152,7 +211,9 @@
 .mission-chest[data-status="ready"] .mission-chest-art > img {
   filter: drop-shadow(0 0 10px #dfbd6259);
 }
-.mission-chest[data-status="ready"]:hover:not(:disabled) .mission-chest-art > img {
+.mission-chest[data-status="ready"]:hover:not(:disabled)
+  .mission-chest-art
+  > img {
   transform: translateY(-3px);
 }
 .mission-chest-threshold {
@@ -376,7 +437,7 @@
 }
 .mission-claim:disabled {
   opacity: 0.65;
-  cursor: wait;
+  cursor: default;
 }
 .mission-go {
   color: #4d5c39;
@@ -618,6 +679,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .mission-seal-gain {
+    animation-name: mission-seal-gain-fade;
+  }
   .mission-road-line > span,
   .mission-progress > span,
   .mission-chest-art > img {

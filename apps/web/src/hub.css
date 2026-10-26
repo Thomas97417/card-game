@@ -306,7 +306,9 @@
   border: 1px solid #b99b60;
   border-radius: 14px;
   background: linear-gradient(140deg, #2b4434fc, #11271ffc 65%);
-  box-shadow: 0 16px 50px #051810b3, inset 0 0 0 3px #e3c3820a;
+  box-shadow:
+    0 16px 50px #051810b3,
+    inset 0 0 0 3px #e3c3820a;
   transform: translateX(-50%);
   pointer-events: auto;
 }
@@ -333,7 +335,9 @@
 .hub-panel-heading h2 {
   margin: 0;
   color: #fff0cd;
-  font: 24px/1.2 Georgia, serif;
+  font:
+    24px/1.2 Georgia,
+    serif;
 }
 .hub-panel-heading p {
   margin-top: 5px;
@@ -409,6 +413,302 @@
 }
 .hub-world-chat-avatar:empty {
   visibility: hidden;
+}
+.social-avatar {
+  display: grid;
+  flex-shrink: 0;
+  align-self: center;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #c5a76b66;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #506145, #263d2c);
+  color: #f4e2b8;
+  font:
+    600 12px Georgia,
+    serif;
+  cursor: pointer;
+}
+.hub-world-chat-message > .social-avatar {
+  align-self: flex-end;
+}
+.social-avatar:hover {
+  border-color: #f4d79a;
+  filter: brightness(1.15);
+}
+.social-player-menu[data-slot="dropdown-menu-content"] {
+  width: 224px;
+  padding: 6px;
+  border: 1px solid #b99b60;
+  border-radius: 12px;
+  background: #1a3227;
+  color: #fff0cd;
+  box-shadow: 0 10px 30px #05181080;
+  font-family: "Avenir Next", Avenir, sans-serif;
+}
+.social-menu-name {
+  margin: 0;
+  padding: 8px 10px;
+  overflow-wrap: anywhere;
+  color: #cfb67c;
+  font-size: 11px;
+}
+.social-player-menu [data-slot="dropdown-menu-item"] {
+  gap: 9px;
+  min-height: 40px;
+  padding: 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.social-player-menu [data-slot="dropdown-menu-item"][data-highlighted] {
+  background: #53613a;
+  color: #fff4d8;
+}
+.social-chat-tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #c5a76b26;
+}
+.social-chat-tabs > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #afc0a9;
+  background: #0d241b66;
+  font-size: 12px;
+  cursor: pointer;
+}
+.social-chat-tabs > button[aria-selected="true"] {
+  color: #ffe5a9;
+  border-color: #c5a76b66;
+  background: #c5a76b1a;
+}
+.social-chat-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.social-conversation-heading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #c5a76b26;
+}
+.social-conversation-heading > span {
+  min-width: 0;
+}
+.social-conversation-heading strong,
+.social-conversation-heading small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.social-conversation-heading strong {
+  font-size: 12px;
+  color: #fff0cd;
+}
+.social-conversation-heading small {
+  margin-top: 2px;
+  font-size: 10px;
+  color: #afc0a9;
+}
+.social-friends-summary {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px 6px;
+  color: #bcceb4;
+  font-size: 12px;
+}
+.social-friends-summary strong {
+  color: #ffe5a9;
+  font-size: 18px;
+}
+.social-friends-summary .friendship-amount {
+  color: #ffe5a9;
+}
+.social-friends-scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 12px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.social-friends-scroll::-webkit-scrollbar {
+  display: none;
+}
+.social-friends-scroll > .hub-world-chat-empty {
+  flex: 1;
+  min-height: 0;
+}
+.social-player-list {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.social-player-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid #b5cb9c1c;
+  border-radius: 10px;
+  background: #44613b1c;
+}
+.social-player-identity {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.social-player-identity strong,
+.social-player-identity small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.social-player-identity strong {
+  color: #f4e7c9;
+  font-size: 12px;
+}
+.social-player-identity small {
+  color: #a7b69f;
+  margin-top: 3px;
+  font-size: 10px;
+}
+.social-conversation-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.social-conversation-link:hover strong {
+  color: #ffe5a9;
+}
+.social-icon-button,
+.social-help-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 34px;
+  min-height: 36px;
+  padding: 5px 8px;
+  border: 1px solid #c5a76b44;
+  border-radius: 8px;
+  background: #132a20;
+  color: #d8c18c;
+  cursor: pointer;
+}
+.social-icon-button:hover:not(:disabled),
+.social-help-button:hover:not(:disabled) {
+  border-color: #d7bc7e;
+  background: #42573b;
+}
+.social-icon-button:disabled,
+.social-help-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.social-help-button {
+  min-width: 63px;
+  font-size: 11px;
+}
+.social-help-button .friendship-icon {
+  width: 24px;
+  height: 24px;
+}
+.social-request-section {
+  padding-bottom: 14px;
+}
+.social-request-section:last-child {
+  padding-top: 14px;
+  padding-bottom: 0;
+}
+.social-request-section h3 {
+  margin: 0;
+  padding: 6px 5px 10px;
+  color: #d8c18c;
+  font:
+    16px Georgia,
+    serif;
+}
+.social-request-section h3 span {
+  padding-left: 4px;
+  color: #a7b69f;
+  font:
+    11px "Avenir Next",
+    sans-serif;
+}
+.social-friends-scroll .social-friends-empty {
+  min-height: 0;
+  padding: 24px 14px;
+}
+.social-notice {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  margin: 0;
+  color: #d1e5ba;
+  font-size: 11px;
+  line-height: 1.5;
+  background: #9fc4790a;
+}
+.social-error {
+  color: #f3b9a2;
+}
+.social-profile-dialog[data-slot="dialog-content"] {
+  width: min(760px, calc(100vw - 24px));
+  max-height: 85dvh;
+}
+.social-profile-dialog [data-slot="dialog-body"] {
+  overflow-y: auto;
+}
+@media (max-width: 480px) {
+  .social-friends-scroll {
+    padding-inline: 8px;
+  }
+  .social-player-row {
+    gap: 7px;
+    padding-inline: 6px;
+  }
+  .social-icon-button {
+    padding: 5px;
+    min-width: 32px;
+  }
+  .social-friends-summary {
+    padding-inline: 14px;
+  }
+}
+@media (max-width: 760px) {
+  .hub-footer .hub-dock {
+    --hub-panel-max-height: calc(100svh - 236px);
+    --hub-panel-max-height: calc(100dvh - 236px);
+  }
 }
 .hub-world-chat-content {
   flex: 0 1 auto;
@@ -636,12 +936,20 @@
   align-items: center;
   gap: 2px;
   color: #96ac98;
-  font: 17px/1.1 Georgia, serif;
+  font:
+    17px/1.1 Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
 }
-.hub-ranking-rank[data-rank="1"] { color: #f0cb79; }
-.hub-ranking-rank[data-rank="2"] { color: #cedce2; }
-.hub-ranking-rank[data-rank="3"] { color: #d8a880; }
+.hub-ranking-rank[data-rank="1"] {
+  color: #f0cb79;
+}
+.hub-ranking-rank[data-rank="2"] {
+  color: #cedce2;
+}
+.hub-ranking-rank[data-rank="3"] {
+  color: #d8a880;
+}
 .hub-ranking-identity {
   min-width: 0;
   text-align: left;
@@ -708,7 +1016,9 @@
 }
 .hub-ranking-records dd {
   color: #edd49c;
-  font: 17px/1.3 Georgia, serif;
+  font:
+    17px/1.3 Georgia,
+    serif;
 }
 .hub-ranking-deck-heading,
 .hub-ranking-deck-heading h4 {
@@ -755,7 +1065,9 @@
   border-radius: 6px;
   background: #203b2c;
   text-align: center;
-  transition: background-color 160ms, border-color 160ms;
+  transition:
+    background-color 160ms,
+    border-color 160ms;
 }
 .hub-ranking-card:hover {
   border-color: #d6c18b;
@@ -764,9 +1076,15 @@
 .hub-ranking-card:focus-visible {
   outline-offset: -3px;
 }
-.hub-ranking-card[data-rarity="rare"] { border-color: #659bd8; }
-.hub-ranking-card[data-rarity="epic"] { border-color: #b585d5; }
-.hub-ranking-card[data-rarity="legendary"] { border-color: #dfbc64; }
+.hub-ranking-card[data-rarity="rare"] {
+  border-color: #659bd8;
+}
+.hub-ranking-card[data-rarity="epic"] {
+  border-color: #b585d5;
+}
+.hub-ranking-card[data-rarity="legendary"] {
+  border-color: #dfbc64;
+}
 .hub-ranking-card-art {
   position: relative;
   display: block;
@@ -794,7 +1112,9 @@
   display: block;
   margin: 5px 4px 2px;
   color: #eee9d2;
-  font: 11px/1.3 Georgia, serif;
+  font:
+    11px/1.3 Georgia,
+    serif;
   overflow-wrap: anywhere;
 }
 .hub-ranking-card-rarity {
@@ -826,7 +1146,9 @@
   text-align: center;
 }
 .hub-ranking-empty strong {
-  font: 22px/1.3 Georgia, serif;
+  font:
+    22px/1.3 Georgia,
+    serif;
 }
 .hub-ranking-empty p {
   max-width: 320px;

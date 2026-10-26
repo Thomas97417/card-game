@@ -30,6 +30,7 @@ import bestiaryCss from "../bestiary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
+import { FriendshipProvider } from "@/components/friendship-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
 import { GameAuthGate } from "@/components/game-auth-gate";
 import playerHeaderCss from "../player-header.css?url";
@@ -143,27 +144,29 @@ function RootDocument() {
             <GameAuthGate required={requiresAuth}>
               <GoldProvider>
                 <EmeraldProvider>
-                  <PlayerHeaderProvider>
-                    <div
-                      className={
-                        isImmersive
-                          ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                          : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                      }
-                    >
-                      {!isImmersive && <Header />}
+                  <FriendshipProvider>
+                    <PlayerHeaderProvider>
                       <div
                         className={
                           isImmersive
-                            ? "min-h-0 overflow-hidden"
-                            : "min-h-0 overflow-y-auto"
+                            ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                            : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                         }
                       >
-                        <Outlet />
+                        {!isImmersive && <Header />}
+                        <div
+                          className={
+                            isImmersive
+                              ? "min-h-0 overflow-hidden"
+                              : "min-h-0 overflow-y-auto"
+                          }
+                        >
+                          <Outlet />
+                        </div>
                       </div>
-                    </div>
-                    <Toaster richColors />
-                  </PlayerHeaderProvider>
+                      <Toaster richColors />
+                    </PlayerHeaderProvider>
+                  </FriendshipProvider>
                 </EmeraldProvider>
               </GoldProvider>
             </GameAuthGate>

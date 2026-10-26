@@ -4,6 +4,61 @@
   gap: 8px;
   min-width: 0;
 }
+.friendship-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #17372380);
+}
+.friendship-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.friendship-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 3px 14px 3px 6px;
+  border: 1px solid #d7bc7e88;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #38452bf2, #182e20f2);
+  color: #f3dda5;
+  font:
+    700 15px/1.2 "Avenir Next",
+    sans-serif;
+}
+.friendship-balance-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 24px;
+}
+.friendship-balance-link:hover {
+  filter: brightness(1.12);
+}
+.friendship-balance-link:focus-visible {
+  outline: 2px solid #ffe2a2;
+  outline-offset: 3px;
+}
+.summon-pack-friendship {
+  border-color: #a3b97b;
+}
+.summon-button-price .friendship-icon {
+  width: 26px;
+  height: 26px;
+}
+.summon-button-price .friendship-amount {
+  gap: 5px;
+}
+.summon-repeat-price .friendship-icon {
+  width: 22px;
+  height: 22px;
+}
 .emerald-icon {
   display: block;
   flex-shrink: 0;

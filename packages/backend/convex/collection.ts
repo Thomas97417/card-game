@@ -21,7 +21,6 @@ import {
   ownedCard,
   playerWallet,
   playerLeague,
-  playerProgress,
   ensureEmeraldWallet,
 } from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
@@ -113,12 +112,16 @@ export const collectMine = mutation({
     // Pending mutations can be retried after reconnecting with another account.
     // This is a precondition, never an owner selected by the client.
     if (userId !== expectedOwnerId)
-      throw new ConvexError("Ta session a changé. Recharge le refuge avant de collecter.");
+      throw new ConvexError(
+        "Ta session a changé. Recharge le refuge avant de collecter.",
+      );
     if (!Number.isSafeInteger(revision) || revision < 0)
       throw new ConvexError("Cette collecte est invalide.");
     const wallet = await playerWallet(ctx, userId);
     if (!wallet?.mines)
-      throw new ConvexError("Les mines se préparent. Réessaie dans un instant.");
+      throw new ConvexError(
+        "Les mines se préparent. Réessaie dans un instant.",
+      );
     const state = wallet.mines[kind];
     // Replayed requests and concurrent tabs cannot collect the same reserve twice.
     if (state.revision !== revision)
@@ -185,8 +188,6 @@ export const playerProfile = query({
   args: { ownerId: v.string() },
   handler: async (ctx, { ownerId }) => {
     await requirePlayer(ctx);
-    const progress = await playerProgress(ctx, ownerId);
-    if (!progress) return null;
     const user = await authComponent.getAnyUserById(ctx, ownerId);
     if (!user) return null;
     const [deck, league, entries] = await Promise.all([

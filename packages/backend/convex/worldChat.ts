@@ -20,6 +20,7 @@ export const list = query({
       id: message._id,
       sentAt: message._creationTime,
       senderName: message.senderName,
+      playerId: message.senderId,
       body: message.body,
       isOwn: message.senderId === userId,
       continuesPrevious:

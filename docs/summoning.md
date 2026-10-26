@@ -2,6 +2,12 @@
 
 Chaque nouvelle invocation disponible donne cinq lots de compagnons et une carte d’or. La Sylve et l’Appel des anciens suivent les règles adaptées ci-dessous. L’Appel des divinités est temporairement masqué dans les offres et ses nouveaux achats sont bloqués côté serveur ; ses tirages déjà payés restent consultables et terminables. L’or est un sixième gain indépendant : entre `500 + 50 × indice de ligue` et `1 000 + 100 × indice de ligue`, selon le record de ligue (indice 0 à 30).
 
+## Appel de l’entraide
+
+Le premier pack du sanctuaire dépense uniquement des **jetons d’entraide**, reçus des amis à raison de 10 par aide quotidienne. Il coûte 150 jetons en ×1 ou 1 300 en ×10 (au lieu de 1 500). Les tirages donnent 80 % de lots communs et 20 % de lots rares, sans épique ni légendaire et sans remplacement de garantie. Les quantités sont de `30 + 2 × indice de ligue` par lot commun et `10 + indice de ligue` par lot rare, selon le record de ligue (indice 0 à 30). L’or, la révélation, la reprise et les missions d’invocation suivent le fonctionnement des autres appels. Un ancien portefeuille sans ce champ dispose de zéro jeton ; les émeraudes ne peuvent pas les remplacer.
+
+Les tarifs du cercle sont de 140 puis 130 jetons en ×1, ou 1 150 puis 1 000 en ×10. Ces derniers prix restent actifs tant que le cercle reste ouvert. Voir les [règles sociales](social.md) pour les demandes d’amitié et l’aide quotidienne.
+
 ## Appel de la Sylve
 
 Les nouvelles invocations donnent 0 % de communes, 82 % de rares, 16 % d’épiques et 2 % de légendaires. Les [quantités par ligue](../packages/game/src/data/sylve-summoning.json) reprennent le tableau fourni en image le 25 octobre 2026. Le record de division correspond toujours aux ligues 30…1, GM. Par exemple, en Fer II : 32 exemplaires par lot rare, 22 par lot épique et 10 par lot légendaire ; au sommet : 66–70, 35–39 et 25–27 respectivement.
@@ -32,12 +38,13 @@ Le tarif réduit de réinvocation s’applique uniquement au bouton central du c
 
 Les offres du sanctuaire conservent toujours leurs prix de base. Le tarif groupé du ×10 reste permanent et indépendant de cette remise temporaire.
 
-| Appel | Sanctuaire ×1 | Bouton central ×1 | Sanctuaire ×10 | Bouton central ×10 |
-| --- | ---: | ---: | ---: | ---: |
-| Sylve | 149 | 139, puis 129 | 1 299 | 1 149, puis 999 |
-| Anciens | 4 999 | 4 749, puis 4 499 | 44 999 | 39 999, puis 34 999 |
+| Appel    | Monnaie           | Sanctuaire ×1 | Bouton central ×1 | Sanctuaire ×10 |  Bouton central ×10 |
+| -------- | ----------------- | ------------: | ----------------: | -------------: | ------------------: |
+| Entraide | Jetons d’entraide |           150 |     140, puis 130 |          1 300 |   1 150, puis 1 000 |
+| Sylve    | Émeraudes         |           149 |     139, puis 129 |          1 299 |     1 149, puis 999 |
+| Anciens  | Émeraudes         |         4 999 | 4 749, puis 4 499 |         44 999 | 39 999, puis 34 999 |
 
-Les prix en émeraudes sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Les deux appels disponibles suivent leurs propres paliers et restent à leur dernier prix tant que le cercle reste ouvert. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
+Les prix et la monnaie sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Les trois appels disponibles suivent leurs propres paliers et restent à leur dernier prix tant que le cercle reste ouvert. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
 
 ## Illustration et validation
 

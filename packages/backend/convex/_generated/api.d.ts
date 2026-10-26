@@ -13,6 +13,7 @@ import type * as chests from "../chests.js";
 import type * as collection from "../collection.js";
 import type * as decks from "../decks.js";
 import type * as env from "../env.js";
+import type * as friendChat from "../friendChat.js";
 import type * as games from "../games.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
@@ -24,6 +25,7 @@ import type * as lib_mines from "../lib/mines.js";
 import type * as lib_missions from "../lib/missions.js";
 import type * as lib_polar_webhook from "../lib/polar_webhook.js";
 import type * as lib_progression from "../lib/progression.js";
+import type * as lib_social from "../lib/social.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as lib_wallet from "../lib/wallet.js";
 import type * as matchmaking from "../matchmaking.js";
@@ -33,6 +35,7 @@ import type * as polar from "../polar.js";
 import type * as privateData from "../privateData.js";
 import type * as sanctuary from "../sanctuary.js";
 import type * as sendEmails from "../sendEmails.js";
+import type * as social from "../social.js";
 import type * as worldChat from "../worldChat.js";
 
 import type {
@@ -47,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   collection: typeof collection;
   decks: typeof decks;
   env: typeof env;
+  friendChat: typeof friendChat;
   games: typeof games;
   healthCheck: typeof healthCheck;
   http: typeof http;
@@ -58,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/missions": typeof lib_missions;
   "lib/polar_webhook": typeof lib_polar_webhook;
   "lib/progression": typeof lib_progression;
+  "lib/social": typeof lib_social;
   "lib/validators": typeof lib_validators;
   "lib/wallet": typeof lib_wallet;
   matchmaking: typeof matchmaking;
@@ -67,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   privateData: typeof privateData;
   sanctuary: typeof sanctuary;
   sendEmails: typeof sendEmails;
+  social: typeof social;
   worldChat: typeof worldChat;
 }>;
 

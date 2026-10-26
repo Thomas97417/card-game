@@ -116,6 +116,47 @@ function turnAll(dialog: HTMLElement) {
 afterEach(() => window.localStorage.clear());
 
 describe("le sanctuaire", () => {
+  it("offers help summons first and uses their own balance for purchases and repeat discounts", async () => {
+    const { onSummon, update } = setup({ emeralds: 0, friendshipTokens: 150 });
+    const packs = screen.getByRole("region", { name: "Packs d’invocation" });
+    expect(
+      within(packs).getAllByRole("article")[0]?.getAttribute("aria-labelledby"),
+    ).toBe("pack-friendship");
+    const buy = screen.getByRole("button", {
+      name: "Invoquer 1 fois — Appel de l’entraide, 150 jetons d’entraide",
+    });
+    const ten = screen.getByRole("button", {
+      name: "Invoquer 10 fois — Appel de l’entraide, 1300 jetons d’entraide",
+    });
+    expect((buy as HTMLButtonElement).disabled).toBe(false);
+    expect((ten as HTMLButtonElement).disabled).toBe(true);
+    expect(purchase("Sylve", 1).disabled).toBe(true);
+    fireEvent.click(buy);
+    const dialog = await screen.findByRole("dialog");
+    expect(onSummon).toHaveBeenCalledWith(
+      expect.objectContaining({ packId: "friendship", count: 1 }),
+    );
+    turnAll(dialog);
+    const repeat = within(dialog).getByRole("button", {
+      name: "Réinvoquer ×1, 140 jetons d’entraide",
+    });
+    update({ friendshipTokens: 139 });
+    expect((repeat as HTMLButtonElement).disabled).toBe(true);
+    update({ friendshipTokens: 140 });
+    expect((repeat as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(repeat);
+    await waitFor(() => expect(onSummon).toHaveBeenCalledTimes(2));
+  });
+
+  it("does not fund help summons with emeralds", () => {
+    const { onSummon } = setup({ emeralds: 100000, friendshipTokens: 149 });
+    const buy = screen.getByRole("button", {
+      name: "Invoquer 1 fois — Appel de l’entraide, 150 jetons d’entraide",
+    });
+    expect((buy as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(buy);
+    expect(onSummon).not.toHaveBeenCalled();
+  });
   it("offers three unique keys and unlocks a slot once without invoking cards", async () => {
     const { onUnlockChestSlot, onSummon } = setup();
     const keys = screen.getByRole("region", { name: "Clés de coffre" });

@@ -1,5 +1,6 @@
 import { GoldBalance, GoldIcon } from "./gold-balance";
 import { EmeraldBalance, EmeraldIcon } from "./emerald-balance";
+import { FriendshipBalance } from "./friendship-balance";
 import { CurrencyGain } from "./currency-gain";
 
 export function CurrencyBalances() {
@@ -17,6 +18,7 @@ export function CurrencyBalances() {
           <EmeraldIcon />
         </CurrencyGain>
       </div>
+      <FriendshipBalance />
     </div>
   );
 }

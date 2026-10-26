@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { Sanctuary } from "@/components/sanctuary/sanctuary";
 import { useEmeraldBalance } from "@/components/emerald-balance";
+import { useFriendshipBalance } from "@/components/friendship-balance";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { EmeraldPaymentFeedback } from "@/components/sanctuary/emerald-packs";
@@ -35,6 +36,7 @@ function SanctuaryPage() {
     checkout ? { checkoutId: checkout } : "skip",
   );
   const emeralds = useEmeraldBalance();
+  const friendshipTokens = useFriendshipBalance();
   const latest = useQuery(api.sanctuary.latest);
   const unfinished = useQuery(api.sanctuary.unfinished);
   const saveRevealProgress = useMutation(api.sanctuary.saveRevealProgress);
@@ -62,6 +64,7 @@ function SanctuaryPage() {
   return (
     <Sanctuary
       emeralds={emeralds}
+      friendshipTokens={friendshipTokens}
       ready={ready && !!chestSlots && !!league}
       peakTrophies={league?.peakTrophies}
       latest={latest}
