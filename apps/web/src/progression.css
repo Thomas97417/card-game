@@ -595,11 +595,26 @@
   animation: reveal-card 450ms both;
 }
 .chest-reveal-card {
+  position: relative;
   width: 100%;
   max-width: 180px;
   aspect-ratio: 5 / 7;
   container-type: inline-size;
   perspective: 1000px;
+}
+.chest-reveal-card.is-legendary-revealing {
+  z-index: 4;
+  animation: chest-legendary-lift 2400ms ease-out both;
+}
+@keyframes chest-legendary-lift {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  25%,
+  45% {
+    transform: translateY(-8px) scale(1.06);
+  }
 }
 .chest-reveal-card .summon-card-back {
   cursor: default;
@@ -643,18 +658,6 @@
   font-size: 14px;
   font-weight: 800;
   box-shadow: 0 2px 4px #0003;
-}
-.loot-new {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border: 1px solid #b7dba33d;
-  border-radius: 20px;
-  background: #b7dba30f;
-  color: #c1e3a7;
-  font-size: 10px;
-  font-weight: 700;
 }
 .duel-reward {
   display: flex;
@@ -941,7 +944,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chest-reveal-item {
+  .chest-reveal-item,
+  .chest-reveal-card.is-legendary-revealing {
     animation: none;
   }
 }

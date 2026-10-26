@@ -240,7 +240,9 @@ describe("le salon de combat", () => {
         screen.queryByRole("button", { name: /voir les informations/ }),
       ).toBeNull();
       act(() => vi.advanceTimersByTime(650));
-      expect(screen.getByText("Débloquée !")).toBeTruthy();
+      expect(document.querySelector(".card-discovery-effects")).toBeTruthy();
+      expect(document.querySelector(".summon-legendary-effects")).toBeNull();
+      expect(screen.queryByText("Débloquée !")).toBeNull();
       expect(screen.getByText("+150")).toBeTruthy();
       expect(screen.getByText("×24")).toBeTruthy();
       expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
@@ -254,6 +256,45 @@ describe("le salon de combat", () => {
           })
           .getAttribute("aria-haspopup"),
       ).toBe("dialog");
+      act(() => vi.advanceTimersByTime(1_600));
+      expect(document.querySelector(".card-discovery-effects")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it.each([
+    { variantId: "fox:rare", isNew: false, legendary: false },
+    { variantId: "fox:legendary", isNew: true, legendary: true },
+    { variantId: "fox:legendary", isNew: false, legendary: true },
+  ])("uses only the appropriate reveal effect for $variantId (new: $isNew)", ({
+    variantId,
+    isNew,
+    legendary,
+  }) => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <ChestRevealDialog
+          reward={{
+            rarity: legendary ? "legendary" : "rare",
+            gold: 150,
+            reveals: [{ variantId, isNew, count: 1, level: 1, copies: 0 }],
+          }}
+          collection={undefined}
+          onUpgrade={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(document.querySelector(".summon-legendary-effects")).toBeNull();
+      act(() => vi.advanceTimersByTime(1_300));
+      expect(!!document.querySelector(".summon-legendary-effects")).toBe(
+        legendary,
+      );
+      expect(document.querySelector(".card-discovery-effects")).toBeNull();
+      expect(document.querySelector(".is-new-revealing")).toBeNull();
+      act(() => vi.advanceTimersByTime(2_400));
+      expect(document.querySelector(".summon-legendary-effects")).toBeNull();
     } finally {
       vi.useRealTimers();
     }
@@ -336,10 +377,12 @@ describe("le salon de combat", () => {
       const { rerender } = render(
         <ChestRevealDialog reward={reward} {...props} />,
       );
-      act(() => vi.advanceTimersByTime(650));
+      act(() => vi.advanceTimersByTime(1_300));
+      expect(document.querySelector(".card-discovery-effects")).toBeTruthy();
       const nextReward = { ...reward, gold: 180 };
       rerender(<ChestRevealDialog reward={nextReward} {...props} />);
       expect(screen.queryByText("+180")).toBeNull();
+      expect(document.querySelector(".card-discovery-effects")).toBeNull();
       act(() => vi.advanceTimersByTime(650));
       expect(screen.getByText("+180")).toBeTruthy();
       expect(

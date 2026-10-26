@@ -937,8 +937,114 @@
   font-size: clamp(9px, 6cqw, 11px);
   white-space: nowrap;
 }
-.summon-reward-caption .summon-new {
-  color: #c5e99a;
+.card-discovery-effects {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+.card-discovery-halo {
+  position: absolute;
+  inset: -3%;
+  border: 1px solid #cbe9b978;
+  border-radius: 12px;
+  box-shadow: 0 0 14px #b6dea34d;
+  animation: card-discovery-halo 1100ms 350ms ease-out both;
+}
+.card-discovery-mote {
+  position: absolute;
+  width: clamp(3px, 3cqw, 5px);
+  height: clamp(3px, 3cqw, 5px);
+  border-radius: 1px;
+  background: #e4f4d5;
+  box-shadow: 0 0 5px #d4edb9;
+  animation: card-discovery-mote 800ms 550ms ease-out both;
+}
+.card-discovery-mote:nth-child(2) {
+  top: 18%;
+  left: -3%;
+}
+.card-discovery-mote:nth-child(3) {
+  top: 7%;
+  right: 4%;
+  animation-delay: 650ms;
+}
+.card-discovery-mote:nth-child(4) {
+  bottom: 16%;
+  right: -3%;
+  animation-delay: 500ms;
+}
+.card-discovery-mote:nth-child(5) {
+  bottom: 8%;
+  left: 5%;
+  animation-delay: 700ms;
+}
+.is-new-revealing .summon-card-front::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(
+    110deg,
+    transparent 38%,
+    #e3f6cf4d 50%,
+    transparent 62%
+  );
+  background-size: 250% 100%;
+  pointer-events: none;
+  animation: card-discovery-shine 1000ms 450ms ease-out both;
+}
+.is-new-revealing .summon-card-front .workshop-card {
+  animation: card-discovery-glow 1100ms 350ms ease-out both;
+}
+@keyframes card-discovery-halo {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 0.7;
+    transform: scale(1.015);
+  }
+}
+@keyframes card-discovery-mote {
+  0% {
+    opacity: 0;
+    transform: translateY(3px) rotate(45deg) scale(0.5);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-7px) rotate(65deg) scale(0.3);
+  }
+}
+@keyframes card-discovery-shine {
+  0% {
+    opacity: 0;
+    background-position: 150% 0;
+  }
+  30% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    background-position: -50% 0;
+  }
+}
+@keyframes card-discovery-glow {
+  0%,
+  100% {
+    box-shadow: 0 5px 10px #08130f77;
+  }
+  40% {
+    box-shadow:
+      0 0 12px #cbe9b978,
+      0 0 24px #a3ce9026;
+  }
 }
 .summon-circle-slot.is-legendary-revealing {
   z-index: 4;
@@ -1399,17 +1505,23 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .summon-circle-slot.is-legendary-revealing,
+  .is-new-revealing .summon-card-front .workshop-card,
   .is-legendary-revealing .summon-card-front .workshop-card,
   .is-legendary-revealing .summon-reward-caption {
     animation: none;
   }
   .summon-legendary-effects,
+  .card-discovery-effects,
+  .is-new-revealing .summon-card-front::after,
   .summon-legendary-ambience,
   .is-legendary-revealing .summon-card-front::after {
     display: none;
   }
   .is-legendary-revealing .summon-card-front .workshop-card {
     box-shadow: 0 0 24px #f7cb5970;
+  }
+  .is-new-revealing .summon-card-front .workshop-card {
+    box-shadow: 0 0 10px #cbe9b94d;
   }
   .summon-flip,
   .is-legendary-revealing .summon-flip,

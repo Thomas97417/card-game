@@ -5,7 +5,6 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { Sparkles } from "lucide-react";
 import {
   combatTypeLabel,
   maxCardLevel,
@@ -23,6 +22,12 @@ import {
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { GoldIcon, useGoldBalance } from "@/components/gold-balance";
+import {
+  CARD_REVEAL_DURATION,
+  CardRevealEffects,
+  cardRevealEffect,
+  type CardRevealEffect,
+} from "@/components/game/card-reveal-effects";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +54,7 @@ export function ChestRevealDialog({
   const popup = useRef<HTMLDivElement>(null);
   const cardTrigger = useRef<HTMLButtonElement>(null);
   const [reveal, setReveal] = useState({ reward, count: 0 });
+  const [celebrating, setCelebrating] = useState<Set<number>>(() => new Set());
   const [inspected, setInspected] = useState<string | null>(null);
   const revealedCount = reveal.reward === reward ? reveal.count : 0;
   const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
@@ -64,11 +70,34 @@ export function ChestRevealDialog({
 
   useEffect(() => {
     setReveal({ reward, count: 0 });
+    setCelebrating(new Set());
     setInspected(null);
     if (!reward) return;
-    const timers = Array.from({ length: reward.reveals.length + 1 }, (_, index) =>
-      setTimeout(() => setReveal({ reward, count: index + 1 }), 650 * (index + 1)),
-    );
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    for (let index = 0; index <= reward.reveals.length; index++) {
+      timers.push(
+        setTimeout(() => {
+          setReveal({ reward, count: index + 1 });
+          const item = reward.reveals[index - 1];
+          if (!item) return;
+          const effect = cardRevealEffect(
+            resolveCard(item.variantId).rarity,
+            item.isNew,
+          );
+          if (!effect) return;
+          setCelebrating((current) => new Set(current).add(index - 1));
+          timers.push(
+            setTimeout(() => {
+              setCelebrating((current) => {
+                const active = new Set(current);
+                active.delete(index - 1);
+                return active;
+              });
+            }, CARD_REVEAL_DURATION[effect]),
+          );
+        }, 650 * (index + 1)),
+      );
+    }
     return () => timers.forEach(clearTimeout);
   }, [reward]);
 
@@ -139,6 +168,10 @@ export function ChestRevealDialog({
                   entry?.card ?? resolveCard(item.variantId, item.level);
                 const copies = entry?.copies ?? item.copies;
                 const isRevealed = revealedCount > index + 1;
+                const effect =
+                  isRevealed && celebrating.has(index)
+                    ? cardRevealEffect(card.rarity, item.isNew)
+                    : null;
                 const canUpgrade =
                   (card.level ?? 1) < maxCardLevel(card.rarity, card.baseId) &&
                   copies >= upgradeCost(card.level ?? 1, card.rarity) &&
@@ -151,7 +184,7 @@ export function ChestRevealDialog({
                     role="listitem"
                     data-rarity={isRevealed ? card.rarity : undefined}
                   >
-                    <ChestRewardCard revealed={isRevealed}>
+                    <ChestRewardCard revealed={isRevealed} effect={effect}>
                       <button
                         type="button"
                         className="workshop-card"
@@ -159,7 +192,7 @@ export function ChestRevealDialog({
                         style={
                           { "--creature-color": card.color } as CSSProperties
                         }
-                        aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, voir les informations`}
+                        aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, voir les informations${item.isNew ? ", nouvelle créature" : ""}`}
                         aria-haspopup="dialog"
                         onClick={(event) => {
                           cardTrigger.current = event.currentTarget;
@@ -183,12 +216,7 @@ export function ChestRevealDialog({
                               ×{item.count}
                             </span>
                           </div>
-                          {item.isNew ? (
-                            <span className="loot-new">
-                              <Sparkles size={12} />
-                              Débloquée !
-                            </span>
-                          ) : (
+                          {!item.isNew && (
                             <small>
                               {canUpgrade
                                 ? "Amélioration disponible"
@@ -218,13 +246,18 @@ export function ChestRevealDialog({
 
 function ChestRewardCard({
   revealed,
+  effect = null,
   children,
 }: {
   revealed: boolean;
+  effect?: CardRevealEffect | null;
   children: ReactNode;
 }) {
   return (
-    <div className="chest-reveal-card">
+    <div
+      className={`chest-reveal-card${effect === "legendary" ? " is-legendary-revealing" : effect === "discovery" ? " is-new-revealing" : ""}`}
+    >
+      {effect && <CardRevealEffects kind={effect} />}
       <div className={`summon-flip${revealed ? " is-revealed" : ""}`}>
         <div className="summon-card-back" aria-hidden="true">
           <img
