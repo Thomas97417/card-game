@@ -1,4 +1,10 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { ArrowRight, Check, LockKeyhole, Minus, Plus } from "lucide-react";
 import {
   resolveCard,
@@ -16,6 +22,7 @@ import {
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
+import { CardArtwork } from "./card-artwork";
 import "@/soulbind.css";
 
 export interface SoulProgressView extends SoulbindProgress {
@@ -130,14 +137,16 @@ export function CardSoulbind({
       icon={<GameIcon kind="soulbind" size={22} />}
       presentation={presentation}
       status={
-        <span className="progression-count">
-          {active.length} / {links.length} actifs
-          {available > 0 && (
-            <em>
-              {available} disponible{available > 1 ? "s" : ""}
-            </em>
-          )}
-        </span>
+        presentation === "disclosure" && (
+          <span className="progression-count">
+            {active.length} / {links.length} actifs
+            {available > 0 && (
+              <em>
+                {available} disponible{available > 1 ? "s" : ""}
+              </em>
+            )}
+          </span>
+        )
       }
     >
       <p className="progression-intro">
@@ -256,31 +265,33 @@ export function CardSoulbind({
               data-active={isActive}
               aria-label={`Lien d’âme ${SOULBIND_LABELS[link.tier - 1]}`}
             >
-              <header>
-                <div>
-                  <span className="soulbind-tier-number">
-                    {SOULBIND_LABELS[link.tier - 1]}
+              {presentation === "disclosure" && (
+                <header>
+                  <div>
+                    <span className="soulbind-tier-number">
+                      {SOULBIND_LABELS[link.tier - 1]}
+                    </span>
+                    <strong>
+                      Lien d’âme {SOULBIND_LABELS[link.tier - 1]}
+                      <small>Rang {link.rank} requis</small>
+                    </strong>
+                  </div>
+                  <span
+                    className="progression-state"
+                    data-ready={isActive || status?.ready}
+                  >
+                    {isActive ? (
+                      <>
+                        <Check size={13} /> Actif
+                      </>
+                    ) : status?.ready ? (
+                      "Prêt à activer"
+                    ) : (
+                      "Prérequis"
+                    )}
                   </span>
-                  <strong>
-                    Lien d’âme {SOULBIND_LABELS[link.tier - 1]}
-                    <small>Rang {link.rank} requis</small>
-                  </strong>
-                </div>
-                <span
-                  className="progression-state"
-                  data-ready={isActive || status?.ready}
-                >
-                  {isActive ? (
-                    <>
-                      <Check size={13} /> Actif
-                    </>
-                  ) : status?.ready ? (
-                    "Prêt à activer"
-                  ) : (
-                    "Prérequis"
-                  )}
-                </span>
-              </header>
+                </header>
+              )}
               <div className="soulbind-bonuses" aria-label="Bonus permanents">
                 {link.attack > 0 && (
                   <span>
@@ -304,21 +315,47 @@ export function CardSoulbind({
               </h3>
               <ul>
                 {link.requirements.map((requirement) => {
-                  const companion = resolveCard(requirement.variantId);
+                  const companion = resolveCard(
+                    requirement.variantId,
+                    requirement.level,
+                  );
                   const own = status?.requirements.find(
                     (r) => r.variantId === requirement.variantId,
                   );
                   const ready = isActive || own?.ready;
                   return (
                     <li key={requirement.variantId} data-ready={ready}>
-                      <div
-                        className="soulbind-companion-art"
-                        data-rarity={companion.rarity ?? "common"}
-                      >
-                        <CreaturePortrait card={companion} />
-                      </div>
+                      {presentation === "page" ? (
+                        <div
+                          className="soulbind-required-card workshop-card"
+                          data-rarity={companion.rarity ?? "common"}
+                          data-faction={companion.faction}
+                          style={
+                            {
+                              "--creature-color": companion.color,
+                            } as CSSProperties
+                          }
+                          role="img"
+                          aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, niveau ${requirement.level} requis`}
+                        >
+                          <CardArtwork
+                            card={companion}
+                            showCopies={false}
+                            appearance="deck"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className="soulbind-companion-art"
+                          data-rarity={companion.rarity ?? "common"}
+                        >
+                          <CreaturePortrait card={companion} />
+                        </div>
+                      )}
                       <div className="soulbind-companion-info">
-                        <strong>{companion.name}</strong>
+                        {presentation === "disclosure" && (
+                          <strong>{companion.name}</strong>
+                        )}
                         <small>
                           {RARITY_LABELS[companion.rarity ?? "common"]}
                           {own && !ready && own.ownedLevel === 0

@@ -355,6 +355,58 @@
 li[data-ready="true"] .soulbind-companion-level {
   color: #c6e6af;
 }
+.is-page .soulbind-bonuses {
+  margin-top: 0;
+}
+.is-page .soulbind-link ul {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 22px 18px;
+  padding: 12px 4px 4px;
+}
+.is-page .soulbind-link li {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.soulbind-required-card.workshop-card,
+.soulbind-required-card.workshop-card:hover:not(:disabled) {
+  container-type: inline-size;
+  width: min(100%, 190px);
+  border-color: rgba(var(--rarity-rgb), 0.8);
+  box-shadow: 0 6px 18px #071b1677;
+  transform: none;
+  cursor: default;
+  touch-action: pan-y pinch-zoom;
+}
+.soulbind-required-card .workshop-card-caption {
+  min-height: 22%;
+  padding: 16px 8px 10px;
+}
+.soulbind-required-card .workshop-card-name {
+  font-size: 16px;
+}
+.is-page .soulbind-companion-info {
+  text-align: center;
+}
+.is-page .soulbind-companion-info small {
+  margin-top: 0;
+  font-size: 11px;
+}
+.is-page .soulbind-companion-level {
+  justify-content: center;
+  padding: 5px 10px;
+  border: 1px solid #cbb78344;
+  border-radius: 20px;
+  background: #0b211a66;
+  font-size: 11px;
+}
+.is-page li[data-ready="true"] .soulbind-companion-level {
+  border-color: #a3cf9266;
+  background: #a3cf9210;
+}
 .soulbind-activation {
   display: grid;
   gap: 12px;

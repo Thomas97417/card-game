@@ -29,18 +29,28 @@ const starter: OwnedCard = {
   copies: 100,
 };
 
-function setup({
-  entry = starter,
-  soulProgress = readyProgress,
-  collection = owned,
-} = {}) {
+function setup(
+  options: {
+    entry?: OwnedCard;
+    soulProgress?: SoulProgressView;
+    collection?: OwnedCard[];
+  } = {},
+) {
+  const entry = options.entry ?? starter;
+  const soulProgress =
+    "soulProgress" in options ? options.soulProgress : readyProgress;
+  const collection = options.collection ?? owned;
   const actions = {
     onUpgrade: vi.fn().mockResolvedValue(undefined),
     onSoulbind: vi.fn().mockResolvedValue(undefined),
     onSacrifice: vi.fn().mockResolvedValue(undefined),
     onEvolve: vi.fn().mockResolvedValue(undefined),
   };
-  const view = (current: OwnedCard | undefined = entry, readOnly = false) => (
+  const view = (
+    current: OwnedCard | undefined = entry,
+    readOnly = false,
+    progress = soulProgress,
+  ) => (
     <GoldContext.Provider value={10000}>
       {readOnly ? (
         <CardUpgradeDialog entry={current} readOnly onClose={vi.fn()} />
@@ -49,7 +59,7 @@ function setup({
           entry={current}
           onClose={vi.fn()}
           collection={collection}
-          soulProgress={soulProgress}
+          soulProgress={progress}
           {...actions}
         />
       )}
@@ -64,6 +74,75 @@ const chooseDust = () =>
   fireEvent.click(screen.getByRole("button", { name: "Poussière d’âme" }));
 
 describe("card dialog navigation", () => {
+  it.each([
+    {
+      soulProgress: { ...readyProgress, unlocked: false },
+      label: "Bronze IV requis",
+    },
+    { soulProgress: undefined, label: "Chargement…" },
+  ])(
+    "locks both progression menus while showing $label",
+    async ({ soulProgress, label }) => {
+      const { rerender, view, onSoulbind, onSacrifice, onEvolve } = setup({
+        soulProgress,
+      });
+      const overview = screen.getByRole("tab", { name: /^Amélioration/ });
+      for (const name of [/^Liens d’âme/, /^Évolution et poussière/]) {
+        const tab = screen.getByRole("tab", { name }) as HTMLButtonElement;
+        expect(tab.getAttribute("aria-disabled")).toBe("true");
+        expect(tab.textContent).toContain(label);
+        fireEvent.click(tab);
+        expect(overview.getAttribute("aria-selected")).toBe("true");
+      }
+      await waitFor(() =>
+        expect(document.activeElement).toBe(screen.getByRole("dialog")),
+      );
+      act(() => overview.focus());
+      fireEvent.keyDown(overview, { key: "ArrowDown" });
+      expect(overview.getAttribute("aria-selected")).toBe("true");
+      expect(document.activeElement).toBe(overview);
+      expect(screen.queryByRole("region", { name: "Liens d’âme" })).toBeNull();
+      expect(
+        screen.queryByRole("region", { name: "Évolution et poussière" }),
+      ).toBeNull();
+      expect(onSoulbind).not.toHaveBeenCalled();
+      expect(onSacrifice).not.toHaveBeenCalled();
+      expect(onEvolve).not.toHaveBeenCalled();
+
+      rerender(view(starter, false, readyProgress));
+      for (const name of [/^Liens d’âme/, /^Évolution et poussière/]) {
+        expect(
+          screen.getByRole("tab", { name }).getAttribute("aria-disabled"),
+        ).not.toBe("true");
+        openTab(name);
+      }
+      expect(
+        screen.getByRole("region", { name: "Évolution et poussière" }),
+      ).toBeTruthy();
+    },
+  );
+
+  it.each([/^Liens d’âme/, /^Évolution et poussière/])(
+    "returns to improvement when the open progression menu becomes locked: %s",
+    (name) => {
+      const { rerender, view } = setup();
+      openTab(name);
+      rerender(view(starter, false, { ...readyProgress, unlocked: false }));
+      expect(
+        screen
+          .getByRole("tab", { name: /^Amélioration/ })
+          .getAttribute("aria-selected"),
+      ).toBe("true");
+      expect(
+        screen.getByRole("region", { name: "Caractéristiques" }),
+      ).toBeTruthy();
+      expect(screen.queryByRole("region", { name: "Liens d’âme" })).toBeNull();
+      expect(
+        screen.queryByRole("region", { name: "Évolution et poussière" }),
+      ).toBeNull();
+    },
+  );
+
   it("switches the central content, keeps a selected link when returning, and resets for another card", async () => {
     const { rerender, view, onSoulbind } = setup();
     expect(

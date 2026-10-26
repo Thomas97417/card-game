@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Tabs } from "@base-ui/react/tabs";
-import { ArrowRight, ArrowUp, ArrowRightLeft, Crown, Plus } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUp,
+  ArrowRightLeft,
+  Crown,
+  LockKeyhole,
+  Plus,
+} from "lucide-react";
 import {
   maxCardLevel,
   RARITY_LABELS,
@@ -115,6 +122,10 @@ export function CardUpgradeDialog({
         ).length
       : 0;
   const hasResources = !readOnly && !!(onSacrifice || onEvolve);
+  const progressionLocked = !readOnly && soulProgress?.unlocked !== true;
+  const progressionLockLabel = soulProgress
+    ? "Bronze IV requis"
+    : "Chargement…";
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 900px)");
@@ -163,7 +174,7 @@ export function CardUpgradeDialog({
       >
         {card && entry && (
           <Tabs.Root
-            key={card.id}
+            key={`${card.id}:${progressionLocked ? "locked" : "unlocked"}`}
             className="upgrade-showcase"
             defaultValue="overview"
             orientation={compactNavigation ? "horizontal" : "vertical"}
@@ -265,27 +276,56 @@ export function CardUpgradeDialog({
                     </small>
                   </span>
                 </Tabs.Tab>
-                <Tabs.Tab value="soulbind" className="upgrade-nav-tab">
+                <Tabs.Tab
+                  value="soulbind"
+                  className="upgrade-nav-tab"
+                  disabled={progressionLocked}
+                >
                   <GameIcon kind="soulbind" size={34} />
                   <span>
                     <strong>Liens d’âme</strong>
                     <small>
-                      {readyLinks > 0
-                        ? `${readyLinks} disponible${readyLinks > 1 ? "s" : ""}`
-                        : `${card.soulbinds?.length ?? 0} / ${links.length} actifs`}
+                      {progressionLocked
+                        ? progressionLockLabel
+                        : readyLinks > 0
+                          ? `${readyLinks} disponible${readyLinks > 1 ? "s" : ""}`
+                          : `${card.soulbinds?.length ?? 0} / ${links.length} actifs`}
                     </small>
                   </span>
-                  {readyLinks > 0 && (
-                    <span className="upgrade-nav-ready" aria-hidden="true" />
+                  {progressionLocked ? (
+                    <LockKeyhole
+                      className="upgrade-nav-lock"
+                      size={14}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    readyLinks > 0 && (
+                      <span className="upgrade-nav-ready" aria-hidden="true" />
+                    )
                   )}
                 </Tabs.Tab>
                 {hasResources && (
-                  <Tabs.Tab value="resources" className="upgrade-nav-tab">
+                  <Tabs.Tab
+                    value="resources"
+                    className="upgrade-nav-tab"
+                    disabled={progressionLocked}
+                  >
                     <GameIcon kind="soulDust" size={34} />
                     <span>
                       <strong>Évolution et poussière</strong>
-                      <small>{entry.copies} en réserve</small>
+                      <small>
+                        {progressionLocked
+                          ? progressionLockLabel
+                          : `${entry.copies} en réserve`}
+                      </small>
                     </span>
+                    {progressionLocked && (
+                      <LockKeyhole
+                        className="upgrade-nav-lock"
+                        size={14}
+                        aria-hidden="true"
+                      />
+                    )}
                   </Tabs.Tab>
                 )}
               </Tabs.List>

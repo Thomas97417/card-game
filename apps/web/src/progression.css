@@ -581,7 +581,7 @@
     border-color 160ms,
     background 160ms;
 }
-.upgrade-nav-tab:hover {
+.upgrade-nav-tab:hover:not([data-disabled]) {
   border-color: #d8c08388;
   background: #d4be8810;
 }
@@ -608,6 +608,24 @@
   color: #b9c7b0;
   font-size: 10px;
   line-height: 1.4;
+}
+.upgrade-nav-tab[data-disabled] {
+  border-style: dashed;
+  color: #b4bdaa;
+  cursor: default;
+}
+.upgrade-nav-tab[data-disabled] > .game-icon {
+  opacity: 0.45;
+  filter: saturate(0.3);
+}
+.upgrade-nav-tab[data-disabled] small {
+  color: #d1bd8d;
+}
+.upgrade-nav-lock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #d1bd8d;
 }
 .upgrade-nav-ready {
   position: absolute;
@@ -961,6 +979,10 @@
   }
   .upgrade-nav-tab small {
     display: none;
+  }
+  .upgrade-nav-tab[data-disabled] small {
+    display: block;
+    font-size: 9px;
   }
   .upgrade-main {
     overflow: visible;
