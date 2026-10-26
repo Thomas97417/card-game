@@ -3,10 +3,12 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { Link, useBlocker } from "@tanstack/react-router";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import {
-  CATALOG,
+  CARD_VARIANTS,
   DECK_SIZE,
   RARITIES,
   RARITY_LABELS,
+  FACTIONS,
+  FACTION_LABELS,
   combatTypeLabel,
   getCombatType,
 } from "@sylve/game";
@@ -15,6 +17,7 @@ import type {
   CombatType,
   CardRarity,
   OwnedCard,
+  Faction,
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { CardArtwork } from "./card-artwork";
@@ -23,6 +26,7 @@ import type { HeroProgress } from "@/components/guardian/guardian-house";
 import type { CardProgressionActions } from "./card-soulbind";
 import { ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
+import { FactionIcon } from "@/components/game/faction-artwork";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { GameHeader } from "@/components/game-header";
@@ -84,6 +88,7 @@ export function DeckWorkshop({
   const [picked, setPicked] = useState<string | null>(null);
   const [inspected, setInspected] = useState<string | null>(null);
   const [rarityFilters, setRarityFilters] = useState<CardRarity[]>([]);
+  const [factionFilters, setFactionFilters] = useState<Faction[]>([]);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
@@ -140,6 +145,8 @@ export function DeckWorkshop({
     .filter(
       (card) =>
         (!filter || getCombatType(card) === filter) &&
+        (factionFilters.length === 0 ||
+          (!!card.faction && factionFilters.includes(card.faction))) &&
         (rarityFilters.length === 0 ||
           rarityFilters.includes(card.rarity ?? "common")),
     )
@@ -293,6 +300,7 @@ export function DeckWorkshop({
           type="button"
           className={`workshop-card ${picked === card.id ? "is-picked" : ""} ${drag?.card.id === card.id ? "is-dragging" : ""} ${target ? "is-target" : ""}`}
           data-rarity={card.rarity ?? "common"}
+          data-faction={card.faction}
           style={{ "--creature-color": card.color } as CSSProperties}
           disabled={!ready}
           aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
@@ -302,7 +310,11 @@ export function DeckWorkshop({
           onClick={() => chooseCard(card, slot)}
           onDragStart={(event) => event.preventDefault()}
         >
-          <CardArtwork card={card} copies={entries.get(card.id)?.copies} />
+          <CardArtwork
+            card={card}
+            copies={entries.get(card.id)?.copies}
+            appearance="deck"
+          />
           {target && (
             <span className="workshop-drop-label">
               <ArrowRightLeft size={14} />
@@ -438,7 +450,7 @@ export function DeckWorkshop({
                 Ta collection{" "}
                 <span>
                   {ready
-                    ? `${collection!.length} / ${CATALOG.length * RARITIES.length}`
+                    ? `${collection!.length} / ${CARD_VARIANTS.length}`
                     : "—"}
                 </span>
               </h2>
@@ -467,6 +479,7 @@ export function DeckWorkshop({
                     onClick={() => {
                       setFilter(null);
                       setRarityFilters([]);
+                      setFactionFilters([]);
                     }}
                   >
                     Voir toute la collection
@@ -504,17 +517,24 @@ export function DeckWorkshop({
               key={type ?? "all"}
               type="button"
               className={
-                filter === type && (type !== null || rarityFilters.length === 0)
+                filter === type &&
+                (type !== null ||
+                  (rarityFilters.length === 0 && factionFilters.length === 0))
                   ? "is-active"
                   : ""
               }
               aria-pressed={
-                filter === type && (type !== null || rarityFilters.length === 0)
+                filter === type &&
+                (type !== null ||
+                  (rarityFilters.length === 0 && factionFilters.length === 0))
               }
               disabled={!ready}
               onClick={() => {
                 setFilter(filter === type ? null : type);
-                if (type === null) setRarityFilters([]);
+                if (type === null) {
+                  setRarityFilters([]);
+                  setFactionFilters([]);
+                }
                 setPicked(null);
                 setMessage(instructions);
               }}
@@ -523,49 +543,92 @@ export function DeckWorkshop({
               <span>{label}</span>
             </button>
           ))}
-          <div
-            className="workshop-rarity-filters"
-            role="group"
-            aria-label="Filtrer par rareté"
-          >
-            {RARITIES.map((rarity) => {
-              const active = rarityFilters.includes(rarity);
-              const label = RARITY_LABELS[rarity];
-              return (
-                <button
-                  key={rarity}
-                  type="button"
-                  className={`workshop-rarity-toggle ${active ? "is-active" : ""}`}
-                  data-rarity={rarity}
-                  data-tooltip={label}
-                  aria-label={label}
-                  aria-pressed={active}
-                  disabled={!ready}
-                  onClick={() => {
-                    setRarityFilters((current) =>
-                      current.includes(rarity)
-                        ? current.filter((value) => value !== rarity)
-                        : [...current, rarity],
-                    );
-                    setPicked(null);
-                    setMessage(instructions);
-                  }}
-                >
-                  <img
-                    src={`/art/ui/rarity-${rarity}.webp`}
-                    alt=""
-                    width={34}
-                    height={44}
-                    draggable={false}
-                  />
-                  {active && (
-                    <span className="workshop-rarity-check" aria-hidden="true">
-                      <Check size={10} strokeWidth={3} />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className="workshop-secondary-filters">
+            <div
+              className="workshop-rarity-filters"
+              role="group"
+              aria-label="Filtrer par rareté"
+            >
+              {RARITIES.map((rarity) => {
+                const active = rarityFilters.includes(rarity);
+                const label = RARITY_LABELS[rarity];
+                return (
+                  <button
+                    key={rarity}
+                    type="button"
+                    className={`workshop-rarity-toggle ${active ? "is-active" : ""}`}
+                    data-rarity={rarity}
+                    data-tooltip={label}
+                    aria-label={label}
+                    aria-pressed={active}
+                    disabled={!ready}
+                    onClick={() => {
+                      setRarityFilters((current) =>
+                        current.includes(rarity)
+                          ? current.filter((value) => value !== rarity)
+                          : [...current, rarity],
+                      );
+                      setPicked(null);
+                      setMessage(instructions);
+                    }}
+                  >
+                    <img
+                      src={`/art/ui/rarity-${rarity}.webp`}
+                      alt=""
+                      width={34}
+                      height={44}
+                      draggable={false}
+                    />
+                    {active && (
+                      <span
+                        className="workshop-rarity-check"
+                        aria-hidden="true"
+                      >
+                        <Check size={10} strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div
+              className="workshop-faction-filters"
+              role="group"
+              aria-label="Filtrer par famille"
+            >
+              {FACTIONS.map((faction) => {
+                const active = factionFilters.includes(faction);
+                return (
+                  <button
+                    key={faction}
+                    type="button"
+                    className={`workshop-faction-toggle ${active ? "is-active" : ""}`}
+                    data-faction={faction}
+                    aria-pressed={active}
+                    disabled={!ready}
+                    onClick={() => {
+                      setFactionFilters((current) =>
+                        current.includes(faction)
+                          ? current.filter((value) => value !== faction)
+                          : [...current, faction],
+                      );
+                      setPicked(null);
+                      setMessage(instructions);
+                    }}
+                  >
+                    <FactionIcon faction={faction} size={28} />
+                    <span>{FACTION_LABELS[faction]}</span>
+                    {active && (
+                      <Check
+                        size={10}
+                        className="workshop-faction-check"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
         <p
@@ -611,10 +674,12 @@ export function DeckWorkshop({
           <div
             className="workshop-card"
             data-rarity={drag.card.rarity ?? "common"}
+            data-faction={drag.card.faction}
           >
             <CardArtwork
               card={drag.card}
               copies={entries.get(drag.card.id)?.copies}
+              appearance="deck"
             />
           </div>
         </div>

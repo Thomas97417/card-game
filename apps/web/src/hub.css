@@ -618,7 +618,7 @@
   height: 100%;
   object-fit: contain;
 }
-.hub-ranking-card-art > span {
+.hub-ranking-card-art > span:not(.faction-backdrop) {
   position: absolute;
   right: 4px;
   bottom: 2px;

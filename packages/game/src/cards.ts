@@ -18,6 +18,7 @@ export function maxCardLevel(_rarity: CardRarity = "common", _baseId?: string) {
 }
 export type CombatType = "melee" | "ranged" | "building";
 export type Faction = "order" | "nature" | "chaos";
+export const FACTIONS: readonly Faction[] = ["order", "nature", "chaos"];
 export type CardRarity = "common" | "rare" | "epic" | "legendary";
 export const RARITIES: readonly CardRarity[] = [
   "common",
@@ -212,44 +213,49 @@ export interface OwnedCard {
 }
 export class GameError extends Error {}
 
-// Each original identity is retained; the 22 common archetypes are mapped once.
+// Stable IDs keep collections and decks compatible when their artwork evolves.
 const definitions = [
   {
     id: "guardian",
-    name: "Gardien de pierre",
-    title: "Le silence des anciens",
-    color: "#78958a",
+    name: "Gardien du rempart",
+    title:
+      "Animé par le serment des rois, ce colosse de pierre protège les portes de la citadelle sous son armure consacrée.",
+    color: "#b6a16a",
     kind: "golem",
     reference: "Warrior",
   },
   {
     id: "fox",
-    name: "Renard des braises",
-    title: "Une étincelle suffit",
-    color: "#d6844d",
+    name: "Archère du bastion",
+    title:
+      "Depuis les créneaux du château, cette archère de la garde royale veille sur le royaume et décoche ses flèches au signal des cloches.",
+    color: "#8b9cbb",
     kind: "fox",
     reference: "Archer",
   },
   {
     id: "owl",
-    name: "Oracle des brumes",
-    title: "Les yeux de la forêt",
-    color: "#8e86ad",
+    name: "Prêtresse de l’aurore",
+    title:
+      "Gardienne des reliques de la cathédrale, elle lit les présages dans les vitraux et accompagne les chevaliers de ses prières.",
+    color: "#d4bd83",
     kind: "owl",
     reference: "Apprentice",
   },
   {
     id: "stag",
-    name: "Cerf couronné",
-    title: "Souverain des clairières",
+    name: "Pèlerine du serment",
+    title:
+      "Cette sœur en armure parcourt les routes du royaume, sa lance et son reliquaire consacrés à la défense des sanctuaires.",
     color: "#c1a267",
     kind: "stag",
     reference: "Pilgrim",
   },
   {
     id: "mushroom",
-    name: "Sentinelle mousse",
-    title: "Petit, mais tenace",
+    name: "Dryade des fougères",
+    title:
+      "Née au creux d’un chêne ancien, cette dryade tisse les lianes et les floraisons pour défendre les clairières de la Sylve.",
     color: "#b4706b",
     kind: "mushroom",
     reference: "Dryad",
@@ -257,7 +263,8 @@ const definitions = [
   {
     id: "dragon",
     name: "Dragon d’ambre",
-    title: "Le souffle du soleil",
+    title:
+      "Ce dragon sylvestre veille sur la canopée. Ses écailles d’ambre recueillent la chaleur du soleil et son souffle réveille les graines endormies.",
     color: "#dbab52",
     kind: "dragon",
     reference: "Shaman",
@@ -265,7 +272,8 @@ const definitions = [
   {
     id: "turtle",
     name: "Tortue millénaire",
-    title: "La patience est une arme",
+    title:
+      "Les mousses et les roseaux ont élu refuge sur sa carapace. Elle garde les marais anciens avec la patience des plus vieux arbres.",
     color: "#83a575",
     kind: "turtle",
     reference: "Big Toad",
@@ -273,39 +281,44 @@ const definitions = [
   {
     id: "wisp",
     name: "Esprit des sources",
-    title: "Un murmure dans l’eau",
+    title:
+      "Cet esprit des bois porte la fraîcheur des sources et les secrets des druides. Partout où il passe, la forêt reprend vie.",
     color: "#70b7b1",
     kind: "wisp",
     reference: "Raven",
   },
   {
     id: "wolf",
-    name: "Loup de lune",
-    title: "Quand la nuit s’éveille",
-    color: "#9baec1",
+    name: "Loup des abysses",
+    title:
+      "Des cornes d’obsidienne percent son pelage de cendres. Ce prédateur démoniaque traque les vivants au-delà des failles du Chaos.",
+    color: "#ad554f",
     kind: "wolf",
     reference: "Red Orc",
   },
   {
     id: "knight",
-    name: "Chevalier ronce",
-    title: "Fidèle jusqu’au dernier jour",
-    color: "#769a7c",
+    name: "Écuyer du royaume",
+    title:
+      "Élevé dans la cour du château, ce jeune écuyer porte l’épée et le bouclier de son ordre avec une loyauté sans faille.",
+    color: "#879cb0",
     kind: "knight",
     reference: "Servant",
   },
   {
     id: "serpent",
-    name: "Vipère de jade",
-    title: "L’éclair sous les feuilles",
-    color: "#96af68",
+    name: "Vipère infernale",
+    title:
+      "Cette démone serpentine surgit des autels interdits. Son venin brûlant et ses sortilèges se nourrissent des pactes du Chaos.",
+    color: "#ae4b6c",
     kind: "serpent",
     reference: "Blood Cult Adept",
   },
   {
     id: "bear",
     name: "Ours des cimes",
-    title: "Le cœur de la montagne",
+    title:
+      "Protecteur des vallées boisées, cet ours puissant répond à l’appel des druides et défend les siens à l’ombre des grands sapins.",
     color: "#b79780",
     kind: "bear",
     reference: "Lumberjack",
@@ -313,15 +326,17 @@ const definitions = [
   {
     id: "healer",
     name: "Féline des clairières",
-    title: "Neuf vies à partager",
+    title:
+      "Compagne des guérisseuses de la forêt, cette féline veille sur les bosquets sacrés et partage la vitalité des clairières avec ses alliés.",
     color: "#c6a478",
     kind: "cat",
     reference: "Cat Lady",
   },
   {
     id: "gnome",
-    name: "Artisan des racines",
-    title: "Tout peut renaître",
+    name: "Forgeron de la citadelle",
+    title:
+      "Dans les forges du château, cet artisan façonne les armes des chevaliers et scelle chaque ouvrage du poinçon de la couronne.",
     color: "#ac875a",
     kind: "gnome",
     reference: "Gnome",
@@ -329,31 +344,35 @@ const definitions = [
   {
     id: "idol",
     name: "Totem de l’aurore",
-    title: "La lumière veille",
+    title:
+      "Sculpté dans le bois d’un arbre sacré, ce totem abrite un esprit de la Nature. Ses racines nourrissent les pousses de toute la clairière.",
     color: "#b5a46d",
     kind: "totem",
     reference: "Idol",
   },
   {
     id: "enchantress",
-    name: "Tisseuse de runes",
-    title: "Les pierres se souviennent",
-    color: "#c69c78",
+    name: "Enchanteresse du chapitre",
+    title:
+      "Au service du haut clergé, elle enlumine les grimoires et inscrit des sceaux de lumière sur les armes des défenseurs du royaume.",
+    color: "#ad9ac4",
     kind: "mage",
     reference: "Love Lady",
   },
   {
     id: "lynx",
-    name: "Lynx du crépuscule",
-    title: "Une ombre dans les feuilles",
-    color: "#6a8e88",
+    name: "Lame du cloître",
+    title:
+      "Ce chevalier des ombres protège les secrets de l’abbaye. Sous sa cape, deux lames d’acier servent la justice de l’Ordre.",
+    color: "#6c83a0",
     kind: "lynx",
     reference: "Shinobi",
   },
   {
     id: "bard",
-    name: "Chanteur des feuillages",
-    title: "L’écho de l’alliance",
+    name: "Chantre de l’abbaye",
+    title:
+      "Les cantiques de l’abbaye accompagnent les armées de la couronne. Sa voix porte le courage des chevaliers jusque sous les murs ennemis.",
     color: "#c3a762",
     kind: "bird",
     reference: "Singer",
@@ -361,32 +380,36 @@ const definitions = [
   {
     id: "tree",
     name: "Saule des murmures",
-    title: "Les branches du doute",
+    title:
+      "Ses racines plongent jusqu’aux souvenirs du monde. Cet arbre vivant détourne les intrus des sentiers sacrés et protège les peuples de la forêt.",
     color: "#9b839e",
     kind: "tree",
     reference: "Tree",
   },
   {
     id: "vampire",
-    name: "Chauve-souris pourpre",
-    title: "Le baiser de la nuit",
-    color: "#9d6986",
+    name: "Vampire du néant",
+    title:
+      "Ce démon ailé règne sur les cryptes abyssales. Ses griffes et sa soif de vie entretiennent la puissance des légions du Chaos.",
+    color: "#9d496d",
     kind: "bat",
     reference: "Vampire",
   },
   {
     id: "captain",
-    name: "Capitaine des clairières",
-    title: "Nul ne marche seul",
-    color: "#8a9e73",
+    name: "Capitaine de la couronne",
+    title:
+      "Sous la bannière royale, cette commandante rassemble les soldats du royaume. Son épée ouvre la voie et son serment les unit.",
+    color: "#9d9fbc",
     kind: "captain",
     reference: "Warrioress",
   },
   {
     id: "witch",
-    name: "Sorcière des spores",
-    title: "Sous terre, une armée",
-    color: "#9f79a4",
+    name: "Sorcière des enfers",
+    title:
+      "Couronnée de cornes, cette sorcière démoniaque puise ses maléfices dans les braises des enfers et rallie les créatures du Chaos.",
+    color: "#ad527d",
     kind: "witch",
     reference: "Witch",
   },

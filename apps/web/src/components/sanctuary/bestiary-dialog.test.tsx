@@ -353,7 +353,7 @@ describe("Bestiary navigation", () => {
         }),
       ).toBeNull(),
     );
-    expect(screen.getByRole("dialog", { name: /Lynx des miroirs/ })).toBe(
+    expect(screen.getByRole("dialog", { name: /Lame du haut conseil/ })).toBe(
       dialog,
     );
     fireEvent.click(trigger);

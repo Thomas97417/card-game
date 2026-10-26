@@ -42,7 +42,7 @@ describe("Soulbind card controls", () => {
     );
     const first = within(screen.getByRole("region", { name: "Lien d’âme I" }));
     expect(first.getByText("+1 PV")).toBeTruthy();
-    expect(first.getByText("Lynx du crépuscule")).toBeTruthy();
+    expect(first.getByText("Lame du cloître")).toBeTruthy();
     const button = first.getByRole("button", {
       name: /Activer le lien I Gratuit/,
     });

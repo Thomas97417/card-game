@@ -293,7 +293,7 @@ describe("inspection pendant un duel", () => {
     setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: /Gardien de pierre, Corps à corps, puissance 3, 4 PV, bloquée.*voir les informations/,
+        name: /Gardien du rempart, Corps à corps, puissance 3, 4 PV, bloquée.*voir les informations/,
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -336,7 +336,7 @@ describe("inspection pendant un duel", () => {
     const { actions } = setup();
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 3, 4 PV, voir les informations",
+        name: "Gardien du rempart, Corps à corps, puissance 3, 4 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -358,7 +358,7 @@ describe("inspection pendant un duel", () => {
     const { actions } = setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 3, 7 PV, voir les informations",
+        name: "Gardien du rempart, Corps à corps, puissance 3, 7 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -386,7 +386,7 @@ describe("inspection pendant un duel", () => {
     setup(data);
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Renard des braises, À distance, puissance 4, 1 PV, voir les informations",
+        name: "Archère du bastion, À distance, puissance 4, 1 PV, voir les informations",
       }),
     );
     const dialog = within(await screen.findByRole("dialog"));
@@ -493,7 +493,7 @@ describe("inspection pendant un duel", () => {
     const { data, actions, rerender } = setup();
     fireEvent.click(
       await screen.findByRole("button", {
-        name: "Gardien de pierre, Corps à corps, puissance 3, 4 PV, voir les informations",
+        name: "Gardien du rempart, Corps à corps, puissance 3, 4 PV, voir les informations",
       }),
     );
     await screen.findByRole("dialog");
@@ -554,7 +554,7 @@ describe("inspection pendant un duel", () => {
       rerender(<DuelScreen data={next} {...actions} practice />);
       act(() => vi.advanceTimersByTime(0));
       act(() => vi.advanceTimersByTime(COMBAT_TIMING.impact));
-      const damage = "Renard des braises subit 2 dégâts";
+      const damage = "Archère du bastion subit 2 dégâts";
       expect(screen.getByLabelText(damage)).toBeTruthy();
       act(() =>
         vi.advanceTimersByTime(
@@ -563,7 +563,7 @@ describe("inspection pendant un duel", () => {
       );
       expect(
         screen.queryByRole("button", {
-          name: /Renard des braises.*0 PV.*voir les informations/,
+          name: /Archère du bastion.*0 PV.*voir les informations/,
         }),
       ).toBeNull();
       expect(screen.getByLabelText(damage)).toBeTruthy();

@@ -1412,7 +1412,7 @@ describe("le sanctuaire", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(
       within(dialog).getByRole("button", {
-        name: "Découvrir Gardien de pierre",
+        name: "Découvrir Gardien du rempart",
       }),
     );
     const level = within(dialog).getByRole("combobox", {
@@ -1423,11 +1423,11 @@ describe("le sanctuaire", () => {
     );
     expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
     expect(
-      within(dialog).getByRole("heading", { name: "Gardien des runes" }),
+      within(dialog).getByRole("heading", { name: "Gardien des remparts" }),
     ).toBeTruthy();
     expect(
       within(dialog)
-        .getAllByAltText("Gardien des runes")[0]!
+        .getAllByAltText("Gardien des remparts")[0]!
         .getAttribute("src"),
     ).toBe("/art/characters/evolutions/guardian-rare.webp");
     await selectOption("Niveau de la carte", "Niveau 26");
@@ -1443,7 +1443,7 @@ describe("le sanctuaire", () => {
     );
     expect(level.textContent).toContain("Niveau 26");
     expect(
-      within(dialog).getByRole("heading", { name: "Gardien de pierre" }),
+      within(dialog).getByRole("heading", { name: "Gardien du rempart" }),
     ).toBeTruthy();
   });
   it("explores sourced Legendaries through 26 and gives former Sylve creations their CW profiles", async () => {

@@ -5,14 +5,21 @@
   /* The table begins at 30.3% of the 1672 × 941 illustration. Account for
      the centered cover crop so the cards stay on the wood at every ratio. */
   --workshop-table-top: calc(50svh - max(100svh, 56.28vw) * 0.197);
-  --workshop-content-top: max(
-    var(--workshop-header-height),
-    calc(var(--workshop-table-top) + 16px)
-  );
   --workshop-preferred-card-width: clamp(148px, 16vw, 240px);
-  --workshop-card-fit-width: var(--workshop-preferred-card-width);
   --workshop-card-gap: clamp(12px, 1vw, 16px);
   --workshop-content-chrome: 130px;
+  --workshop-footer-space: 125px;
+  /* Move toward the header gradually as the two rows need more space. */
+  --workshop-content-top: max(
+    var(--workshop-header-height),
+    min(
+      calc(var(--workshop-table-top) + 16px),
+      calc(
+        100svh - var(--workshop-preferred-card-width) * 2.857143 -
+          var(--workshop-content-chrome) - var(--workshop-footer-space)
+      )
+    )
+  );
   position: relative;
   isolation: isolate;
   display: flex;
@@ -135,11 +142,13 @@
 }
 .workshop-content {
   container-type: size;
-  /* Two rows of cards share the available height after their padding and title. */
-  --workshop-card-width: min(
-    var(--workshop-preferred-card-width),
-    var(--workshop-card-fit-width),
-    max(1px, calc((100cqh - var(--workshop-content-chrome)) * 0.35))
+  /* Keep cards readable; short screens can scroll instead of shrinking further. */
+  --workshop-card-width: max(
+    148px,
+    min(
+      var(--workshop-preferred-card-width),
+      calc((100cqh - var(--workshop-content-chrome)) * 0.35)
+    )
   );
   min-height: 0;
   flex: 1;
@@ -147,7 +156,8 @@
   flex-direction: column;
   gap: 12px;
   margin-top: calc(var(--workshop-content-top) - var(--workshop-header-height));
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding-bottom: 16px;
 }
 .workshop-current {
@@ -330,6 +340,10 @@
   padding: 25px 6px 11px;
   background: linear-gradient(transparent, #132a25e6 40%, #132a25fa);
   border-radius: 0 0 5px 5px;
+}
+.deck-workshop .workshop-card-caption {
+  min-height: 30%;
+  padding-bottom: 14px;
 }
 .workshop-card-abilities {
   position: absolute;
@@ -620,14 +634,7 @@
     padding-inline: max(56px, calc((100% - 1528px) / 2));
   }
 }
-@media (min-width: 1100px) and (min-height: 601px) {
-  .workshop-content {
-    --workshop-card-fit-width: calc(
-      (100cqw - 54px - var(--workshop-card-gap) * 7) / 8
-    );
-  }
-}
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .workshop-footer {
     flex-wrap: wrap;
     gap: 8px;
@@ -645,6 +652,7 @@
   .deck-workshop {
     --workshop-content-chrome: 114px;
     --workshop-card-gap: 17px;
+    --workshop-footer-space: 180px;
   }
   .workshop-content,
   .workshop-footer {
@@ -725,17 +733,8 @@
     padding-block: 10px;
   }
 }
-@media (max-height: 900px) {
-  .deck-workshop {
-    --workshop-content-top: var(--workshop-header-height);
-  }
-}
 @media (max-height: 600px) and (min-width: 650px) {
   .workshop-content {
-    --workshop-card-width: min(
-      var(--workshop-preferred-card-width),
-      max(1px, calc((100cqh - 66px) * 0.7))
-    );
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: minmax(0, 1fr);
@@ -772,6 +771,13 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+@container (max-height: 570px) {
+  /* Let touch users reach both rows when the content needs vertical scrolling. */
+  .workshop-card-row,
+  .workshop-card {
+    touch-action: manipulation;
   }
 }
 @container (max-width: 100px) {

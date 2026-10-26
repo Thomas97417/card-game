@@ -66,6 +66,9 @@
 }
 .card-level {
   position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   z-index: 3;
   top: 7px;
   left: 50%;
@@ -79,6 +82,11 @@
     sans-serif;
   white-space: nowrap;
   pointer-events: none;
+}
+.card-upgrade-indicator {
+  display: inline-flex;
+  color: #b7efa0;
+  filter: drop-shadow(0 0 3px #9ee87966);
 }
 .creature-card .card-level {
   top: auto;

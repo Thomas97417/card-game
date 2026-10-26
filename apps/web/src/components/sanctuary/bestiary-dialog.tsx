@@ -35,6 +35,7 @@ import {
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardSoulbind } from "@/components/decks/card-soulbind";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { FactionIcon } from "@/components/game/faction-artwork";
 import { GameIcon } from "@/components/game/game-icon";
 import { CardAbilities } from "@/components/game/card-abilities";
 import { AbilityLegend } from "@/components/game/ability-legend";
@@ -343,6 +344,7 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
                 <button
                   type="button"
                   className="workshop-card"
+                  data-faction={card.faction}
                   data-rarity={card.rarity}
                   data-base-id={card.baseId}
                   style={{ "--creature-color": card.color } as CSSProperties}
@@ -421,6 +423,7 @@ function BestiaryDetails({
           <div
             className="workshop-card bestiary-hero-card"
             data-rarity={card.rarity}
+            data-faction={card.faction}
             style={{ "--creature-color": card.color } as CSSProperties}
           >
             <CardArtwork card={card} showCopies={false} />
@@ -445,7 +448,12 @@ function BestiaryDetails({
                 <GameIcon kind={getCombatType(card)} size={18} />
                 {combatTypeLabel(card)}
               </span>
-              {card.faction && <span>{FACTION_LABELS[card.faction]}</span>}
+              {card.faction && (
+                <span>
+                  <FactionIcon faction={card.faction} size={18} />
+                  {FACTION_LABELS[card.faction]}
+                </span>
+              )}
               {card.gender && <span>{GENDER_LABELS[card.gender]}</span>}
             </div>
             <button

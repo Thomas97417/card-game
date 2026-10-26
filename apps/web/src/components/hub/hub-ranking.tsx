@@ -7,6 +7,7 @@ import { getCombatType, RARITY_LABELS, type CardDefinition } from "@sylve/game";
 import { leagueAt } from "@sylve/game/leagues";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { FactionBackdrop } from "@/components/game/faction-artwork";
 import { GameIcon } from "@/components/game/game-icon";
 import { LeagueBadge, TrophyIcon } from "@/components/leagues/league-progress";
 import {
@@ -17,11 +18,24 @@ import {
 } from "@/components/ui/accordion";
 import { HubPanel } from "./hub-panel";
 
-export function HubRanking({ id, onClose }: { id: string; onClose: () => void }) {
+export function HubRanking({
+  id,
+  onClose,
+}: {
+  id: string;
+  onClose: () => void;
+}) {
   const [expandedPlayers, setExpandedPlayers] = useState<string[]>([]);
-  const [inspectedCard, setInspectedCard] = useState<CardDefinition | null>(null);
+  const [inspectedCard, setInspectedCard] = useState<CardDefinition | null>(
+    null,
+  );
   const cardTrigger = useRef<HTMLButtonElement>(null);
-  const { data: players, isPending, isError, refetch } = useQuery({
+  const {
+    data: players,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
     ...convexQuery(api.collection.leaderboard, {}),
     retry: false,
   });
@@ -50,12 +64,15 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
               <GameIcon kind="ranking" size={64} />
               <strong>Le cercle attend ses champions</strong>
               <p>
-                Termine un combat solo ou un duel public dans l’arène pour entrer
-                dans le classement.
+                Termine un combat solo ou un duel public dans l’arène pour
+                entrer dans le classement.
               </p>
             </div>
           ) : (
-            <Accordion value={expandedPlayers} onValueChange={setExpandedPlayers}>
+            <Accordion
+              value={expandedPlayers}
+              onValueChange={setExpandedPlayers}
+            >
               {players.map((player) => {
                 const league = leagueAt(player.trophies);
                 return (
@@ -66,8 +83,13 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
                     data-self={player.isCurrentPlayer || undefined}
                   >
                     <AccordionTrigger className="hub-ranking-trigger">
-                      <span className="hub-ranking-rank" data-rank={player.rank}>
-                        {player.rank === 1 && <Crown size={12} aria-hidden="true" />}
+                      <span
+                        className="hub-ranking-rank"
+                        data-rank={player.rank}
+                      >
+                        {player.rank === 1 && (
+                          <Crown size={12} aria-hidden="true" />
+                        )}
                         <span>#{player.rank}</span>
                       </span>
                       <span aria-hidden="true">
@@ -78,7 +100,9 @@ export function HubRanking({ id, onClose }: { id: string; onClose: () => void })
                           <span>{player.name}</span>
                           {player.isCurrentPlayer && <small>Toi</small>}
                         </span>
-                        <span className="hub-ranking-league">{league.label}</span>
+                        <span className="hub-ranking-league">
+                          {league.label}
+                        </span>
                       </span>
                       <span className="hub-ranking-trophies">
                         <TrophyIcon />
@@ -121,7 +145,12 @@ function RankedPlayerDetails({
   ownerId: string;
   onInspect: (card: CardDefinition, trigger: HTMLButtonElement) => void;
 }) {
-  const { data: profile, isPending, isError, refetch } = useQuery({
+  const {
+    data: profile,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
     ...convexQuery(api.collection.playerProfile, { ownerId }),
     retry: false,
   });
@@ -167,12 +196,14 @@ function RankedPlayerDetails({
                     <button
                       type="button"
                       className="hub-ranking-card"
+                      data-faction={card.faction}
                       data-rarity={card.rarity ?? "common"}
                       aria-label={`Voir ${card.name}, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}`}
                       aria-haspopup="dialog"
                       onClick={(event) => onInspect(card, event.currentTarget)}
                     >
                       <span className="hub-ranking-card-art">
+                        <FactionBackdrop card={card} />
                         <CreaturePortrait card={card} />
                         <span>Niv. {card.level ?? 1}</span>
                       </span>
@@ -183,11 +214,13 @@ function RankedPlayerDetails({
                       <span className="hub-ranking-card-stats">
                         <span>
                           <GameIcon kind={getCombatType(card)} size={13} />
-                          {card.attack}<span className="sr-only"> attaque</span>
+                          {card.attack}
+                          <span className="sr-only"> attaque</span>
                         </span>
                         <span>
                           <GameIcon kind="health" size={13} />
-                          {card.health}<span className="sr-only"> points de vie</span>
+                          {card.health}
+                          <span className="sr-only"> points de vie</span>
                         </span>
                       </span>
                     </button>
@@ -196,7 +229,9 @@ function RankedPlayerDetails({
               </ul>
             </>
           ) : (
-            <p className="hub-ranking-note">Ce gardien n’a pas encore de deck.</p>
+            <p className="hub-ranking-note">
+              Ce gardien n’a pas encore de deck.
+            </p>
           )}
         </>
       )}
@@ -207,7 +242,11 @@ function RankedPlayerDetails({
 function RankingLoading({ label }: { label: string }) {
   return (
     <div className="hub-ranking-loading" role="status">
-      <RefreshCw size={17} className="motion-safe:animate-spin" aria-hidden="true" />
+      <RefreshCw
+        size={17}
+        className="motion-safe:animate-spin"
+        aria-hidden="true"
+      />
       {label}
     </div>
   );
