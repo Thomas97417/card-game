@@ -6,7 +6,9 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, à la Maison des gardiens, aux paramètres du compte dans les Archives et au sanctuaire d’invocation. La carte se parcourt à la molette, par glisser à la souris, au clavier et au tactile, avec une barre de défilement horizontale masquée.
 
-Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. **Classement** ouvre juste au-dessus des icônes un panneau défilant avec les 50 meilleurs gardiens ayant terminé un combat à trophées, du rang 1 au rang 50, avec leur pseudo, leur ligue et leurs trophées actualisés en direct. Cliquer sur un joueur déplie sa ligne vers le bas : record de trophées, meilleure ligue et deck actuel avec les niveaux, raretés et statistiques des cartes. Une seule ligne s’ouvre à la fois ; le clavier permet de parcourir les joueurs et Échap ferme le panneau. Le panneau Amis est encore présenté comme bientôt disponible et permet déjà de rejoindre les défis amicaux. La barre s’adapte aux écrans mobiles.
+Le nouveau décor panoramique **3:1** étend le village et réserve des clairières aux futurs bâtiments. Deux mines produisent même hors connexion : **6 pièces d’or et 2 émeraudes par heure et par niveau du héros**, avec un plafond de **huit heures de production** pour chacune. Une icône apparaît au-dessus de la mine dès qu’une ressource entière peut être récupérée ; cliquer dessus affiche immédiatement le gain et vide la réserve. Le serveur confirme la collecte dans une transaction ; en cas de refus, les soldes et réserves affichés reviennent automatiquement aux valeurs serveur. La production démarre à la première visite du hub ; le niveau utilisé est celui du Gardien géré dans la Maison des gardiens. Les [règles des mines](docs/mines.md) détaillent l’accumulation, les plafonds, le changement de niveau et les protections contre les collectes répétées.
+
+Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. **Classement** ouvre juste au-dessus des icônes un panneau défilant avec les 50 meilleurs gardiens ayant terminé un combat à trophées, du rang 1 au rang 50, avec leur pseudo, leur ligue et leurs trophées actualisés en direct. Cliquer sur un joueur déplie sa ligne vers le bas : record de trophées, meilleure ligue et deck actuel avec les niveaux, raretés et statistiques des cartes. Le clavier permet de parcourir les joueurs et Échap ferme le panneau. **Amis** affiche jusqu’à 25 amis, les demandes reçues et envoyées, les conversations privées et l’aide quotidienne. La barre s’adapte aux écrans mobiles.
 
 Le **Chat mondial** partage les 100 derniers messages en temps réel entre les joueurs connectés et conserve leur historique dans Convex. Les composants Message et MessageGroup de shadcn sont adaptés au refuge : les messages consécutifs d’un même gardien sont regroupés, avec son pseudo une seule fois et son avatar sur le dernier message. Un changement de jour démarre un nouveau groupe. Entrée envoie le message et Maj + Entrée ajoute une ligne ; chaque message est limité à 500 caractères, avec deux secondes entre deux envois. Le brouillon est conservé à la fermeture du panneau ou en cas d’échec. Le chat, les missions et le classement partagent le même cadre de 620 px maximum, centré au-dessus des raccourcis : ouvrir l’un replie le précédent. Leur hauteur commune reprend celle des missions, soit 660 px maximum, et s’adapte à l’écran. Le chat possède une icône originale de globe dans une bulle dorée.
 
@@ -33,22 +35,25 @@ L’ouverture révèle **deux récompenses : de l’or et un lot d’une seule c
 
 Le solde d’or, initialement nul, apparaît en haut des pages connectées, hors combat (`/game/$gameId` et `/practice`). Une icône originale de pièces dorées accompagne le solde, le coût des améliorations et les récompenses.
 
-### Sanctuaire et émeraudes
+Cliquer sur l’avatar d’un gardien dans le chat ouvre son menu : profil public, demande d’amitié et, entre amis, message privé ou retrait. L’onglet **Amis** du chat donne accès aux conversations privées ; chaque destinataire conserve son propre brouillon. Une aide par ami et par jour crédite **10 jetons d’entraide au destinataire**, gratuitement, avec renouvellement à minuit à Paris. Ces jetons se dépensent au sanctuaire. Les règles sont détaillées dans [docs/social.md](docs/social.md).
 
-Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les émeraudes permettent d’invoquer des cartes. Leur icône originale représente une seule grosse émeraude verte sur fond transparent et apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 émeraudes de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source d’émeraudes n’est prévue pour le moment. Les soldes existants sont conservés ; le champ de stockage historique `diamonds` reste compatible.
+### Sanctuaire et monnaies
 
-| Pack | Taux par invocation, hors garantie | Une invocation | Dix invocations | Garantie du lot de dix |
+Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les émeraudes permettent d’invoquer des cartes. Leur icône originale représente une seule grosse émeraude verte sur fond transparent et apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 émeraudes de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. La mine d’émeraudes et les missions épiques permettent aussi d’en gagner. Les soldes existants sont conservés ; le champ de stockage historique `diamonds` reste compatible.
+
+| Pack | Taux par invocation | Une invocation | Dix invocations | Garantie du lot de dix |
 |---|---|---:|---:|---|
-| Appel de la Sylve | Commune 65 %, rare 25 %, épique 8 %, légendaire 2 % | 149 émeraudes | 1 299 émeraudes (−12,8 %) | Au moins 1 légendaire |
-| Appel des anciens | Épique 80 %, légendaire 20 % | 449 émeraudes | 3 899 émeraudes (−13,2 %) | Au moins 2 légendaires |
+| Appel de l’entraide (en premier) | Commune 80 %, rare 20 % | 150 jetons d’entraide | 1 300 jetons d’entraide | 50 lots communs ou rares |
+| Appel de la Sylve | Rare 82 %, épique 16 %, légendaire 2 % (avant garantie) | 149 émeraudes | 1 299 émeraudes | Au moins 1 lot légendaire |
+| Appel des anciens | Épique 54 %, légendaire 46 % (garanties incluses) | 4 999 émeraudes | 44 999 émeraudes | Au moins 20 lots légendaires |
 
-Une invocation donne un exemplaire d’une variante. Le premier la débloque ; les doublons alimentent sa réserve sans changer son niveau. Les lots effectuent dix tirages puis, au besoin, remplacent des résultats non légendaires choisis au hasard pour atteindre leur garantie. Les légendaires obtenus naturellement sont conservés. Les garanties sont propres à chaque achat groupé, sans cumul des achats unitaires.
+Une invocation donne cinq lots de cartes et une carte d’or ; les quantités suivent le record de ligue. Le premier exemplaire débloque la variante, les doublons alimentent sa réserve sans changer son niveau. Les lots ×10 se révèlent en dix étapes. La réinvocation depuis le cercle ouvert applique les paliers propres à chaque pack et format ; fermer le cercle annule cette remise temporaire. Pour l’entraide, les tarifs sont de 150, puis 140 et 130 jetons en ×1, ou 1 300, puis 1 150 et 1 000 jetons en ×10. Les règles détaillées figurent dans [docs/summoning.md](docs/summoning.md).
 
-Le serveur vérifie les émeraudes, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
+Le serveur vérifie la monnaie du pack, effectue les tirages, débite le portefeuille et crédite la collection dans une seule transaction. Une nouvelle tentative du même achat restitue le résultat sans nouveau débit. La dernière invocation peut être revue après rechargement ; le bestiaire reste accessible depuis la page.
 
 Le bestiaire s’ouvre dans une galerie avec recherche par nom (y compris les noms des évolutions), filtres de combat et choix de rareté. Cliquer sur une carte ouvre sa fiche dans la même fenêtre : caractéristiques, capacités, liens d’âme, exploration des niveaux et trois ou quatre formes réelles de la lignée. Les flèches parcourent les créatures filtrées ; le retour à la galerie retrouve la recherche et la position de départ. Les formes de rareté restent des variantes à collectionner séparément.
 
-Trois cartes de clés dorées permettent aussi de débloquer définitivement les emplacements de coffre 07, 08 et 09 : **Clé de la Sylve (500 émeraudes), Clé des anciens (1 000) et Clé souveraine (1 500)**. Elles se trouvent à droite des deux packs d’invocation, dans une même rangée qui se parcourt à la molette, au tactile, au clavier et par glisser à la souris, avec une barre de défilement masquée. Chaque clé s’achète une seule fois, indépendamment des autres et des ligues. Les chaînes de ces trois places portent un cadenas doré serti d’émeraude et ouvrent directement la section des clés du sanctuaire. Le débit et le déblocage sont atomiques ; réessayer un achat ne le débite jamais deux fois.
+Trois cartes de clés dorées permettent aussi de débloquer définitivement les emplacements de coffre 07, 08 et 09 : **Clé de la Sylve (500 émeraudes), Clé des anciens (1 000) et Clé souveraine (1 500)**. Elles se trouvent à droite des packs d’invocation et de monnaies, dans une même rangée qui se parcourt à la molette, au tactile, au clavier et par glisser à la souris, avec une barre de défilement masquée. Chaque clé s’achète une seule fois, indépendamment des autres et des ligues. Les chaînes de ces trois places portent un cadenas doré serti d’émeraude et ouvrent directement la section des clés du sanctuaire. Le débit et le déblocage sont atomiques ; réessayer un achat ne le débite jamais deux fois.
 
 ### Collection et deck
 
@@ -222,6 +227,12 @@ Créer les applications OAuth auprès des fournisseurs concernés, puis ajouter 
 Configurer également les URL de retour OAuth chez chaque fournisseur en fonction de l’URL de l’application.
 
 ## Dépannage
+
+### « Connecte-toi pour jouer » dans les logs de `bun run dev`
+
+Si Convex affiche `Convex functions ready!`, le backend a démarré. Ce message vient d’une requête du jeu reçue sans session valide. Le frontend attend la confirmation de Convex et la validation de la session Better Auth avant de charger les pages protégées et les compteurs ; une session expirée renvoie vers la connexion, puis vers la page demandée.
+
+Si un ancien onglet affiche encore cette erreur après un redémarrage, actualiser la page et se reconnecter si demandé. L’annonce d’une nouvelle version de Convex est indépendante de cette erreur.
 
 ### « A provided trusted origin is invalid »
 

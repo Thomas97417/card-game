@@ -2,7 +2,7 @@ import { redirect } from "@tanstack/react-router";
 
 export function safeReturnTo(value: unknown): string {
   return typeof value === "string" &&
-    /^\/(?:hub|dashboard|arena|play|decks|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
+    /^\/(?:hub|dashboard|arena|play|decks|sanctuary|guardian|settings|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
     ? value
     : "/hub";
 }
@@ -12,4 +12,5 @@ export function requireGameAuth(isAuthenticated: boolean, href: string) {
       to: "/sign-in",
       search: { returnTo: safeReturnTo(href) },
     });
+  return { requiresGameAuth: true } as const;
 }

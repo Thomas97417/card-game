@@ -1,7 +1,8 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { Link } from "@tanstack/react-router";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
+import { useGameAuth } from "@/hooks/use-game-auth";
 
 // null: signed out; undefined: balance loading; number: authoritative balance.
 export const GoldContext = createContext<number | null | undefined>(null);
@@ -12,7 +13,7 @@ const GOLD_SHOP_SCROLL: ScrollIntoViewOptions = {
 };
 
 export function GoldProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated } = useGameAuth();
   const gold = useQuery(api.collection.gold, isAuthenticated ? {} : "skip");
   return (
     <GoldContext.Provider value={isAuthenticated ? gold : null}>

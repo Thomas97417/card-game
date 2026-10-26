@@ -2,6 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { missionStateFields } from "./lib/missions";
 
+const mineState = v.object({
+  amount: v.number(),
+  updatedAt: v.number(),
+  heroLevel: v.number(),
+  revision: v.number(),
+});
+
 import {
   cardValidator,
   eventValidator,
@@ -29,6 +36,28 @@ export default defineSchema({
     senderName: v.string(),
     body: v.string(),
   }).index("by_sender", ["senderId"]),
+  friendships: defineTable({
+    playerA: v.string(),
+    playerB: v.string(),
+    requestedBy: v.string(),
+    status: v.union(v.literal("pending"), v.literal("accepted")),
+  })
+    .index("by_pair", ["playerA", "playerB"])
+    .index("by_a_status", ["playerA", "status"])
+    .index("by_b_status", ["playerB", "status"]),
+  friendHelp: defineTable({
+    senderId: v.string(),
+    recipientId: v.string(),
+    day: v.string(),
+  }).index("by_sender_day_recipient", ["senderId", "day", "recipientId"]),
+  friendMessages: defineTable({
+    playerA: v.string(),
+    playerB: v.string(),
+    senderId: v.string(),
+    body: v.string(),
+  })
+    .index("by_pair", ["playerA", "playerB"])
+    .index("by_sender", ["senderId"]),
   leagueProgress: defineTable({
     ownerId: v.string(),
     trophies: v.number(),
@@ -43,6 +72,8 @@ export default defineSchema({
     experience: v.optional(v.number()),
     catalogueVersion: v.optional(v.literal(2)),
     diamonds: v.optional(v.number()),
+    friendshipTokens: v.optional(v.number()),
+    mines: v.optional(v.object({ gold: mineState, emeralds: mineState })),
     activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
   emeraldPurchases: defineTable({

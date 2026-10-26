@@ -95,6 +95,8 @@ describe("le chat mondial", () => {
       isOwn: true,
     });
     expect(messages[0]).not.toHaveProperty("senderId");
+    expect(messages[0]!.playerId).toBeTruthy();
+    expect(messages[0]!.playerId).not.toBe(messages[1]!.playerId);
     const reconnected = await alice.query(api.worldChat.list, {});
     expect(reconnected[0]!.isOwn).toBe(true);
     expect(reconnected[1]!.isOwn).toBe(false);

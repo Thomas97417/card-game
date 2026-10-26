@@ -46,6 +46,47 @@
 .player-header-actions .currency-balances {
   flex-shrink: 0;
 }
+.currency-balance-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.currency-balance-slot:empty { display: none; }
+.currency-gain {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 6px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: max-content;
+  padding: 2px 6px;
+  border-radius: 12px;
+  background: #10291dc9;
+  color: #ffe2a2;
+  font: 700 16px/1.2 "Avenir Next", Avenir, sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 4px #071b12;
+  pointer-events: none;
+  animation: currency-gain-float 2s ease-out both;
+}
+.currency-gain[data-currency="emeralds"] { color: #c3f5ce; }
+.currency-balances .currency-gain :is(.gold-icon, .emerald-icon) {
+  width: 22px;
+  height: 22px;
+}
+@keyframes currency-gain-float {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.85); }
+  15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); }
+  30%, 65% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -16px) scale(1); }
+}
+@keyframes currency-gain-fade {
+  0%, 100% { opacity: 0; }
+  15%, 75% { opacity: 1; }
+}
 .player-league-loading {
   display: grid;
   place-items: center;
@@ -301,7 +342,7 @@
 }
 @media (max-width: 760px) {
   :root {
-    --game-header-height: 88px;
+    --game-header-height: 100px;
     --game-header-padding-y: 12px;
     --game-header-padding-x: 12px;
   }
@@ -361,26 +402,35 @@
     height: 16px;
   }
   .player-header-actions .currency-balances {
+    position: relative;
     grid-column: 2;
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
+  }
+  .player-header-actions .currency-balance-slot { position: static; }
+  .player-header-actions .currency-balances:has(.currency-gain[data-currency="gold"])
+    .currency-gain[data-currency="emeralds"] {
+    top: calc(100% + 36px);
   }
   .player-header-actions .gold-balance,
-  .player-header-actions .emerald-balance {
-    min-height: 30px;
-    padding: 2px 8px 2px 4px;
+  .player-header-actions .emerald-balance,
+  .player-header-actions .friendship-balance {
+    min-height: 24px;
+    padding: 1px 7px 1px 3px;
     gap: 4px;
-    font-size: 11px;
+    font-size: 10px;
   }
   .player-header-actions .gold-amount,
-  .player-header-actions .emerald-amount {
+  .player-header-actions .emerald-amount,
+  .player-header-actions .friendship-amount {
     gap: 4px;
   }
   .player-header-actions .gold-icon,
-  .player-header-actions .emerald-icon {
-    width: 24px;
-    height: 24px;
+  .player-header-actions .emerald-icon,
+  .player-header-actions .friendship-icon {
+    width: 20px;
+    height: 20px;
   }
   .sylve-settings-trigger {
     grid-column: 3;
@@ -397,6 +447,10 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .currency-gain {
+    animation-name: currency-gain-fade;
+    transform: translateX(-50%);
+  }
   .league-panel-background > span,
   .sylve-settings-trigger,
   .sylve-settings-trigger img {

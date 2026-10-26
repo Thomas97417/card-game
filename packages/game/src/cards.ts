@@ -1,3 +1,5 @@
+import { GameError } from "./errors";
+export { GameError } from "./errors";
 import {
   buildCwCard,
   canonicalVariantId,
@@ -211,8 +213,6 @@ export interface OwnedCard {
   card: CardDefinition;
   copies: number;
 }
-export class GameError extends Error {}
-
 // Stable IDs keep collections and decks compatible when their artwork evolves.
 const definitions = [
   {

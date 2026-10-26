@@ -1,0 +1,7 @@
+{
+  "mode": "built-in image_gen",
+  "prompt": "Use case: stylized-concept\nAsset type: transparent currency icon for Sylve, a polished fantasy forest collectible card game.\nPrimary request: Create one small readable \"friendship help token\" currency icon, a warm honey-gold round medallion featuring two clasped hands embossed at its center and a subtle emerald-green leaf on its rim.\nStyle/medium: richly painted fantasy game inventory item, softly shaded dimensional metal, elegant gold and dark forest-green enamel, crisp silhouette and generous transparent margins. The game's existing friends icon shows two clasped leather-gloved hands with green and gold cuffs.\nComposition/framing: single isolated coin in a slight three-quarter view, centered, fills about 80% of a square canvas, recognizable at 24 pixels.\nLighting/mood: warm magical highlights, gentle depth, welcoming.\nConstraints: genuinely transparent background, no text, no letters, no numbers, no watermark, no scene, no surrounding objects, no UI panel, no glow outside the coin silhouette.",
+  "asset": "apps/web/public/art/ui/friendship-token.webp",
+  "source": "exec-0e7cc07d-4d0e-4df8-9b28-d6ced1245c44.png",
+  "export": "256 × 256 WebP, alpha preserved, quality 90"
+}

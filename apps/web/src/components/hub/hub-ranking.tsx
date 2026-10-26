@@ -138,7 +138,7 @@ export function HubRanking({
   );
 }
 
-function RankedPlayerDetails({
+export function RankedPlayerDetails({
   ownerId,
   onInspect,
 }: {

@@ -77,6 +77,35 @@ Dans `/decks`, les trois boutons **Ordre**, **Nature** et **Chaos** se trouvent 
 
 Validation : 716 tests du monorepo, puis contrôle ciblé des écrans modifiés, TypeScript et compilation. Le composant réel a été vérifié dans un aperçu isolé, avec des données locales, à 1440 × 900, 390 × 844 et 320 × 568 px : filtres combinés, maintien des huit cartes équipées, absence de débordement de la page et des commandes, noms lisibles et ouverture des fiches. Captures : [ordinateur](factions-desktop-validation.jpg), [mobile](factions-mobile-validation.jpg), [petit mobile](factions-small-mobile-validation.jpg) et [fiche de l’Ordre](factions-card-detail-validation.jpg).
 
+## Étiquettes et icônes des mines — 26 octobre 2026
+
+Les panneaux des deux mines sont ramenés au format des autres bâtiments du refuge : icône de 32 px, nom, rendement et réserve, accompagnés d’une barre de remplissage de 2 px. Les informations complémentaires restent accessibles au survol et aux lecteurs d’écran.
+
+Deux nouvelles icônes ont été créées avec **ImageGen intégré**, par deux appels distincts avec fond transparent : `apps/web/public/art/ui/gold-mine.webp` et `apps/web/public/art/ui/emerald-mine.webp`. Une pioche et du minerai aurifère identifient la mine d’or ; une pioche et des cristaux verts identifient la mine d’émeraudes. Les sources de 1 254 × 1 254 px sont encodées en WebP sans perte de 256 × 256 px, avec alpha conservé. Les prompts exacts et les chemins des originaux sont enregistrés dans [art-prompts-mine-icons.json](art-prompts-mine-icons.json).
+
+## Collecte optimiste des mines — 26 octobre 2026
+
+Le retour visuel de collecte démarre désormais dès le clic : le cache Convex crédite provisoirement le compteur concerné, vide la réserve affichée et déclenche le « + X » avec son icône. La validation transactionnelle reste côté serveur. Une réponse identique ne rejoue pas l’animation et n’ajoute aucun second crédit ; un montant différent corrige l’affichage, et un refus retire l’animation puis restaure automatiquement les valeurs serveur. Chaque mine possède sa propre protection contre les doubles clics, ce qui permet de récupérer les deux monnaies sans attendre entre les clics.
+
+Les positions et animations de l’en-tête restent celles du retour visuel ci-dessous. Les tests couvrent les deux monnaies, les collectes simultanées, les fractions, les plafonds, les révisions déjà récupérées, les reprises du cache, le rafraîchissement pendant une requête, les erreurs et les nouvelles tentatives.
+
+## Collecte discrète et gains dans l’en-tête — 26 octobre 2026
+
+La collecte des mines garde l’icône, le libellé et le curseur identiques pendant la requête. Les clics supplémentaires restent bloqués. Après confirmation du serveur, un petit « + X » accompagné de l’icône peinte de la monnaie apparaît pendant deux secondes sous son compteur, puis monte légèrement et s’efface. Cette animation remplace la notification de succès des mines. Les erreurs continuent d’être signalées et une collecte vide ou déjà traitée n’affiche aucun gain.
+
+Le retour visuel est limité au hub et les deux monnaies expirent indépendamment. Sur mobile, les gains sont regroupés sous les deux compteurs pour ne pas recouvrir le solde d’émeraudes. La préférence pour les animations réduites conserve un simple fondu, sans déplacement. Les icônes d’or et d’émeraude existantes sont réutilisées.
+
+Le rendu des composants réels a été vérifié dans un aperçu local avec des collectes simulées, sur ordinateur à 1 280 × 720 px et sur mobile à 390 × 844 px : [gain d’or](mine-gold-header-gain.jpg), [gain d’émeraudes](mine-emerald-header-gain-mobile.jpg). Le curseur calculé pendant l’attente reste `pointer`, l’icône reste visible, le solde est actualisé avant l’affichage du gain et la page ne déborde pas horizontalement sur mobile.
+
+## Refuge panoramique et mines — 25 octobre 2026
+
+Le nouveau décor `apps/web/public/art/guardian-village-mines.webp` a été créé avec **ImageGen intégré**, à partir de l’illustration du village existant. Son panorama **3:1 de 2 172 × 724 px** conserve les cinq bâtiments reconnaissables au centre, ajoute une mine d’or dans les rochers à l’ouest et une mine d’émeraudes à l’est, et ouvre des clairières pour les futurs bâtiments. Le WebP est encodé en qualité 90 et pèse environ 720 Kio. L’ancien décor reste disponible. Le [manifeste](art-prompts-hub-mines.json) conserve le prompt intégral, la référence et le PNG source.
+
+Les zones cliquables sont recalées sur le nouveau panorama. Les deux mines utilisent les icônes peintes existantes pour l’or et l’émeraude, animées au-dessus des entrées dès qu’une collecte est disponible. Les panneaux indiquent le niveau du héros, le rendement, la réserve et son plafond. Les mines se rejoignent en parcourant la carte. La production d’or est de 6 pièces par heure et par niveau du Gardien, avec un plafond de 48 pièces par niveau ; les raccourcis sous l’en-tête ont été retirés. La [documentation des mines](mines.md) décrit les règles de production.
+
+Le composant réel a été contrôlé dans un aperçu local à données de démonstration : navigation vers les mines, collecte des deux monnaies, disparition des icônes après collecte, reprise de la production et absence de débordement horizontal à 390 px. Captures : [mine d’or](hub-gold-mine-preview.jpg), mine d’émeraudes sur [ordinateur](hub-emerald-mine-desktop.jpg), sur [mobile](hub-emerald-mine-mobile.jpg) et en [paysage](hub-mines-landscape.jpg). Les contrôles sont compactés sur les écrans de moins de 560 px de haut. Les 3 tests des règles de production, les 200 tests serveur et les 26 tests du hub passent, ainsi que TypeScript et les compilations client et SSR. Aucun déploiement Convex partagé n’a été modifié.
+
+
 ## Coffres de missions réellement ouverts — 25 octobre 2026
 
 Trois versions ouvertes ont été générées avec **ImageGen intégré**, en éditant séparément les coffres fermés correspondants : `apps/web/public/art/chests/common-open.webp`, `rare-open.webp` et `bigRare-open.webp`. Leurs matériaux, couleurs et perspective sont conservés ; le couvercle est relevé et l’intérieur vide est visible. Les fichiers sont en **WebP de 512 × 512 px avec alpha**, vérifié par `webpinfo`. Le [manifeste](art-prompts-open-chests.json) conserve les trois prompts, les références et les PNG sources.

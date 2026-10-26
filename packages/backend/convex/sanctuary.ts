@@ -306,9 +306,13 @@ export const summon = mutation({
       previousCost,
     );
     const wallet = await ensureEmeralds(ctx, userId);
-    if (wallet.diamonds! < cost)
+    const friendship = summonPack(packId).currency === "friendshipTokens";
+    const tokens = wallet.friendshipTokens ?? 0;
+    if ((friendship ? tokens : wallet.diamonds) < cost)
       throw new ConvexError(
-        "Tu n’as pas assez d’émeraudes pour cette invocation.",
+        friendship
+          ? "Tu n’as pas assez de jetons d’entraide pour cette invocation."
+          : "Tu n’as pas assez d’émeraudes pour cette invocation.",
       );
     await ensureStarterDeck(ctx, userId);
     const league = await playerLeague(ctx, userId);
@@ -340,7 +344,9 @@ export const summon = mutation({
       ...result,
     });
     await ctx.db.patch(wallet._id, {
-      diamonds: wallet.diamonds! - cost,
+      ...(friendship
+        ? { friendshipTokens: tokens - cost }
+        : { diamonds: wallet.diamonds - cost }),
       gold: wallet.gold + gold,
       activeSummonId: invocationId,
     });

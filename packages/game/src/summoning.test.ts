@@ -13,6 +13,40 @@ import {
 } from "./summoning";
 
 describe("invocations du sanctuaire", () => {
+  it("places help summons first, uses help tokens and never produces epics or legendaries", () => {
+    expect(ACTIVE_SUMMON_PACKS[0]).toMatchObject({
+      id: "friendship",
+      currency: "friendshipTokens",
+      price: 150,
+      tenPrice: 1300,
+    });
+    for (const count of [1, 10] as const) {
+      for (const roll of [0, 0.799999, 0.8, 0.999999]) {
+        const loot = summonLoot("friendship", count, () => roll, 6000);
+        expect(loot).toHaveLength(count * 5);
+        expect(
+          loot.every((item) =>
+            item.variantId.endsWith(roll < 0.8 ? ":common" : ":rare"),
+          ),
+        ).toBe(true);
+      }
+    }
+    expect(summonQuantity("friendship", "common", 0)).toEqual({
+      min: 30,
+      max: 30,
+    });
+    expect(summonQuantity("friendship", "rare", 0)).toEqual({
+      min: 10,
+      max: 10,
+    });
+    expect(summonQuantity("friendship", "common", 6000)).toEqual({
+      min: 90,
+      max: 90,
+    });
+    expect(() => summonQuantity("friendship", "epic")).toThrow(
+      "Rareté absente",
+    );
+  });
   it.each([
     ["sylve", 0, "rare", 30],
     ["sylve", 0.819999, "rare", 30],
@@ -58,7 +92,7 @@ describe("invocations du sanctuaire", () => {
     }
   });
 
-  it.each(SUMMON_PACKS)(
+  it.each(SUMMON_PACKS.filter((pack) => pack.guaranteedLegendaries > 0))(
     "guarantees $guaranteedLegendaries legendaries for $id x10 using the correct quantities",
     (pack) => {
       const loot = summonLoot(
@@ -111,6 +145,7 @@ describe("invocations du sanctuaire", () => {
     expect(summonPrice("divine", 1)).toBe(4499);
     expect(summonPrice("divine", 10)).toBe(39999);
     expect(ACTIVE_SUMMON_PACKS.map((pack) => pack.id)).toEqual([
+      "friendship",
       "sylve",
       "ancients",
     ]);
@@ -279,17 +314,23 @@ describe("invocations du sanctuaire", () => {
         });
         let previousCost = baseCost;
         const expected =
-          pack.id === "sylve"
+          pack.id === "friendship"
             ? count === 1
-              ? [139, 129, 129, 129]
-              : [1149, 999, 999, 999]
-            : pack.id === "ancients"
+              ? [140, 130, 130, 130]
+              : [1150, 1000, 1000, 1000]
+            : pack.id === "sylve"
               ? count === 1
-                ? [4749, 4499, 4499, 4499]
-                : [39999, 34999, 34999, 34999]
-              : Array(4).fill(
-                  count === 10 ? pack.repeatTenPrices[0] : pack.repeatPrices[0],
-                );
+                ? [139, 129, 129, 129]
+                : [1149, 999, 999, 999]
+              : pack.id === "ancients"
+                ? count === 1
+                  ? [4749, 4499, 4499, 4499]
+                  : [39999, 34999, 34999, 34999]
+                : Array(4).fill(
+                    count === 10
+                      ? pack.repeatTenPrices[0]
+                      : pack.repeatPrices[0],
+                  );
         for (const cost of expected) {
           const offer = summonOffer(pack.id, count, true, previousCost);
           expect(offer.cost).toBe(cost);

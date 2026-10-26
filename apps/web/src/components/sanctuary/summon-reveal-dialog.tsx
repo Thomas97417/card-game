@@ -17,7 +17,13 @@ import {
 import { CardArtwork } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { EmeraldAmount } from "@/components/emerald-balance";
+import { FriendshipAmount } from "@/components/friendship-balance";
 import { GoldIcon } from "@/components/gold-balance";
+import {
+  CARD_REVEAL_DURATION,
+  CardRevealEffects,
+  cardRevealEffect,
+} from "@/components/game/card-reveal-effects";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export function SummonRevealDialog({
@@ -27,6 +33,7 @@ export function SummonRevealDialog({
   onProgress,
   collection,
   emeralds,
+  friendshipTokens,
   busy = false,
   ready = true,
   error,
@@ -41,6 +48,7 @@ export function SummonRevealDialog({
   onProgress?: (progress: SummonRevealProgress) => void;
   collection: OwnedCard[] | undefined;
   emeralds?: number | null;
+  friendshipTokens?: number | null;
   busy?: boolean;
   ready?: boolean;
   error?: string | null;
@@ -81,8 +89,11 @@ export function SummonRevealDialog({
         flipped.has(round * SUMMON_REVEAL_SLOTS + index),
       ).length;
   const complete = revealed === rewards.length;
-  const celebratingRound = rewards.some((_, index) =>
-    celebrating.has(round * SUMMON_REVEAL_SLOTS + index),
+  const celebratingRound = rewards.some(
+    (reward, index) =>
+      reward.kind === "hero" &&
+      resolveCard(reward.item.variantId).rarity === "legendary" &&
+      celebrating.has(round * SUMMON_REVEAL_SLOTS + index),
   );
   const lastRound = result ? round === result.count - 1 : true;
   const enabled = result ? summonPack(result.packId).enabled : false;
@@ -94,8 +105,13 @@ export function SummonRevealDialog({
         result.cost,
       )
     : null;
+  const friendship = result
+    ? summonPack(result.packId).currency === "friendshipTokens"
+    : false;
+  const balance = friendship ? friendshipTokens : emeralds;
+  const currencyLabel = friendship ? "jetons d’entraide" : "émeraudes";
   const insufficient =
-    emeralds == null || (offer != null && emeralds < offer.cost);
+    balance == null || (offer != null && balance < offer.cost);
   const repeatHint =
     lastRound && !enabled ? "Cet appel est temporairement indisponible." : null;
   useEffect(() => {
@@ -134,10 +150,14 @@ export function SummonRevealDialog({
     setLastFlipped(index);
     setFlipped(next);
     const reward = rewards[index];
-    if (
-      reward?.kind === "hero" &&
-      resolveCard(reward.item.variantId).rarity === "legendary"
-    ) {
+    const effect =
+      reward?.kind === "hero"
+        ? cardRevealEffect(
+            resolveCard(reward.item.variantId).rarity,
+            reward.item.isNew,
+          )
+        : null;
+    if (effect) {
       setCelebrating((current) => new Set(current).add(marker));
       const timer = setTimeout(() => {
         celebrationTimers.current.delete(timer);
@@ -146,7 +166,7 @@ export function SummonRevealDialog({
           active.delete(marker);
           return active;
         });
-      }, 2_400);
+      }, CARD_REVEAL_DURATION[effect]);
       celebrationTimers.current.add(timer);
     }
     onProgress?.({ round, revealed: [...next].sort((a, b) => a - b) });
@@ -194,16 +214,21 @@ export function SummonRevealDialog({
                 key={round}
               >
                 {rewards.map((reward, index) => {
-                  const isCelebrating = celebrating.has(
-                    round * SUMMON_REVEAL_SLOTS + index,
-                  );
+                  const effect =
+                    reward.kind === "hero" &&
+                    celebrating.has(round * SUMMON_REVEAL_SLOTS + index)
+                      ? cardRevealEffect(
+                          resolveCard(reward.item.variantId).rarity,
+                          reward.item.isNew,
+                        )
+                      : null;
                   const isFlipped =
                     history || flipped.has(round * SUMMON_REVEAL_SLOTS + index);
                   const angle =
                     ((-120 + (index * 360) / rewards.length) * Math.PI) / 180;
                   return (
                     <div
-                      className={`summon-circle-slot${isCelebrating ? " is-legendary-revealing" : ""}`}
+                      className={`summon-circle-slot${effect === "legendary" ? " is-legendary-revealing" : effect === "discovery" ? " is-new-revealing" : ""}`}
                       role="listitem"
                       key={index}
                       style={
@@ -213,7 +238,7 @@ export function SummonRevealDialog({
                         } as CSSProperties
                       }
                     >
-                      {isCelebrating && <LegendaryRevealEffects />}
+                      {effect && <CardRevealEffects kind={effect} />}
                       <div
                         className={`summon-flip ${isFlipped ? "is-revealed" : ""}`}
                       >
@@ -282,7 +307,7 @@ export function SummonRevealDialog({
                                         "--creature-color": card.color,
                                       } as CSSProperties
                                     }
-                                    aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations`}
+                                    aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations${reward.item.isNew ? ", nouvelle créature" : ""}`}
                                     aria-haspopup="dialog"
                                     onClick={() =>
                                       setInspected(reward.item.variantId)
@@ -321,12 +346,8 @@ export function SummonRevealDialog({
                                   ]
                                 }
                               </span>
-                              <small
-                                className={
-                                  reward.item.isNew ? "summon-new" : ""
-                                }
-                              >
-                                {reward.item.isNew ? "Nouvelle · " : ""}+
+                              <small>
+                                +
                                 {reward.item.count.toLocaleString("fr-FR")}
                               </small>
                             </>
@@ -351,7 +372,7 @@ export function SummonRevealDialog({
                   aria-label={
                     !lastRound
                       ? `Invocation suivante — ${round + 2} sur ${result.count}`
-                      : `Réinvoquer ×${result.count}, ${offer.cost} émeraudes`
+                      : `Réinvoquer ×${result.count}, ${offer.cost} ${currencyLabel}`
                   }
                   onClick={() => {
                     if (!lastRound) {
@@ -371,12 +392,16 @@ export function SummonRevealDialog({
                     <span className="summon-button-price summon-repeat-price">
                       {offer.cost < offer.baseCost && (
                         <del
-                          aria-label={`Au lieu de ${offer.baseCost} émeraudes`}
+                          aria-label={`Au lieu de ${offer.baseCost} ${currencyLabel}`}
                         >
                           {offer.baseCost.toLocaleString("fr-FR")}
                         </del>
                       )}
-                      <EmeraldAmount amount={offer.cost} />
+                      {friendship ? (
+                        <FriendshipAmount amount={offer.cost} />
+                      ) : (
+                        <EmeraldAmount amount={offer.cost} />
+                      )}
                     </span>
                   ) : (
                     <>
@@ -414,34 +439,5 @@ export function SummonRevealDialog({
         onUpgrade={onUpgrade}
       />
     </Dialog>
-  );
-}
-
-function LegendaryRevealEffects() {
-  return (
-    <div className="summon-legendary-effects" aria-hidden="true">
-      <span className="summon-legendary-aura" />
-      <span className="summon-legendary-rays" />
-      <span className="summon-legendary-wave" />
-      <span className="summon-legendary-wave is-delayed" />
-      {Array.from({ length: 18 }, (_, index) => {
-        const angle = (index / 18) * Math.PI * 2;
-        const distance = 70 + (index % 3) * 20;
-        return (
-          <i
-            className="summon-legendary-particle"
-            key={index}
-            style={
-              {
-                "--particle-x": `${Math.cos(angle) * distance}cqw`,
-                "--particle-y": `${Math.sin(angle) * distance}cqw`,
-                "--particle-delay": `${380 + (index % 4) * 55}ms`,
-                "--particle-turn": `${index * 37}deg`,
-              } as CSSProperties
-            }
-          />
-        );
-      })}
-    </div>
   );
 }

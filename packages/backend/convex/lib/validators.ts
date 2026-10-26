@@ -6,6 +6,7 @@ export const goldPackValidator = v.union(
 );
 
 export const summonPackValidator = v.union(
+  v.literal("friendship"),
   v.literal("sylve"),
   v.literal("ancients"),
   v.literal("divine"),

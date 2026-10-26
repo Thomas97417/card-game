@@ -30,7 +30,9 @@ import bestiaryCss from "../bestiary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
+import { FriendshipProvider } from "@/components/friendship-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
+import { GameAuthGate } from "@/components/game-auth-gate";
 import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
@@ -99,6 +101,14 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
+  const requiresAuth = useRouterState({
+    select: (state) =>
+      state.matches.some(
+        (match) =>
+          "requiresGameAuth" in match.context &&
+          match.context.requiresGameAuth === true,
+      ),
+  });
   const isImmersive = useRouterState({
     select: (state) => {
       const pathname = state.location.pathname.replace(/\/$/, "");
@@ -133,31 +143,35 @@ function RootDocument() {
             disableTransitionOnChange
             storageKey="vite-ui-theme"
           >
-            <GoldProvider>
-              <EmeraldProvider>
-                <PlayerHeaderProvider>
-                  <div
-                    className={
-                      isImmersive
-                        ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                        : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                    }
-                  >
-                    {!isImmersive && <Header />}
-                    <div
-                      className={
-                        isImmersive
-                          ? "min-h-0 overflow-hidden"
-                          : "min-h-0 overflow-y-auto"
-                      }
-                    >
-                      <Outlet />
-                    </div>
-                  </div>
-                  <Toaster richColors />
-                </PlayerHeaderProvider>
-              </EmeraldProvider>
-            </GoldProvider>
+            <GameAuthGate required={requiresAuth}>
+              <GoldProvider>
+                <EmeraldProvider>
+                  <FriendshipProvider>
+                    <PlayerHeaderProvider>
+                      <div
+                        className={
+                          isImmersive
+                            ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                            : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                        }
+                      >
+                        {!isImmersive && <Header />}
+                        <div
+                          className={
+                            isImmersive
+                              ? "min-h-0 overflow-hidden"
+                              : "min-h-0 overflow-y-auto"
+                          }
+                        >
+                          <Outlet />
+                        </div>
+                      </div>
+                      <Toaster richColors />
+                    </PlayerHeaderProvider>
+                  </FriendshipProvider>
+                </EmeraldProvider>
+              </GoldProvider>
+            </GameAuthGate>
             <Scripts />
           </ThemeProvider>
         </body>
