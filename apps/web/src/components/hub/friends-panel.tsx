@@ -1,13 +1,7 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import {
-  Check,
-  HeartHandshake,
-  LoaderCircle,
-  MessageCircle,
-  X,
-} from "lucide-react";
+import { Check, LoaderCircle, MessageCircle, X } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import {
   FRIEND_HELP_TOKENS,
@@ -86,11 +80,6 @@ export function FriendsPanel({
         </span>
         {data && <FriendshipAmount amount={data.tokens} />}
       </div>
-      <p className="social-help-note">
-        <HeartHandshake size={16} aria-hidden="true" /> Offre chaque jour 10
-        jetons d’entraide à chacun de tes amis. Renouvellement à minuit, heure
-        de Paris.
-      </p>
       {error && (
         <p className="social-notice social-error" role="alert">
           {error}
@@ -286,9 +275,6 @@ export function FriendConversations({
     );
   return (
     <div className="social-friends-scroll">
-      <p className="social-inbox-note">
-        Choisis un ami pour ouvrir votre conversation privée.
-      </p>
       {data.friends.length ? (
         <ul className="social-player-list">
           {data.friends.map((player) => (

@@ -531,7 +531,7 @@ function PackChoice({
   const premium = pack.id === "ancients" || pack.id === "divine";
   const divine = pack.id === "divine";
   const guarantee = friendship
-    ? "50 lots communs ou rares"
+    ? null
     : divine
       ? `${pack.guaranteedLegendaries} compagnons légendaires`
       : pack.guaranteedLegendaries === 1
@@ -633,7 +633,7 @@ function PackChoice({
                 aria-busy={working || undefined}
                 aria-label={`Invoquer ${count} fois — ${pack.name}, ${price} ${currencyLabel}`}
                 aria-describedby={
-                  count === 10
+                  count === 10 && guarantee
                     ? `pack-${pack.id}-offer-${count} pack-${pack.id}-guarantee`
                     : `pack-${pack.id}-offer-${count}`
                 }
@@ -659,7 +659,7 @@ function PackChoice({
                   )}
                 </span>
               </button>
-              {count === 10 && (
+              {count === 10 && guarantee && (
                 <span
                   id={`pack-${pack.id}-guarantee`}
                   className="summon-button-guarantee"

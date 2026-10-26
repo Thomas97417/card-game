@@ -543,29 +543,23 @@
 .social-friends-summary .friendship-amount {
   color: #ffe5a9;
 }
-.social-help-note {
-  display: flex;
-  flex-shrink: 0;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0;
-  padding: 5px 18px 14px;
-  border-bottom: 1px solid #c5a76b26;
-  color: #b4c3ad;
-  font-size: 11px;
-  line-height: 1.65;
-}
-.social-help-note svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-  color: #cfb67c;
-}
 .social-friends-scroll {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px 12px 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.social-friends-scroll::-webkit-scrollbar {
+  display: none;
+}
+.social-friends-scroll > .hub-world-chat-empty {
+  flex: 1;
+  min-height: 0;
 }
 .social-player-list {
   display: grid;
@@ -671,15 +665,9 @@
     11px "Avenir Next",
     sans-serif;
 }
-.social-friends-empty {
-  min-height: 180px;
+.social-friends-scroll .social-friends-empty {
+  min-height: 0;
   padding: 24px 14px;
-}
-.social-inbox-note {
-  padding: 6px 6px 14px;
-  margin: 0;
-  font-size: 11px;
-  color: #b4c3ad;
 }
 .social-notice {
   flex-shrink: 0;
@@ -714,10 +702,6 @@
   }
   .social-friends-summary {
     padding-inline: 14px;
-  }
-  .social-help-note {
-    padding-inline: 14px;
-    font-size: 10px;
   }
 }
 @media (max-width: 760px) {
