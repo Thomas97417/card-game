@@ -1,3 +1,5 @@
+import { GameError } from "./errors";
+export { GameError } from "./errors";
 import {
   buildCwCard,
   canonicalVariantId,
@@ -210,8 +212,6 @@ export interface OwnedCard {
   card: CardDefinition;
   copies: number;
 }
-export class GameError extends Error {}
-
 // Each original identity is retained; the 22 common archetypes are mapped once.
 const definitions = [
   {

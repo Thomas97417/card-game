@@ -11,6 +11,8 @@ import {
 import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
+import { CurrencyGainProvider } from "@/components/currency-gain";
+import { useMineBoard, useMineCollection } from "@/hooks/use-mine-collection";
 import { requireGameAuth } from "@/lib/game-auth";
 import {
   ChestRevealDialog,
@@ -29,15 +31,28 @@ export const Route = createFileRoute("/hub")({
           "Retrouve ton refuge : prépare tes decks à l’atelier, découvre les créatures du sanctuaire et rejoins l’arène.",
       },
     ],
-    links: [{ rel: "preload", as: "image", href: "/art/guardian-village.jpg" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
+    ],
   }),
   component: HubPage,
 });
 
 function HubPage() {
+  return (
+    <CurrencyGainProvider>
+      <HubContent />
+    </CurrencyGainProvider>
+  );
+}
+
+function HubContent() {
   const [now, setNow] = useState(Date.now);
   const [pending, setPending] = useState<string | null>(null);
   const [reward, setReward] = useState<ChestReveal | null>(null);
+  const mines = useMineBoard(now);
+  const { pending: pendingMines, collectResource } = useMineCollection(mines);
+  const ensureMines = useMutation(api.collection.ensureMines);
   const collection = useQuery(api.collection.list, reward ? {} : "skip");
   const upgrade = useMutation(api.collection.upgrade);
   const inFlight = useRef(false);
@@ -49,8 +64,8 @@ function HubPage() {
   const activity = useQuery(api.games.activity);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   useEffect(() => {
-    void ensureStarter().catch(showGameError);
-  }, [ensureStarter]);
+    void ensureStarter().then(() => ensureMines()).catch(showGameError);
+  }, [ensureStarter, ensureMines]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
@@ -100,6 +115,7 @@ function HubPage() {
     <>
       <VillageHub
         activity={activity}
+        mines={{ board: mines, pending: pendingMines, onCollect: collectResource }}
         missions={{
           board,
           now,

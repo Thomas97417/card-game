@@ -2,6 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { missionStateFields } from "./lib/missions";
 
+const mineState = v.object({
+  amount: v.number(),
+  updatedAt: v.number(),
+  heroLevel: v.number(),
+  revision: v.number(),
+});
+
 import {
   cardValidator,
   eventValidator,
@@ -43,6 +50,7 @@ export default defineSchema({
     experience: v.optional(v.number()),
     catalogueVersion: v.optional(v.literal(2)),
     diamonds: v.optional(v.number()),
+    mines: v.optional(v.object({ gold: mineState, emeralds: mineState })),
     activeSummonId: v.optional(v.id("summons")),
   }).index("by_owner", ["ownerId"]),
   emeraldPurchases: defineTable({

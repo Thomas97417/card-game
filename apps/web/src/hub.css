@@ -1,3 +1,164 @@
+.hub-mine {
+  position: absolute;
+  top: 30%;
+  width: 18%;
+  height: 41%;
+  outline: none;
+  --mine-color: #efc967;
+  --mine-glow: #e8b73b5c;
+}
+.hub-mine-gold { left: 2%; }
+.hub-mine-emeralds {
+  left: 81%;
+  --mine-color: #83e7b4;
+  --mine-glow: #4ee6a14a;
+}
+.hub-mine:focus-visible .hub-mine-label {
+  outline: 2px solid var(--mine-color);
+  outline-offset: 4px;
+}
+.hub-mine-label {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  min-width: 180px;
+  max-width: 224px;
+  padding: 10px 14px;
+  overflow: hidden;
+  border: 1px solid #d1be85b3;
+  border-radius: var(--radius-lg);
+  background: #1a3026f2;
+  box-shadow: 0 4px 16px #10251d60;
+  transform: translateX(-50%);
+  backdrop-filter: blur(6px);
+}
+.hub-mine-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.hub-mine-content {
+  flex: 1;
+  min-width: 0;
+}
+.hub-mine-title {
+  margin: 0;
+  color: #fff6dd;
+  font: 17px/1.2 Georgia, serif;
+  white-space: nowrap;
+}
+.hub-mine-details { margin-top: 4px; }
+.hub-mine-details p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d0d8ba;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.hub-mine-details p strong { color: var(--mine-color); }
+.hub-mine-details p > span:last-child { margin-left: auto; }
+.hub-mine-storage {
+  height: 2px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #071d17;
+  box-shadow: inset 0 1px 2px #0008;
+}
+.hub-mine-storage > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--mine-color);
+  box-shadow: 0 0 8px var(--mine-glow);
+  transition: width 1s linear;
+}
+.hub-mine-details .hub-mine-next {
+  color: #b5c2a8;
+}
+.hub-mine-collect {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 110px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 18px;
+  color: #fff2d1;
+  text-shadow: 0 2px 4px #061c14;
+  transform: translate(-50%, -70%);
+  cursor: pointer;
+}
+.hub-mine-collect::before {
+  position: absolute;
+  z-index: -1;
+  inset: -12px -14px 5px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--mine-glow), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+.hub-mine-collect-content {
+  display: flex;
+  align-items: center;
+  isolation: isolate;
+  animation: hub-mine-float 2.8s ease-in-out infinite;
+}
+.hub-mine-collect-art {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+}
+.hub-mine-collect-art :is(.gold-icon, .emerald-icon) {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px #061b16aa) drop-shadow(0 0 14px var(--mine-glow));
+}
+.hub-mine-collect-amount {
+  position: relative;
+  z-index: 1;
+  margin-top: 26px;
+  margin-left: -22px;
+  color: #fff2d1;
+  font: 700 22px/1 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow: -1px -1px 1px #10271f, 1px -1px 1px #10271f, -1px 1px 1px #10271f, 1px 1px 1px #10271f, 0 3px 5px #061b16;
+  transition: color 160ms ease;
+}
+.hub-mine-collect:hover .hub-mine-collect-amount { color: #fffaf0; }
+.hub-mine-collect[data-full] .hub-mine-collect-amount { color: var(--mine-color); }
+.hub-mine-collect:disabled { cursor: pointer; }
+.hub-mine-collect:focus-visible {
+  outline: 2px solid #ffe4a0;
+  outline-offset: 4px;
+}
+@keyframes hub-mine-float { 50% { transform: translateY(-6px); } }
+@media (max-height: 560px) {
+  .hub-mine-collect { top: 10%; padding-block: 6px; transform: translate(-50%, -20%); }
+  .hub-mine-collect-art,
+  .hub-mine-collect-art :is(.gold-icon, .emerald-icon) { width: 52px; height: 52px; }
+  .hub-mine-collect-amount { margin-top: 18px; margin-left: -15px; font-size: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-mine-collect-content { animation: none; }
+  .hub-mine-storage > span { transition: none; }
+}
+
 .hub-footer {
   position: absolute;
   z-index: 30;
