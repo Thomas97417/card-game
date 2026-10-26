@@ -486,7 +486,7 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Épique" }));
     fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
     expect(
-      screen.getByText("Aucune carte ne correspond à tes filtres."),
+      screen.getByRole("heading", { name: "Aucune carte avec ces filtres" }),
     ).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Voir toute la collection" }),

@@ -24,7 +24,7 @@ import { CardArtwork } from "./card-artwork";
 import { HeroProgressSummary } from "@/components/guardian/hero-progress-summary";
 import type { HeroProgress } from "@/components/guardian/guardian-house";
 import type { CardProgressionActions } from "./card-soulbind";
-import { ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { FactionIcon } from "@/components/game/faction-artwork";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
@@ -459,7 +459,7 @@ export function DeckWorkshop({
           </div>
           <div
             {...collectionPan.dragHandlers}
-            className={`workshop-card-row ${collectionPan.isDragging ? "is-panning" : ""}`}
+            className={`workshop-card-row ${ready && visible.length === 0 ? "is-empty" : ""} ${collectionPan.isDragging ? "is-panning" : ""}`}
             ref={collectionRow}
             tabIndex={0}
             role="region"
@@ -468,27 +468,57 @@ export function DeckWorkshop({
             {ready && visible.map((card) => renderCard(card))}
             {ready && visible.length === 0 && (
               <div className="workshop-empty">
-                <Leaf size={26} />
-                <p>
-                  {available.length === 0
-                    ? "Remporte des combats et ouvre des coffres pour agrandir ta collection."
-                    : "Aucune carte ne correspond à tes filtres."}
-                </p>
-                {available.length ? (
-                  <button
-                    onClick={() => {
-                      setFilter(null);
-                      setRarityFilters([]);
-                      setFactionFilters([]);
-                    }}
-                  >
-                    Voir toute la collection
-                  </button>
-                ) : (
-                  <Link to="/arena" className="text-link">
-                    Rejoindre l’arène
-                  </Link>
-                )}
+                <div className="workshop-empty-art" aria-hidden="true">
+                  <CollectionIcon size={112} />
+                  {available.length > 0 && (
+                    <span className="workshop-empty-filter-icon">
+                      <ListFilter size={18} />
+                    </span>
+                  )}
+                </div>
+                <div className="workshop-empty-content">
+                  <h3>
+                    {available.length > 0
+                      ? "Aucune carte avec ces filtres"
+                      : collection!.length > 0
+                        ? "Tes cartes sont prêtes au combat"
+                        : "Ta collection commence ici"}
+                  </h3>
+                  <p>
+                    {available.length > 0 ? (
+                      "Essaie une autre combinaison ou affiche toutes tes cartes disponibles."
+                    ) : (
+                      <>
+                        {collection!.length > 0 && (
+                          <>Toutes tes cartes sont déjà dans ton deck.{" "}</>
+                        )}
+                        Remporte des combats et ouvre des coffres pour découvrir
+                        de nouveaux alliés.
+                      </>
+                    )}
+                  </p>
+                  {available.length > 0 ? (
+                    <button
+                      type="button"
+                      className="workshop-empty-action"
+                      onClick={() => {
+                        setFilter(null);
+                        setRarityFilters([]);
+                        setFactionFilters([]);
+                      }}
+                    >
+                      <ListFilter size={18} aria-hidden="true" />
+                      Voir toute la collection
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <Link to="/arena" className="workshop-empty-action">
+                      <GameIcon kind="arena" size={26} />
+                      Rejoindre l’arène
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </div>
