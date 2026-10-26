@@ -487,17 +487,33 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                     <>
                       {rule.cards.map((card) => (
                         <small key={card.rarity}>
-                          {RARITY_LABELS[card.rarity]} : {card.min}–{card.max} (
+                          {RARITY_LABELS[card.rarity]} : {card.min}
+                          {card.max !== card.min ? `–${card.max}` : ""} exemplaires (
                           {card.chance.toLocaleString("fr-FR")} %)
                         </small>
                       ))}
                       <small>
-                        {rule.minGold}–{rule.maxGold} or
+                        {rule.minGold}–{rule.maxGold} pièces d’or
                       </small>
-                      <small>{rule.durationMs / 60_000} min d’attente</small>
+                      <small>
+                        {rule.durationMs >= 3_600_000
+                          ? `${rule.durationMs / 3_600_000} h`
+                          : `${rule.durationMs / 60_000} min`}{" "}
+                        d’attente
+                      </small>
+                      <small>
+                        Ouverture immédiate : {rule.instantCost} émeraude
+                        {rule.instantCost > 1 ? "s" : ""}
+                      </small>
                     </>
                   ) : (
-                    <small>Indisponible à ce palier</small>
+                    <small>
+                      Disponible dès{" "}
+                      {
+                        LEAGUES.find((league) => league.chestChances[rarity] > 0)!
+                          .label
+                      }
+                    </small>
                   )}
                 </div>
               );
@@ -505,7 +521,9 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
           </dl>
           <small>
             Chaque coffre gagné est retiré de la réserve de sa ligue, renouvelée
-            une fois épuisée. Le butin est fixé à l’obtention du coffre.
+            une fois épuisée. Le butin est fixé à l’obtention du coffre. Le coffre
+            de trois victoires contient le même butin que le coffre commun de ce
+            palier.
           </small>
         </div>
       </section>

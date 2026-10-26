@@ -134,7 +134,7 @@ export default defineSchema({
     cycle: v.number(),
     contents: v.array(lootValidator),
     gold: v.optional(v.number()),
-    rewardVersion: v.optional(v.literal(2)),
+    rewardVersion: v.optional(v.union(v.literal(2), v.literal(3))),
     leagueTrophies: v.optional(v.number()),
     lastClaim: v.optional(
       v.object({
@@ -163,7 +163,7 @@ export default defineSchema({
     contents: v.array(lootValidator),
     gold: v.optional(v.number()),
     reveals: v.optional(v.array(revealValidator)),
-    rewardVersion: v.optional(v.literal(2)),
+    rewardVersion: v.optional(v.union(v.literal(2), v.literal(3))),
     leagueTrophies: v.optional(v.number()),
     instantCost: v.optional(v.number()),
     emeraldsSpent: v.optional(v.number()),
@@ -171,6 +171,7 @@ export default defineSchema({
   chestPools: defineTable({
     ownerId: v.string(),
     leagueIndex: v.number(),
+    version: v.optional(v.literal(1)),
     remaining: v.object({
       common: v.number(),
       rare: v.number(),

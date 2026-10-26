@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import reference from "../../../docs/references/cunt-wars/rules.json";
+import chestReference from "../../../docs/references/cunt-wars/chests.json";
 import {
   CATALOG,
   availableRarities,
@@ -159,7 +160,7 @@ describe("variantes et progression", () => {
 
 describe("tirages des coffres", () => {
   it("exhausts each finite pool before refilling it", () => {
-    for (const trophies of [0, 2000, 2200, 6000]) {
+    for (const trophies of [0, 800, 1000, 2000, 4000, 6000]) {
       const initial = chestPool(trophies);
       const remaining = { ...initial };
       const drawn = Object.fromEntries(
@@ -178,7 +179,7 @@ describe("tirages des coffres", () => {
       }
       expect(drawn).toEqual(initial);
       expect(rollChest(() => 0, trophies, remaining)).toBe(
-        trophies < 2000 ? "common" : "rare",
+        "common",
       );
     }
   });
@@ -206,66 +207,152 @@ describe("tirages des coffres", () => {
       }
     },
   );
-  it("uses exact wiki quantities, gold, timers and epic bonuses at league thresholds", () => {
+  it("matches every collected PC-browser reward row independently of the runtime data", () => {
+    const columns = {
+      wooden: ["common", "rare", "epic"],
+      common: ["common", "rare", "epic"],
+      rare: ["rare", "epic"],
+      bigRare: ["rare", "epic"],
+      epic: ["epic", "legendary"],
+      legendary: ["legendary"],
+    } as const;
+    const range = (value: string) => {
+      const values = value.split(/\s*[-–]\s*/).map(Number);
+      return { min: values[0], max: values[1] ?? values[0] };
+    };
+    for (const type of Object.keys(columns) as (keyof typeof columns)[]) {
+      for (const row of chestReference.sources[type].tables[1]!.slice(1)) {
+        const trophies = row[0] === "GM" ? 6000 : (30 - Number(row[0])) * 200;
+        const rule = chestRules(type === "wooden" ? "common" : type, trophies);
+        const gold = range(row[1]!);
+        expect([rule.minGold, rule.maxGold]).toEqual([gold.min, gold.max]);
+        for (const [index, rarity] of columns[type].entries())
+          expect(rule.cards.find((card) => card.rarity === rarity)).toMatchObject(
+            range(row[index + 2]!),
+          );
+      }
+    }
+  });
+  it("uses CW quantities, rarity upgrades and opening rules at league thresholds", () => {
     expect(chestRules("rare", 1800)).toMatchObject({
-      min: 72,
-      max: 78,
-      minGold: 174,
-      maxGold: 254,
+      min: 27,
+      max: 28,
+      minGold: 65,
+      maxGold: 91,
       durationMs: 10_800_000,
-      instantCost: 30,
+      instantCost: 33,
     });
     expect(chestRules("rare", 2000)).toMatchObject({
-      min: 76,
-      max: 79,
-      durationMs: 7_200_000,
-      instantCost: 39,
+      min: 28,
+      max: 29,
+      durationMs: 10_800_000,
+      instantCost: 33,
     });
     expect(chestRules("bigRare", 1000)).toMatchObject({
-      min: 116,
-      max: 119,
-      minGold: 219,
-      maxGold: 328,
+      min: 46,
+      max: 48,
+      minGold: 81,
+      maxGold: 116,
       durationMs: 21_600_000,
-      instantCost: 59,
+      instantCost: 66,
     });
     expect(chestRules("bigRare", 2000)).toMatchObject({
-      min: 152,
-      max: 158,
-      durationMs: 14_400_000,
-      instantCost: 78,
+      min: 56,
+      max: 59,
+      durationMs: 21_600_000,
+      instantCost: 66,
     });
-    expect(chestRules("legendary", 2200)).toMatchObject({
-      min: 22,
-      max: 26,
-      minGold: 364,
-      maxGold: 506,
-      durationMs: 43_200_000,
-      instantCost: 179,
+    expect(chestRules("legendary", 4000)).toMatchObject({
+      min: 3,
+      max: 3,
+      minGold: 248,
+      maxGold: 321,
+      durationMs: 129_600_000,
+      instantCost: 270,
     });
     expect(chestRules("bigRare", 6000)).toMatchObject({
-      min: 2800,
-      max: 2800,
-      minGold: 792,
-      maxGold: 923,
+      min: 118,
+      max: 123,
+      minGold: 210,
+      maxGold: 252,
     });
-    expect(chestRules("common", 0).durationMs).toBe(1_800_000);
-    expect(chestRules("common", 1200).durationMs).toBe(2_700_000);
+    expect(chestRules("common", 0).durationMs).toBe(180_000);
+    expect(chestRules("common", 999).durationMs).toBe(180_000);
+    expect(chestRules("common", 1000).durationMs).toBe(3_600_000);
+    expect(chestRules("common", 1200).durationMs).toBe(3_600_000);
     expect(chestRules("common", 1400).durationMs).toBe(3_600_000);
     for (const type of ["rare", "bigRare"] as const) {
       const values = [type === "rare" ? 0.995 : 0.99, 0, 0];
       expect(chestLoot(type, () => values.shift()!, 1800)[0]).toMatchObject({
         variantId: "guardian:epic",
-        count: type === "rare" ? 17 : 33,
+        count: type === "rare" ? 6 : 10,
       });
       expect(chestLoot(type, () => 0.99999, 2000)[0]!.variantId).toMatch(
-        /:rare$/,
+        /:epic$/,
       );
     }
     expect(chestLoot("common", () => 0, 2000)[0]).toEqual({
-      variantId: "guardian:rare",
-      count: 76,
+      variantId: "guardian:common",
+      count: 28,
     });
+    expect(chestRules("common", 0)).toMatchObject({
+      min: 10, max: 11, minGold: 28, maxGold: 47,
+    });
+    expect(chestRules("common", 1000)).toMatchObject({
+      min: 22, max: 23, minGold: 33, maxGold: 53,
+    });
+    expect(chestRules("common", 6000).cards.map(({ chance }) => chance)).toEqual([95, 4.75, 0.25]);
+    expect(chestRules("rare", 2000).cards.map(({ chance }) => chance)).toEqual([95, 5]);
+    expect(chestRules("epic", 2000).cards.map(({ chance }) => chance)).toEqual([99.75, 0.25]);
+    for (const [type, trophies, chance, expected] of [
+      ["common", 0, 0.95, "rare"],
+      ["common", 0, 0.9975, "epic"],
+      ["rare", 2000, 0.95, "epic"],
+      ["bigRare", 2000, 0.95, "epic"],
+      ["epic", 2000, 0.9975, "legendary"],
+    ] as const) {
+      const values = [chance, 0, 0];
+      expect(resolveCard(chestLoot(type, () => values.shift()!, trophies)[0]!.variantId).rarity).toBe(expected);
+    }
+  });
+  it("matches PC-browser opening times and prices at every league", () => {
+    for (let trophies = 0; trophies <= 6000; trophies += 200) {
+      for (const type of CHEST_TYPES) {
+        const sourceType = type === "common" && trophies < 1000 ? "wooden" : type;
+        const pc = chestReference.sources[sourceType].tables[0]!.find(
+          (row) => row[0] === "PC",
+        )!;
+        const minutes = Number(pc[2]!.replace(/\D/g, "")) * (pc[2]!.includes("min") ? 1 : 60);
+        const rule = chestRules(type, trophies);
+        expect(rule).toMatchObject({
+          durationMs: minutes * 60_000,
+          instantCost: Number(pc[1]),
+        });
+        const chest = {
+          rarity: type,
+          awardedAt: 100,
+          unlockAt: 100 + rule.durationMs,
+          instantCost: rule.instantCost,
+          leagueTrophies: trophies,
+        };
+        expect(chestRushCost(chest, 100)).toBe(Number(pc[1]));
+        expect(chestRushCost(chest, 100 + rule.durationMs / 2)).toBe(Math.ceil(Number(pc[1]) / 2));
+        expect(chestRushCost(chest, chest.unlockAt - 1)).toBe(1);
+        expect(chestRushCost(chest, chest.unlockAt)).toBe(0);
+      }
+    }
+  });
+  it("uses a saved chest's original duration and price for its remaining cost", () => {
+    const legacy = {
+      rarity: "bigRare" as const,
+      awardedAt: 100,
+      unlockAt: 100 + 14_400_000,
+      instantCost: 78,
+      leagueTrophies: 2000,
+    };
+    expect(chestRushCost(legacy, 100)).toBe(78);
+    expect(chestRushCost(legacy, 100 + 7_200_000)).toBe(39);
+    expect(chestRushCost(legacy, legacy.unlockAt)).toBe(0);
   });
   it.each(CHEST_TYPES)(
     "allows every creature and charges only for the remaining time of %s",

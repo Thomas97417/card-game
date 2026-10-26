@@ -42,29 +42,50 @@ L’IA mémorise ses trois dernières cartes, conserve cette mémoire après une
 
 ## Coffres et butin
 
-Les tableaux de cartes et d’or proviennent de [Chests — Mighty Party](https://mightyparty.wiki.gg/wiki/Chests), consulté le 24 octobre 2026 (page revue le 1er mars 2022). Les données actives sont conservées dans `packages/game/src/data/rewards.json`, avec leurs métadonnées de provenance. Les 31 paliers Sylve correspondent dans l’ordre aux ligues 30 à 1, puis GM : Fer IV = 30, Argent II = 20, Argent I = 19, Grand maître = 1, Challenger = GM. Le contenu et l’or restent fixés à l’obtention, même après une promotion ; pour le coffre de victoires, ils sont fixés à la troisième victoire.
+Les cartes, l’or, les seuils de disponibilité, les délais et les prix d’ouverture suivent la [catégorie Chest de Cunt Wars](https://cwars.miraheze.org/wiki/Category:Chest), relevée le **26 octobre 2026**, en retenant les tables **PC-browser**. Ces pages historiques (2020–2021) signalent parfois des informations à réviser : les valeurs collectées servent de référence à Sylve, sans vérification du client actuel. Le relevé indépendant est conservé dans `docs/references/cunt-wars/chests.json` ; `python3 scripts/import-cwars-chests.py` reconstruit les 116 lignes et les six barèmes d’ouverture de `packages/game/src/data/chest-rewards.json`, sans réseau. Les anciennes tables Mighty Party ne déterminent plus le contenu des coffres.
 
-Les coffres sont tirés sans remise dans une réserve propre à chaque joueur et ligue. Une réserve épuisée se renouvelle. Les pourcentages affichés sont ceux de la réserve initiale, calculés à partir des nombres exacts du wiki :
+Les 31 paliers Sylve correspondent dans l’ordre aux ligues CW 30 à 1, puis GM : Fer IV = 30, Bronze IV = 26, Bronze III = 25, Argent II = 20, Émeraude IV = 10, Grand maître = 1, Challenger = GM. Le contenu et l’or restent fixés à l’obtention, même après une promotion ; pour le coffre de victoires, ils sont fixés à la troisième victoire.
 
-| Ligues Sylve          |  Commun |   Rare | Grand rare | Épique | Légendaire |
-| --------------------- | ------: | -----: | ---------: | -----: | ---------: |
-| Fer IV à Argent III   | 109/146 | 28/146 |      9/146 |      0 |          0 |
-| Argent II             |       0 |  56/69 |      10/69 |   3/69 |          0 |
-| Argent I à Challenger |       0 |  56/70 |      10/70 |   3/70 |       1/70 |
+Les coffres sont tirés sans remise dans une réserve propre à chaque joueur et ligue. Une réserve épuisée se renouvelle ; ce mécanisme reste une règle Sylve. Les poids reprennent les taux annoncés sur les fiches CW, multipliés par dix. Ces taux arrondis ne totalisent pas toujours 100 % : Sylve les **normalise en conservant leurs proportions**, plutôt que de les présenter comme des probabilités exactes du jeu de référence.
 
-Un coffre donne de l’or et un lot d’exemplaires d’une variante choisie uniformément parmi les 22 créatures. Jusqu’à Argent III, un rare contient une variante rare à 99,5 % ou épique à 0,5 % ; le grand rare donne une rare à 99 % ou une épique à 1 %. À partir d’Argent II, ces deux coffres donnent uniquement des rares. Les coffres épiques et légendaires donnent leur rareté respective. Les quantités suivent chaque ligne du wiki, sans multiplicateur global. Par exemple, en Argent II, le rare donne 76–79 exemplaires et 184–266 or ; le grand rare donne 152–158 exemplaires et 265–383 or.
+| Ligues Sylve | Équivalent CW | Commun | Rare | Grand rare | Épique | Légendaire |
+|---|---|---:|---:|---:|---:|---:|
+| Fer IV à Fer I | 30–27 | 1000/1000 | 0 | 0 | 0 | 0 |
+| Bronze IV | 26 | 962/1000 | 0 | 38/1000 | 0 | 0 |
+| Bronze III à Argent III | 25–21 | 750/983 | 195/983 | 38/983 | 0 | 0 |
+| Argent II à Platine I | 20–11 | 750/1012 | 212/1012 | 38/1012 | 12/1012 | 0 |
+| Émeraude IV à Challenger | 10–GM | 752/1005 | 200/1005 | 38/1005 | 12/1005 | 3/1005 |
 
-Le coffre de victoires donne 80 % de communes et 20 % de rares jusqu’à Argent III, puis uniquement des rares. Il utilise les quantités de la table « Wins Chest ». Le wiki ne documentant pas séparément le contenu d’un coffre commun de combat, ce coffre utilise la même table. Les ligues précoces absentes d’une table utilisent sa première ligne documentée : réserve des ligues 25–21 avant 25, rare de ligue 27 avant 27, grand rare de ligue 25 avant 25, anciens de ligue 20 avant 20.
+Les seuils suivent les fiches : [grand rare](https://cwars.miraheze.org/wiki/Big_Rare_Chest) en **Bronze IV / 800 trophées**, [rare](https://cwars.miraheze.org/wiki/Rare_Chest) en **Bronze III / 1 000**, [épique](https://cwars.miraheze.org/wiki/Epic_Chest) en **Argent II / 2 000**, [légendaire](https://cwars.miraheze.org/wiki/Legendary_Chest) en **Émeraude IV / 4 000**. Le commun reste disponible au sommet. Jusqu’à Bronze IV inclus, notre commun reprend le [Wooden Chest](https://cwars.miraheze.org/wiki/Wooden_Chest) ; ensuite, il reprend le [Common Chest](https://cwars.miraheze.org/wiki/Common_Chest). Le wiki ne chiffre pas les réserves de bois : Sylve leur réserve tout le butin avant Bronze IV, puis le complément des 3,8 % annoncés pour le grand rare en Bronze IV.
 
-| Coffre     |                                             Avant Argent II |                   À partir d’Argent II | Prix initial en émeraudes |
-| ---------- | ----------------------------------------------------------: | -------------------------------------: | ------------------------: |
-| Commun     | 30 min jusqu’à Bronze III, 45 min en Bronze II, 1 h ensuite | 1 h pour les anciens coffres conservés |              10 / 15 / 19 |
-| Rare       |                                                         3 h |                                    2 h |                   30 / 39 |
-| Grand rare |                                                         6 h |                                    4 h |                   59 / 78 |
-| Épique     |                                                           — |                                    6 h |                       117 |
-| Légendaire |                                                           — |   12 h, disponible à partir d’Argent I |                       179 |
+Un coffre donne de l’or et un lot d’exemplaires d’une variante choisie uniformément dans sa rareté. Le commun donne **95 % de communes, 4,75 % de rares et 0,25 % d’épiques**, dans toutes les ligues. Jusqu’à Argent III, le rare donne 99,5 % de rares et 0,5 % d’épiques ; le grand rare donne 99 % de rares et 1 % d’épiques. À partir d’Argent II, ces deux coffres donnent **95 % de rares et 5 % d’épiques**. L’épique donne **99,75 % d’épiques et 0,25 % de légendaires** ; le légendaire donne uniquement des légendaires. Le seuil d’un type de coffre ne limite pas les promotions de cartes dans les autres coffres.
 
-Les prix communs de 30 et 45 minutes ne sont pas donnés dans le wiki ; ils sont calculés au prorata des 19 émeraudes pour une heure, arrondis vers le haut. L’ouverture anticipée coûte `ceil(prixInitial × tempsRestant / duréeInitiale)`, avec un minimum de 1 tant que le coffre n’est pas prêt, puis 0 à l’échéance exacte. Le serveur recalcule le coût au moment de l’achat, vérifie qu’il ne dépasse pas le devis accepté et débite le portefeuille dans la même transaction que l’attribution. Un devis ancien peut donc coûter moins cher, et un coffre devenu prêt s’ouvre gratuitement. Un double clic restitue le même résultat sans second débit. Les anciens coffres conservent leur délai ; leur coût est proratisé sur leur durée réelle.
+Les quantités suivent chaque ligne PC-browser, sans multiplicateur global. Exemples au minimum du palier :
+
+| Coffre et palier | Lot principal | Or |
+|---|---:|---:|
+| Commun en Fer IV (bois CW 30) | 10–11 communes | 28–47 |
+| Grand rare en Bronze IV (CW 26) | 44–46 rares | 78–113 |
+| Commun en Bronze III (CW 25) | 22–23 communes | 33–53 |
+| Rare en Bronze III (CW 25) | 23–24 rares | 57–82 |
+| Rare en Argent II (CW 20) | 28–29 rares | 68–94 |
+| Épique en Argent II (CW 20) | 50–51 épiques | 128–178 |
+| Légendaire en Émeraude IV (CW 10) | 3 légendaires | 248–321 |
+
+La fiche [Wins Chest](https://cwars.miraheze.org/wiki/Wins_Chest) documente les trois victoires mais ne fournit aucun tableau de quantités ni taux de rareté. **Par adaptation Sylve**, ce coffre utilise les mêmes quantités, or et chances que notre commun du palier obtenu. Il reste immédiatement ouvrable à 3/3. Un ancien coffre conservé sous son nouveau seuil de disponibilité utilise la première ligne documentée de son type ; il n’est pas supprimé.
+
+Les nouveaux coffres appliquent les délais et prix **PC-browser**, sans bonus de guilde. Le prix initial correspond à une ouverture immédiate dès l’obtention ; il diminue ensuite avec le temps restant. Le commun change de barème en Bronze III, avec le passage du bois CW au commun CW. Les autres types gardent leur délai et prix à toutes les ligues :
+
+| Coffre | Ligues Sylve | Délai | Prix initial en émeraudes |
+|---|---|---:|---:|
+| Commun, équivalent [bois CW](https://cwars.miraheze.org/wiki/Wooden_Chest) | Fer IV à Bronze IV | 3 min | 1 |
+| [Commun CW](https://cwars.miraheze.org/wiki/Common_Chest) | Bronze III à Challenger | 1 h | 20 |
+| [Rare](https://cwars.miraheze.org/wiki/Rare_Chest) | Dès Bronze III | 3 h | 33 |
+| [Grand rare](https://cwars.miraheze.org/wiki/Big_Rare_Chest) | Dès Bronze IV | 6 h | 66 |
+| [Épique](https://cwars.miraheze.org/wiki/Epic_Chest) | Dès Argent II | 24 h | 180 |
+| [Légendaire](https://cwars.miraheze.org/wiki/Legendary_Chest) | Dès Émeraude IV | 36 h | 270 |
+
+L’ouverture anticipée coûte `ceil(prixInitial × tempsRestant / duréeInitiale)`, avec un minimum de 1 tant que le coffre n’est pas prêt, puis 0 à l’échéance exacte. Par exemple, le grand rare coûte 33 émeraudes après trois heures sur six, et le rare coûte 17 émeraudes à mi-parcours. Le serveur recalcule le coût au moment de l’achat, vérifie qu’il ne dépasse pas le devis accepté et débite le portefeuille dans la même transaction que l’attribution. Un devis ancien peut donc coûter moins cher, et un coffre devenu prêt s’ouvre gratuitement. Un double clic restitue le même résultat sans second débit. Les coffres déjà obtenus conservent leur échéance et leur prix initial enregistré ; leur coût est proratisé sur leur durée réelle, sans relancer leur compte à rebours. Le coffre de trois victoires reste gratuit et immédiatement ouvrable à 3/3 : les huit heures décrites par sa fiche CW sont un délai de récupération entre cycles, pas un temps d’ouverture payante.
 
 Les identifiants de variante sont indépendants du niveau. Le premier exemplaire débloque la variante au niveau 1, les autres alimentent la réserve. Depuis l’[alignement Cunt Wars](cw-alignment.md), le catalogue contient **84 variantes**, toutes plafonnées au **niveau 26**. Les anciennes communes des lignées `wolf`, `bard`, `idol` et `tree` deviennent rares. Les dépenses au-delà de 26 et les variantes fusionnées sont remboursées. Les coûts et gains d’expérience suivent les tables CW de `packages/game/src/data/cunt-wars.json`. Les deux ressources sont débitées dans la même transaction ; un refus ne consomme rien.
 
@@ -80,13 +101,13 @@ La capacité d’attribution suit le nombre de places débloquées, de **deux à
 
 Les victoires solo connectées contre le Gardien mécanique et les victoires publiques donnent chacune un coffre de combat, sous réserve d’une place libre au moment de la victoire. Les délais de tous les coffres démarrent immédiatement et tournent en parallèle, y compris hors connexion. Les coffres prêts mais non ouverts occupent toujours leur place. Un coffre de combat perdu faute de place n’est jamais récupéré après coup.
 
-Chaque victoire éligible fait aussi avancer le coffre commun récurrent d’un cran, jusqu’à trois. Il se débloque immédiatement à 3/3, indépendamment des délais et des places de combat. L’ouverture donne le butin du tableau « Wins Chest » puis remet le compteur à 0/3. Les victoires supplémentaires avant ouverture ne sont pas reportées. Les défaites, abandons solo et parties amicales ne font pas avancer ce compteur.
+Chaque victoire éligible fait aussi avancer le coffre commun récurrent d’un cran, jusqu’à trois. Il se débloque immédiatement à 3/3, indépendamment des délais et des places de combat. L’ouverture donne le même butin que le coffre commun du palier puis remet le compteur à 0/3. Les victoires supplémentaires avant ouverture ne sont pas reportées. Les défaites, abandons solo et parties amicales ne font pas avancer ce compteur.
 
 Le contenu du coffre de victoires est généré une seule fois à la troisième victoire et reste caché avant ouverture. Le serveur identifie chaque cycle, crédite les exemplaires et l’or et passe au cycle suivant dans une même transaction. Une ouverture répétée du même cycle restitue le dernier résultat sans recréditer les récompenses ni modifier le nouveau compteur.
 
 L’attribution et son résultat sont écrits dans la transaction de fin de partie. Les requêtes d’inventaire cachent les cartes et l’or. L’ouverture vérifie le propriétaire et l’échéance ou le prix autorisé, crédite la collection et le portefeuille, puis conserve un résultat rejouable sans recréditer les récompenses. Les améliorations et les sauvegardes de deck vérifient les possessions côté serveur. Les caractéristiques des invitations, recherches et parties sont des instantanés.
 
-Les anciens coffres encore fermés, y compris le coffre de trois victoires déjà prêt, reçoivent le nouveau butin à leur première ouverture. Celui-ci est conservé pour les tentatives suivantes. Les coffres déjà ouverts gardent leur résultat historique et n’accordent pas d’or rétroactif.
+Les anciens coffres encore fermés, y compris ceux marqués version 2 et le coffre de trois victoires déjà prêt, reçoivent le nouveau butin CW (version 3) à leur première ouverture. Celui-ci est conservé pour les tentatives suivantes. Les coffres déjà ouverts gardent leur résultat historique et n’accordent pas d’or rétroactif. Les anciennes réserves de tirage sont remplacées lors de leur prochain usage, puis enregistrées avec leur version : une réserve historique ne peut plus faire tomber un coffre sous son nouveau seuil.
 
 ## Invocations et émeraudes
 
