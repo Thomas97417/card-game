@@ -67,7 +67,7 @@ describe("Soulbind card controls", () => {
         .getAllByRole("button")
         .every((b) => (b as HTMLButtonElement).disabled),
     ).toBe(true);
-    expect(screen.getByText("0 / niv. 6")).toBeTruthy();
+    expect(screen.getByText("Niv. 0 / 6")).toBeTruthy();
   });
   it("explains prerequisites in the bestiary without offering an owned-card mutation", () => {
     const { container } = render(
