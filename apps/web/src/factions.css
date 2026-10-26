@@ -1,17 +1,23 @@
 [data-faction="order"] {
-  --faction-background: url("/art/factions/order-background.webp");
+  --faction-backdrop-top: #34424d;
+  --faction-backdrop-bottom: #19212b;
+  --portrait-accent: #52636d;
   --faction-color: #e6c77c;
   --faction-ink: #162039;
   --faction-glow: #fff2c14d;
 }
 [data-faction="nature"] {
-  --faction-background: url("/art/factions/nature-background.webp");
+  --faction-backdrop-top: #354a3d;
+  --faction-backdrop-bottom: #182b25;
+  --portrait-accent: #64785b;
   --faction-color: #9bcc86;
   --faction-ink: #122b20;
   --faction-glow: #c5ed9e40;
 }
 [data-faction="chaos"] {
-  --faction-background: url("/art/factions/chaos-background.webp");
+  --faction-backdrop-top: #463445;
+  --faction-backdrop-bottom: #211d2c;
+  --portrait-accent: #6c4c62;
   --faction-color: #f39d8f;
   --faction-ink: #2b1226;
   --faction-glow: #f3779940;
@@ -29,8 +35,56 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: var(--faction-background) center / cover no-repeat;
+  background:
+    radial-gradient(
+      ellipse at 50% 38%,
+      var(--portrait-accent),
+      transparent 76%
+    ),
+    linear-gradient(var(--faction-backdrop-top), var(--faction-backdrop-bottom));
   pointer-events: none;
+}
+.faction-backdrop[data-character="guardian"] {
+  --portrait-accent: #655044;
+}
+.faction-backdrop[data-character="fox"] {
+  --portrait-accent: #4b5b61;
+}
+.faction-backdrop[data-character="owl"] {
+  --portrait-accent: #66516b;
+}
+.faction-backdrop[data-character="stag"] {
+  --portrait-accent: #5e6250;
+}
+.faction-backdrop[data-character="knight"] {
+  --portrait-accent: #67605b;
+}
+.faction-backdrop[data-character="gnome"] {
+  --portrait-accent: #585c63;
+}
+.faction-backdrop[data-character="enchantress"] {
+  --portrait-accent: #596477;
+}
+.faction-backdrop[data-character="lynx"] {
+  --portrait-accent: #65666d;
+}
+.faction-backdrop[data-character="bard"] {
+  --portrait-accent: #655451;
+}
+.faction-backdrop[data-character="captain"] {
+  --portrait-accent: #605161;
+}
+.faction-backdrop[data-character="mushroom"] {
+  --portrait-accent: #506966;
+}
+.faction-backdrop[data-character="serpent"] {
+  --portrait-accent: #69495b;
+}
+.faction-backdrop[data-character="vampire"] {
+  --portrait-accent: #565876;
+}
+.faction-backdrop[data-character="witch"] {
+  --portrait-accent: #5c5267;
 }
 .workshop-card-art,
 .card-portrait,
@@ -41,7 +95,10 @@
   isolation: isolate;
 }
 .workshop-card[data-faction] .workshop-card-halo {
-  background: radial-gradient(ellipse, var(--faction-glow), transparent 68%);
+  display: none;
+}
+.workshop-card[data-faction] .workshop-card-art::before {
+  content: none;
 }
 .workshop-card[data-faction] .workshop-card-caption {
   background: linear-gradient(

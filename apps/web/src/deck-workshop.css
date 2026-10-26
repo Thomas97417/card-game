@@ -253,6 +253,10 @@
     box-shadow 160ms,
     opacity 160ms;
 }
+.deck-workshop .workshop-card[data-rarity] {
+  border-width: 1px;
+  box-shadow: 0 3px 8px #08130f66;
+}
 .workshop-card:not(:disabled) {
   cursor: grab;
 }
@@ -329,6 +333,13 @@
 .workshop-card .card-stats .stat-badge strong {
   font-size: 22px;
 }
+.deck-workshop .workshop-card .card-stats .stat-badge {
+  width: 34px;
+  height: 34px;
+}
+.deck-workshop .workshop-card .card-stats .stat-badge strong {
+  font-size: 20px;
+}
 .workshop-card-caption {
   position: absolute;
   inset: auto 0 0;
@@ -355,6 +366,15 @@
   left: 5px;
   flex-direction: column;
   --ability-size: clamp(18px, 1.7vw, 23px);
+}
+.deck-workshop .workshop-card-abilities {
+  --ability-size: clamp(14px, 11cqw, 18px);
+}
+.deck-workshop .card-faction-badge {
+  top: 32px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
 }
 .workshop-card-name {
   font:

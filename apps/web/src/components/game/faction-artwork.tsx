@@ -1,4 +1,9 @@
-import { FACTION_LABELS, type CardDefinition, type Faction } from "@sylve/game";
+import {
+  baseCardId,
+  FACTION_LABELS,
+  type CardDefinition,
+  type Faction,
+} from "@sylve/game";
 
 export function FactionIcon({
   faction,
@@ -21,13 +26,14 @@ export function FactionIcon({
   );
 }
 
-/** Keep the painted scenery separate from the transparent battlefield sprite. */
+/** A quiet color field lets each character keep its own silhouette and palette. */
 export function FactionBackdrop({ card }: { card: CardDefinition }) {
   if (!card.faction) return null;
   return (
     <span
       className="faction-backdrop"
       data-faction={card.faction}
+      data-character={baseCardId(card)}
       aria-hidden="true"
     />
   );
