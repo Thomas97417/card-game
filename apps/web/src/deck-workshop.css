@@ -142,11 +142,12 @@
 }
 .workshop-content {
   container-type: size;
-  /* Keep cards readable; short screens can scroll instead of shrinking further. */
+  /* Fit eight slots continuously when space allows, with a readable minimum. */
   --workshop-card-width: max(
     148px,
     min(
       var(--workshop-preferred-card-width),
+      calc((100cqw - 54px - var(--workshop-card-gap) * 7) / 8),
       calc((100cqh - var(--workshop-content-chrome)) * 0.35)
     )
   );
@@ -342,8 +343,11 @@
   border-radius: 0 0 5px 5px;
 }
 .deck-workshop .workshop-card-caption {
-  min-height: 30%;
-  padding-bottom: 14px;
+  min-height: 15%;
+  padding: 0 6px 4px;
+}
+.deck-workshop .workshop-card-name {
+  font-size: clamp(11px, 8cqw, 14px);
 }
 .workshop-card-abilities {
   position: absolute;
