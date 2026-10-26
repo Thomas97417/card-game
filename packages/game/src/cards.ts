@@ -390,7 +390,7 @@ const definitions = [
     id: "vampire",
     name: "Vampire du néant",
     title:
-      "Ce démon ailé règne sur les cryptes abyssales. Ses griffes et sa soif de vie entretiennent la puissance des légions du Chaos.",
+      "Ce noble des cryptes abyssales développe ses ailes à mesure que ses pouvoirs grandissent. Ses griffes et sa soif de vie entretiennent la puissance des légions du Chaos.",
     color: "#9d496d",
     kind: "bat",
     reference: "Vampire",
