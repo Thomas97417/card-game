@@ -1,0 +1,172 @@
+{
+  "tool": "Built-in ImageGen",
+  "date": "2026-10-26",
+  "scope": "Four rarity variants of an adult blonde, voluptuous royal commander in fully opaque black-steel armor, with the established orange sun banner.",
+  "assets": [
+    {
+      "id": "captain-common",
+      "baseId": "captain",
+      "rarity": "common",
+      "faction": "order",
+      "name": "Capitaine de la couronne",
+      "path": "apps/web/public/art/characters/captain.webp",
+      "transparent": true,
+      "reference": "docs/art-references/captain-redesign/captain-before.webp",
+      "prompt": "Use case: stylized-concept. Create ONE original full-body fantasy warrior character sprite for the tactical card game Sylve, genuinely alpha-transparent background. This is a complete redesign of the Capitaine de la couronne as a clearly mature adult BLONDE woman aged 35 with a voluptuous curvy build and a very large full bust. She is an imposing, strong royal military commander with a beautiful mature face, blue eyes, defined brows, long golden-blonde hair in a thick side braid continuing into a high ponytail, and a firm self-assured expression. Depict her adult body type naturally in fully opaque, practical fantasy armor, with a generously fitted single-piece black-steel cuirass over an ivory gambeson, broad supportive chest tailoring, a golden ochre sash, dark armored leggings, plated greaves and boots, and a short burgundy shoulder cape. No exposed torso. She carries a straight royal longsword and a memorable OCHRE-ORANGE battle standard with one dark sun emblem. Her personality is brave, commanding and proud. The reference image supplies ONLY the established hand-painted rendering, black-steel/ochre/burgundy palette, banner silhouette and grounded fantasy materials; do not copy the old short gray hair, face or slim body. COMMON tier: relatively simple worn steel armor with just a few bronze clasps, a plain smaller banner and a practical sword, no crown or magical aura. Pose: relaxed full-body front three-quarter guard, banner planted vertically at one side, sword lowered at the other, steady mature face and restrained authority. Polished hand-painted 2D fantasy game illustration with rich dimensional material shading, clear broad color blocks and a crisp readable silhouette at 150 pixels. Balanced full-body character portrait, not a cropped anatomy close-up. Keep the entire hair, banner, sword, boots and body inside a square canvas with generous transparent margins. No scene, ground, card frame, text, lettering, logo, watermark or checkerboard.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-9e08a75c-4903-47fc-89f3-f7b36c6ee84f.png",
+      "revision": "captain-redesign-2026-10-26",
+      "stageIndex": 0,
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 333,
+        "height": 420
+      }
+    },
+    {
+      "id": "captain-rare",
+      "baseId": "captain",
+      "rarity": "rare",
+      "faction": "order",
+      "name": "Capitaine du bastion",
+      "path": "apps/web/public/art/characters/evolutions/captain-rare.webp",
+      "transparent": true,
+      "reference": "docs/art-references/captain-redesign/captain-common.webp",
+      "styleReference": "docs/art-references/captain-redesign/captain-legendary-before.webp",
+      "prompt": "Use case: stylized-concept. Create ONE original full-body royal female commander sprite for the fantasy tactical card game Sylve, with a genuinely alpha-transparent background. Image 1 is the exact adult character identity to preserve: the same beautiful mature blonde woman aged 35, blue eyes, defined brows, long golden-blonde hair in a thick side braid and high ponytail, strong confident face, voluptuous adult build and very full bust naturally fitted within opaque black-steel armor. Preserve this adult body type in every tier. Keep her recognizably the Capitaine de la couronne with the OCHRE-ORANGE royal sun banner, a straight longsword, black-steel armor, ivory underlayers and burgundy cape. Fully clothed armor protects the entire torso, hips and legs. Image 2 supplies ONLY a reference for advanced armor materials, the royal sun motif and painterly finish; do not copy its old short silver hair, slim body or face. Polished hand-painted 2D fantasy game art, realistic metal, leather and fabric shading with rich dimensional volume, broad color masses and crisp readable silhouette at 150px. Balanced full-body adventure-character composition. Keep the complete body, hair, banner, sword and boots within a square canvas with generous transparent margins. No scene, ground, card frame, text, logo, watermark or checkerboard. RARE tier: clearly more assured and better equipped than the common. Change her pose: advancing toward the viewer's left in an energetic three-quarter stance, sword angled horizontally outward at her side, banner tilted backward in the opposite direction. Chin lifted, resolute half smile. Fitted solid black-steel cuirass, stronger bronze shoulder guards, a few gold sun clasps, a more substantial burgundy cape and ochre command sash over ivory underlayers, fully armored legs. Larger but still practical orange sun banner. Selective engraving near the face and sword guard, no crown or supernatural aura yet.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-39446c02-50f2-4406-bb83-0aa3fdbe3f37.png",
+      "revision": "captain-redesign-2026-10-26",
+      "stageIndex": 1,
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 376,
+        "height": 370
+      }
+    },
+    {
+      "id": "captain-epic",
+      "baseId": "captain",
+      "rarity": "epic",
+      "faction": "order",
+      "name": "Maréchale du royaume",
+      "path": "apps/web/public/art/characters/evolutions/captain-epic.webp",
+      "transparent": true,
+      "reference": "docs/art-references/captain-redesign/captain-common.webp",
+      "styleReference": "docs/art-references/captain-redesign/captain-legendary-before.webp",
+      "prompt": "Use case: stylized-concept. Create ONE original full-body royal female commander sprite for the fantasy tactical card game Sylve, with a genuinely alpha-transparent background. Image 1 is the exact adult character identity to preserve: the same beautiful mature blonde woman aged 35, blue eyes, defined brows, long golden-blonde hair in a thick side braid and high ponytail, strong confident face, voluptuous adult build and very full bust naturally fitted within opaque black-steel armor. Preserve this adult body type in every tier. Keep her recognizably the Capitaine de la couronne with the OCHRE-ORANGE royal sun banner, a straight longsword, black-steel armor, ivory underlayers and burgundy cape. Fully clothed armor protects the entire torso, hips and legs. Image 2 supplies ONLY a reference for advanced armor materials, the royal sun motif and painterly finish; do not copy its old short silver hair, slim body or face. Polished hand-painted 2D fantasy game art, realistic metal, leather and fabric shading with rich dimensional volume, broad color masses and crisp readable silhouette at 150px. Balanced full-body adventure-character composition. Keep the complete body, hair, banner, sword and boots within a square canvas with generous transparent margins. No scene, ground, card frame, text, logo, watermark or checkerboard. EPIC tier: a distinct full-body three-quarter REAR turning command pose, her mature face clearly visible as she looks back over her shoulder, chin raised with an assured knowing smile. She directs the sword diagonally outward and holds her banner away from her body so its sun emblem remains readable. Her long golden braid and high ponytail sweep outward with the turn. Richly layered black-steel and gold marshal armor completely covers the torso and hips, sculpted shoulder guards, engraved sun medallion, long burgundy cape and ochre split tabard over armored legs. A more elaborate banner top. Powerful commanding silhouette and swagger, richer materials and concentrated ornament without scenery.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-59baaeb2-9dfb-427d-8cb1-06f95fe22e2c.png",
+      "revision": "captain-redesign-2026-10-26",
+      "stageIndex": 2,
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 390,
+        "height": 390
+      }
+    },
+    {
+      "id": "captain-legendary",
+      "baseId": "captain",
+      "rarity": "legendary",
+      "faction": "order",
+      "name": "Reine de la couronne",
+      "path": "apps/web/public/art/characters/evolutions/captain-legendary.webp",
+      "transparent": true,
+      "reference": "docs/art-references/captain-redesign/captain-common.webp",
+      "styleReference": "docs/art-references/captain-redesign/captain-legendary-before.webp",
+      "prompt": "Use case: stylized-concept. Create ONE original full-body royal female commander sprite for the fantasy tactical card game Sylve, with a genuinely alpha-transparent background. Image 1 is the exact adult character identity to preserve: the same beautiful mature blonde woman aged 35, blue eyes, defined brows, long golden-blonde hair in a thick side braid and high ponytail, strong confident face, voluptuous adult build and very full bust naturally fitted within opaque black-steel armor. Preserve this adult body type in every tier. Keep her recognizably the Capitaine de la couronne with the OCHRE-ORANGE royal sun banner, a straight longsword, black-steel armor, ivory underlayers and burgundy cape. Fully clothed armor protects the entire torso, hips and legs. Image 2 supplies ONLY a reference for advanced armor materials, the royal sun motif and painterly finish; do not copy its old short silver hair, slim body or face. Polished hand-painted 2D fantasy game art, realistic metal, leather and fabric shading with rich dimensional volume, broad color masses and crisp readable silhouette at 150px. Balanced full-body adventure-character composition. Keep the complete body, hair, banner, sword and boots within a square canvas with generous transparent margins. No scene, ground, card frame, text, logo, watermark or checkerboard. LEGENDARY tier: clearly the most powerful and proud royal commander. Low viewpoint, frontal three-quarter sovereign stance, shoulders open, chin high and a confident commanding smile. Raise her magnificent orange sun banner above and to one side and extend her great royal longsword down and outward on the other. Preserve the same mature blonde face and the same full-busted voluptuous adult body in fully opaque fitted black-steel and gold armor. An ivory-gold crown nestles into her thick blonde braid and high ponytail. Greatest shoulder plates, a golden royal sun breastplate crest, polished bracers and armored greaves, luxurious sweeping burgundy cape and ochre royal tabard. The largest banner, with one clear dark sun emblem, and one contained warm gold gleam along the sword. Grand equipment and posture convey rank; keep the face, hair, body and props readable.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-9188d6cb-8c6a-4c5f-9dca-7ff68879d134.png",
+      "revision": "captain-redesign-2026-10-26",
+      "stageIndex": 3,
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 400,
+        "height": 398
+      }
+    }
+  ],
+  "supersededAssets": [
+    {
+      "id": "captain-common",
+      "baseId": "captain",
+      "rarity": "common",
+      "faction": "order",
+      "name": "Capitaine de la couronne",
+      "path": "apps/web/public/art/characters/captain.webp",
+      "transparent": true,
+      "reference": "docs/art-references/rarity-progressions/captain.webp",
+      "styleReference": "docs/art-samples/rarity-progression-v2/enchantress-legendary.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original full-body alpha-transparent sprite for Sylve, a fantasy tactical card game, with strongly visible rarity progression. Input image 1: reference for this character's unique face, species, palette and signature prop ONLY; do NOT copy its pose or existing equipment level. Input image 2: reference for the approved polished hand-painted 2D rendering, rich volume and material quality ONLY; never copy that other character's anatomy, costume, wings or props. Keep this character immediately recognizable from other lineages at 150px. Mature adult humanoid proportions, not chibi. Rich painterly volume, layered cloth and believable leather/stone/metal, crisp readable silhouette and broad color blocks. Frame a full body and every prop or wing entirely within a square canvas with generous transparent margins. No scene, floor, card, labels, frame, text, logo or watermark; genuinely alpha-transparent background.  Character: A mature athletic adult human woman royal commander aged 42, stern scarred face, short SILVER cropped hair, dark iron armor, ochre-orange military sash and one great upright OCHRE banner with a plain dark sun emblem, burgundy cape. Practical reserved officer becoming a proud imperious queen-general, not a generic blonde princess. LOWEST TIER: modest, restrained and plainly equipped; reserved posture and little magic. Real painterly volume and material shading remain present, but almost no decoration. Do not make this baseline grand or heavily armored. Pose (mandatory, do not reuse the reference pose): Side-right reserved guard pose, banner held low close to the body, sword sheathed, stern quiet face. Equipment and visible powers: practical dark iron breast guard and fitted opaque riding trousers, small plain ochre banner. The heroine is a clearly mature adult, age 30 or older, with an attractive curvy adult silhouette and confident glamorous presence. Keep coherent adult anatomy and a fully clothed body; costume tailoring, expressive face and heroic posture convey her femininity. No exaggerated anatomical growth or body-part focus; this is a full-body fantasy adventure character illustration. Keep her personality and signature prop distinct.",
+      "stageIndex": 0,
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-b13a2ac6-52c2-4d4b-9a2d-60f8c6ba4a27.png",
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 303,
+        "height": 420
+      }
+    },
+    {
+      "id": "captain-rare",
+      "baseId": "captain",
+      "rarity": "rare",
+      "faction": "order",
+      "name": "Capitaine du bastion",
+      "path": "apps/web/public/art/characters/evolutions/captain-rare.webp",
+      "transparent": true,
+      "reference": "docs/art-references/rarity-progressions/captain.webp",
+      "styleReference": "docs/art-samples/rarity-progression-v2/enchantress-legendary.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original full-body alpha-transparent sprite for Sylve, a fantasy tactical card game, with strongly visible rarity progression. Input image 1: reference for this character's unique face, species, palette and signature prop ONLY; do NOT copy its pose or existing equipment level. Input image 2: reference for the approved polished hand-painted 2D rendering, rich volume and material quality ONLY; never copy that other character's anatomy, costume, wings or props. Keep this character immediately recognizable from other lineages at 150px. Mature adult humanoid proportions, not chibi. Rich painterly volume, layered cloth and believable leather/stone/metal, crisp readable silhouette and broad color blocks. Frame a full body and every prop or wing entirely within a square canvas with generous transparent margins. No scene, floor, card, labels, frame, text, logo or watermark; genuinely alpha-transparent background.  Character: A mature athletic adult human woman royal commander aged 42, stern scarred face, short SILVER cropped hair, dark iron armor, ochre-orange military sash and one great upright OCHRE banner with a plain dark sun emblem, burgundy cape. Practical reserved officer becoming a proud imperious queen-general, not a generic blonde princess. RARE UPGRADE: clearly more assured stance and expression, one major equipment upgrade, a few crafted trims, modest magic and richer materials. Not yet grand regalia. Pose (mandatory, do not reuse the reference pose): Front-left confident standing pose, one hand drawing the sword and one hip shifted, banner diagonally behind her. Equipment and visible powers: tailored dark cuirass with a shaped neckline, opaque fitted armored riding costume, bronze belt and a stronger royal banner. The heroine is a clearly mature adult, age 30 or older, with an attractive curvy adult silhouette and confident glamorous presence. Keep coherent adult anatomy and a fully clothed body; costume tailoring, expressive face and heroic posture convey her femininity. No exaggerated anatomical growth or body-part focus; this is a full-body fantasy adventure character illustration. Keep her personality and signature prop distinct.",
+      "stageIndex": 1,
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-a085b6d8-ec91-4b83-8da0-c722f4d4ac3b.png",
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 376,
+        "height": 381
+      }
+    },
+    {
+      "id": "captain-epic",
+      "baseId": "captain",
+      "rarity": "epic",
+      "faction": "order",
+      "name": "Maréchale du royaume",
+      "path": "apps/web/public/art/characters/evolutions/captain-epic.webp",
+      "transparent": true,
+      "reference": "docs/art-references/rarity-progressions/captain.webp",
+      "styleReference": "docs/art-samples/rarity-progression-v2/enchantress-legendary.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original full-body alpha-transparent sprite for Sylve, a fantasy tactical card game, with strongly visible rarity progression. Input image 1: reference for this character's unique face, species, palette and signature prop ONLY; do NOT copy its pose or existing equipment level. Input image 2: reference for the approved polished hand-painted 2D rendering, rich volume and material quality ONLY; never copy that other character's anatomy, costume, wings or props. Keep this character immediately recognizable from other lineages at 150px. Mature adult humanoid proportions, not chibi. Rich painterly volume, layered cloth and believable leather/stone/metal, crisp readable silhouette and broad color blocks. Frame a full body and every prop or wing entirely within a square canvas with generous transparent margins. No scene, floor, card, labels, frame, text, logo or watermark; genuinely alpha-transparent background.  Character: A mature athletic adult human woman royal commander aged 42, stern scarred face, short SILVER cropped hair, dark iron armor, ochre-orange military sash and one great upright OCHRE banner with a plain dark sun emblem, burgundy cape. Practical reserved officer becoming a proud imperious queen-general, not a generic blonde princess. EPIC UPGRADE: a radically different, expansive pose, visible swagger, stronger adult physique, richer layered equipment and a developed signature power. Concentrate selective engraving, embroidery and gems near the face, primary prop and armor focal points. Pose (mandatory, do not reuse the reference pose): Three-quarter REAR commanding stance, head looking back over shoulder with a proud half-smile, her sculpted riding armor and flowing mantle visible, banner raised to the other side. Equipment and visible powers: ornate black-steel-and-gold corset cuirass covering the torso, opaque fitted riding trousers, sculpted bracers and an enormous ochre standard. The heroine is a clearly mature adult, age 30 or older, with an attractive curvy adult silhouette and confident glamorous presence. Keep coherent adult anatomy and a fully clothed body; costume tailoring, expressive face and heroic posture convey her femininity. No exaggerated anatomical growth or body-part focus; this is a full-body fantasy adventure character illustration. Keep her personality and signature prop distinct.",
+      "stageIndex": 2,
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-fa4c1dd9-3e36-4e99-8f09-9594f000834e.png",
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 390,
+        "height": 389
+      }
+    },
+    {
+      "id": "captain-legendary",
+      "baseId": "captain",
+      "rarity": "legendary",
+      "faction": "order",
+      "name": "Reine de la couronne",
+      "path": "apps/web/public/art/characters/evolutions/captain-legendary.webp",
+      "transparent": true,
+      "reference": "docs/art-references/rarity-progressions/captain.webp",
+      "styleReference": "docs/art-samples/rarity-progression-v2/enchantress-legendary.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE original full-body alpha-transparent sprite for Sylve, a fantasy tactical card game, with strongly visible rarity progression. Input image 1: reference for this character's unique face, species, palette and signature prop ONLY; do NOT copy its pose or existing equipment level. Input image 2: reference for the approved polished hand-painted 2D rendering, rich volume and material quality ONLY; never copy that other character's anatomy, costume, wings or props. Keep this character immediately recognizable from other lineages at 150px. Mature adult humanoid proportions, not chibi. Rich painterly volume, layered cloth and believable leather/stone/metal, crisp readable silhouette and broad color blocks. Frame a full body and every prop or wing entirely within a square canvas with generous transparent margins. No scene, floor, card, labels, frame, text, logo or watermark; genuinely alpha-transparent background.  Character: A mature athletic adult human woman royal commander aged 42, stern scarred face, short SILVER cropped hair, dark iron armor, ochre-orange military sash and one great upright OCHRE banner with a plain dark sun emblem, burgundy cape. Practical reserved officer becoming a proud imperious queen-general, not a generic blonde princess. LEGENDARY ASCENSION: clearly the greatest mass, authority, confidence and ego; grand pose with chin high, impressive signature equipment and strongest contained power. Luxurious textures, sculpted metal and refined focal detail, broad majestic silhouette. Different body orientation and gesture from earlier tiers; never merely a larger version of the same pose. Pose (mandatory, do not reuse the reference pose): Low frontal victorious queen-general pose, chin high and chest out, banner raised above head in one hand, sword pointed outward in the other, broad burgundy mantle. Equipment and visible powers: imperial black-and-gold fitted corset cuirass with a shaped neckline, opaque fitted armored riding costume, exquisite tall boots, a small iron circlet, rich burgundy mantle and a monumental ochre oriflamme. The heroine is a clearly mature adult, age 30 or older, with an attractive curvy adult silhouette and confident glamorous presence. Keep coherent adult anatomy and a fully clothed body; costume tailoring, expressive face and heroic posture convey her femininity. No exaggerated anatomical growth or body-part focus; this is a full-body fantasy adventure character illustration. Keep her personality and signature prop distinct.",
+      "stageIndex": 3,
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-d9b19cc5-bd2b-416d-83ee-679e9e70b97a.png",
+      "width": 512,
+      "height": 512,
+      "silhouetteBox": {
+        "width": 400,
+        "height": 400
+      }
+    }
+  ]
+}
