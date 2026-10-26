@@ -6,6 +6,8 @@ Jeu de cartes tactique en ligne pour deux joueurs, réalisé avec React, TanStac
 
 Après connexion, `/hub` ouvre le refuge des gardiens, un village illustré en plein écran (`/dashboard` redirige vers `/hub`). Les bâtiments donnent accès à l’arène, à l’atelier, à la Maison des gardiens, aux paramètres du compte dans les Archives et au sanctuaire d’invocation. La carte se parcourt à la molette, par glisser à la souris, au clavier et au tactile, avec une barre de défilement horizontale masquée.
 
+Le nouveau décor panoramique **3:1** étend le village et réserve des clairières aux futurs bâtiments. Deux mines produisent même hors connexion : **6 pièces d’or et 2 émeraudes par heure et par niveau du héros**, avec un plafond de **huit heures de production** pour chacune. Une icône apparaît au-dessus de la mine dès qu’une ressource entière peut être récupérée ; cliquer dessus affiche immédiatement le gain et vide la réserve. Le serveur confirme la collecte dans une transaction ; en cas de refus, les soldes et réserves affichés reviennent automatiquement aux valeurs serveur. La production démarre à la première visite du hub ; le niveau utilisé est celui du Gardien géré dans la Maison des gardiens. Les [règles des mines](docs/mines.md) détaillent l’accumulation, les plafonds, le changement de niveau et les protections contre les collectes répétées.
+
 Une barre communautaire reste centrée en bas du hub pendant l’exploration : trois icônes originales donnent accès à **Classement**, **Amis** et **Missions**, avec un bandeau **Chat mondial** repliable en dessous. **Classement** ouvre juste au-dessus des icônes un panneau défilant avec les 50 meilleurs gardiens ayant terminé un combat à trophées, du rang 1 au rang 50, avec leur pseudo, leur ligue et leurs trophées actualisés en direct. Cliquer sur un joueur déplie sa ligne vers le bas : record de trophées, meilleure ligue et deck actuel avec les niveaux, raretés et statistiques des cartes. Le clavier permet de parcourir les joueurs et Échap ferme le panneau. **Amis** affiche jusqu’à 25 amis, les demandes reçues et envoyées, les conversations privées et l’aide quotidienne. La barre s’adapte aux écrans mobiles.
 
 Le **Chat mondial** partage les 100 derniers messages en temps réel entre les joueurs connectés et conserve leur historique dans Convex. Les composants Message et MessageGroup de shadcn sont adaptés au refuge : les messages consécutifs d’un même gardien sont regroupés, avec son pseudo une seule fois et son avatar sur le dernier message. Un changement de jour démarre un nouveau groupe. Entrée envoie le message et Maj + Entrée ajoute une ligne ; chaque message est limité à 500 caractères, avec deux secondes entre deux envois. Le brouillon est conservé à la fermeture du panneau ou en cas d’échec. Le chat, les missions et le classement partagent le même cadre de 620 px maximum, centré au-dessus des raccourcis : ouvrir l’un replie le précédent. Leur hauteur commune reprend celle des missions, soit 660 px maximum, et s’adapte à l’écran. Le chat possède une icône originale de globe dans une bulle dorée.
@@ -37,7 +39,7 @@ Cliquer sur l’avatar d’un gardien dans le chat ouvre son menu : profil publi
 
 ### Sanctuaire et monnaies
 
-Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les émeraudes permettent d’invoquer des cartes. Leur icône originale représente une seule grosse émeraude verte sur fond transparent et apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 émeraudes de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. Aucune autre source d’émeraudes n’est prévue pour le moment. Les soldes existants sont conservés ; le champ de stockage historique `diamonds` reste compatible.
+Le bâtiment du sanctuaire ouvre `/sanctuary`, un temple forestier illustré où les émeraudes permettent d’invoquer des cartes. Leur icône originale représente une seule grosse émeraude verte sur fond transparent et apparaît à côté de l’or en haut des pages connectées, hors combat. Chaque compte, nouveau ou existant, reçoit **3 000 émeraudes de bienvenue une seule fois** ; recharger la page ne renouvelle pas ce crédit. La mine d’émeraudes et les missions épiques permettent aussi d’en gagner. Les soldes existants sont conservés ; le champ de stockage historique `diamonds` reste compatible.
 
 | Pack | Taux par invocation | Une invocation | Dix invocations | Garantie du lot de dix |
 |---|---|---:|---:|---|
@@ -225,6 +227,12 @@ Créer les applications OAuth auprès des fournisseurs concernés, puis ajouter 
 Configurer également les URL de retour OAuth chez chaque fournisseur en fonction de l’URL de l’application.
 
 ## Dépannage
+
+### « Connecte-toi pour jouer » dans les logs de `bun run dev`
+
+Si Convex affiche `Convex functions ready!`, le backend a démarré. Ce message vient d’une requête du jeu reçue sans session valide. Le frontend attend la confirmation de Convex et la validation de la session Better Auth avant de charger les pages protégées et les compteurs ; une session expirée renvoie vers la connexion, puis vers la page demandée.
+
+Si un ancien onglet affiche encore cette erreur après un redémarrage, actualiser la page et se reconnecter si demandé. L’annonce d’une nouvelle version de Convex est indépendante de cette erreur.
 
 ### « A provided trusted origin is invalid »
 

@@ -21,6 +21,7 @@ import {
   ownedCard,
   playerWallet,
   playerLeague,
+  ensureEmeraldWallet,
 } from "./lib/progression";
 import { migratePlayerCatalogue } from "./lib/catalogue";
 import { recordMissionProgress } from "./lib/missions";
@@ -31,6 +32,8 @@ import {
   observeHero,
   readHeroProgress,
 } from "./lib/heroes";
+import { mineAmount, type MineBoard } from "@sylve/game/mines";
+import { syncMineLevel } from "./lib/mines";
 
 export const hero = query({
   args: {},
@@ -51,8 +54,97 @@ export const upgradeHero = mutation({
         "La puissance du deck est insuffisante pour ce niveau.",
       );
     const record = (await heroRecord(ctx, userId))!;
+    const wallet = await playerWallet(ctx, userId);
+    if (wallet) await syncMineLevel(ctx, wallet, record.level + 1);
     await ctx.db.patch(record._id, { level: record.level + 1 });
     return observeHero(ctx, userId, cards);
+  },
+});
+
+export const mineBoard = query({
+  // Cache invalidation only. Production always uses the server's own clock.
+  args: { refreshKey: v.number() },
+  handler: async (ctx): Promise<MineBoard> => {
+    const { userId } = await requirePlayer(ctx);
+    const [wallet, guardian] = await Promise.all([
+      playerWallet(ctx, userId),
+      heroRecord(ctx, userId),
+    ]);
+    return {
+      ownerId: userId,
+      serverNow: Date.now(),
+      heroLevel: guardian?.level ?? 1,
+      mines: wallet?.mines ?? null,
+    };
+  },
+});
+
+/** First visit starts production once; revisiting never resets the reserve. */
+export const ensureMines = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    await migratePlayerCatalogue(ctx, userId, true);
+    const wallet = await ensureEmeraldWallet(ctx, userId);
+    const heroLevel = (await heroRecord(ctx, userId))?.level ?? 1;
+    if (wallet.mines) {
+      await syncMineLevel(ctx, wallet, heroLevel);
+      return;
+    }
+    const state = {
+      amount: 0,
+      updatedAt: Date.now(),
+      heroLevel,
+      revision: 0,
+    };
+    await ctx.db.patch(wallet._id, { mines: { gold: state, emeralds: state } });
+  },
+});
+
+export const collectMine = mutation({
+  args: {
+    kind: v.union(v.literal("gold"), v.literal("emeralds")),
+    revision: v.number(),
+    expectedOwnerId: v.string(),
+  },
+  handler: async (ctx, { kind, revision, expectedOwnerId }) => {
+    const { userId } = await requirePlayer(ctx);
+    // Pending mutations can be retried after reconnecting with another account.
+    // This is a precondition, never an owner selected by the client.
+    if (userId !== expectedOwnerId)
+      throw new ConvexError(
+        "Ta session a changé. Recharge le refuge avant de collecter.",
+      );
+    if (!Number.isSafeInteger(revision) || revision < 0)
+      throw new ConvexError("Cette collecte est invalide.");
+    const wallet = await playerWallet(ctx, userId);
+    if (!wallet?.mines)
+      throw new ConvexError(
+        "Les mines se préparent. Réessaie dans un instant.",
+      );
+    const state = wallet.mines[kind];
+    // Replayed requests and concurrent tabs cannot collect the same reserve twice.
+    if (state.revision !== revision)
+      return { kind, amount: 0, alreadyCollected: true };
+    const now = Date.now();
+    const total = mineAmount(kind, state, now);
+    const amount = Math.floor(total);
+    if (amount === 0) return { kind, amount: 0, alreadyCollected: false };
+    await ctx.db.patch(wallet._id, {
+      ...(kind === "gold"
+        ? { gold: wallet.gold + amount }
+        : { diamonds: (wallet.diamonds ?? 0) + amount }),
+      mines: {
+        ...wallet.mines,
+        [kind]: {
+          ...state,
+          amount: total - amount,
+          updatedAt: Math.max(now, state.updatedAt),
+          revision: state.revision + 1,
+        },
+      },
+    });
+    return { kind, amount, alreadyCollected: false };
   },
 });
 
@@ -191,11 +283,11 @@ export const upgrade = mutation({
     const card = rules(() =>
       resolveCard(variantId, entry.level + 1, entry.soulbinds),
     );
+    const experience =
+      (wallet.experience ?? 0) + upgradeExperience(entry.level, current.rarity);
     await ctx.db.patch(wallet._id, {
       gold: wallet.gold - goldCost,
-      experience:
-        (wallet.experience ?? 0) +
-        upgradeExperience(entry.level, current.rarity),
+      experience,
     });
     await ctx.db.patch(entry._id, {
       level: entry.level + 1,

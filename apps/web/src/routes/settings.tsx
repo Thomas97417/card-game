@@ -1,5 +1,6 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { requireGameAuth } from "@/lib/game-auth";
 
 import { SettingsPage } from "@/components/settings/settings-page";
 
@@ -15,11 +16,8 @@ export const Route = createFileRoute("/settings")({
     ],
     links: [{ rel: "preload", as: "image", href: "/art/guardian-house.webp" }],
   }),
-  beforeLoad: async ({ context }) => {
-    if (!context.isAuthenticated) {
-      throw redirect({ to: "/sign-in" });
-    }
-  },
+  beforeLoad: ({ context, location }) =>
+    requireGameAuth(context.isAuthenticated, location.href),
   component: RouteComponent,
 });
 

@@ -1,11 +1,11 @@
 import data from "./data/cunt-wars.json";
 import evolutionNames from "./data/evolution-names.json";
 import legendaryNames from "./data/legendary-names.json";
-import {
-  GameError,
-  type CardAbility,
-  type CardDefinition,
-  type CardRarity,
+import { GameError } from "./errors";
+import type {
+  CardAbility,
+  CardDefinition,
+  CardRarity,
 } from "./cards";
 
 export interface SoulbindRequirement {

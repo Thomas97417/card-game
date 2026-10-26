@@ -63,7 +63,7 @@ export interface VictoryChestProgress {
 export const CHEST_LABELS: Record<ChestType, string> = {
   common: "Commun",
   rare: "Rare",
-  bigRare: "Grand rare",
+  bigRare: "grand coffre rare",
   epic: "Épique",
   legendary: "Légendaire",
 };

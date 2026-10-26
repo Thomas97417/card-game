@@ -6,6 +6,7 @@ import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
 import { HubDock } from "./hub-dock";
+import { MineBuildings, type HubMinesProps } from "./mine-building";
 import type { HubMissionsProps } from "./missions-dialog";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
@@ -30,7 +31,7 @@ const PLACES: readonly Place[] = [
     purpose: "Profil et paramètres",
     to: "/settings",
     icon: "archives",
-    area: { left: "11%", top: "5%", width: "23%", height: "40%" },
+    area: { left: "27%", top: "6%", width: "14%", height: "42%" },
   },
   {
     id: "home",
@@ -38,7 +39,7 @@ const PLACES: readonly Place[] = [
     purpose: "Gérer mon Gardien",
     to: "/guardian",
     icon: "guardian",
-    area: { left: "37%", top: "4%", width: "30%", height: "49%" },
+    area: { left: "42%", top: "4%", width: "17%", height: "49%" },
   },
   {
     id: "sanctuary",
@@ -46,7 +47,7 @@ const PLACES: readonly Place[] = [
     purpose: "Invoquer des compagnons",
     to: "/sanctuary",
     icon: "sanctuary",
-    area: { left: "69%", top: "9%", width: "22%", height: "36%" },
+    area: { left: "60%", top: "13%", width: "15%", height: "38%" },
   },
   {
     id: "workshop",
@@ -54,7 +55,7 @@ const PLACES: readonly Place[] = [
     purpose: "Préparer mon deck",
     to: "/decks",
     icon: "all",
-    area: { left: "8%", top: "46%", width: "29%", height: "31%" },
+    area: { left: "25%", top: "49%", width: "20%", height: "31%" },
   },
   {
     id: "arena",
@@ -62,7 +63,7 @@ const PLACES: readonly Place[] = [
     purpose: "Entrer dans le cercle",
     to: "/arena",
     icon: "arena",
-    area: { left: "65%", top: "49%", width: "29%", height: "31%" },
+    area: { left: "57%", top: "51%", width: "21%", height: "29%" },
   },
 ];
 
@@ -73,6 +74,7 @@ const hotspotStyle = cn(
 
 interface VillageHubProps {
   missions?: HubMissionsProps;
+  mines?: HubMinesProps;
   activity?: {
     gameId: Id<"games"> | null;
     status: string | null;
@@ -80,7 +82,7 @@ interface VillageHubProps {
   };
 }
 
-export function VillageHub({ activity, missions }: VillageHubProps) {
+export function VillageHub({ activity, missions, mines }: VillageHubProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
@@ -131,12 +133,12 @@ export function VillageHub({ activity, missions }: VillageHubProps) {
             "cursor-grabbing [&_a]:cursor-grabbing [&_button]:cursor-grabbing",
         )}
       >
-        <div className="relative mx-auto aspect-[1672/941] w-[max(100%,860px,calc(100svh*1.777))] shrink-0 bg-[#35553b]">
+        <div className="relative mx-auto aspect-[3/1] w-[max(100%,1440px,calc(100svh*3))] shrink-0 bg-[#35553b]">
           <img
-            src="/art/guardian-village.jpg"
-            alt="Un refuge forestier : les archives à gauche, la maison des gardiens au centre, le sanctuaire de cristal à droite, l’atelier et l’arène au premier plan."
-            width={1672}
-            height={941}
+            src="/art/guardian-village-mines.webp"
+            alt="Un vaste refuge forestier : la mine d’or à l’ouest, les archives, la maison des gardiens, le sanctuaire, l’atelier et l’arène au centre, puis la mine d’émeraudes à l’est. Des clairières accueillent de futurs bâtiments."
+            width={2172}
+            height={724}
             fetchPriority="high"
             draggable={false}
             onError={() => setMapFailed(true)}
@@ -157,6 +159,7 @@ export function VillageHub({ activity, missions }: VillageHubProps) {
           />
 
           <nav aria-label="Bâtiments du refuge">
+            <MineBuildings {...(mines ?? { pending: [], onCollect: () => {} })} />
             {PLACES.map((place) => {
               const content = (
                 <BuildingLabel

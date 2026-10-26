@@ -1,12 +1,13 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { Link } from "@tanstack/react-router";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
+import { useGameAuth } from "@/hooks/use-game-auth";
 
 export const FriendshipContext = createContext<number | null | undefined>(null);
 
 export function FriendshipProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated } = useGameAuth();
   const tokens = useQuery(api.social.balance, isAuthenticated ? {} : "skip");
   return (
     <FriendshipContext.Provider value={isAuthenticated ? tokens : null}>
