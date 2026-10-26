@@ -1,8 +1,26 @@
 {
   "tool": "Built-in ImageGen",
   "date": "2026-10-26",
-  "scope": "Four edited rarity variants of the adult blonde royal commander: a clearly visible V-neck cuirass and a new frontal epic pose with natural head, neck and shoulder alignment.",
-  "previousRevision": "art-references/captain-adjustment/previous-manifest.json",
+  "scope": "Four rarity variants of an adult blonde commander in the game's stylized painterly style: a humble cheeky guard with a small pennant progresses into a confident warrior queen. Visible V-neck cleavage, messy bun and red-tied braid persist across tiers.",
+  "previousRevision": "art-references/captain-personality/previous-manifest.json",
+  "spriteBounds": [
+    {
+      "width": 300,
+      "height": 365
+    },
+    {
+      "width": 350,
+      "height": 410
+    },
+    {
+      "width": 390,
+      "height": 455
+    },
+    {
+      "width": 400,
+      "height": 480
+    }
+  ],
   "assets": [
     {
       "id": "captain-common",
@@ -12,16 +30,21 @@
       "name": "Capitaine de la couronne",
       "path": "apps/web/public/art/characters/captain.webp",
       "transparent": true,
-      "reference": "docs/art-references/captain-adjustment/captain-common-before.webp",
-      "prompt": "Edit this full-body fantasy game sprite of the Capitaine de la couronne. Preserve the same clearly mature adult woman aged 35: her beautiful face, blue eyes, long golden-blonde braid and high ponytail, voluptuous full-busted adult body, confident expression, orange sun banner, straight sword, burgundy cape, dark steel palette and hand-painted dimensional rendering. Make a precise costume revision: replace the completely closed high-neck breastplate and ivory chest collar with an elegant black-steel cuirass with a clearly visible wide V neckline, exposing the upper chest and natural cleavage. Use opaque supportive breastplate cups with bronze edging and a solid armored lower bodice; keep the sleeves, shoulder armor, leggings, greaves and boots. Move the ochre diagonal sash away from the center of the neckline so it does not cover the V opening; keep an ochre waist sash and ivory fabric at the sleeves. The neckline must read clearly in a small card illustration, not be hidden by cloth, cape or hair. Keep the established COMMON-tier simple steel armor, a few bronze clasps, plain banner and no crown or magical effects. Preserve the restrained front three-quarter guard stance, banner vertical and sword lowered. Anatomically natural head, neck and shoulder alignment, head upright with only a slight turn in the same direction as the torso. Balanced full-body fantasy adventure illustration, with the entire body, hair, banner, sword and boots inside the square canvas and generous transparent margins. Preserve a genuinely alpha-transparent background. No card frame, scene, text, lettering, logos or watermark.",
-      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-91629460-3999-48aa-9256-c4a5fdb30e60.png",
-      "revision": "captain-neckline-and-pose-2026-10-26",
+      "reference": "docs/art-references/captain-personality/archer-style.webp",
+      "references": [
+        "docs/art-references/captain-personality/archer-style.webp",
+        "docs/art-references/captain-personality/enchantress-style.webp",
+        "docs/art-references/captain-personality/captain-common-before.webp"
+      ],
+      "prompt": "Use case: stylized-concept. Create ONE new COMMON-tier full-body sprite of the Capitaine de la couronne for Sylve. Genuinely alpha-transparent background. Input 1 (red-hood archer) and input 2 (white-haired mage) are the PRIMARY style references: match their stylized hand-painted 2D game-unit rendering, expressive adult faces, broad color masses, simple readable cloth folds, matte painted materials, modest brushwork detail and slightly larger head/hands for small-card readability. Input 3 supplies ONLY the blonde curvy adult body type, visible V-neck cleavage, dark steel/ochre/burgundy palette and royal sun motif. Completely rethink the equipment level and personality; don't copy input 3's polished model face or heavy armor. CHARACTER: clearly mature adult woman aged 35, voluptuous full-busted build, blue eyes, a broad expressive adult face, one small nick through her left eyebrow, a mischievous crooked closed-mouth grin, and GOLDEN BLONDE hair in a messy high bun with ONE thick loose side braid tied with a visible burgundy ribbon. She is a scrappy, cheeky, stubborn guard with streetwise confidence; relaxed asymmetry and an eyebrow raised, not a generic glamorous fashion model. Keep the clearly visible generous V-neck cleavage in a fitted, opaque dark-iron corslet with bronze edges, solid breastplate cups and an armored lower bodice. COMMON EQUIPMENT MUST LOOK HUMBLE: one plain scratched iron corslet, ONE small shoulder plate, rolled ivory linen sleeves, a simple ochre waist sash, gray cloth trousers, brown leather boots and leather wrist guards. A short plain sword remains SHEATHED at her hip. One short ordinary wooden pole carries a SMALL orange triangular pennant with one rough dark sun. No long cape, no metal greaves, no crown, no jewel, no full plate armor, no large standard, no gold filigree and no magical aura. Pose: casual front three-quarter slouch, one knee relaxed, one hand resting on her sheathed sword's pommel, the other holding the small pennant pole loosely, head upright naturally aligned with chest and shoulders, a wry challenging half-smile. Keep a compact tall silhouette with all props close to the body, complete boots and pennant visible, generous transparent margins inside a square canvas. This is deliberately the modest baseline for three visibly stronger future forms. Mature adult anatomy, painterly simplified volumes and crisp silhouette like the first two game references. No realistic skin pores, photorealism, micro-engraving, busy texture, scene, floor, text, card frame, logo or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-5c94cbfa-7611-44ff-ba92-e972566d557e.png",
+      "revision": "captain-personality-and-progression-2026-10-26",
       "stageIndex": 0,
       "width": 512,
       "height": 512,
       "silhouetteBox": {
-        "width": 335,
-        "height": 420
+        "width": 214,
+        "height": 365
       }
     },
     {
@@ -32,17 +55,22 @@
       "name": "Capitaine du bastion",
       "path": "apps/web/public/art/characters/evolutions/captain-rare.webp",
       "transparent": true,
-      "reference": "docs/art-references/captain-adjustment/captain-rare-before.webp",
-      "styleReference": "docs/art-references/captain-adjustment/captain-common-neckline.webp",
-      "prompt": "Edit this full-body fantasy game sprite of an adult royal female commander. Image 1 is the existing rarity variant to edit; image 2 defines the approved new V-neck armor design and the exact adult woman's face. Preserve this same clearly mature blonde woman aged 35, blue eyes, long golden braid and high ponytail, beautiful strong adult face and voluptuous full-busted figure. Keep her signature orange sun banner, straight longsword, burgundy cape, black-steel and gold armor, ivory sleeve fabric and hand-painted dimensional style. COSTUME REVISION: use the clearly visible wide V neckline from image 2, with bare upper chest and natural cleavage framed by opaque bronze/gold-edged supportive breastplate cups and a solid armored lower bodice. Remove the closed ivory chest collar and any cloth bridging across the neckline. Route the ochre sash along one side and at the waist so it does not cover the V opening; attach the cape at the sides of the shoulders. Keep the armored sleeves, hips, leggings, greaves and boots. Balanced full-body adventure-character illustration, no cropped anatomy close-up. Maintain natural head, neck and shoulder anatomy and a genuinely alpha-transparent background. Keep the entire figure, sword, banner, hair and boots within the square canvas, with transparent margins. No scene, floor, card frame, text, lettering, logos or watermark. Preserve the existing RARE advancing three-quarter stance, sword extended outward at her side, banner angled back, self-assured expression and selective gold sun engravings. Preserve the intermediate armor detail, no crown. Change the neckline and sash placement only, plus any small adjustment needed for a relaxed anatomically natural neck; keep the head facing in the same direction as the torso.",
-      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-9a359bc6-9665-478a-97a5-c79653a4b610.png",
-      "revision": "captain-neckline-and-pose-2026-10-26",
+      "reference": "docs/art-references/captain-personality/captain-common-new.webp",
+      "styleReference": "docs/art-references/captain-personality/archer-style.webp",
+      "references": [
+        "docs/art-references/captain-personality/captain-common-new.webp",
+        "docs/art-references/captain-personality/captain-legendary-new.webp",
+        "docs/art-references/captain-personality/archer-style.webp"
+      ],
+      "prompt": "Use case: stylized-concept. Create ONE full-body alpha-transparent fantasy game sprite of the Capitaine de la couronne for Sylve. Input 1 is her approved COMMON form and defines her exact personality and primary painterly style. Input 2 is her approved LEGENDARY form and defines the upper equipment ceiling, not the rank to copy. Input 3 is the game's red-hood archer style reference. SAME clearly mature adult blonde woman aged 35 in every tier: voluptuous full-busted adult body, clearly visible generous V-neck cleavage framed by opaque dark-iron fitted breastplate cups and armored lower bodice, blue eyes, broad expressive adult face, left eyebrow nick, mischievous crooked grin, messy golden-blonde high bun and one thick loose side braid tied with a visible burgundy ribbon. A cheeky, stubborn, streetwise guard becoming a fiercely confident commander. Keep the orange sun pennant/standard, dark iron, ochre waist sash, burgundy cloth and ivory sleeve accents. Maintain Sylve's stylized hand-painted 2D unit rendering, slightly larger expressive adult head/hands, broad painted forms, matte materials, large readable folds and focused rather than all-over detail. No photorealistic skin or fashion-model finish. Tall compact silhouette, props kept close to the body, full body, boots, complete sword and flag entirely inside a square with generous transparent margins. Neck upright and natural, head and chest always face the same direction; never look back over a twisted shoulder. No scene, floor, text, lettering, card frame, logo or watermark. RARE tier ONLY, visibly between the humble guard and full-plated queen. EQUIPMENT: a plain dark-iron V-neck corslet, TWO modest unadorned shoulder plates, steel wrist bracers and small simple knee guards over GRAY CLOTH TROUSERS and BROWN LEATHER BOOTS. Her legs remain mostly cloth and leather; NO plated greaves or full leg armor. A SHORT burgundy half-cape ending at the waist, not a long mantle. A MEDIUM orange rectangular field pennant with one simple dark sun on an ordinary pole; clearly larger than common's tiny triangle, much smaller than the royal standard. A drawn practical SHORT sword with a plain bronze crossguard. One small bronze sun badge, almost no engraving. NO crown, no jewels, no royal gold shoulder guards, no long royal cape, no golden aura. POSE: lively advancing guard stance turned toward the viewer's right, one knee bent and one boot stepping forward, sword ready diagonally across her lower front, pennant pole tilted slightly back beside her shoulder. Head and sternum face the SAME three-quarter direction naturally. An eager cocky grin and one eyebrow raised convey boldness; keep the red-tied braid and bun readable. Keep the open neckline clearly unobstructed by the short cape or sash.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-8757406a-7aa9-464a-8b4f-121bf5d10cec.png",
+      "revision": "captain-personality-and-progression-2026-10-26",
       "stageIndex": 1,
       "width": 512,
       "height": 512,
       "silhouetteBox": {
-        "width": 376,
-        "height": 372
+        "width": 334,
+        "height": 410
       }
     },
     {
@@ -53,17 +81,30 @@
       "name": "Maréchale du royaume",
       "path": "apps/web/public/art/characters/evolutions/captain-epic.webp",
       "transparent": true,
-      "reference": "docs/art-references/captain-adjustment/captain-epic-before.webp",
-      "styleReference": "docs/art-references/captain-adjustment/captain-common-neckline.webp",
-      "prompt": "Edit this full-body fantasy game sprite of an adult royal female commander. Image 1 is the existing rarity variant to edit; image 2 defines the approved new V-neck armor design and the exact adult woman's face. Preserve this same clearly mature blonde woman aged 35, blue eyes, long golden braid and high ponytail, beautiful strong adult face and voluptuous full-busted figure. Keep her signature orange sun banner, straight longsword, burgundy cape, black-steel and gold armor, ivory sleeve fabric and hand-painted dimensional style. COSTUME REVISION: use the clearly visible wide V neckline from image 2, with bare upper chest and natural cleavage framed by opaque bronze/gold-edged supportive breastplate cups and a solid armored lower bodice. Remove the closed ivory chest collar and any cloth bridging across the neckline. Route the ochre sash along one side and at the waist so it does not cover the V opening; attach the cape at the sides of the shoulders. Keep the armored sleeves, hips, leggings, greaves and boots. Balanced full-body adventure-character illustration, no cropped anatomy close-up. Maintain natural head, neck and shoulder anatomy and a genuinely alpha-transparent background. Keep the entire figure, sword, banner, hair and boots within the square canvas, with transparent margins. No scene, floor, card frame, text, lettering, logos or watermark. IMPORTANT ANATOMY CORRECTION: replace the old over-the-shoulder twisting pose entirely. New EPIC pose is a straightforward FRONT-facing command stance, feet apart with the left foot slightly forward, the torso turned only a few degrees toward the viewer's left. The face looks straight forward in exactly the same direction as the sternum. Head upright and centered over the rib cage, chin level, neck vertical and correctly seated between relaxed shoulders. No looking backward, no neck twist, no head thrown over a shoulder, no shoulder raised into the jaw. The entire chest front is clearly visible so the neck and shoulders read naturally. Let the long braid fall over one shoulder without hiding the neck. Sword arm extends diagonally down and forward, banner held upright to the opposite side, away from the head. Confident composed commanding expression, rich EPIC black-steel/gold marshal armor and flowing burgundy cape with embroidered suns, no crown. The new open V-neck armor matches image 2. Keep her beautiful mature adult face recognizable while changing the problematic head/torso orientation.",
-      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-b1e3d6cc-9f37-4f97-b968-c78430ab2b6a.png",
-      "revision": "captain-neckline-and-pose-2026-10-26",
+      "reference": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-8216dae6-eb96-48b1-ba35-9a5435d9e4e1.png",
+      "references": [
+        "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-8216dae6-eb96-48b1-ba35-9a5435d9e4e1.png"
+      ],
+      "prompt": "Precise framing correction to this approved full-body fantasy game sprite. Keep the exact same adult blonde commander, face, mischievous smile, messy bun and red-tied braid, visible V-neck cleavage, steel armor, burgundy officer cape, sun banner, body anatomy, color palette and hand-painted style. The raised sword tip is cut by the TOP edge. Adjust ONLY the raised sword's angle slightly, lowering it just enough toward the outside of the figure, and reconstruct the COMPLETE pointed tip so the entire blade is visibly inside the square canvas, with at least a small clean transparent margin above the tip. Keep the commanding raised-sword gesture, hand position as close as possible to the original, and preserve the natural frontal head/neck/shoulder alignment. Do not add a crown, gold royal shoulder plates or other equipment. Keep the whole banner, full boots and body visible. Preserve the genuinely alpha-transparent background; no text, card border, scene or watermark.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-d8f81231-da54-44b3-b200-f0a8bd003620.png",
+      "revision": "captain-personality-and-progression-2026-10-26",
       "stageIndex": 2,
+      "editHistory": [
+        {
+          "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-8216dae6-eb96-48b1-ba35-9a5435d9e4e1.png",
+          "prompt": "Use case: stylized-concept. Create ONE full-body alpha-transparent fantasy game sprite of the Capitaine de la couronne for Sylve. Input 1 is her approved COMMON form and defines her exact personality and primary painterly style. Input 2 is her approved LEGENDARY form and defines the upper equipment ceiling, not the rank to copy. Input 3 is the game's red-hood archer style reference. SAME clearly mature adult blonde woman aged 35 in every tier: voluptuous full-busted adult body, clearly visible generous V-neck cleavage framed by opaque dark-iron fitted breastplate cups and armored lower bodice, blue eyes, broad expressive adult face, left eyebrow nick, mischievous crooked grin, messy golden-blonde high bun and one thick loose side braid tied with a visible burgundy ribbon. A cheeky, stubborn, streetwise guard becoming a fiercely confident commander. Keep the orange sun pennant/standard, dark iron, ochre waist sash, burgundy cloth and ivory sleeve accents. Maintain Sylve's stylized hand-painted 2D unit rendering, slightly larger expressive adult head/hands, broad painted forms, matte materials, large readable folds and focused rather than all-over detail. No photorealistic skin or fashion-model finish. Tall compact silhouette, props kept close to the body, full body, boots, complete sword and flag entirely inside a square with generous transparent margins. Neck upright and natural, head and chest always face the same direction; never look back over a twisted shoulder. No scene, floor, text, lettering, card frame, logo or watermark. EPIC MARSHAL tier: newly complete DARK-STEEL armor with both shoulder guards, forearm plates, thigh plates, knee guards and dark-steel greaves. LIMITED bronze/gold trim and one sun badge, not the legendary queen's huge gilded sun shoulder guards. A LONG SINGLE-PANEL burgundy officer cape with plain ochre edging, no layered royal ivory-gold lining. A LARGE orange rectangular military standard with ONE broad tail and one dark sun on a bronze-topped pole. A capable steel longsword with a crafted sun crossguard. The blonde messy bun is bare: NO crown, diadem, halo or head jewelry. No royal mantle, giant gold shoulder sun panels or golden blade aura; those belong only to the legendary. POSE: commanding FRONT-facing stance with feet apart and one boot forward, head upright centered over the rib cage, chin level, head and torso looking forward together. She raises her sword diagonally upward beside one shoulder in a clear order-to-advance gesture, keeping the blade away from her head and face, while the other hand plants the military standard upright close to her other side. A bold confident half-laughing grin and a raised eyebrow, not a solemn generic portrait. The generous V neckline and red-tied braid remain clearly visible. Broad confident officer silhouette, noticeably more mass than rare but below the crowned golden queen.",
+          "references": [
+            "docs/art-references/captain-personality/captain-common-new.webp",
+            "docs/art-references/captain-personality/captain-legendary-new.webp",
+            "docs/art-references/captain-personality/archer-style.webp"
+          ]
+        }
+      ],
       "width": 512,
       "height": 512,
       "silhouetteBox": {
         "width": 390,
-        "height": 391
+        "height": 426
       }
     },
     {
@@ -74,17 +115,22 @@
       "name": "Reine de la couronne",
       "path": "apps/web/public/art/characters/evolutions/captain-legendary.webp",
       "transparent": true,
-      "reference": "docs/art-references/captain-adjustment/captain-legendary-before.webp",
-      "styleReference": "docs/art-references/captain-adjustment/captain-common-neckline.webp",
-      "prompt": "Edit this full-body fantasy game sprite of an adult royal female commander. Image 1 is the existing rarity variant to edit; image 2 defines the approved new V-neck armor design and the exact adult woman's face. Preserve this same clearly mature blonde woman aged 35, blue eyes, long golden braid and high ponytail, beautiful strong adult face and voluptuous full-busted figure. Keep her signature orange sun banner, straight longsword, burgundy cape, black-steel and gold armor, ivory sleeve fabric and hand-painted dimensional style. COSTUME REVISION: use the clearly visible wide V neckline from image 2, with bare upper chest and natural cleavage framed by opaque bronze/gold-edged supportive breastplate cups and a solid armored lower bodice. Remove the closed ivory chest collar and any cloth bridging across the neckline. Route the ochre sash along one side and at the waist so it does not cover the V opening; attach the cape at the sides of the shoulders. Keep the armored sleeves, hips, leggings, greaves and boots. Balanced full-body adventure-character illustration, no cropped anatomy close-up. Maintain natural head, neck and shoulder anatomy and a genuinely alpha-transparent background. Keep the entire figure, sword, banner, hair and boots within the square canvas, with transparent margins. No scene, floor, card frame, text, lettering, logos or watermark. Preserve the existing LEGENDARY proud frontal three-quarter sovereign stance, magnificent sun banner raised high to one side, extended royal sword on the other, ivory-gold crown, majestic burgundy cape, strongest gold sun armor and contained golden sword gleam. Keep the same adult face and body. Revise the upper armor to the wide V neckline from image 2, with its natural cleavage clearly visible. Place the ornate royal sun crest lower on the solid breastplate below the V opening so it does not obscure the neckline. Preserve the grand rarity detail and make the head and neck upright and naturally aligned over the shoulders.",
-      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-9f1a46ff-ff83-430b-9bcf-672fa29b4ca1.png",
-      "revision": "captain-neckline-and-pose-2026-10-26",
+      "reference": "docs/art-references/captain-personality/captain-common-new.webp",
+      "styleReference": "docs/art-references/captain-personality/guardian-legendary-style.webp",
+      "references": [
+        "docs/art-references/captain-personality/captain-common-new.webp",
+        "docs/art-references/captain-personality/guardian-legendary-style.webp",
+        "docs/art-references/captain-personality/archer-style.webp"
+      ],
+      "prompt": "Use case: stylized-concept. Create ONE LEGENDARY full-body sprite of the adult Capitaine de la couronne for Sylve, genuinely alpha-transparent background. Image 1 defines the exact character identity AND primary rendering style: same clearly mature adult woman aged 35, voluptuous full-busted build with visible V-neck cleavage, broad expressive adult face, blue eyes, small left-eyebrow nick, a mischievous crooked grin, golden blonde messy high bun and one thick side braid tied with a burgundy ribbon. Keep this personality: a cheeky streetwise guard who has become an arrogantly triumphant warrior queen. Image 2 (stone guardian) defines the LEGENDARY visual weight, bold plated armor shapes, material shading and selective detail; never copy the stone creature, face or anatomy. Image 3 (red-hood archer) reinforces Sylve's stylized hand-painted 2D unit style: broad painted color masses, expressive mature adult face, readable cloth folds, matte materials and slightly enlarged head/hands for card readability. This legendary MUST have a radically higher equipment level and broader, taller authority than the humble guard in image 1, while unmistakably being the same woman. FULL LEGENDARY REGALIA: heavy complete black-steel armor with large GOLD-PLATED sun-shaped shoulder guards, plated forearms, armored thighs, gold-edged knee plates and greaves; a grand sunray crown with three clearly readable large gold rays around her messy blonde bun; a broad two-layer burgundy royal mantle with ivory-gold lining; a tall great ochre-orange royal STANDARD with one dark sun and two broad tails; a royal sun longsword with one controlled warm-gold edge gleam. Keep a clearly visible generous V-neck breastplate and natural cleavage, opaque fitted cups and armored lower bodice; place any sun crest below the neckline. The red-tied blonde braid, wry smile and left eyebrow remain her personal signature. POSE: compact tall front three-quarter sovereign stance, legs planted wide, chin raised only slightly, head and torso naturally aligned, a cocky amused victorious smile and one eyebrow raised. One hand holds her great standard raised CLOSE to her body; the other rests on the pommel of the royal blade planted point-down beside her boot. Proud relaxed command, not a generic stiff model pose. Broad majestic silhouette, complete sun crown, mantle and large standard, no timid baseline soldier equipment. Use large shaped armor and controlled engraved sun focal points instead of micro-filigree everywhere. All props stay close so the entire figure and standard make a tall compact shape roughly 70-80% as wide as it is high; full crown, flag, sword and boots entirely visible with generous transparent margins inside a square canvas. Painterly stylized game-unit finish matching images 1 and 3, clear adult anatomy, rich dimensional form. No photorealistic fashion rendering, pores, glossy skin, scenery, floor, card frame, lettering, logo, watermark or scattered particle clutter.",
+      "source": "/Users/thomas/.codex/generated_images/01a17789-2453-79f1-933a-0f744de38bf3/exec-bb3038fd-f218-4da0-80a3-a630cb9a9e98.png",
+      "revision": "captain-personality-and-progression-2026-10-26",
       "stageIndex": 3,
       "width": 512,
       "height": 512,
       "silhouetteBox": {
         "width": 400,
-        "height": 400
+        "height": 440
       }
     }
   ],

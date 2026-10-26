@@ -399,7 +399,7 @@ const definitions = [
     id: "captain",
     name: "Capitaine de la couronne",
     title:
-      "Sous la bannière royale, cette commandante rassemble les soldats du royaume. Son épée ouvre la voie et son serment les unit.",
+      "Ancienne garde de rue au franc-parler mordant, elle mène les soldats de la couronne avec un sourire de défi. Son culot n’a d’égal que sa loyauté envers sa compagnie.",
     color: "#9d9fbc",
     kind: "captain",
     reference: "Warrioress",
