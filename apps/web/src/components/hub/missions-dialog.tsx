@@ -13,10 +13,18 @@ import { EmeraldIcon } from "@/components/emerald-balance";
 import { MissionCheck, MissionSeal } from "./mission-icons";
 import { HubPanel } from "./hub-panel";
 
+export interface MissionSealGain {
+  id: number;
+  kind: MissionPeriodKind;
+  periodKey: string;
+  amount: number;
+}
+
 export interface HubMissionsProps {
   board?: MissionBoard;
   now?: number;
   pending?: string | null;
+  sealGain?: MissionSealGain | null;
   onClaim?: (mission: MissionView) => void;
   onOpenChest?: (
     kind: MissionPeriodKind,
@@ -46,6 +54,7 @@ export function MissionsPanel({
   board,
   now,
   pending,
+  sealGain,
   onClaim,
   onOpenChest,
   onNavigate,
@@ -116,6 +125,11 @@ export function MissionsPanel({
                 kind={tab}
                 track={track}
                 pending={pending}
+                gain={
+                  sealGain?.kind === tab && sealGain.periodKey === track.key
+                    ? sealGain
+                    : undefined
+                }
                 onOpen={onOpenChest}
               />
             )}
@@ -196,6 +210,7 @@ export function MissionsPanel({
                         type="button"
                         className="mission-claim"
                         disabled={!!pending || !onClaim}
+                        aria-busy={pending === mission.id || undefined}
                         onClick={() => onClaim?.(mission)}
                         aria-label={`Récupérer : ${mission.title}`}
                       >
@@ -261,11 +276,13 @@ function MissionChestTrack({
   kind,
   track,
   pending,
+  gain,
   onOpen,
 }: {
   kind: MissionPeriodKind;
   track: MissionTrack;
   pending?: string | null;
+  gain?: MissionSealGain;
   onOpen?: HubMissionsProps["onOpenChest"];
 }) {
   const maximum = track.chests.at(-1)?.threshold ?? 100;
@@ -301,6 +318,18 @@ function MissionChestTrack({
             <small> / {maximum}</small>
           </strong>
           <span>Sceaux de mission</span>
+          {gain && (
+            <div
+              key={gain.id}
+              className="mission-seal-gain"
+              role="status"
+              aria-label={`${gain.amount} sceaux de mission récupérés`}
+              aria-atomic="true"
+            >
+              <MissionSeal />
+              <span>+{gain.amount.toLocaleString("fr-FR")}</span>
+            </div>
+          )}
         </div>
       </div>
       <div
