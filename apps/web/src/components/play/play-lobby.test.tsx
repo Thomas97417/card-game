@@ -226,11 +226,6 @@ describe("le salon de combat", () => {
       );
       expect(screen.getByRole("dialog")).toBeTruthy();
       expect(
-        screen.getByText(
-          "150 pièces d’or et 24 exemplaires rejoignent ta collection.",
-        ),
-      ).toBeTruthy();
-      expect(
         [...document.querySelectorAll(".summon-card-back img")].map((image) =>
           image.getAttribute("src"),
         ),

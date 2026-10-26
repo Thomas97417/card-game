@@ -574,9 +574,6 @@
 .chest-reveal-heading h2 {
   font-size: 28px;
 }
-.chest-reveal-heading p {
-  margin-top: 6px;
-}
 .chest-reveal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -26,7 +26,6 @@ import { GoldIcon, useGoldBalance } from "@/components/gold-balance";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 
@@ -98,7 +97,7 @@ export function ChestRevealDialog({
           <>
             <div className="chest-reveal-heading">
               <img
-                src={`/art/chests/${reward.rarity}.webp`}
+                src={`/art/chests/${reward.rarity}-open.webp`}
                 alt=""
                 width={120}
                 height={120}
@@ -113,11 +112,6 @@ export function ChestRevealDialog({
                   {chestName(reward.rarity)}
                 </span>
                 <DialogTitle>Le trésor est à toi.</DialogTitle>
-                <DialogDescription>
-                  {reward.gold.toLocaleString("fr-FR")} pièces d’or et{" "}
-                  {reward.reveals.reduce((sum, item) => sum + item.count, 0)}{" "}
-                  exemplaires rejoignent ta collection.
-                </DialogDescription>
               </div>
             </div>
             <div
