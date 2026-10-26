@@ -61,7 +61,6 @@ function matchData(): DuelData {
 function setup(data = matchData()) {
   const actions = {
     onPlayCard: vi.fn().mockResolvedValue(undefined),
-    onWithdrawCard: vi.fn().mockResolvedValue(undefined),
     onEndTurn: vi.fn().mockResolvedValue(undefined),
     onSurrender: vi.fn().mockResolvedValue(undefined),
   };
@@ -94,7 +93,7 @@ function fieldData(): DuelData {
 describe("éléments du terrain", () => {
   it("renders original scenery art and inspects a neutral building without offering withdrawal", async () => {
     const data = fieldData();
-    const { actions } = setup(data);
+    setup(data);
     const obstacle = data.players[0]!.board[0]!;
     expect(document.querySelectorAll(".neutral-building")).toHaveLength(
       data.players.reduce((total, owner) => total + owner.board.length, 0),
@@ -126,7 +125,6 @@ describe("éléments du terrain", () => {
     expect(
       dialog.queryByRole("button", { name: "Retirer du terrain" }),
     ).toBeNull();
-    expect(actions.onWithdrawCard).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -145,7 +143,7 @@ describe("éléments du terrain", () => {
     expect(dialog.getByRole("heading", { name })).toBeTruthy();
     expect(dialog.getByText(bonus)).toBeTruthy();
     expect(
-      dialog.getByText(/disparaît à sa mort ou à son retrait/),
+      dialog.getByText(/disparaît à sa mort/),
     ).toBeTruthy();
     if (name.startsWith("Rune")) {
       expect(dialog.getByText(/immédiatement, une seule fois/)).toBeTruthy();
@@ -279,7 +277,7 @@ describe("inspection pendant un duel", () => {
     },
   );
 
-  it("shows the melee blocker in the card dialog while allowing withdrawal", async () => {
+  it("shows the melee blocker without offering withdrawal", async () => {
     const data = matchData();
     const player = data.players[0]!;
     const turtle = player.deck.find((card) => card.id === "turtle")!;
@@ -303,12 +301,8 @@ describe("inspection pendant un duel", () => {
       dialog.getByText("Bloquée : un allié est devant elle sur cette rangée."),
     ).toBeTruthy();
     expect(
-      (
-        dialog.getByRole("button", {
-          name: "Retirer du terrain",
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(false);
+      dialog.queryByRole("button", { name: "Retirer du terrain" }),
+    ).toBeNull();
   });
 
   it.each(["opponent", "summoned", "finished", "expired"] as const)(
@@ -321,7 +315,6 @@ describe("inspection pendant un duel", () => {
       if (reason === "expired") data.turnEndsAt = Date.now() - 1;
       const actions = {
         onPlayCard: vi.fn(),
-        onWithdrawCard: vi.fn(),
         onEndTurn: vi.fn(),
         onSurrender: vi.fn(),
       };
@@ -339,8 +332,8 @@ describe("inspection pendant un duel", () => {
     },
   );
 
-  it("shows wounded own creatures and preserves withdrawal", async () => {
-    const { data, actions } = setup();
+  it("shows wounded own creatures without deployment or withdrawal actions", async () => {
+    const { actions } = setup();
     fireEvent.click(
       await screen.findByRole("button", {
         name: "Gardien de pierre, Corps à corps, puissance 3, 4 PV, voir les informations",
@@ -350,15 +343,12 @@ describe("inspection pendant un duel", () => {
     expect(dialog.getByLabelText("4 points de vie")).toBeTruthy();
     expect(dialog.getByText("/ 10")).toBeTruthy();
     expect(dialog.getByText("Ligne 2 · Milieu")).toBeTruthy();
-    fireEvent.click(dialog.getByRole("button", { name: "Retirer du terrain" }));
-    expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn, {
-      row: 1,
-      depth: 1,
-    });
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
+    expect(dialog.queryByRole("button", { name: "Choisir une case" })).toBeNull();
+    expect(actions.onPlayCard).not.toHaveBeenCalled();
   });
 
-  it("inspects and withdraws the selected copy when two creatures share a variant", async () => {
+  it("inspects the selected copy without actions even when that variant is in hand", async () => {
     const data = matchData();
     const player = data.players[0]!;
     const card = player.deck.find((card) => card.id === "guardian")!;
@@ -374,11 +364,8 @@ describe("inspection pendant un duel", () => {
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByLabelText("7 points de vie")).toBeTruthy();
     expect(dialog.getByText("Ligne 4 · Avant")).toBeTruthy();
-    fireEvent.click(dialog.getByRole("button", { name: "Retirer du terrain" }));
-    expect(actions.onWithdrawCard).toHaveBeenCalledWith("guardian", data.turn, {
-      row: 3,
-      depth: 0,
-    });
+    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
+    expect(dialog.queryByRole("button", { name: "Choisir une case" })).toBeNull();
     expect(actions.onPlayCard).not.toHaveBeenCalled();
   });
 
@@ -391,7 +378,6 @@ describe("inspection pendant un duel", () => {
     });
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(actions.onPlayCard).not.toHaveBeenCalled();
-    expect(actions.onWithdrawCard).not.toHaveBeenCalled();
   });
 
   it("inspects enemy creatures during the opponent's turn without offering withdrawal", async () => {
@@ -410,7 +396,7 @@ describe("inspection pendant un duel", () => {
     ).toBeNull();
   });
 
-  it.each(["own hero", "own deck", "enemy hero"] as const)(
+  it.each(["own hero", "enemy hero"] as const)(
     "opens %s on its side, with its deck and individual cards",
     async (target) => {
       const { data } = setup();
@@ -418,12 +404,9 @@ describe("inspection pendant un duel", () => {
       const player = data.players[own ? data.me : 1 - data.me]!;
       fireEvent.click(
         await screen.findByRole("button", {
-          name:
-            target === "own deck"
-              ? "Voir mon deck"
-              : own
-                ? `Voir Alice, ${player.heroHp} PV`
-                : `Voir Bob, ${player.heroHp} PV`,
+          name: own
+            ? `Voir Alice, ${player.heroHp} PV`
+            : `Voir Bob, ${player.heroHp} PV`,
         }),
       );
       expect(screen.getByRole("dialog").getAttribute("data-placement")).toBe(
@@ -444,7 +427,7 @@ describe("inspection pendant un duel", () => {
       expect(
         dialog.getAllByRole("button", { name: /voir les informations/ }),
       ).toHaveLength(8);
-      const card = data.players[own ? 0 : 1]!.deck[0]!;
+      const card = own ? player.hand[0]! : player.deck[0]!;
       fireEvent.click(
         dialog.getByRole("button", { name: new RegExp(`${card.name},`) }),
       );
@@ -453,10 +436,10 @@ describe("inspection pendant un duel", () => {
         own ? "left" : "right",
       );
       expect(dialog.getByRole("heading", { name: card.name })).toBeTruthy();
-      if (!own)
-        expect(
-          dialog.queryByRole("button", { name: "Choisir une case" }),
-        ).toBeNull();
+      expect(
+        dialog.queryByRole("button", { name: "Choisir une case" }),
+      ).toBeNull();
+      expect(dialog.queryByText(/Choisis une case pour invoquer/)).toBeNull();
       fireEvent.click(dialog.getByRole("button", { name: "Retour au héros" }));
       expect(
         dialog.getByRole("heading", {
@@ -524,12 +507,10 @@ describe("inspection pendant un duel", () => {
       ).toBeTruthy(),
     );
     expect(
-      (
-        within(screen.getByRole("dialog")).getByRole("button", {
-          name: "Retirer du terrain",
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
+      within(screen.getByRole("dialog")).queryByRole("button", {
+        name: "Retirer du terrain",
+      }),
+    ).toBeNull();
     next.players[0]!.board = [];
     rerender(<DuelScreen data={structuredClone(next)} {...actions} practice />);
     await waitFor(() =>

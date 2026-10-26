@@ -291,92 +291,42 @@ describe("invocation", () => {
   });
 });
 describe("retrait du terrain", () => {
-  it("removes a creature without changing the hand, input or turn", () => {
+  it.each([undefined, { row: 2, depth: 1 }])(
+    "rejects withdrawing a deployed creature without changing the game: %o",
+    (position) => {
+      const state = initial();
+      unit(state, 0, "guardian", 2, 1, 4);
+      const before = structuredClone(state);
+      expect(() => withdraw(state, 0, "guardian", 1, 2, position)).toThrow(
+        "ne peuvent pas être retirées",
+      );
+      expect(state).toEqual(before);
+    },
+  );
+  it("keeps both copies deployed even when the variant is also in hand", () => {
     const state = initial();
-    const id = state.players[0]!.hand[0]!;
-    unit(state, 0, id, 2, 1);
-    const result = withdraw(state, 0, id, 1, 2);
-    expect(state.players[0]!.board).toHaveLength(1);
-    expect(result.state.players[0]!.board).toEqual([]);
-    expect(result.state.players[0]!.discard).toEqual([]);
-    expect(result.state.players[0]!.hand).toEqual(state.players[0]!.hand);
-    expect(result.state.hasSummoned).toBe(false);
-    expect(result.state.turn).toBe(1);
-    expect(result.events).toEqual([
-      { seq: 1, type: "withdraw", player: 0, cardId: id, row: 2, depth: 1 },
-    ]);
+    unit(state, 0, "guardian", 0, 0);
+    unit(state, 0, "guardian", 2, 1, 4);
+    state.players[0]!.hand.push("guardian");
+    const before = structuredClone(state);
+    for (const position of [undefined, { row: 2, depth: 1 }]) {
+      expect(() => withdraw(state, 0, "guardian", 1, 2, position)).toThrow(
+        "ne peuvent pas être retirées",
+      );
+      expect(state).toEqual(before);
+    }
   });
-  it("preserves an unused summon and allows withdrawing with a full hand", () => {
-    const state = initial();
-    const id = state.players[0]!.drawPile[0]!;
-    unit(state, 0, id, 0, 0);
-    const result = withdraw(state, 0, id, 1, 2).state;
-    expect(result.players[0]!.hand).toHaveLength(4);
-    expect(result.hasSummoned).toBe(false);
-    const next = summon(
-      result,
-      0,
-      result.players[0]!.hand[0]!,
-      0,
-      getCombatType(
-        result.players[0]!.cards.find(
-          (card) => card.id === result.players[0]!.hand[0],
-        )!,
-      ) === "melee"
-        ? 0
-        : 2,
-      1,
-      3,
-      random,
-    ).state;
-    expect(next.players[0]!.board).toHaveLength(1);
-    expect(next.players[0]!.discard).toEqual([]);
-  });
-  it("rejects enemy units, duplicate withdrawals, wrong or stale turns and deadlines", () => {
+  it("still checks ownership, the current turn, deadlines and finished games", () => {
     const state = initial();
     unit(state, 1, "guardian", 0, 0);
-    expect(() => withdraw(state, 0, "guardian", 1, 1)).toThrow("camp");
     unit(state, 0, "fox", 0, 0);
+    expect(() => withdraw(state, 0, "guardian", 1, 1)).toThrow("camp");
     expect(() => withdraw(state, 1, "guardian", 1, 1)).toThrow("tour");
     expect(() => withdraw(state, 0, "fox", 0, 1)).toThrow("changé");
     expect(() => withdraw(state, 0, "fox", 1, TURN_MS)).toThrow("écoulé");
-    const removed = withdraw(state, 0, "fox", 1, 2).state;
-    expect(() => withdraw(removed, 0, "fox", 1, 3)).toThrow("camp");
     expect(() => withdraw(surrender(state, 0).state, 0, "fox", 1, 3)).toThrow(
       "terminée",
     );
-  });
-  it("can draw a withdrawn creature at full health", () => {
-    const state = initial();
-    unit(state, 0, "fox", 0, 0, 1);
-    state.players[0]!.drawPile = [];
-    state.players[0]!.hand = ["guardian", "owl", "stag"];
-    const removed = withdraw(state, 0, "fox", 1, 1).state;
-    const opponentTurn = endTurn(removed, 0, 1, 2, random).state;
-    const next = endTurn(opponentTurn, 1, 2, 3, () => 0.999).state;
-    expect(next.players[0]!.hand).toContain("fox");
-    expect(
-      summon(next, 0, "fox", 1, 2, 3, 4, random).state.players[0]!.board[0]!.hp,
-    ).toBe(3);
-  });
-  it("withdraws the selected copy independently and rejects ambiguous or stale positions", () => {
-    const state = initial();
-    state.players[0]!.board = [
-      { cardId: "guardian", row: 0, depth: 0, hp: 9 },
-      { cardId: "guardian", row: 2, depth: 1, hp: 4 },
-    ];
-    expect(() => withdraw(state, 0, "guardian", 1, 1)).toThrow("Choisis");
-    expect(() =>
-      withdraw(state, 0, "guardian", 1, 1, { row: 1, depth: 1 }),
-    ).toThrow("camp");
-    const next = withdraw(state, 0, "guardian", 1, 1, { row: 2, depth: 1 });
-    expect(next.state.players[0]!.board).toEqual([state.players[0]!.board[0]]);
-    expect(next.state.players[0]!.hand).toEqual(state.players[0]!.hand);
-    expect(next.events[0]).toMatchObject({
-      type: "withdraw",
-      row: 2,
-      depth: 1,
-    });
   });
 });
 describe("combat", () => {
@@ -461,7 +411,7 @@ describe("combat", () => {
       expect(result.state.players[1 - player]!.heroHp).toBe(18);
     },
   );
-  it("blocks a newly summoned melee unit, then lets it act once the front unit is withdrawn", () => {
+  it("blocks a newly summoned melee unit and prevents removing its blocker", () => {
     const state = initial();
     unit(state, 0, "guardian", 0, 0);
     state.players[0]!.hand = ["stag"];
@@ -472,13 +422,10 @@ describe("combat", () => {
         .map((event) => event.cardId),
     ).toEqual(["guardian"]);
     const next = endTurn(played.state, 1, 2, 2, random).state;
-    const removed = withdraw(next, 0, "guardian", 3, 3).state;
-    const result = endTurn(removed, 0, 3, 4, random);
-    expect(
-      result.events
-        .filter((event) => event.type === "attack")
-        .map((event) => event.cardId),
-    ).toEqual(["stag"]);
+    expect(() => withdraw(next, 0, "guardian", 3, 3)).toThrow(
+      "ne peuvent pas être retirées",
+    );
+    expect(isMeleeBlocked(next.players[0]!.board[1]!, next.players[0]!.board, next.players[0]!.cards)).toBe(true);
   });
   it("unblocks the rear melee unit after the front unit dies, including legacy snapshots", () => {
     const state = initial();

@@ -53,6 +53,8 @@ function HubContent() {
   const mines = useMineBoard(now);
   const { pending: pendingMines, collectResource } = useMineCollection(mines);
   const ensureMines = useMutation(api.collection.ensureMines);
+  const collection = useQuery(api.collection.list, reward ? {} : "skip");
+  const upgrade = useMutation(api.collection.upgrade);
   const inFlight = useRef(false);
   const board = useQuery(api.missions.board, {
     refreshKey: missionPeriod("daily", now).key,
@@ -122,7 +124,12 @@ function HubContent() {
           onOpenChest: openMissionChest,
         }}
       />
-      <ChestRevealDialog reward={reward} onClose={() => setReward(null)} />
+      <ChestRevealDialog
+        reward={reward}
+        collection={collection}
+        onUpgrade={(variantId) => upgrade({ variantId })}
+        onClose={() => setReward(null)}
+      />
     </>
   );
 }

@@ -104,12 +104,14 @@ La Maison des gardiens présente les pouvoirs actuels et un explorateur des 91 n
 
 | Pouvoir Sylve | Pouvoir Adam | Niveau requis | Disponible à partir de | Effet |
 |---|---|---:|---|---|
-| Tempête de feuilles | Storm | 1 | Son tour 1 | Dégâts magiques à toutes les unités ennemies, avec gestion du bouclier, de l’immunité et des morts. |
+| Tempête de feuilles | Storm | 1 | Son tour 2 | Dégâts magiques à toutes les unités ennemies, avec gestion du bouclier, de l’immunité et des morts. |
 | Appel des éclaireurs | Call To Arms | 11 | Son tour 3 | Jusqu’à deux unités de l’Ordre, féminines, à distance et sans capacité, sur des cases libres des deux colonnes de distance. Les arrivées déclenchent les réactions et les runes. |
 | Élan de la Sylve | Heavenly Power | 21 | Son tour 7 | Bonus d’attaque aux alliés présents, retiré après leurs attaques en fin de tour. |
 | Dernier souffle | Sudden Death | 21 | Son tour 11, puis chaque tour | Dégâts directs au héros adverse, après les trois pouvoirs précédents. Les cartes non utilisées s’accumulent dans la pile. |
 
-Le compteur de disponibilité désigne les **tours propres à chaque joueur** : son troisième passage correspond au tour global 5 ou 6. C’est la convention retenue dans Sylve pour les tours 3, 7 et 11 cités par le wiki. Le wiki ne chiffre pas l’augmentation de Sudden Death : Sylve utilise explicitement **dégâts de Tempête × numéro de la carte Dernier souffle** (6, 12, 18… pour un héros niveau 21). Cette formule est une adaptation, pas une valeur vérifiée du client CW. Les noms, l’ordre strict de la pile demandé pour Sylve et les illustrations sont propres au projet.
+Le compteur de disponibilité désigne les **tours propres à chaque joueur** : son deuxième passage correspond au tour global 3 ou 4, son troisième au tour global 5 ou 6. C’est la convention retenue dans Sylve pour les tours 3, 7 et 11 confirmés dans la [section Skills d’Adam](https://cwars.miraheze.org/wiki/Adam?oldid=23782#Skills), relue le 25 octobre 2026. Cette fiche historique décrit Storm comme disponible dès le début de la bataille ; **le seuil du deuxième tour pour Tempête de feuilles applique la règle demandée pour Sylve**, et ne provient pas de cette ancienne fiche. Avant ce seuil, l’interface affiche « Ton tour 2 » et le moteur refuse le pouvoir, pour le joueur comme pour l’IA.
+
+Le wiki ne chiffre pas l’augmentation de Sudden Death : Sylve utilise explicitement **dégâts de Tempête × numéro de la carte Dernier souffle** (6, 12, 18… pour un héros niveau 21). Cette formule est une adaptation, pas une valeur vérifiée du client CW. Les noms, l’ordre strict de la pile demandé pour Sylve et les illustrations sont propres au projet.
 
 Les parties solo, publiques, amicales et l’entraînement partagent le moteur. L’IA utilise les pouvoirs prêts avant son personnage, avec une étape d’animation par action et une reprise serveur après interruption. Les PV, le niveau, la puissance et la pile sont figés dans chaque partie : une promotion ultérieure ne change pas le duel en cours. Les demandes de pouvoirs vérifient le propriétaire, le tour, le délai, le niveau et le numéro de la carte de pile ; les relances ne rejouent pas le même pouvoir. Une victoire par pouvoir passe par les mêmes récompenses et missions que les autres victoires. Les éclaireuses ne comptent pas comme des cartes jouées depuis la main.
 

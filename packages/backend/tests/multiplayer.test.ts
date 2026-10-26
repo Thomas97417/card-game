@@ -362,7 +362,7 @@ describe("terrain autoritaire", () => {
     expect(await active.query(api.games.get, { gameId })).toEqual(own);
   });
 
-  it.each([{ health: 3 }, { attack: 2 }])("persists a rune's one-time activation and bound lifetime: %o", async (bonus) => {
+  it.each([{ health: 3 }, { attack: 2 }])("persists a rune's one-time activation and rejects withdrawing its bearer: %o", async (bonus) => {
     const { t, alice, bob, gameId } = await match({ field: false });
     const rune = { row: 0, depth: 1, ...bonus };
     const remainingRune = { row: 2, depth: 1, health: 3 };
@@ -395,16 +395,17 @@ describe("terrain autoritaire", () => {
     expect(nextTurn.players[own.me]!.board[0]).toEqual(reconnected.players[own.me]!.board[0]);
     expect(nextTurn.events.filter((event) => event.ability?.startsWith("Rune de")))
       .toEqual(reconnected.events.filter((event) => event.ability?.startsWith("Rune de")));
-    await active.mutation(api.games.withdrawCard, {
+    await expect(active.mutation(api.games.withdrawCard, {
       gameId, cardId: card.id,
       position: { row: rune.row, depth: rune.depth }, expectedTurn: 3,
-    });
+    })).rejects.toThrow("ne peuvent pas être retirées");
     const after = await inactive.query(api.games.get, { gameId });
-    expect(after.players[own.me]!.runes).toEqual([remainingRune]);
+    expect(after.players[own.me]!.runes).toEqual(grantedRunes);
+    expect(after.players[own.me]!.board).toEqual(nextTurn.players[own.me]!.board);
     expect(after.players[own.me]!.deck.find((entry) => entry.id === card.id)).toEqual(card);
   });
 
-  it("persists a pentagram across placement, cumulative turn bonuses and withdrawal", async () => {
+  it("persists a pentagram across placement, cumulative turn bonuses and rejected withdrawal", async () => {
     const { t, alice, bob, gameId } = await match({ field: false });
     const remainingPentagram = { row: 2, depth: 1, attack: 2 };
     await t.run(async (ctx) => {
@@ -442,18 +443,19 @@ describe("terrain autoritaire", () => {
     reconnected = await active.query(api.games.get, { gameId });
     expect(reconnected.players[view.me]!.board.find((unit) => unit.cardId === card.id)!.card.attack).toBe(card.attack + 4);
     expect(reconnected.players[view.me]!.deck.find((entry) => entry.id === card.id)!.attack).toBe(card.attack);
-    await active.mutation(api.games.withdrawCard, {
+    await expect(active.mutation(api.games.withdrawCard, {
       gameId, cardId: card.id,
       position: { row: pentagram.row, depth: pentagram.depth }, expectedTurn: 5,
-    });
+    })).rejects.toThrow("ne peuvent pas être retirées");
     const after = await inactive.query(api.games.get, { gameId });
-    expect(after.players[view.me]!.pentagrams).toEqual([remainingPentagram]);
-    expect(after.events.at(-1)).toMatchObject({ type: "withdraw", pentagrams: [remainingPentagram] });
+    expect(after.players[view.me]!.pentagrams).toEqual(owner.pentagrams);
+    expect(after.players[view.me]!.board).toEqual(reconnected.players[view.me]!.board);
+    expect(after.events).toEqual(reconnected.events);
   });
 });
 
 describe("tours autoritaires", () => {
-  it("redraws a deployed variant and withdraws only the selected duplicate", async () => {
+  it("redraws a deployed variant and keeps both copies on the board", async () => {
     const { alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
@@ -491,7 +493,7 @@ describe("tours autoritaires", () => {
         cardId: card.id,
         expectedTurn: 5,
       }),
-    ).rejects.toThrow("Choisis");
+    ).rejects.toThrow("ne peuvent pas être retirées");
     await expect(
       active.mutation(api.games.withdrawCard, {
         gameId,
@@ -500,18 +502,16 @@ describe("tours autoritaires", () => {
         position: { row: 1, depth },
       }),
     ).rejects.toThrow("camp");
-    await active.mutation(api.games.withdrawCard, {
+    await expect(active.mutation(api.games.withdrawCard, {
       gameId,
       cardId: card.id,
       expectedTurn: 5,
       position: { row: 2, depth },
-    });
+    })).rejects.toThrow("ne peuvent pas être retirées");
     const after = await active.query(api.games.get, { gameId });
-    expect(after.players[own.me]!.board).toHaveLength(1);
-    expect(after.players[own.me]!.board[0]!.row).toBe(0);
-    expect(after.players[own.me]!.hand).toEqual(deployed.players[own.me]!.hand);
+    expect(after).toEqual(deployed);
   });
-  it("synchronizes withdrawals before playing and protects ownership", async () => {
+  it("rejects withdrawals without changing the game and protects ownership", async () => {
     const { t, alice, bob, gameId } = await match({ field: false });
     const initial = await alice.query(api.games.get, { gameId });
     const active = initial.activePlayer === 0 ? alice : bob;
@@ -557,16 +557,18 @@ describe("tours autoritaires", () => {
         expectedTurn: 1,
       }),
     ).rejects.toThrow("camp");
-    await active.mutation(api.games.withdrawCard, {
+    const before = await inactive.query(api.games.get, { gameId });
+    await expect(active.mutation(api.games.withdrawCard, {
       gameId,
       cardId,
       expectedTurn: 1,
-    });
+    })).rejects.toThrow("ne peuvent pas être retirées");
     const other = await inactive.query(api.games.get, { gameId });
-    expect(other.players[own.me]!.board).toEqual([]);
+    expect(other).toEqual(before);
+    expect(other.players[own.me]!.board).toHaveLength(1);
     expect(other.players[own.me]!.discardCount).toBe(0);
     expect(other.players[own.me]!.handCount).toBe(3);
-    expect(other.events.at(-1)!.type).toBe("withdraw");
+    expect(other.events.some((event) => event.type === "withdraw")).toBe(false);
     expect(other.hasSummoned).toBe(false);
     expect(other.turn).toBe(1);
     await expect(
@@ -575,12 +577,12 @@ describe("tours autoritaires", () => {
         cardId,
         expectedTurn: 1,
       }),
-    ).rejects.toThrow("camp");
+    ).rejects.toThrow("ne peuvent pas être retirées");
     const card = own.players[own.me]!.hand[1]!;
     await active.mutation(api.games.playCard, {
       gameId,
       cardId: card.id,
-      row: 0,
+      row: 1,
       depth: getCombatType(card) === "melee" ? 0 : 2,
       expectedTurn: 1,
     });

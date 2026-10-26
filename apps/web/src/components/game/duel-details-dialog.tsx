@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Undo2 } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRef } from "react";
 import type { CSSProperties } from "react";
 import {
@@ -53,20 +53,16 @@ export function DuelDetailsDialog({
   inspection,
   view,
   canSummon,
-  canWithdraw,
   onInspect,
   onClose,
   onSelectCard,
-  onWithdrawCard,
 }: {
   inspection: DuelInspection | null;
   view: GameView;
   canSummon: boolean;
-  canWithdraw: boolean;
   onInspect: (inspection: DuelInspection) => void;
   onClose: () => void;
   onSelectCard: (cardId: string) => void;
-  onWithdrawCard: (cardId: string, position: UnitPosition) => void;
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const player = inspection ? view.players[inspection.playerIndex] : undefined;
@@ -182,7 +178,7 @@ export function DuelDetailsDialog({
                       {inspection.kind === "pentagram" && " Aucun bonus n’est accordé à la pose. Les gains se cumulent à chaque tour."}
                     </p>
                     <p className="details-note">
-                      Le sceau reste lié à son porteur et disparaît à sa mort ou à son retrait.
+                      Le sceau reste lié à son porteur et disparaît à sa mort.
                       {inspection.kind === "rune"
                         ? " La rune ne se réactive pas aux tours suivants."
                         : " Les bonus précédemment gagnés restent acquis tant que le porteur reste en jeu."}
@@ -337,7 +333,7 @@ export function DuelDetailsDialog({
                   />
                 )}
                 <CardAbilities card={card} />
-                {inHand && source !== "board" && (
+                {inHand && source === "hand" && (
                   <div className="details-actions">
                     <p className="details-note">
                       {canChooseCell
@@ -353,27 +349,6 @@ export function DuelDetailsDialog({
                       onClick={() => onSelectCard(card.id)}
                     >
                       Choisir une case <ArrowRight size={16} />
-                    </button>
-                  </div>
-                )}
-                {own && unit && !neutral && (
-                  <div className="details-actions">
-                    <p className="details-note">
-                      Libère sa case avant d’invoquer. Ta main ne change pas et
-                      cette carte reste disponible aux prochains tirages.
-                    </p>
-                    <button
-                      type="button"
-                      className="sylve-button secondary"
-                      disabled={!canWithdraw}
-                      onClick={() =>
-                        onWithdrawCard(card.id, {
-                          row: unit.row,
-                          depth: unit.depth,
-                        })
-                      }
-                    >
-                      <Undo2 size={16} /> Retirer du terrain
                     </button>
                   </div>
                 )}

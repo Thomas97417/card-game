@@ -89,7 +89,6 @@ export function HeroAbilityStack({
           </span>
         </button>
       </div>
-      <span className="hero-power-hint">Avant ta créature</span>
     </aside>
   );
 }

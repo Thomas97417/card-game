@@ -1036,13 +1036,6 @@ button:disabled {
 .hero-power-card[data-ready="true"] .hero-power-status {
   color: #d7f1a9;
 }
-.hero-power-hint {
-  display: block;
-  margin-top: 7px;
-  font-size: 9px;
-  color: #e3ddc4;
-  text-shadow: 0 1px 4px #071c1a;
-}
 .hero-level-badge {
   position: absolute;
   bottom: 3%;
@@ -1208,9 +1201,6 @@ button:disabled {
   }
   .hero-power-heading {
     margin-bottom: 7px;
-    font-size: 8px;
-  }
-  .hero-power-hint {
     font-size: 8px;
   }
 }
@@ -1589,23 +1579,8 @@ button:disabled {
   box-shadow: 0 8px 32px #091a1b40;
   backdrop-filter: blur(12px);
 }
-.hand-deck {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  flex-shrink: 0;
-  width: 38px;
-  min-height: 54px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #e5d5ac;
-  font-size: 10px;
-}
-.hand-deck:hover {
-  background: #e7dbb714;
+.turn-actions:empty {
+  display: none;
 }
 .player-hand {
   display: flex;
@@ -1854,6 +1829,8 @@ button:disabled {
 }
 .duel-details-dialog > [data-slot="dialog-body"] {
   max-height: calc(100svh - var(--dialog-bottom-space) - 34px);
+  scrollbar-width: thin;
+  scrollbar-color: #b99b6077 transparent;
 }
 .hero-details-dialog[data-slot="dialog-content"] {
   width: min(
@@ -2420,9 +2397,6 @@ button:disabled {
     left: max(12px, env(safe-area-inset-left));
     padding: 8px 12px;
     gap: 12px;
-  }
-  .hand-deck {
-    width: 28px;
   }
   .player-hand .card-level,
   .hero-details-dialog .details-deck .card-level {
