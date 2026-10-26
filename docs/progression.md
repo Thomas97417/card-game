@@ -8,6 +8,8 @@ Tous les joueurs commencent en **Fer IV à 0 trophée**, y compris les comptes e
 
 Une promotion arrive tous les **200 trophées** : Fer IV → Fer III (200) → Fer II (400) → Fer I (600) → Bronze IV (800), puis Argent, Or, Platine, Émeraude et Diamant, avec quatre divisions chacun. Maître (5 600), Grand maître (5 800) et Challenger (6 000) terminent le parcours. Au sommet, les trophées continuent de s’accumuler. L’arène affiche la ligue, le total et la progression ; un clic sur l’écusson ouvre le parcours et ses récompenses. Le résultat du combat affiche les trophées gagnés et les éventuelles promotions.
 
+L’écran de résultat célèbre une promotion avec le grand écusson de la ligue et présente les nouveautés illustrées : places de deck et de coffre, liens d’âme, évolutions et nouvelles raretés de coffres. Le record précédant le combat est enregistré avec son résultat (`previousPeakTrophies`) : les nouveautés n’apparaissent qu’au premier franchissement de leur seuil. Une remontée affiche « Ligue retrouvée » sans répéter les déblocages, y compris après une reconnexion. Les anciens résultats sans record ne déduisent aucun nouveau déblocage du seul changement de ligue ; un gain de place de deck explicitement enregistré reste affiché.
+
 Le deck commence avec **4 cartes maximum**, parmi 8 emplacements visibles. Les places verrouillées portent l’illustration des chaînes et indiquent leur condition de déblocage :
 
 | Place supplémentaire | Ligue requise | Trophées |

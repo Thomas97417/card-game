@@ -15,11 +15,13 @@ function DialogContent({
   appearance = "default",
   placement = "center",
   showBackdrop = true,
+  showCloseButton = true,
   ...props
 }: ComponentProps<typeof DialogPrimitive.Popup> & {
   appearance?: "default" | "game";
   placement?: "center" | "left" | "right";
   showBackdrop?: boolean;
+  showCloseButton?: boolean;
 }) {
   return (
     <DialogPrimitive.Portal>
@@ -42,13 +44,15 @@ function DialogContent({
         >
           {children}
         </div>
-        <DialogPrimitive.Close
-          data-slot="dialog-close"
-          aria-label="Fermer la fenêtre"
-          className="absolute top-4 right-4 z-20 grid size-10 place-items-center rounded-full bg-[#f8f6ee]/95 text-[#657363] transition-colors hover:bg-[#e8eadf] hover:text-[#203e33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]"
-        >
-          <X size={19} />
-        </DialogPrimitive.Close>
+        {showCloseButton && (
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            aria-label="Fermer la fenêtre"
+            className="absolute top-4 right-4 z-20 grid size-10 place-items-center rounded-full bg-[#f8f6ee]/95 text-[#657363] transition-colors hover:bg-[#e8eadf] hover:text-[#203e33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#305c4a]"
+          >
+            <X size={19} />
+          </DialogPrimitive.Close>
+        )}
       </DialogPrimitive.Popup>
     </DialogPrimitive.Portal>
   );

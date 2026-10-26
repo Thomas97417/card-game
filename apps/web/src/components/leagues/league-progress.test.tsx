@@ -212,27 +212,24 @@ describe("le parcours des ligues", () => {
     expect(details.queryByText(/À débloquer/)).toBeNull();
   });
 
-  it("shows a promotion and the newly unlocked slot after a threshold win", () => {
+  it("shows earned trophies and the next league after promotion", () => {
     render(
       <LeagueResult
         reward={{ trophies: 25, trophiesTotal: 200, previousTrophies: 175 }}
       />,
     );
-    expect(screen.getByText("Promotion : Fer III !")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Nouvel emplacement débloqué : ton deck peut contenir 5 cartes !",
-      ),
-    ).toBeTruthy();
-    expect(
-      screen
-        .getByRole("img", { name: "Fer III" })
-        .querySelector("img")
-        ?.getAttribute("src"),
-    ).toBe("/art/leagues/iron.webp");
+    expect(screen.getByLabelText("+25 trophées")).toBeTruthy();
+    expect(screen.getByText("Fer III")).toBeTruthy();
+    const progress = screen.getByRole("progressbar", {
+      name: "Progression vers Fer II",
+    });
+    expect(progress.getAttribute("aria-valuenow")).toBe("0");
+    expect(progress.getAttribute("aria-valuetext")).toBe(
+      "200 trophées, 200 avant Fer II",
+    );
   });
 
-  it("announces trophy loss and demotion without chaining earned deck slots", () => {
+  it("shows the actual loss and demotion with the next promotion in sight", () => {
     render(
       <LeagueResult
         reward={{
@@ -244,39 +241,24 @@ describe("le parcours des ligues", () => {
         }}
       />,
     );
-    expect(screen.getByText("Rétrogradation : Fer IV")).toBeTruthy();
-    expect(
-      screen.getByText(/−15 trophées · 185 trophées au total/),
-    ).toBeTruthy();
-    expect(
-      screen.getByText("Tes emplacements de deck restent débloqués."),
-    ).toBeTruthy();
-  });
-
-  it("does not announce a second slot unlock when recovering a previously reached league", () => {
-    render(
-      <LeagueResult
-        reward={{
-          trophies: 25,
-          previousTrophies: 185,
-          trophiesTotal: 210,
-          deckCapacity: 5,
-          deckSlotsGained: 0,
-        }}
-      />,
+    expect(screen.getByText("Rétrogradation · Fer IV")).toBeTruthy();
+    expect(screen.getByLabelText("−15 trophées")).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe(
+      "185 trophées, 15 avant Fer III",
     );
-    expect(screen.getByText("Promotion : Fer III !")).toBeTruthy();
-    expect(screen.queryByText(/Nouvel emplacement débloqué/)).toBeNull();
   });
 
-  it("explains the zero trophy floor on defeat", () => {
+  it("shows the zero trophy floor without redundant explanations", () => {
     render(
       <LeagueResult
         reward={{ trophies: 0, previousTrophies: 0, trophiesTotal: 0 }}
       />,
     );
-    expect(screen.getByText("Aucun trophée perdu")).toBeTruthy();
-    expect(screen.getByText("Tu es déjà à zéro trophée.")).toBeTruthy();
+    expect(screen.getByLabelText("0 trophées")).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "0",
+    );
+    expect(screen.queryByText("Tu es déjà à zéro trophée.")).toBeNull();
   });
 
   it("continues earning trophies in the final league without promising another promotion", () => {

@@ -667,36 +667,6 @@
   font-weight: 800;
   box-shadow: 0 2px 4px #0003;
 }
-.duel-reward {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  margin: 16px 0;
-  border: 1px solid #bc9e6355;
-  border-radius: 8px;
-  background: #d8ba7722;
-  text-align: left;
-  font-size: 12px;
-}
-.duel-reward img {
-  width: 66px;
-  height: 66px;
-  object-fit: contain;
-}
-.duel-reward strong {
-  display: block;
-  font:
-    600 18px Georgia,
-    serif;
-  margin-bottom: 4px;
-}
-.duel-victory-progress {
-  font-size: 12px;
-  color: #91b17f;
-  line-height: 1.6;
-  margin: 12px 0 18px;
-}
 @keyframes reveal-card {
   from {
     opacity: 0;
