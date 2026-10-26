@@ -1,6 +1,6 @@
 # Données Mighty Party conservées
 
-Depuis l’[alignement Cunt Wars](cw-alignment.md), les nouvelles cartes utilisent `packages/game/src/data/cunt-wars.json`. Le nettoyage du 25 octobre 2026 conserve les données historiques nécessaires aux récompenses, migrations et parties enregistrées, et retire les relevés documentaires devenus redondants.
+Depuis l’[alignement Cunt Wars](cw-alignment.md), les nouvelles cartes utilisent `packages/game/src/data/cunt-wars.json`. Le projet conserve les données historiques nécessaires aux récompenses, migrations et parties enregistrées, et retire les relevés documentaires devenus redondants.
 
 ## Données utilisées par l’application
 
@@ -29,8 +29,6 @@ Les premiers instantanés sans capacités ont leur fixture séparée, `test-fixt
 
 Les collectes originales datent des 23 et 24 octobre 2026. Chaque référence de carte conserve son URL et sa date de révision, ainsi que l’empreinte de la page lorsqu’elle était disponible. Les fiches proviennent du [wiki Mighty Party](https://mightyparty.wiki.gg/wiki/Common), avec les tables du [Hero Level Table](https://mightyparty.wiki.gg/wiki/Hero_Level_Table) et de [Chests](https://mightyparty.wiki.gg/wiki/Chests). Les données et descriptions collectées sont attribuées au wiki sous [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Il s’agit de références historiques, sans vérification du client actuel.
 
-Les anciens fichiers `src/data/mighty-party*.json`, les trois longs relevés Markdown, leurs collectes complètes dans `docs/references/mighty-party/` et les anciennes synthèses d’équilibrage ont été remplacés par cette organisation. Les illustrations et leurs manifestes restent conservés.
+Les anciens fichiers `src/data/mighty-party*.json`, les trois longs relevés Markdown, leurs collectes complètes dans `docs/references/mighty-party/` et les anciennes synthèses d’équilibrage ont été remplacés par cette organisation. Les illustrations nécessaires à la version actuelle et aux anciennes parties sont conservées ; leurs prompts disponibles sont regroupés dans `docs/art-prompts.json`.
 
 Pour vérifier un changement : `bun run test`, `bun run check-types`, `bun run build`. Les tests de remboursement utilisent les prix des références indépendantes, et les suites de combat continuent d’exécuter les anciens instantanés avec le moteur actuel.
-
-Validation du nettoyage : **569 tests réussis**, vérification TypeScript et compilation réussies. Les comparaisons avant/après conservent exactement les 2 608 définitions historiques, les 2 184 définitions CW, les coûts et les remboursements. Les 269 définitions d’invocations historiques produisent les mêmes résultats ; les tables de récompenses et profils d’invocations sont conservés octet pour octet.

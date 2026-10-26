@@ -4,34 +4,34 @@ Référence collectée le 25 octobre 2026 sur le [wiki Cunt Wars](https://cwars.
 
 ## Catalogue et correspondances
 
-Les 22 familles Sylve donnent **84 variantes réelles : 18 communes, 22 rares, 22 épiques et 22 légendaires**. Leurs 2 184 paires ATQ/PV, 176 capacités et paliers suivent les fiches CW, du niveau 1 au niveau 26, en Reborn 0. Les noms et illustrations Sylve des formes conservées restent identiques. Les attributs de combat, factions et genres suivent CW ; le Saule, par exemple, devient une unité de mêlée.
+Les 22 familles Sylve donnent **84 variantes réelles : 18 communes, 22 rares, 22 épiques et 22 légendaires**. Leurs 2 184 paires ATQ/PV, 176 capacités et paliers suivent les fiches CW, du niveau 1 au niveau 26, en Reborn 0. Les identifiants et chemins d’illustration des formes conservées restent compatibles ; les noms et l’identité visuelle sont propres à Sylve. Les attributs de combat, factions et genres suivent CW ; le Saule, par exemple, devient une unité de mêlée.
 
 | Famille Sylve | Commune CW | Rare CW | Épique CW | Légendaire CW |
 |---|---|---|---|---|
-| Gardien de pierre | Warrior | Soulblade | Swordmaster | Prince |
-| Renard des braises | Archer | Bowmaster | Ayfe the Arrow | Athena |
-| Oracle des brumes | Apprentice | Acolyte | Battle Priest | Alexandria |
-| Cerf couronné | Pilgrim | Prophet | Lady Clair | D’Arc, Iron Maiden |
-| Sentinelle mousse | Dryad | Leaf Child | Lady Wild | Melia, Forest’s Daughter |
+| Gardien du rempart | Warrior | Soulblade | Swordmaster | Prince |
+| Archère du bastion | Archer | Bowmaster | Ayfe the Arrow | Athena |
+| Prêtresse de l’aurore | Apprentice | Acolyte | Battle Priest | Alexandria |
+| Pèlerine du serment | Pilgrim | Prophet | Lady Clair | D’Arc, Iron Maiden |
+| Dryade des fougères | Dryad | Leaf Child | Lady Wild | Melia, Forest’s Daughter |
 | Dragon d’ambre | Shaman | Wood Spirit | Forest Song | Maeve |
 | Tortue millénaire | Big Toad | Mr. Toad | Lord Toad | Prince Nod |
 | Esprit des sources | Raven | Karas | Forest Mage | Tengu, Ravencrest |
-| Loup de lune | — | Red Orc | Orc Master | Chieftain Orc |
-| Chevalier ronce | Defender | Squire | Knight | Sir Lancelot |
-| Vipère de jade | Fire Mage | Dark Acolyte | Archwitch | Red Woman |
+| Loup des abysses | — | Red Orc | Orc Master | Chieftain Orc |
+| Écuyer du royaume | Defender | Squire | Knight | Sir Lancelot |
+| Vipère infernale | Fire Mage | Dark Acolyte | Archwitch | Red Woman |
 | Ours des cimes | Lumberjack | Viking | Olaf the Red | Erik the Grey |
 | Féline des clairières | Cat Lady | Scratchy | Wrathy | Bastet |
-| Artisan des racines | Gnome | Crafter | Engineer | High Tinker Gear |
+| Forgeron de la citadelle | Gnome | Crafter | Engineer | High Tinker Gear |
 | Totem de l’aurore | — | Totem | Luck Idol | Vanakauri |
-| Tisseuse de runes | Love Lady | Love Mage | Love Goddess | Aphrodite |
-| Lynx du crépuscule | Shinobi | Untouchable | Shinigami | Hanzo Sama |
-| Chanteur des feuillages | — | Minstrel | Bard | Apollo |
+| Enchanteresse du chapitre | Love Lady | Love Mage | Love Goddess | Aphrodite |
+| Lame du cloître | Shinobi | Untouchable | Shinigami | Hanzo Sama |
+| Chantre de l’abbaye | — | Minstrel | Bard | Apollo |
 | Saule des murmures | — | Treant | Treebeard | Groot, Silent Guardian |
-| Chauve-souris pourpre | Nosferatu | Chiropteran | Blood Lord | Count Vlad |
-| Capitaine des clairières | Warrioress | Valkyrie | Scarlet Warrior | Titania |
-| Sorcière des spores | Witch | Dark Witch | Void Juggler | Neyda |
+| Vampire du néant | Nosferatu | Chiropteran | Blood Lord | Count Vlad |
+| Capitaine de la couronne | Warrioress | Valkyrie | Scarlet Warrior | Titania |
+| Sorcière des enfers | Witch | Dark Witch | Void Juggler | Neyda |
 
-Le Loup, le Chanteur, le Totem et le Saule n’ont pas de forme commune dans ces lignées CW. Leurs anciens identifiants communs deviennent la rare correspondante. Les cartes invoquées conservent les illustrations Sylve existantes et utilisent leurs propres profils CW.
+Les lignées `wolf`, `bard`, `idol` et `tree` n’ont pas de forme commune dans ces lignées CW. Leurs anciens identifiants communs deviennent la rare correspondante. Les cartes invoquées conservent les illustrations Sylve existantes et utilisent leurs propres profils CW.
 
 ## Données et arbitrages de source
 
@@ -117,14 +117,8 @@ Les parties solo, publiques, amicales et l’entraînement partagent le moteur. 
 
 Les instantanés antérieurs sans niveau de héros gardent leurs 30 PV de départ, leurs éventuels bonus de vie et leurs règles de combat. Les nouvelles parties prennent les PV du niveau acquis ; l’entraînement et l’adversaire mécanique calculent automatiquement le niveau correspondant à leur deck.
 
-Contrôle visuel des composants réels : [pouvoirs sur ordinateur](hero-powers-desktop.png), [pouvoirs sur mobile](hero-powers-mobile.png), progression dans l’atelier [sur ordinateur](hero-progression-desktop.png) et [sur mobile](hero-progression-mobile.png). Les captures de l’atelier utilisent une collection locale de démonstration.
-
 ## Vérification
 
-Commandes : `bun x turbo run test -- --maxWorkers=2`, `bun run check-types`, `bun run build`.
+Commandes : `bun run test`, `bun run check-types`, `bun run build`.
 
-Résultat du 25 octobre 2026 après intégration d’`origin/main` : **705 tests passent** (241 moteur, 202 backend, 262 interface), vérification TypeScript et compilation réussies.
-
-Les tests comparent chaque paire ATQ/PV aux incréments sources indépendants, les noms et illustrations à l’ancien catalogue, les nouvelles mécaniques, les 336 prérequis, les accès et transactions concurrentes, les migrations et les contrôles de l’interface. Ils vérifient aussi les 91 niveaux du héros, les seuils et promotions concurrentes, la pile des pouvoirs, les effets, les échéances, les récompenses, les renforts, le comportement de l’IA et la reprise des animations. Les anciens profils restent isolés dans une fixture pour contrôler la compatibilité des combats enregistrés.
-
-Aperçus locaux des composants réels avec une collection de démonstration : [bureau](cw-soulbind-desktop.png), [mobile](cw-soulbind-mobile.png). L’activation a été contrôlée dans cet aperçu ; les transactions sont vérifiées avec Convex Test. Aucun déploiement n’est effectué par cette modification.
+Les tests comparent chaque paire ATQ/PV aux incréments sources indépendants, les identifiants et chemins d’illustration à l’ancien catalogue, les nouvelles mécaniques, les 336 prérequis, les accès et transactions concurrentes, les migrations et les contrôles de l’interface. Ils vérifient aussi les 91 niveaux du héros, les seuils, promotions concurrentes, pouvoirs, effets, échéances, récompenses, renforts, comportement de l’IA et animations. Les anciens profils restent isolés dans des fixtures pour contrôler la compatibilité des combats enregistrés.
