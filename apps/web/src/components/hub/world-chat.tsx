@@ -2,14 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ConvexError } from "convex/values";
-import {
-  ArrowDown,
-  ArrowLeft,
-  Globe,
-  LoaderCircle,
-  Send,
-  Users,
-} from "lucide-react";
+import { ArrowDown, ArrowLeft, LoaderCircle, Send } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { WORLD_CHAT_MESSAGE_LIMIT } from "@my-better-t-app/backend/convex/lib/chat";
 import {
@@ -266,7 +259,7 @@ export function WorldChat({
           tabIndex={mode === "world" ? 0 : -1}
           onClick={() => setMode("world")}
         >
-          <Globe size={15} /> Mondial
+          Mondial
         </button>
         <button
           type="button"
@@ -277,7 +270,7 @@ export function WorldChat({
           tabIndex={mode === "friends" ? 0 : -1}
           onClick={() => setMode("friends")}
         >
-          <Users size={15} /> Amis
+          Amis
         </button>
       </div>
       <div
