@@ -46,16 +46,8 @@ Les offres du sanctuaire conservent toujours leurs prix de base. Le tarif group�
 
 Les prix et la monnaie sont configurés séparément pour chaque pack et chaque format, pour l’achat initial et pour la réinvocation. Les trois appels disponibles suivent leurs propres paliers et restent à leur dernier prix tant que le cercle reste ouvert. Le serveur détermine le palier à partir du prix enregistré du tirage précédent et valide l’autorisation du cercle actif avant d’appliquer la remise : elle est liée au joueur, au pack et au format, consommée une seule fois et annulée à la fermeture. L’historique ne contient pas cette autorisation. Les crédits, le débit et l’enregistrement du tirage sont atomiques. Réessayer avec le même identifiant retourne les récompenses et le prix d’origine, même après changement de ligue ou de solde ; cela ne réactive pas la remise d’un cercle fermé. En cas de réponse perdue, « Retrouver mon invocation » permet cette reprise même avec un solde devenu insuffisant.
 
-## Illustration et validation
+## Illustrations et vérifications
 
-Le [dos commun](../apps/web/public/art/ui/summon-card-back.webp) a été généré avec ImageGen intégré, puis exporté en WebP transparent de 400 × 560 px. Son [prompt complet](art-prompts-summon-card-back.json) est conservé avec la référence de style.
+Le [dos commun](../apps/web/public/art/ui/summon-card-back.webp), un WebP transparent de 400 × 560 px, est partagé par les cartes et l’or. Son prompt figure dans le [manifeste des illustrations](art-prompts.json).
 
-Les captures proviennent des composants réels dans un aperçu local avec portefeuille et récompenses de démonstration : [cercle caché sur ordinateur](summon-circle-hidden-desktop.webp), [cartes révélées](summon-circle-revealed-desktop.webp), [fin de lot ×10 et remise](summon-circle-ten-complete.webp), [cercle caché à 320 px](summon-circle-hidden-mobile.webp) et [cartes révélées à 320 px](summon-circle-revealed-mobile.webp). Le parcours des dix tirages, la réinvocation et l’adaptation à 390 px ont aussi été contrôlés dans le navigateur.
-
-Après correction du périmètre de la remise, les [tarifs du sanctuaire hors du cercle](summon-discount-circle-only.webp) et la réouverture de l’historique sans remise ont été vérifiés dans le jeu connecté. Les tests couvrent aussi l’annulation par fermeture, Échap, navigation ou rechargement, les achats concurrents et une réponse reçue après avoir quitté le cercle.
-
-Les [offres simplifiées](summon-offers-simplified.webp) et l’[historique immédiatement révélé](summon-history-visible.webp), sans Sparkles ni phrase d’aide, ont été vérifiés dans le jeu connecté.
-
-Le [bouton de réinvocation à 139 émeraudes](summon-repeat-139.webp), sans mention de pourcentage, a été contrôlé avec des récompenses de démonstration. Le prix débité, la limite d’accessibilité à 138/139 émeraudes et l’unicité du débit sont vérifiés côté serveur.
-
-La [mention « Finissez votre tirage »](summon-resume-entry.webp) et la [reprise après rechargement au milieu de la deuxième invocation d’un lot ×10](summon-resume-progress.webp) ont été vérifiées dans un aperçu isolé avec des récompenses fictives et un solde nul. Les tests couvrent la conservation des cartes retournées, la reprise après réponse perdue, plusieurs tirages en attente, les mises à jour tardives, les entrées invalides et l’absence de nouveau débit ou crédit.
+Les tests couvrent les taux et garanties, les tarifs ×1/×10, les remises du cercle et leur annulation, les débits concurrents et idempotents, les réponses perdues, les tirages en attente et la sauvegarde des cartes révélées. Les consultations et reprises ne déclenchent aucun nouveau débit ni crédit.
