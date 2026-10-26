@@ -615,6 +615,65 @@ describe("le sanctuaire", () => {
     expect(onSummon).toHaveBeenCalledOnce();
   });
 
+  it("briefly celebrates a first discovery, skips owned cards and does not replay it on resume or history", async () => {
+    const { onSummon } = setup();
+    fireEvent.click(purchase("Sylve", 1));
+    const dialog = await screen.findByRole("dialog");
+    const rewards = summonRoundRewards(reward(onSummon.mock.calls[0]![0]), 0);
+    const first = rewards.findIndex(
+      (item) => item.kind === "hero" && item.item.isNew,
+    );
+    const owned = rewards.findIndex(
+      (item) => item.kind === "hero" && !item.item.isNew,
+    );
+    const reveal = (index: number) =>
+      within(dialog).getByRole("button", {
+        name: `Révéler la carte ${index + 1}`,
+      });
+    const firstBack = reveal(first);
+    expect(dialog.querySelector(".card-discovery-effects")).toBeNull();
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(reveal(owned));
+      expect(dialog.querySelector(".card-discovery-effects")).toBeNull();
+      fireEvent.click(firstBack);
+      expect(dialog.querySelectorAll(".card-discovery-effects")).toHaveLength(1);
+      expect(dialog.querySelector(".summon-legendary-effects")).toBeNull();
+      expect(dialog.querySelector(".summon-legendary-ambience")).toBeNull();
+      expect(within(dialog).queryByText(/Nouvelle ·/)).toBeNull();
+      act(() => vi.advanceTimersByTime(800));
+      fireEvent.click(firstBack);
+      act(() => vi.advanceTimersByTime(800));
+      expect(dialog.querySelector(".card-discovery-effects")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Fermer la fenêtre" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(
+      screen.getByRole("button", { name: "Finissez votre tirage" }),
+    );
+    const resumed = await screen.findByRole("dialog");
+    expect(resumed.querySelector(".card-discovery-effects")).toBeNull();
+    expect(
+      within(resumed).queryByRole("button", {
+        name: `Révéler la carte ${first + 1}`,
+      }),
+    ).toBeNull();
+    turnAll(resumed);
+    fireEvent.click(
+      within(resumed).getByRole("button", { name: "Fermer la fenêtre" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Dernière invocation" }));
+    expect(
+      (await screen.findByRole("dialog")).querySelector(".card-discovery-effects"),
+    ).toBeNull();
+    expect(onSummon).toHaveBeenCalledOnce();
+  });
+
   it("celebrates only newly flipped legendary cards and finishes overlapping effects independently", async () => {
     const { onSummon, onSaveRevealProgress } = setup({ emeralds: 4_999 });
     fireEvent.click(purchase("anciens", 1));
@@ -642,6 +701,9 @@ describe("le sanctuaire", () => {
           ".summon-legendary-effects",
         )?.getAttribute("aria-hidden"),
       ).toBe("true");
+      expect(
+        slots[legendary[0]!]!.querySelector(".card-discovery-effects"),
+      ).toBeNull();
       for (let index = 0; index < rewards.length; index++)
         if (!legendary.includes(index)) fireEvent.click(backs[index]!);
       expect(dialog.querySelectorAll(".summon-legendary-effects")).toHaveLength(
@@ -653,6 +715,7 @@ describe("le sanctuaire", () => {
       expect(dialog.querySelectorAll(".summon-legendary-effects")).toHaveLength(
         2,
       );
+      expect(dialog.querySelector(".card-discovery-effects")).toBeNull();
       expect(onSaveRevealProgress).toHaveBeenCalledTimes(6);
       expect(onSummon).toHaveBeenCalledOnce();
       act(() => vi.advanceTimersByTime(1_800));
