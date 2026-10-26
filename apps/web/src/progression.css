@@ -158,6 +158,14 @@
   padding: 20px;
   overflow: hidden;
 }
+.upgrade-dialog > [data-slot="dialog-body"],
+.upgrade-main {
+  scrollbar-width: none;
+}
+.upgrade-dialog > [data-slot="dialog-body"]::-webkit-scrollbar,
+.upgrade-main::-webkit-scrollbar {
+  display: none;
+}
 .upgrade-showcase {
   display: grid;
   grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.45fr) 174px;
@@ -297,8 +305,6 @@
   padding: 6px 10px 6px 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #cbb78366 transparent;
 }
 .upgrade-panel {
   display: flex;
@@ -585,20 +591,11 @@
   color: #ffedc6;
   box-shadow: inset 3px 0 #ddc58e;
 }
-.upgrade-nav-tab > .game-icon,
-.upgrade-nav-symbol {
+.upgrade-nav-tab > .game-icon {
   flex: 0 0 34px;
   width: 34px;
   height: 34px;
   object-fit: contain;
-}
-.upgrade-nav-symbol {
-  display: grid;
-  place-items: center;
-  border: 1px solid #cdb88755;
-  border-radius: 10px;
-  background: #d4be8810;
-  color: #e7cd91;
 }
 .upgrade-nav-tab strong {
   display: block;
@@ -957,14 +954,10 @@
     gap: 6px;
     text-align: center;
   }
-  .upgrade-nav-tab > .game-icon,
-  .upgrade-nav-symbol {
+  .upgrade-nav-tab > .game-icon {
     flex-basis: 26px;
     width: 26px;
     height: 26px;
-  }
-  .upgrade-nav-symbol > svg {
-    width: 20px;
   }
   .upgrade-nav-tab small {
     display: none;
@@ -991,8 +984,9 @@
   }
   .upgrade-companion .upgrade-portrait-abilities {
     left: 8px;
-    top: 66px;
-    --ability-size: 22px;
+    top: 56px;
+    gap: 4px;
+    --ability-size: 18px;
   }
 }
 @media (max-width: 600px) {
@@ -1023,6 +1017,10 @@
   z-index: 4;
   left: 14px;
   top: 62px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
   --ability-size: 30px;
 }
 .game-dialog .card-abilities li {

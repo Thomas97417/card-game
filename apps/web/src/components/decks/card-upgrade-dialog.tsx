@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Tabs } from "@base-ui/react/tabs";
-import {
-  ArrowRight,
-  ArrowUp,
-  ArrowRightLeft,
-  Crown,
-  Plus,
-  Link2,
-} from "lucide-react";
+import { ArrowRight, ArrowUp, ArrowRightLeft, Crown, Plus } from "lucide-react";
 import {
   maxCardLevel,
   RARITY_LABELS,
@@ -273,9 +266,7 @@ export function CardUpgradeDialog({
                   </span>
                 </Tabs.Tab>
                 <Tabs.Tab value="soulbind" className="upgrade-nav-tab">
-                  <span className="upgrade-nav-symbol">
-                    <Link2 size={25} />
-                  </span>
+                  <GameIcon kind="soulbind" size={34} />
                   <span>
                     <strong>Liens d’âme</strong>
                     <small>
@@ -290,7 +281,7 @@ export function CardUpgradeDialog({
                 </Tabs.Tab>
                 {hasResources && (
                   <Tabs.Tab value="resources" className="upgrade-nav-tab">
-                    <GameIcon kind="sanctuary" size={34} />
+                    <GameIcon kind="soulDust" size={34} />
                     <span>
                       <strong>Évolution et poussière</strong>
                       <small>{entry.copies} en réserve</small>

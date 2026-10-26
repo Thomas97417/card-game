@@ -9,6 +9,8 @@ const ICON_ARTWORK = {
   arena: "arena-swords",
   archives: "archives-book",
   guardian: "guardian-emblem",
+  soulbind: "soulbind-links",
+  soulDust: "soul-dust",
   goldMine: "gold-mine",
   emeraldMine: "emerald-mine",
   settings: "settings-gear",

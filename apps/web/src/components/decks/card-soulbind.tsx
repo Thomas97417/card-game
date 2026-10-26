@@ -1,13 +1,5 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
-import {
-  ArrowRight,
-  Check,
-  Link2,
-  LockKeyhole,
-  Minus,
-  Plus,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, Minus, Plus } from "lucide-react";
 import {
   resolveCard,
   soulbindDefinitions,
@@ -135,7 +127,7 @@ export function CardSoulbind({
   return (
     <ProgressionPanel
       title="Liens d’âme"
-      icon={<Link2 size={18} aria-hidden="true" />}
+      icon={<GameIcon kind="soulbind" size={22} />}
       presentation={presentation}
       status={
         <span className="progression-count">
@@ -165,7 +157,7 @@ export function CardSoulbind({
               </span>
             </div>
             <div>
-              <Sparkles size={26} aria-hidden="true" />
+              <GameIcon kind="soulDust" size={32} />
               <span>
                 Poussières d’âme
                 <strong>
@@ -221,7 +213,7 @@ export function CardSoulbind({
                   {isActive ? (
                     <Check size={15} aria-hidden="true" />
                   ) : (
-                    <Link2 size={15} aria-hidden="true" />
+                    <GameIcon kind="soulbind" size={20} />
                   )}{" "}
                   {SOULBIND_LABELS[link.tier - 1]}
                 </span>
@@ -365,7 +357,11 @@ export function CardSoulbind({
                     onClick={() => void activate(link.tier)}
                   >
                     <span>
-                      {isActive ? <Check size={16} /> : <Link2 size={17} />}
+                      {isActive ? (
+                        <Check size={16} />
+                      ) : (
+                        <GameIcon kind="soulbind" size={22} />
+                      )}
                       {isActive
                         ? "Lien actif"
                         : busy === link.tier
@@ -379,7 +375,7 @@ export function CardSoulbind({
                         "Gratuit"
                       ) : (
                         <>
-                          <Sparkles size={14} />
+                          <GameIcon kind="soulDust" size={20} />
                           {link.cost} poussières
                         </>
                       )}
@@ -453,7 +449,7 @@ export function CardEvolutionResources({
   return (
     <ProgressionPanel
       title="Évolution et poussière"
-      icon={<Sparkles size={18} aria-hidden="true" />}
+      icon={<GameIcon kind="soulDust" size={24} />}
       presentation={presentation}
     >
       <p className="progression-intro">
@@ -469,7 +465,7 @@ export function CardEvolutionResources({
           </span>
         </div>
         <div>
-          <Sparkles size={26} aria-hidden="true" />
+          <GameIcon kind="soulDust" size={32} />
           <span>
             Poussières d’âme
             <strong>
@@ -497,7 +493,7 @@ export function CardEvolutionResources({
             aria-pressed={resourceView === "dust"}
             onClick={() => setResourceView("dust")}
           >
-            <Sparkles size={18} aria-hidden="true" />
+            <GameIcon kind="soulDust" size={24} />
             Poussière d’âme
           </button>
         </div>
@@ -650,9 +646,7 @@ export function CardEvolutionResources({
             aria-label="Obtenir de la poussière d’âme"
           >
             <header className="progression-section-heading">
-              <span className="progression-dust-symbol">
-                <Sparkles size={24} aria-hidden="true" />
-              </span>
+              <GameIcon kind="soulDust" size={34} />
               <div>
                 <h3>Obtenir de la poussière d’âme</h3>
                 <p>
@@ -729,7 +723,7 @@ export function CardEvolutionResources({
                 </span>
                 <ArrowRight size={20} aria-hidden="true" />
                 <span>
-                  <Sparkles size={26} aria-hidden="true" />
+                  <GameIcon kind="soulDust" size={32} />
                   <strong>{gained.toLocaleString("fr-FR")}</strong>
                   <small>poussières obtenues</small>
                 </span>
@@ -751,7 +745,7 @@ export function CardEvolutionResources({
                   )
                 }
               >
-                <Sparkles size={17} aria-hidden="true" />
+                <GameIcon kind="soulDust" size={22} />
                 {busy === "conversion"
                   ? "Conversion…"
                   : `Convertir ${spent} exemplaire${spent === 1 ? "" : "s"} en ${gained} poussières`}

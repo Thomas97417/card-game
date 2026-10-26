@@ -15,7 +15,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `leagues/` | Écussons des dix ligues |
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
-| `ui/` | Navigation, monnaies, statistiques, raretés, missions et chaînes |
+| `ui/` | Navigation, monnaies, statistiques, raretés, missions, chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
 | `duel-arena-overhead.webp` | Terrain de combat |
 | `forest-arena.png` | Fond de la page d’accueil |

@@ -466,8 +466,7 @@ li[data-ready="true"] .soulbind-companion-level {
   align-items: center;
   gap: 10px;
 }
-.progression-section-heading > .game-icon,
-.progression-dust-symbol {
+.progression-section-heading > .game-icon {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -482,11 +481,6 @@ li[data-ready="true"] .soulbind-companion-level {
 .progression-section-heading p {
   margin-top: 4px;
   font-size: 11px;
-}
-.progression-dust-symbol {
-  display: grid;
-  place-items: center;
-  color: #dfc38b;
 }
 .progression-terminal {
   display: flex;
@@ -571,6 +565,11 @@ li[data-ready="true"] .soulbind-companion-level {
 .progression-exchange > span > :is(img, svg) {
   grid-row: 1 / 3;
   color: #e8cb91;
+}
+.progression-exchange > span > .game-icon {
+  width: 28px;
+  height: 32px;
+  object-fit: contain;
 }
 .progression-exchange strong {
   color: #f4e6c3;
@@ -725,7 +724,8 @@ li[data-ready="true"] .soulbind-companion-level {
     gap: 4px 7px;
   }
   .progression-exchange .progression-rarity-token,
-  .progression-exchange > span > svg {
+  .progression-exchange > span > svg,
+  .progression-exchange > span > .game-icon {
     width: 22px;
   }
   .soulbind-conversion > header,
