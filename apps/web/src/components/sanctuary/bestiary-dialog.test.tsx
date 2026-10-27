@@ -7,7 +7,13 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CATALOG, cardsOfRarity, variantCard } from "@sylve/game";
+import {
+  CATALOG,
+  cardsOfRarity,
+  resolveCard,
+  soulbindDefinitions,
+  variantCard,
+} from "@sylve/game";
 import { BestiaryDialog } from "./bestiary-dialog";
 import { selectOption } from "@/test-select";
 
@@ -26,6 +32,47 @@ async function openBestiary() {
 }
 
 describe("Bestiary navigation", () => {
+  it("opens a required soulbind companion without losing the explored form, level or selected link", async () => {
+    const dialog = await openBestiary();
+    const card = variantCard("guardian", "common");
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: `Découvrir ${card.name}` }),
+    );
+    fireEvent.change(within(dialog).getByRole("slider"), {
+      target: { value: "8" },
+    });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Afficher le lien d’âme IV" }),
+    );
+    const required = resolveCard(
+      soulbindDefinitions(card.id)[3]!.requirements[0]!.variantId,
+    );
+    const trigger = within(dialog).getByRole("button", {
+      name: `Ouvrir la fiche de ${required.name}`,
+    });
+    fireEvent.click(trigger);
+    const child = await screen.findByRole("dialog", { name: required.name });
+    expect(
+      within(child).queryByRole("button", { name: /Améliorer/ }),
+    ).toBeNull();
+    fireEvent.click(
+      within(child).getByRole("button", { name: "Retour aux liens d’âme" }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: required.name })).toBeNull(),
+    );
+    expect(screen.getByRole("dialog", { name: card.name })).toBe(dialog);
+    expect((within(dialog).getByRole("slider") as HTMLInputElement).value).toBe(
+      "8",
+    );
+    expect(
+      within(dialog)
+        .getByRole("button", { name: "Afficher le lien d’âme IV" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
   it("shares the preview level between gallery sliders, card details and the shadcn select", async () => {
     const dialog = await openBestiary();
     const gallerySlider = within(dialog).getByRole("slider");

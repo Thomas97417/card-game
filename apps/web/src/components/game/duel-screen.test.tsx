@@ -211,8 +211,10 @@ describe("inspection pendant un duel", () => {
       deckSlotsGained: 0,
     };
     setup(data);
-    expect(await screen.findByText("−15 trophées")).toBeTruthy();
-    expect(screen.getByText("85 trophées au total")).toBeTruthy();
+    expect(await screen.findByLabelText("−15 trophées")).toBeTruthy();
+    expect(
+      screen.getByRole("progressbar").getAttribute("aria-valuetext"),
+    ).toContain("85 trophées");
     expect(screen.queryByText(/Coffre .* gagné/)).toBeNull();
   });
   it("announces the result when the winning summon leaves hasSummoned set", async () => {
@@ -222,9 +224,7 @@ describe("inspection pendant un duel", () => {
     data.hasSummoned = true;
     setup(data);
     expect(await screen.findByText("Duel terminé")).toBeTruthy();
-    expect(
-      screen.getByRole("heading", { name: "La victoire est tienne." }),
-    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Victoire !" })).toBeTruthy();
   });
 
   it.each(["guardian", "fox"])(
@@ -306,7 +306,7 @@ describe("inspection pendant un duel", () => {
   });
 
   it.each(["opponent", "summoned", "finished", "expired"] as const)(
-    "allows inspection but prevents summoning when %s",
+    "keeps summoning unavailable when %s",
     async (reason) => {
       const data = matchData();
       if (reason === "opponent") data.activePlayer = 1;
@@ -322,6 +322,14 @@ describe("inspection pendant un duel", () => {
       expect(
         document.querySelector(".player-hand")?.getAttribute("data-inactive"),
       ).toBe("true");
+      if (reason === "finished") {
+        expect(await screen.findByRole("dialog")).toBeTruthy();
+        expect(
+          screen.queryByRole("button", { name: "Choisir une case" }),
+        ).toBeNull();
+        expect(actions.onPlayCard).not.toHaveBeenCalled();
+        return;
+      }
       const { dialog } = await openHandCard(data);
       const choose = dialog.getByRole("button", {
         name: "Choisir une case",

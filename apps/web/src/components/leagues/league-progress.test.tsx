@@ -52,7 +52,7 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByRole("button", { name: /^Challenger,/ })).toBeTruthy();
-    expect(dialog.getByText("6,16 %")).toBeTruthy();
+    expect(dialog.getByText("100 %")).toBeTruthy();
     expect(
       dialog
         .getByRole("list", { name: "Parcours des ligues" })
@@ -71,7 +71,8 @@ describe("le parcours des ligues", () => {
     );
     fireEvent.click(dialog.getByRole("button", { name: /^Or IV,/ }));
     expect(details.getByRole("heading", { name: "Or IV" })).toBeTruthy();
-    expect(details.getByText("1,43 %")).toBeTruthy();
+    expect(details.getByText("1,19 %")).toBeTruthy();
+    expect(details.getByText("Disponible dès Émeraude IV")).toBeTruthy();
     expect(details.getByText("Deck de 8 cartes")).toBeTruthy();
     expect(
       details.getByText(
@@ -84,7 +85,7 @@ describe("le parcours des ligues", () => {
 
     fireEvent.click(dialog.getByRole("button", { name: "Ma position" }));
     expect(details.getByRole("heading", { name: "Fer IV" })).toBeTruthy();
-    expect(details.getByText("6,16 %")).toBeTruthy();
+    expect(details.getByText("100 %")).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: "Fer III 200" }));
     expect(details.getByRole("heading", { name: "Fer III" })).toBeTruthy();
 
@@ -104,6 +105,37 @@ describe("le parcours des ligues", () => {
         }),
       ).getByRole("heading", { name: "Fer IV" }),
     ).toBeTruthy();
+  });
+
+  it("previews CW card quantities, gold and chest unlock leagues", async () => {
+    render(<LeaguePanel progress={leagueProgress(0)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const details = within(dialog.getByRole("region", { name: "Détails du palier sélectionné" }));
+    expect(details.getByText("Commune : 10–11 exemplaires (95 %)")).toBeTruthy();
+    expect(details.getByText("28–47 pièces d’or")).toBeTruthy();
+    expect(details.getByText("3 min d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 1 émeraude")).toBeTruthy();
+    for (const league of ["Bronze IV", "Bronze III", "Argent II", "Émeraude IV"])
+      expect(details.getByText(`Disponible dès ${league}`)).toBeTruthy();
+
+    fireEvent.click(dialog.getByRole("button", { name: /^Bronze III,/ }));
+    expect(details.getByText("Rare : 23–24 exemplaires (99,5 %)")).toBeTruthy();
+    expect(details.getByText("57–82 pièces d’or")).toBeTruthy();
+    expect(details.getByText("1 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 20 émeraudes")).toBeTruthy();
+    expect(details.getByText("3 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 33 émeraudes")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: /^Émeraude IV,/ }));
+    expect(details.getByText("Légendaire : 3 exemplaires (100 %)")).toBeTruthy();
+    expect(details.getByText("248–321 pièces d’or")).toBeTruthy();
+    expect(details.getByText("6 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 66 émeraudes")).toBeTruthy();
+    expect(details.getByText("24 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 180 émeraudes")).toBeTruthy();
+    expect(details.getByText("36 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 270 émeraudes")).toBeTruthy();
+    expect(details.queryByText(/Disponible dès/)).toBeNull();
   });
 
   it("keeps division progress on the current timeline node and resets its ring on promotion", async () => {
@@ -212,27 +244,24 @@ describe("le parcours des ligues", () => {
     expect(details.queryByText(/À débloquer/)).toBeNull();
   });
 
-  it("shows a promotion and the newly unlocked slot after a threshold win", () => {
+  it("shows earned trophies and the next league after promotion", () => {
     render(
       <LeagueResult
         reward={{ trophies: 25, trophiesTotal: 200, previousTrophies: 175 }}
       />,
     );
-    expect(screen.getByText("Promotion : Fer III !")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Nouvel emplacement débloqué : ton deck peut contenir 5 cartes !",
-      ),
-    ).toBeTruthy();
-    expect(
-      screen
-        .getByRole("img", { name: "Fer III" })
-        .querySelector("img")
-        ?.getAttribute("src"),
-    ).toBe("/art/leagues/iron.webp");
+    expect(screen.getByLabelText("+25 trophées")).toBeTruthy();
+    expect(screen.getByText("Fer III")).toBeTruthy();
+    const progress = screen.getByRole("progressbar", {
+      name: "Progression vers Fer II",
+    });
+    expect(progress.getAttribute("aria-valuenow")).toBe("0");
+    expect(progress.getAttribute("aria-valuetext")).toBe(
+      "200 trophées, 200 avant Fer II",
+    );
   });
 
-  it("announces trophy loss and demotion without chaining earned deck slots", () => {
+  it("shows the actual loss and demotion with the next promotion in sight", () => {
     render(
       <LeagueResult
         reward={{
@@ -244,39 +273,24 @@ describe("le parcours des ligues", () => {
         }}
       />,
     );
-    expect(screen.getByText("Rétrogradation : Fer IV")).toBeTruthy();
-    expect(
-      screen.getByText(/−15 trophées · 185 trophées au total/),
-    ).toBeTruthy();
-    expect(
-      screen.getByText("Tes emplacements de deck restent débloqués."),
-    ).toBeTruthy();
-  });
-
-  it("does not announce a second slot unlock when recovering a previously reached league", () => {
-    render(
-      <LeagueResult
-        reward={{
-          trophies: 25,
-          previousTrophies: 185,
-          trophiesTotal: 210,
-          deckCapacity: 5,
-          deckSlotsGained: 0,
-        }}
-      />,
+    expect(screen.getByText("Rétrogradation · Fer IV")).toBeTruthy();
+    expect(screen.getByLabelText("−15 trophées")).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe(
+      "185 trophées, 15 avant Fer III",
     );
-    expect(screen.getByText("Promotion : Fer III !")).toBeTruthy();
-    expect(screen.queryByText(/Nouvel emplacement débloqué/)).toBeNull();
   });
 
-  it("explains the zero trophy floor on defeat", () => {
+  it("shows the zero trophy floor without redundant explanations", () => {
     render(
       <LeagueResult
         reward={{ trophies: 0, previousTrophies: 0, trophiesTotal: 0 }}
       />,
     );
-    expect(screen.getByText("Aucun trophée perdu")).toBeTruthy();
-    expect(screen.getByText("Tu es déjà à zéro trophée.")).toBeTruthy();
+    expect(screen.getByLabelText("0 trophées")).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "0",
+    );
+    expect(screen.queryByText("Tu es déjà à zéro trophée.")).toBeNull();
   });
 
   it("continues earning trophies in the final league without promising another promotion", () => {

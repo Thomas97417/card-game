@@ -60,29 +60,38 @@ describe("league progression", () => {
     expect(leagueProgress(500, 100).peakTrophies).toBe(500);
   });
 
-  it("uses the three documented chest pools and excludes unavailable rarities", () => {
+  it("normalizes CW drop weights and unlocks chests only at their documented leagues", () => {
     expect(chestPool(0)).toEqual({
-      common: 109,
-      rare: 28,
-      bigRare: 9,
+      common: 1000,
+      rare: 0,
+      bigRare: 0,
       epic: 0,
       legendary: 0,
     });
+    expect(chestPool(800)).toEqual({
+      common: 962, rare: 0, bigRare: 38, epic: 0, legendary: 0,
+    });
+    expect(chestPool(1000)).toEqual({
+      common: 750, rare: 195, bigRare: 38, epic: 0, legendary: 0,
+    });
     expect(chestPool(2000)).toEqual({
-      common: 0,
-      rare: 56,
-      bigRare: 10,
-      epic: 3,
+      common: 750,
+      rare: 212,
+      bigRare: 38,
+      epic: 12,
       legendary: 0,
     });
-    expect(chestPool(2200)).toEqual({
-      common: 0,
-      rare: 56,
-      bigRare: 10,
-      epic: 3,
-      legendary: 1,
+    expect(chestPool(4000)).toEqual({
+      common: 752,
+      rare: 200,
+      bigRare: 38,
+      epic: 12,
+      legendary: 3,
     });
     for (const league of LEAGUES) {
+      expect(league.chestChances.common).toBeGreaterThan(0);
+      for (const [type, threshold] of [["rare", 1000], ["bigRare", 800], ["epic", 2000], ["legendary", 4000]] as const)
+        expect(league.chestChances[type] > 0).toBe(league.minTrophies >= threshold);
       expect(
         Object.values(league.chestChances).reduce((a, b) => a + b, 0),
       ).toBeCloseTo(100);
@@ -95,8 +104,10 @@ describe("league progression", () => {
         boundary += league.chestChances[type];
       }
     }
-    expect(rollChest(() => 0.95, 0)).toBe("bigRare");
+    expect(rollChest(() => 0.9999, 0)).toBe("common");
+    expect(rollChest(() => 0.9999, 800)).toBe("bigRare");
     expect(rollChest(() => 0.9999, 2000)).toBe("epic");
-    expect(rollChest(() => 0.9999, 2200)).toBe("legendary");
+    expect(rollChest(() => 0.9999, 4000)).toBe("legendary");
+    expect(rollChest(() => 0.9999, 0, {common: 0, rare: 56, bigRare: 10, epic: 3, legendary: 1})).toBe("common");
   });
 });

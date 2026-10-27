@@ -2,34 +2,37 @@ import {
   combatTypeLabel,
   getCombatType,
   maxCardLevel,
+  RARITY_LABELS,
   upgradeCost,
   type CardDefinition,
+  type CardRarity,
 } from "@sylve/game";
 import { ArrowUp } from "lucide-react";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
-import {
-  CardFactionBadge,
-  FactionBackdrop,
-} from "@/components/game/faction-artwork";
+import { FactionBackdrop } from "@/components/game/faction-artwork";
 
 export function CardArtwork({
   card,
   copies = 0,
   showCopies = true,
+  showCombatType = true,
   appearance = "default",
+  showUpgradeIndicator = appearance === "deck",
 }: {
   card: CardDefinition;
   copies?: number;
   showCopies?: boolean;
+  showCombatType?: boolean;
   appearance?: "default" | "deck";
+  showUpgradeIndicator?: boolean;
 }) {
   const type = getCombatType(card);
   const level = card.level ?? 1;
   const canUpgrade =
-    appearance === "deck" &&
+    showUpgradeIndicator &&
     level < maxCardLevel(card.rarity, card.baseId) &&
     copies >= upgradeCost(level, card.rarity);
   return (
@@ -52,7 +55,6 @@ export function CardArtwork({
           </span>
         )}
       </span>
-      <CardFactionBadge card={card} />
       <CardAbilityIcons card={card} className="workshop-card-abilities" />
       <span className="card-stats">
         <StatBadge kind="attack" value={card.attack} combatType={type} />
@@ -60,7 +62,7 @@ export function CardArtwork({
       </span>
       <span className="workshop-card-caption">
         <span className="workshop-card-name">{card.name}</span>
-        {appearance !== "deck" && (
+        {appearance !== "deck" && showCombatType && (
           <span className="workshop-card-type">
             <GameIcon kind={type} size={15} />
             {combatTypeLabel(card)}
@@ -75,5 +77,25 @@ export function CardArtwork({
         )}
       </span>
     </>
+  );
+}
+
+export function CardRewardFooter({
+  rarity,
+  count,
+}: {
+  rarity: CardRarity;
+  count: number;
+}) {
+  return (
+    <span className="reward-card-footer" aria-hidden="true">
+      <span className="reward-card-rarity" data-rarity={rarity}>
+        {RARITY_LABELS[rarity]}
+      </span>
+      <span className="reward-card-quantity">
+        <span>×</span>
+        <strong>{count.toLocaleString("fr-FR")}</strong>
+      </span>
+    </span>
   );
 }

@@ -1,9 +1,10 @@
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
 afterEach(cleanup);
 
-if (typeof window !== "undefined") {
+function mockMatchMedia() {
+  if (typeof window === "undefined") return;
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({
@@ -14,3 +15,6 @@ if (typeof window !== "undefined") {
     })),
   });
 }
+
+mockMatchMedia();
+beforeEach(mockMatchMedia);

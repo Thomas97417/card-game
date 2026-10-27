@@ -24,6 +24,8 @@ import {
   TROPHIES_PER_LOSS,
   TROPHIES_PER_DIVISION,
   deckCapacity,
+  leagueProgress,
+  type TrophyChange,
   leagueAt,
   type League,
   type LeagueProgress,
@@ -489,17 +491,33 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                     <>
                       {rule.cards.map((card) => (
                         <small key={card.rarity}>
-                          {RARITY_LABELS[card.rarity]} : {card.min}–{card.max} (
+                          {RARITY_LABELS[card.rarity]} : {card.min}
+                          {card.max !== card.min ? `–${card.max}` : ""} exemplaires (
                           {card.chance.toLocaleString("fr-FR")} %)
                         </small>
                       ))}
                       <small>
-                        {rule.minGold}–{rule.maxGold} or
+                        {rule.minGold}–{rule.maxGold} pièces d’or
                       </small>
-                      <small>{rule.durationMs / 60_000} min d’attente</small>
+                      <small>
+                        {rule.durationMs >= 3_600_000
+                          ? `${rule.durationMs / 3_600_000} h`
+                          : `${rule.durationMs / 60_000} min`}{" "}
+                        d’attente
+                      </small>
+                      <small>
+                        Ouverture immédiate : {rule.instantCost} émeraude
+                        {rule.instantCost > 1 ? "s" : ""}
+                      </small>
                     </>
                   ) : (
-                    <small>Indisponible à ce palier</small>
+                    <small>
+                      Disponible dès{" "}
+                      {
+                        LEAGUES.find((league) => league.chestChances[rarity] > 0)!
+                          .label
+                      }
+                    </small>
                   )}
                 </div>
               );
@@ -507,7 +525,9 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
           </dl>
           <small>
             Chaque coffre gagné est retiré de la réserve de sa ligue, renouvelée
-            une fois épuisée. Le butin est fixé à l’obtention du coffre.
+            une fois épuisée. Le butin est fixé à l’obtention du coffre. Le coffre
+            de trois victoires contient le même butin que le coffre commun de ce
+            palier.
           </small>
         </div>
       </section>
@@ -632,66 +652,56 @@ export function LeaguePanel({
   );
 }
 
-export function LeagueResult({
-  reward,
-}: {
-  reward: {
-    trophies?: number;
-    trophiesTotal?: number;
-    previousTrophies?: number;
-    deckCapacity?: number;
-    deckSlotsGained?: number;
-  };
-}) {
+export function LeagueResult({ reward }: { reward: Partial<TrophyChange> }) {
   if (reward.trophiesTotal === undefined || reward.trophies === undefined)
     return null;
-  const current = leagueAt(reward.trophiesTotal);
+  const { current, next, earned, required } = leagueProgress(
+    reward.trophiesTotal,
+  );
   const previous = leagueAt(reward.previousTrophies ?? reward.trophiesTotal);
-  const promoted = current.index > previous.index;
   const demoted = current.index < previous.index;
-  const lost = reward.trophies < 0 || reward.trophies === 0;
   const delta =
     reward.trophies > 0
       ? `+${reward.trophies}`
       : reward.trophies < 0
         ? `−${Math.abs(reward.trophies)}`
         : "0";
-  const gainedSlot =
-    reward.deckSlotsGained !== undefined
-      ? reward.deckSlotsGained > 0
-      : deckCapacity(reward.trophiesTotal) >
-        deckCapacity(reward.previousTrophies ?? reward.trophiesTotal);
   return (
     <div
-      className={`duel-league-reward ${promoted ? "is-promotion" : ""} ${lost ? "is-loss" : ""}`}
+      className={`duel-league-reward ${reward.trophies <= 0 ? "is-loss" : ""}`}
     >
-      {promoted || demoted ? (
-        <LeagueBadge league={current} size={76} />
-      ) : (
-        <TrophyIcon />
-      )}
-      <div>
-        <strong>
-          {promoted
-            ? `Promotion : ${current.label} !`
-            : demoted
-              ? `Rétrogradation : ${current.label}`
-              : reward.trophies === 0
-                ? "Aucun trophée perdu"
-                : `${delta} trophées`}
-        </strong>
-        <span>
-          {promoted || demoted ? `${delta} trophées · ` : ""}
-          {reward.trophiesTotal.toLocaleString("fr-FR")} trophées au total
+      <div className="result-trophies">
+        <span className="result-trophy-delta" aria-label={`${delta} trophées`}>
+          <TrophyIcon />
+          <strong>{delta}</strong>
         </span>
-        {reward.trophies === 0 && <small>Tu es déjà à zéro trophée.</small>}
-        {demoted && <small>Tes emplacements de deck restent débloqués.</small>}
-        {gainedSlot && (
-          <small>
-            Nouvel emplacement débloqué : ton deck peut contenir{" "}
-            {reward.deckCapacity ?? deckCapacity(reward.trophiesTotal)} cartes !
-          </small>
-        )}
+        <span className="result-trophy-total">
+          <strong>{reward.trophiesTotal.toLocaleString("fr-FR")}</strong>{" "}
+          trophées
+        </span>
+      </div>
+      <div className="result-league-labels">
+        <span>
+          {demoted ? `Rétrogradation · ${current.label}` : current.label}
+        </span>
+        <span>{next?.label ?? "Ligue ultime"}</span>
+      </div>
+      <div
+        className="result-league-bar"
+        role="progressbar"
+        aria-label={
+          next ? `Progression vers ${next.label}` : "Ligue maximale atteinte"
+        }
+        aria-valuemin={0}
+        aria-valuemax={required}
+        aria-valuenow={earned}
+        aria-valuetext={
+          next
+            ? `${reward.trophiesTotal} trophées, ${next.minTrophies - reward.trophiesTotal} avant ${next.label}`
+            : `${reward.trophiesTotal} trophées, ligue maximale atteinte`
+        }
+      >
+        <span style={{ width: `${(earned / required) * 100}%` }} />
       </div>
     </div>
   );

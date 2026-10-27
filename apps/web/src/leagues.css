@@ -4,10 +4,6 @@
   object-fit: contain;
   flex-shrink: 0;
 }
-.result-icon > .trophy-icon {
-  width: 48px;
-  height: 48px;
-}
 .trophy-amount {
   display: inline-flex;
   align-items: center;
@@ -727,43 +723,74 @@
   line-height: 1.8;
 }
 .duel-league-reward {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  margin: 14px 0;
-  padding: 10px;
-  border: 1px solid #ccab6266;
-  border-radius: 8px;
-  background: #c6a14d15;
+  margin: 0 28px;
   color: #edca7c;
 }
-.duel-league-reward > .trophy-icon {
-  width: 45px;
-  height: 45px;
-}
-.duel-league-reward > div {
+.result-trophies {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
 }
-.duel-league-reward span:not(.league-badge):not(.league-division) {
+.result-trophy-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.result-trophy-delta > .trophy-icon {
+  width: 28px;
+  height: 28px;
+}
+.result-trophy-delta strong {
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.result-trophy-total {
+  padding-left: 16px;
+  border-left: 1px solid #d4be8840;
+  color: #c8cfbc;
   font-size: 12px;
-  color: #dacdab;
 }
-.duel-league-reward small {
-  font-size: 11px;
-  color: #c5e6aa;
-  line-height: 1.5;
+.result-trophy-total strong {
+  color: #f1e5c8;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
-.duel-league-reward.is-loss {
-  border-color: #cd947a88;
-  background: #8c49381a;
-  color: #f0b298;
+.result-league-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  color: #c1c9b5;
+  font-size: 10px;
 }
-.duel-league-reward.is-loss small {
-  color: #dfc3aa;
+.result-league-labels > span:first-child {
+  color: #ecddb5;
+}
+.result-league-bar {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #d4be881a;
+}
+.result-league-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a68643, #ebd18c);
+  transition: width 650ms ease-out;
+}
+.duel-league-reward.is-loss .result-trophy-delta {
+  color: #e9b598;
+}
+@media (max-width: 480px) {
+  .duel-league-reward {
+    margin-inline: 20px;
+  }
 }
 .workshop-locked-slot {
   position: relative;

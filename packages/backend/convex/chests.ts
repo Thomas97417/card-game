@@ -10,6 +10,7 @@ import {
   playerChestSlots,
 } from "./lib/progression";
 import {
+  CHEST_REWARD_VERSION,
   TOTAL_CHEST_SLOTS,
   VICTORY_CHEST_WINS,
   chestGold,
@@ -119,11 +120,11 @@ export const open = mutation({
     }
     // Migrate unopened rewards once, using the league recorded at acquisition.
     const contents =
-      chest.rewardVersion !== 2
+      chest.rewardVersion !== CHEST_REWARD_VERSION
         ? chestLoot(chest.rarity, Math.random, leagueTrophies)
         : chest.contents;
     const gold =
-      chest.rewardVersion === 2 && chest.gold !== undefined
+      chest.rewardVersion === CHEST_REWARD_VERSION && chest.gold !== undefined
         ? chest.gold
         : chestGold(chest.rarity, Math.random, leagueTrophies);
     const reveals = await grantLoot(ctx, userId, contents);
@@ -134,7 +135,7 @@ export const open = mutation({
       reveals,
       contents,
       gold,
-      rewardVersion: 2,
+      rewardVersion: CHEST_REWARD_VERSION,
       leagueTrophies,
       emeraldsSpent: cost,
     });
@@ -159,11 +160,11 @@ export const openVictory = mutation({
         "Remporte trois victoires pour ouvrir ce coffre commun.",
       );
     const contents =
-      chest.rewardVersion !== 2
+      chest.rewardVersion !== CHEST_REWARD_VERSION
         ? chestLoot("common", Math.random, chest.leagueTrophies)
         : chest.contents;
     const gold =
-      chest.rewardVersion === 2 && chest.gold !== undefined
+      chest.rewardVersion === CHEST_REWARD_VERSION && chest.gold !== undefined
         ? chest.gold
         : chestGold("common", Math.random, chest.leagueTrophies);
     const reveals = await grantLoot(ctx, userId, contents);

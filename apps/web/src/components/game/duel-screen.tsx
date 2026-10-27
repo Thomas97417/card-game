@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import {
@@ -19,9 +18,8 @@ import {
   Flag,
   Hourglass,
   History,
-  Leaf,
-  RotateCcw,
   Bot,
+  RotateCcw,
 } from "lucide-react";
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
@@ -30,13 +28,9 @@ import { AbilityIcon, eventIconKind } from "./ability-icons";
 import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
-import {
-  chestName,
-  VICTORY_CHEST_WINS,
-  type ChestType,
-} from "@sylve/game/progression";
+import type { ChestType } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
-import { LeagueResult, TrophyIcon } from "@/components/leagues/league-progress";
+import { DuelResult } from "./duel-result";
 import { HeroAbilityStack } from "./hero-ability-stack";
 import type { TrophyChange } from "@sylve/game/leagues";
 
@@ -462,78 +456,7 @@ export function DuelScreen({
         </form>
       </dialog>
       {data.status === "finished" && !catchingUp && (
-        <div className="result-overlay">
-          <section className="result-card game-dialog" role="status">
-            <div className="result-icon">
-              {data.winner === data.me ? <TrophyIcon /> : <Leaf size={40} />}
-            </div>
-            <span className="eyebrow">LE CERCLE A TRANCHÉ</span>
-            <h1>
-              {data.winner === data.me
-                ? "La victoire est tienne."
-                : "Une autre histoire t’attend."}
-            </h1>
-            <p>
-              {data.winner === data.me
-                ? "Tes compagnons ont fait honneur à la forêt."
-                : "Chaque duel est une leçon. La forêt n’a pas dit son dernier mot."}
-            </p>
-            {(data.trophyChange ??
-              (data.winner === data.me ? data.reward : null)) && (
-              <LeagueResult reward={data.trophyChange ?? data.reward!} />
-            )}
-            {data.winner === data.me && data.reward && (
-              <div className="duel-reward" role="status">
-                {data.reward.status === "awarded" && data.reward.rarity ? (
-                  <>
-                    <img
-                      src={`/art/chests/${data.reward.rarity}.webp`}
-                      alt=""
-                      width={100}
-                      height={100}
-                    />
-                    <span>
-                      <strong>{chestName(data.reward.rarity)} gagné !</strong>
-                      Il se déverrouille dans ton salon.
-                    </span>
-                  </>
-                ) : (
-                  <span>
-                    <strong>Emplacements pleins</strong>Le coffre de combat est
-                    perdu. Ouvre tes coffres pour libérer une place.
-                  </span>
-                )}
-              </div>
-            )}
-            {data.winner === data.me &&
-              data.reward?.victoryWins !== undefined && (
-                <p className="duel-victory-progress" role="status">
-                  Coffre commun : {data.reward.victoryWins}/{VICTORY_CHEST_WINS}{" "}
-                  victoires
-                  {data.reward.victoryWins >= VICTORY_CHEST_WINS
-                    ? " · Prêt à ouvrir dans le salon !"
-                    : " · Chaque victoire solo compte."}
-                </p>
-              )}
-            <div className="result-actions">
-              {onRestart && (
-                <button
-                  className="sylve-button practice-replay"
-                  onClick={onRestart}
-                >
-                  <RotateCcw size={16} />
-                  Rejouer contre l’ordinateur
-                </button>
-              )}
-              <Link
-                to="/arena"
-                className={`sylve-button ${practice ? "secondary" : ""}`}
-              >
-                Retour au salon <ArrowRight size={16} />
-              </Link>
-            </div>
-          </section>
-        </div>
+        <DuelResult data={data} practice={practice} onRestart={onRestart} />
       )}
       {drag && (
         <div

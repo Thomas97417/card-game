@@ -1796,53 +1796,481 @@ button:disabled {
 .details-deck-note {
   margin-top: 16px;
 }
-.result-overlay {
-  position: fixed;
-  inset: 0;
+.game-dialog.result-card[data-slot="dialog-content"] {
+  width: min(510px, calc(100vw - 32px));
+  border-color: #d8bd7766;
+  border-radius: 24px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 0, #4b67402e, transparent 65%),
+    linear-gradient(155deg, #203f31, #102b22 80%);
+  box-shadow:
+    0 32px 100px #06140dcc,
+    inset 0 0 0 5px #e8ca8505;
+}
+.game-dialog.result-card.is-promotion[data-slot="dialog-content"] {
+  width: min(600px, calc(100vw - 32px));
+  border-color: #e0bd7a99;
+}
+.game-dialog.result-card > [data-slot="dialog-body"] {
+  padding: 0;
+}
+.result-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 30px 24px 18px;
+}
+.result-kicker {
+  display: block;
+  position: relative;
+  z-index: 1;
+  color: #ead39b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3.5px;
+}
+.result-emblem {
+  position: relative;
   display: grid;
   place-items: center;
-  z-index: 40;
+  width: 140px;
+  height: 120px;
+  margin: 0 auto;
+  color: #c8d4b8;
 }
-.result-card {
-  text-align: center;
-  padding: 42px;
-  border-radius: 16px;
-  width: min(470px, calc(100vw - 36px));
-  max-height: calc(100svh - 32px);
-  overflow-y: auto;
+.result-emblem > .trophy-icon {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 8px 18px #e6b64d40);
+  animation: result-emblem-arrive 750ms cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
 }
-.result-icon {
-  color: #a48e58;
+.is-promotion .result-emblem {
+  width: 230px;
+  height: 184px;
+  margin-top: 8px;
+}
+.result-emblem > .league-badge {
+  z-index: 1;
+  filter: drop-shadow(0 10px 24px #e6ad393d);
+  animation: result-emblem-arrive 1s 120ms cubic-bezier(0.16, 1, 0.3, 1.2) both;
+}
+.result-emblem .league-division {
+  font-size: 28px;
+  padding: 2px 8px;
+}
+.result-emblem-rays {
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(ellipse, #e5be6338, transparent 65%);
+  pointer-events: none;
+}
+.is-promotion .result-emblem-rays {
+  inset: -70px -90px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #f0d0891f 0deg 7deg,
+    transparent 7deg 26deg
+  );
+  mask-image: radial-gradient(ellipse, #000 6%, transparent 68%);
+  animation: result-rays-arrive 2.4s ease-out both;
+}
+.is-promotion .result-emblem::before {
+  content: "";
+  position: absolute;
+  inset: 7px 30px;
+  border: 1px solid #d7bc6752;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 9px #d7bc6705,
+    0 0 40px #dfc77813;
+  animation: result-ring-arrive 1.2s ease-out both;
+}
+.result-sparks {
+  position: absolute;
+  inset: 50%;
+  pointer-events: none;
+}
+.result-sparks i {
+  --angle: calc(var(--spark) * 36deg);
+  position: absolute;
+  width: 4px;
+  height: 7px;
+  border-radius: 1px;
+  background: #f3d691;
+  box-shadow: 0 0 9px #f8db93;
+  opacity: 0;
+  animation: result-spark 1.5s calc(180ms + var(--spark) * 35ms) ease-out both;
+}
+.game-dialog.result-card [data-slot="dialog-title"] {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  color: #fff0c9;
+  font:
+    44px/1.1 Georgia,
+    serif;
+  letter-spacing: -1.5px;
+  outline: none;
+}
+.game-dialog.result-card.is-promotion [data-slot="dialog-title"] {
+  font-size: clamp(38px, 7vw, 50px);
+  text-shadow: 0 2px 24px #f0ce6c20;
+  animation: result-content-arrive 650ms 260ms ease-out both;
+}
+.result-unlocks {
+  margin: 22px 28px 0;
+  animation: result-content-arrive 650ms 450ms ease-out both;
+}
+.game-dialog .result-unlocks h2 {
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 22px;
+  gap: 7px;
+  margin: 0 0 12px;
+  color: #f3d693;
+  font:
+    600 12px/1.4 "Avenir Next",
+    Avenir,
+    sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
-.result-card h1 {
-  font-size: 37px;
-  line-height: 1.2;
-  margin: 17px 0;
-  color: var(--ink);
+.result-unlocks h2::before,
+.result-unlocks h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d7bc674d);
 }
-.result-card p {
+.result-unlocks h2::after {
+  transform: rotate(180deg);
+}
+.result-unlocks ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.result-unlocks li {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 8px;
+  border: 1px solid #dab96b59;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #d7b25a19, #d7b25a06);
+}
+.result-unlocks ul[data-count="4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.result-unlocks ul[data-count="4"] li {
+  flex-direction: row;
+  gap: 12px;
+  text-align: left;
+}
+.result-unlocks li > img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px #0005);
+}
+.result-unlocks li > div {
+  display: grid;
+  gap: 4px;
+}
+.result-unlocks strong {
+  color: #f7e6b7;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.result-unlocks li span {
+  color: #c5cfb5;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.result-loot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin: 22px 28px 0;
+  padding-top: 18px;
+  border-top: 1px solid #d4be8826;
+}
+.result-loot-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  text-align: left;
+}
+.result-loot-item > img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+.result-loot-item > div {
+  display: grid;
+  gap: 5px;
+}
+.result-loot-item strong {
+  color: #efe4c5;
   font-size: 12px;
-  line-height: 1.9;
-  color: var(--quiet);
-  margin-bottom: 28px;
+  font-weight: 600;
+  line-height: 1.3;
 }
-.result-card.game-dialog .duel-reward {
-  color: #f0e4c5;
-  background: #d4be880d;
-  border-color: #c5b38347;
+.result-loot-item span {
+  color: #becbb8;
+  font-size: 11px;
+  line-height: 1.3;
 }
-.result-card.game-dialog .duel-victory-progress {
-  color: var(--quiet);
+.result-loot-item .result-loot-label {
+  color: #b8d49c;
+}
+.result-loot-item.is-full {
+  color: #a9b7a5;
+  gap: 14px;
+}
+.result-chest-progress,
+.result-chest-progress > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.result-chest-pips {
+  gap: 3px;
+}
+.result-chest-pips i {
+  width: 12px;
+  height: 5px;
+  border-radius: 3px;
+  background: #d9d2b126;
+}
+.result-chest-pips i[data-filled="true"] {
+  background: #d7bc77;
+}
+.result-victory-chest.is-ready .result-chest-progress > span:last-child {
+  color: #c4e6a6;
 }
 .result-actions {
+  position: sticky;
+  bottom: 0;
   display: grid;
   gap: 10px;
+  padding: 24px 28px 28px;
+  background: linear-gradient(0deg, #122e24 85%, #122e2400);
+  z-index: 2;
+}
+.result-actions .sylve-button {
+  min-height: 48px;
+  width: 100%;
+  border-radius: 10px;
+  gap: 12px;
+  font-size: 13px;
 }
 .result-actions .practice-replay {
   margin-bottom: 0;
+}
+@keyframes result-emblem-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.55);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes result-rays-arrive {
+  from {
+    opacity: 0;
+    transform: rotate(-24deg) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.7;
+    transform: rotate(12deg) scale(1);
+  }
+}
+@keyframes result-ring-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes result-spark {
+  from {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(-50px) scale(0.5);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(-135px) scale(0);
+  }
+}
+@keyframes result-content-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 480px) {
+  .result-hero {
+    padding: 24px 20px 16px;
+  }
+  .is-promotion .result-emblem {
+    height: 162px;
+    margin-top: 4px;
+  }
+  .result-emblem > .league-badge {
+    width: 148px !important;
+    height: 148px !important;
+  }
+  .result-unlocks,
+  .result-loot {
+    margin: 18px 20px 0;
+  }
+  .result-unlocks ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .result-unlocks li {
+    gap: 6px;
+    padding: 12px 8px;
+  }
+  .result-unlocks li > img {
+    width: 42px;
+    height: 42px;
+  }
+  .result-unlocks li:first-child:nth-last-child(odd) {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    gap: 14px;
+    text-align: left;
+  }
+  .result-unlocks strong {
+    font-size: 13px;
+  }
+  .result-loot {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .result-loot-item {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+  .result-loot-item > img {
+    width: 48px;
+    height: 48px;
+  }
+  .result-loot-item > div {
+    justify-items: center;
+  }
+  .result-loot-item.is-full {
+    justify-content: center;
+    gap: 10px;
+  }
+  .result-actions {
+    padding: 20px;
+  }
+}
+@media (max-height: 740px) {
+  .result-hero {
+    padding-top: 20px;
+  }
+  .is-promotion .result-emblem {
+    height: 144px;
+  }
+  .result-emblem > .league-badge {
+    width: 132px !important;
+    height: 132px !important;
+  }
+  .result-unlocks li {
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px;
+    text-align: left;
+  }
+  .result-unlocks li > img {
+    width: 36px;
+    height: 36px;
+  }
+  .result-unlocks,
+  .result-loot {
+    margin-top: 16px;
+  }
+}
+@media (max-width: 480px) and (max-height: 740px) {
+  .is-promotion .result-emblem {
+    height: 120px;
+  }
+  .result-emblem > .league-badge {
+    width: 112px !important;
+    height: 112px !important;
+  }
+  .result-emblem .league-division {
+    font-size: 23px;
+  }
+  .game-dialog.result-card.is-promotion [data-slot="dialog-title"] {
+    font-size: 38px;
+  }
+  .result-loot-item {
+    flex-direction: row;
+    gap: 6px;
+    text-align: left;
+  }
+  .result-loot-item > img {
+    width: 36px;
+    height: 36px;
+  }
+  .result-loot-item > div {
+    justify-items: start;
+  }
+  .result-chest-progress {
+    flex-wrap: wrap;
+  }
+  .result-victory-chest.is-ready .result-chest-pips {
+    display: none;
+  }
+  .result-actions {
+    padding: 16px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .result-hero *,
+  .result-hero::before,
+  .result-unlocks {
+    animation: none !important;
+  }
+  .result-sparks {
+    display: none;
+  }
 }
 .own .attacking {
   animation: lunge-right 0.52s ease-in-out;
