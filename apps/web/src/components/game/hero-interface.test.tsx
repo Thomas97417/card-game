@@ -55,6 +55,38 @@ function callbacks() {
   };
 }
 describe("interface des héros", () => {
+  it.each(["alice", "bob"])(
+    "applies an area spell to every target at once in the full duel with unbatched server events for %s",
+    (viewer) => {
+      vi.useFakeTimers();
+      const state = fixture(1, 3);
+      const card = state.players[1]!.cards[0]!;
+      state.players[1]!.board = [0, 1, 2].map((row) => ({
+        cardId: card.id, row, depth: 0, hp: 10,
+      }));
+      const actions = callbacks();
+      const initial = { ...playerView(state, viewer), events: [] };
+      const transition = useHeroAbility(state, 0, "storm", 0, 3, Date.now(), () => 0.25);
+      // The deployed server and previously persisted logs may omit this field.
+      const events = transition.events.map(({ abilityBatch, ...event }) => event);
+      const confirmed = { ...playerView(transition.state, viewer), events };
+      const { container, rerender } = render(<DuelScreen data={initial} {...actions} practice />);
+      rerender(<DuelScreen data={confirmed} {...actions} practice />);
+      const side = viewer === "alice" ? "enemy" : "own";
+      const health = () => [...container.querySelectorAll(`.board-half.${side} .stat-badge.health strong`)]
+        .map((node) => Number(node.textContent));
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.heroAbility));
+      act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
+      expect(health()).toEqual([10, 10, 10]);
+      expect(container.querySelector(".damage-float")).toBeNull();
+      act(() => vi.advanceTimersByTime(1));
+      expect(health()).toEqual([7, 7, 7]);
+      expect(container.querySelectorAll(".damage-float")).toHaveLength(3);
+      expect(container.querySelectorAll(".ability-trail line")).toHaveLength(3);
+      act(() => vi.runAllTimers());
+    },
+  );
+
   it.each([1, 2, 3, 4])(
     "offers Storm only from the second personal turn at global turn %i",
     async (turn) => {
@@ -252,7 +284,7 @@ describe("interface des héros", () => {
       { initialProps: { view: initial } },
     );
     rerender({ view: confirmed });
-    act(() => vi.advanceTimersByTime(COMBAT_TIMING.ability));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.heroAbility));
     expect(result.current.display!.players[0]!.heroAbilityUses).toBe(1);
     expect(result.current.display!.players[1]!.board[0]!.hp).toBe(10);
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact));

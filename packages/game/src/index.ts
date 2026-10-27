@@ -351,6 +351,10 @@ export interface GameEvent {
   heroAbility?: HeroAbilityId;
   heroAbilityUses?: number;
   ability?: string;
+  /** Direct effects of one skill activation share an animation batch. */
+  abilityBatch?: number;
+  /** The caster of a reinforcement; cardId/row/depth identify the new unit. */
+  source?: Pick<Unit, "cardId" | "row" | "depth">;
   amount?: number;
   unit?: Unit;
   runes?: Rune[];
@@ -613,6 +617,7 @@ function effectEvent(
   targetPlayer: number,
   target?: Unit,
   amount = 0,
+  abilityBatch?: number,
 ) {
   emit(state, events, {
     type: "ability",
@@ -622,6 +627,7 @@ function effectEvent(
     depth: source.depth,
     ability,
     amount,
+    ...(abilityBatch !== undefined ? { abilityBatch } : {}),
     targetPlayer,
     ...(target
       ? {
@@ -643,6 +649,7 @@ function healUnit(
   amount: number,
   label: string,
   random: () => number,
+  abilityBatch?: number,
 ) {
   const owner = state.players[player]!;
   const healed = Math.min(
@@ -651,7 +658,7 @@ function healUnit(
   );
   if (target.hp <= 0 || target.immune || healed <= 0) return;
   target.hp += healed;
-  effectEvent(state, events, player, source, label, player, target, healed);
+  effectEvent(state, events, player, source, label, player, target, healed, abilityBatch);
   react(state, player, "ally_healed", events, random, target);
 }
 function react(
@@ -685,6 +692,7 @@ function consumeShield(
   targetPlayer: number,
   target: Unit,
   random: () => number,
+  abilityBatch?: number,
 ) {
   target.shield = false;
   effectEvent(
@@ -695,6 +703,8 @@ function consumeShield(
     "Bouclier mental",
     targetPlayer,
     target,
+    0,
+    abilityBatch,
   );
   for (const p of [0, 1]) react(state, p, "shield_lost", events, random);
 }
@@ -1053,11 +1063,12 @@ function applyAbilities(
 ) {
   const owner = state.players[player]!;
   for (const a of activeAbilities(source, owner, trigger)) {
+    const abilityBatch = state.sequence + 1;
     if (a.requiresVampirism && (!context || (context.vampirism ?? 0) <= 0))
       continue;
     if (a.effect === "reflect_damage") {
       if (receivedDamage > 0)
-        heroDamage(state, events, player, source, receivedDamage, a.name);
+        heroDamage(state, events, player, source, receivedDamage, a.name, abilityBatch);
       continue;
     }
     if (a.effect === "summon" && a.summon) {
@@ -1122,6 +1133,7 @@ function applyAbilities(
           ...cell,
           unit: snapshot(unit),
           ability: a.name,
+          source: { cardId: source.cardId, row: source.row, depth: source.depth },
         });
         applyAbilities(state, player, unit, "deploy", events, random);
         appeared(state, player, unit, events, random);
@@ -1184,6 +1196,7 @@ function applyAbilities(
             player,
             undefined,
             a.value,
+            abilityBatch,
           );
           if (pentagram)
             events[events.length - 1]!.pentagrams = marks.map((r) => ({
@@ -1224,6 +1237,7 @@ function applyAbilities(
         player,
         undefined,
         value,
+        abilityBatch,
       );
       events[events.length - 1]!.heroMaxHp = owner.heroMaxHp;
       continue;
@@ -1238,11 +1252,12 @@ function applyAbilities(
           source,
           Math.floor((ally.hp * value) / 100),
           a.name,
+          abilityBatch,
         );
       continue;
     }
     if (a.target === "enemy_hero" && a.effect === "damage") {
-      heroDamage(state, events, player, source, value, a.name);
+      heroDamage(state, events, player, source, value, a.name, abilityBatch);
       continue;
     }
     if (a.target === "ally_hero" && a.effect === "heal") {
@@ -1261,6 +1276,7 @@ function applyAbilities(
           player,
           undefined,
           healed,
+          abilityBatch,
         );
         react(state, player, "ally_hero_healed", events, random);
       }
@@ -1301,6 +1317,8 @@ function applyAbilities(
           "Immunité",
           targetPlayer,
           target,
+          0,
+          abilityBatch,
         );
         continue;
       }
@@ -1326,6 +1344,7 @@ function applyAbilities(
           targetPlayer,
           target,
           random,
+          abilityBatch,
         );
         continue;
       }
@@ -1358,6 +1377,7 @@ function applyAbilities(
             targetPlayer,
             target,
             random,
+            abilityBatch,
           );
         for (const key of [
           "block",
@@ -1399,6 +1419,7 @@ function applyAbilities(
           false,
           a.name,
           random,
+          abilityBatch,
         );
         healUnit(
           state,
@@ -1409,6 +1430,7 @@ function applyAbilities(
           drained,
           a.name,
           random,
+          abilityBatch,
         );
         continue;
       } else if (
@@ -1442,6 +1464,7 @@ function applyAbilities(
             false,
             a.name,
             random,
+            abilityBatch,
           );
           continue;
         }
@@ -1457,6 +1480,7 @@ function applyAbilities(
               : value,
             a.name,
             random,
+            abilityBatch,
           );
           continue;
         }
@@ -1479,6 +1503,7 @@ function applyAbilities(
             targetPlayer,
             target,
             -stolen,
+            abilityBatch,
           );
           effectEvent(
             state,
@@ -1489,6 +1514,7 @@ function applyAbilities(
             player,
             source,
             stolen,
+            abilityBatch,
           );
           if (stolen > 0) punishAttack(state, events, player, source, random);
           continue;
@@ -1527,6 +1553,7 @@ function applyAbilities(
         targetPlayer,
         target,
         appliedAmount,
+        abilityBatch,
       );
       if (a.effect === "attack" && value > 0)
         punishAttack(state, events, targetPlayer, target, random);
@@ -1544,6 +1571,7 @@ function damageUnit(
   physical: boolean,
   label?: string,
   random: () => number = () => 0,
+  abilityBatch?: number,
 ) {
   if (target.hp <= 0) return 0;
   const avoided =
@@ -1591,6 +1619,7 @@ function damageUnit(
       targetPlayer,
       target,
       -damage,
+      abilityBatch,
     );
   if (shielded)
     for (const p of [0, 1]) react(state, p, "shield_lost", events, random);
@@ -1808,6 +1837,7 @@ function heroDamage(
   unit: Unit,
   amount: number,
   ability?: string,
+  abilityBatch?: number,
 ) {
   const targetPlayer = 1 - player;
   const defender = state.players[targetPlayer]!;
@@ -1824,6 +1854,7 @@ function heroDamage(
     amount: -damage,
     hp: defender.heroHp,
     ...(ability ? { ability } : {}),
+    ...(abilityBatch !== undefined ? { abilityBatch } : {}),
   });
   return damage;
 }

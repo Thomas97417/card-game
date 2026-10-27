@@ -2,6 +2,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -60,6 +61,59 @@ function sealActivation(event: GameEvent) {
   return sealActivations[event.ability as keyof typeof sealActivations];
 }
 
+/** Reinforcement coordinates describe the new unit, so its caster is explicit. */
+function abilitySource(event: GameEvent | null) {
+  if (!event?.ability) return null;
+  if (event.type === "hero_ability")
+    return { player: event.player, cardId: "hero", row: -1, depth: -1 };
+  if (event.type === "summon")
+    return event.source ? { ...event.source, player: event.player } : null;
+  if (
+    event.type !== "ability" ||
+    !event.cardId ||
+    sealActivation(event) ||
+    ["Poison", "Fin de l’entrave", "Fin du bonus temporaire"].includes(event.ability)
+  )
+    return null;
+  if (
+    event.cardId !== "hero" &&
+    (event.row === undefined || event.depth === undefined || event.row < 0 || event.depth < 0)
+  )
+    return null;
+  return {
+    player: event.player,
+    cardId: event.cardId,
+    row: event.row ?? -1,
+    depth: event.depth ?? -1,
+  };
+}
+
+function abilityPoint(player: number, me: number, row?: number, depth?: number) {
+  if (row === undefined || depth === undefined || row < 0 || depth < 0)
+    return { x: player === me ? 8 : 92, y: 48 };
+  const cell = groundCell(
+    row, player === me ? DEPTHS - 1 - depth : DEPTHS + depth,
+  );
+  return {
+    x: parseFloat(cell.impact.left),
+    y: parseFloat(cell.impact.top) +
+      parseFloat(cell.impact.marginTop) * ARENA_WIDTH / ARENA_HEIGHT,
+  };
+}
+
+function abilityOrigins(events: readonly GameEvent[]) {
+  const origins = new Map<string, GameEvent>();
+  for (const event of events) {
+    const source = abilitySource(event);
+    if (!source) continue;
+    const key = `${source.player}:${source.cardId}:${source.row}:${source.depth}`;
+    const previous = origins.get(key);
+    if (!previous || ["Immunité", "Bouclier mental"].includes(previous.ability ?? ""))
+      origins.set(key, event);
+  }
+  return [...origins.values()];
+}
+
 type StatLoss = { stat: "health" | "attack"; amount: number };
 type CombatHit = { event: GameEvent; loss?: StatLoss };
 
@@ -101,6 +155,7 @@ export function DuelArena({
   hovered,
   canSummon,
   combatEvent,
+  combatEvents,
   onPlace,
   onInspectUnit,
   onInspectHero,
@@ -114,6 +169,7 @@ export function DuelArena({
   hovered: string | null;
   canSummon: boolean;
   combatEvent: GameEvent | null;
+  combatEvents?: readonly GameEvent[];
   onPlace: (cardId: string, row: number, depth: number) => void;
   onInspectUnit: (unit: Player["board"][number], playerIndex: number) => void;
   onInspectHero: (playerIndex: number) => void;
@@ -124,11 +180,19 @@ export function DuelArena({
     depth: number,
   ) => void;
 }) {
+  const events = useMemo(
+    () => combatEvents ?? (combatEvent ? [combatEvent] : []),
+    [combatEvents, combatEvent],
+  );
+  const sources = abilityOrigins(events).map((event) => abilitySource(event)!);
+  const current = events[0];
   function heroFigure(player: Player, index: number, own: boolean) {
-    const hit =
-      (combatEvent?.type === "attack" || combatEvent?.type === "ability") &&
-      combatEvent.targetPlayer === index &&
-      !combatEvent.targetCardId;
+    const hit = events.some((event) =>
+      (event.type === "attack" || event.type === "ability") &&
+      event.targetPlayer === index &&
+      !event.targetCardId && !event.runes && !event.pentagrams,
+    );
+    const casting = sources.some((source) => source.player === index && source.cardId === "hero");
     return (
       <div
         className={`hero-slot ${own ? "own" : "enemy"}`}
@@ -137,7 +201,7 @@ export function DuelArena({
       >
         <button
           type="button"
-          className={`hero-figure ${hit ? "hero-hit" : ""}`}
+          className={`hero-figure ${hit ? "hero-hit" : ""} ${casting ? "ability-casting" : ""}`}
           aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
           onClick={() => onInspectHero(index)}
@@ -147,6 +211,7 @@ export function DuelArena({
             <span className="hero-level-badge">Niv. {player.heroLevel}</span>
           )}
           <img
+            key={casting ? current!.seq : "idle"}
             src={heroPortrait(player.heroId, !own)}
             alt={
               player.heroId
@@ -217,20 +282,20 @@ export function DuelArena({
               : depth === DEPTHS - 1
                 ? "à distance, vers le héros"
                 : "partagée, corps à corps et à distance";
-          const acting =
-            combatEvent?.player === playerIndex &&
-            combatEvent.cardId === unit?.cardId &&
-            combatEvent.row === row &&
-            combatEvent.depth === depth;
-          const hit =
-            combatEvent?.type === "attack" &&
-            combatEvent.targetPlayer === playerIndex &&
-            combatEvent.targetCardId === unit?.cardId &&
-            (combatEvent.targetRow === undefined ||
-              combatEvent.targetRow === row) &&
-            (combatEvent.targetDepth === undefined ||
-              combatEvent.targetDepth === depth) &&
-            !!unit;
+          const acting = events.find((event) =>
+            event.player === playerIndex && event.cardId === unit?.cardId &&
+            event.row === row && event.depth === depth,
+          );
+          const casting = !!unit && sources.some((source) =>
+            source.player === playerIndex && source.cardId === unit.cardId &&
+            source.row === row && source.depth === depth,
+          );
+          const hit = !!unit && events.some((event) =>
+            (event.type === "attack" || (event.type === "ability" && (event.amount ?? 0) < 0)) &&
+            event.targetPlayer === playerIndex && event.targetCardId === unit.cardId &&
+            (event.targetRow === undefined || event.targetRow === row) &&
+            (event.targetDepth === undefined || event.targetDepth === depth),
+          );
           return (
             <div
               key={`${row}-${depth}`}
@@ -279,10 +344,10 @@ export function DuelArena({
                   onClick={() => onInspectUnit(unit, playerIndex)}
                 >
                   <div
+                    key={casting || hit || acting ? current!.seq : "idle"}
                     data-field-object={unit.fieldObject}
-                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${acting && combatEvent?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting && combatEvent?.type === "summon" ? "spawning" : ""} ${acting && (combatEvent?.type === "death" || combatEvent?.type === "withdraw") ? "dying" : ""}`}
+                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${casting ? "ability-casting" : ""} ${acting?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting?.type === "summon" ? "spawning" : ""} ${acting?.type === "death" || acting?.type === "withdraw" ? "dying" : ""}`}
                   >
-                    <span className="unit-shadow" />
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
                       {!unit.fieldObject && (
@@ -327,7 +392,12 @@ export function DuelArena({
         className="arena"
         aria-label="Terrain de duel de la Sylve"
         style={
-          { "--damage-duration": `${COMBAT_TIMING.damage}ms` } as CSSProperties
+          {
+            "--damage-duration": `${COMBAT_TIMING.damage}ms`,
+            "--cast-duration": `${current?.type === "hero_ability" ? COMBAT_TIMING.heroAbility : COMBAT_TIMING.ability}ms`,
+            "--cast-impact": `${current?.type === "summon" ? COMBAT_TIMING.summon : COMBAT_TIMING.abilityImpact}ms`,
+            "--hit-delay": `${current?.type === "ability" ? COMBAT_TIMING.abilityImpact : COMBAT_TIMING.impact}ms`,
+          } as CSSProperties
         }
       >
         <svg
@@ -373,7 +443,7 @@ export function DuelArena({
         </div>
         {heroFigure(mine, me, true)}
         {heroFigure(enemy, 1 - me, false)}
-        <CombatEffects event={combatEvent} mine={mine} enemy={enemy} me={me} />
+        <CombatEffects events={events} mine={mine} enemy={enemy} me={me} />
       </section>
     </div>
   );
@@ -381,12 +451,12 @@ export function DuelArena({
 
 /** Damage stays on the terrain after the impact, including when its target dies. */
 function CombatEffects({
-  event,
+  events,
   mine,
   enemy,
   me,
 }: {
-  event: GameEvent | null;
+  events: readonly GameEvent[];
   mine: Player;
   enemy: Player;
   me: number;
@@ -397,35 +467,40 @@ function CombatEffects({
     currentView.current = { mine, enemy, me };
   }, [mine, enemy, me]);
   useEffect(() => {
-    if (
-      !event ||
-      (event.type !== "attack" &&
-        (event.type !== "ability" || (event.runes && !event.unit)) &&
-        (event.type !== "summon" || !event.ability))
-    )
-      return;
-    // Capture the target before the playback commits this ability's snapshot.
+    // Capture every target before the frame commits, preserving engine order
+    // when a reaction modifies a unit more than once in the same activation.
     const view = currentView.current;
-    const player =
-      (event.targetPlayer ?? event.player) === view.me ? view.mine : view.enemy;
-    const loss = appliedStatLoss(event, player);
-    if (loss?.amount === 0) return;
-    const timer = window.setTimeout(
-      () => {
-        setHits((previous) =>
-          previous.some((hit) => hit.event.seq === event.seq)
-            ? previous
-            : [...previous, { event, loss }],
-        );
-      },
-      event.type === "ability"
-        ? COMBAT_TIMING.abilityImpact
-        : event.type === "summon"
-          ? 0
-          : COMBAT_TIMING.impact,
-    );
+    const targets = new Map([[view.me, view.mine], [1 - view.me, view.enemy]]);
+    const incoming: CombatHit[] = [];
+    for (const event of events) {
+      if (event.type !== "attack" &&
+        (event.type !== "ability" || ((event.runes || event.pentagrams) && !event.unit)) &&
+        (event.type !== "summon" || !event.ability)) continue;
+      const targetPlayer = event.targetPlayer ?? event.player;
+      const player = targets.get(targetPlayer)!;
+      const loss = appliedStatLoss(event, player);
+      if (event.unit)
+        targets.set(targetPlayer, {
+          ...player,
+          board: player.board.map((unit) =>
+            unit.cardId === event.targetCardId && unit.row === event.targetRow && unit.depth === event.targetDepth
+              ? { ...unit, ...event.unit } : unit,
+          ),
+        });
+      if (loss?.amount === 0) continue;
+      incoming.push({ event, loss });
+    }
+    if (!incoming.length) return;
+    const delay = events[0]?.type === "ability" ? COMBAT_TIMING.abilityImpact
+      : events[0]?.type === "summon" ? 0 : COMBAT_TIMING.impact;
+    const timer = window.setTimeout(() => {
+      setHits((previous) => {
+        const seen = new Set(previous.map((hit) => hit.event.seq));
+        return [...previous, ...incoming.filter((hit) => !seen.has(hit.event.seq))];
+      });
+    }, delay);
     return () => window.clearTimeout(timer);
-  }, [event]);
+  }, [events]);
   const removeHit = useCallback((sequence: number) => {
     setHits((previous) => previous.filter((hit) => hit.event.seq !== sequence));
   }, []);
@@ -435,6 +510,9 @@ function CombatEffects({
       aria-live="polite"
       aria-relevant="additions"
     >
+      {abilityOrigins(events).map((event) => (
+        <AbilityOrigin key={event.seq} event={event} targets={events} mine={mine} enemy={enemy} me={me} />
+      ))}
       {hits.map(({ event: hit, loss }) => {
         const own = (hit.targetPlayer ?? hit.player) === me;
         const player = own ? mine : enemy;
@@ -484,6 +562,76 @@ function CombatEffects({
         );
       })}
     </div>
+  );
+}
+
+function AbilityOrigin({ event, targets, mine, enemy, me }: {
+  event: GameEvent;
+  targets: readonly GameEvent[];
+  mine: Player;
+  enemy: Player;
+  me: number;
+}) {
+  const source = abilitySource(event);
+  if (!source) return null;
+  const player = source.player === me ? mine : enemy;
+  const caster = source.cardId === "hero"
+    ? player.name
+    : player.board.find((unit) =>
+        unit.cardId === source.cardId && unit.row === source.row && unit.depth === source.depth,
+      )?.card.name ?? player.deck.find((card) => card.id === source.cardId)?.name;
+  if (!caster) return null;
+  const origin = abilityPoint(source.player, me, source.row, source.depth);
+  const rays = source.cardId === "hero" ? targets.flatMap((target) => {
+    const caster = abilitySource(target);
+    if (caster?.cardId !== "hero" || caster.player !== source.player) return [];
+    const position = target.type === "summon"
+      ? abilityPoint(target.player, me, target.row, target.depth)
+      : target.type === "ability" && target.targetPlayer !== undefined &&
+          !((target.runes || target.pentagrams) && !target.unit)
+        ? abilityPoint(target.targetPlayer, me, target.targetRow, target.targetDepth)
+        : null;
+    return position && (position.x !== origin.x || position.y !== origin.y)
+      ? [{ ...position, seq: target.seq }] : [];
+  }) : [];
+  const icon = event.heroAbility === "call_to_arms" || event.type === "summon"
+    ? "reinforcement"
+    : event.heroAbility === "heavenly_power" ? "temporary" : eventIconKind(event) ?? "power";
+  return (
+    <>
+      {rays.length > 0 && (
+        <svg
+          className="ability-trail" viewBox="0 0 100 100"
+          preserveAspectRatio="none" aria-hidden="true"
+        >
+          {rays.map((target) => (
+            <line key={target.seq}
+              x1={origin.x} y1={origin.y} x2={target.x} y2={target.y}
+              pathLength={1} vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+      )}
+      <div
+        className="ability-origin"
+        data-player={source.player}
+        data-own={source.player === me}
+        data-card-id={source.cardId}
+        data-row={source.row}
+        data-depth={source.depth}
+        style={{ left: `${origin.x}%`, top: `${origin.y}%` }}
+        aria-label={`${caster} utilise ${event.ability}`}
+      >
+        <span className="ability-origin-ring" aria-hidden="true" />
+        <span className="ability-origin-label">
+          <AbilityIcon kind={icon} size={20} />
+          <span>
+            <strong>{caster}</strong>
+            <small>{event.ability}</small>
+          </span>
+        </span>
+      </div>
+    </>
   );
 }
 

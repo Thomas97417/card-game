@@ -99,11 +99,11 @@ interface FieldCounts {
 }
 
 const countOptions: FieldCounts[] = [];
-for (let buildings = 0; buildings <= 3; buildings++) {
-  for (let runes = 0; runes <= 2; runes++) {
-    for (let pentagrams = 0; pentagrams <= 2; pentagrams++) {
+for (let buildings = 0; buildings <= 1; buildings++) {
+  for (let runes = 0; runes <= 1; runes++) {
+    for (let pentagrams = 0; pentagrams <= 1; pentagrams++) {
       const total = buildings + runes + pentagrams;
-      if (total >= 2 && total <= 6)
+      if (total >= 1 && total <= 3)
         countOptions.push({ buildings, runes, pentagrams });
     }
   }
@@ -118,6 +118,10 @@ const balancedPairs = countOptions.flatMap((first) =>
         Math.abs(first.buildings - second.buildings) <= 1 &&
         Math.abs(first.runes - second.runes) <= 1 &&
         Math.abs(first.pentagrams - second.pentagrams) <= 1 &&
+        Math.abs(
+          first.buildings + first.runes + first.pentagrams -
+            second.buildings - second.runes - second.pentagrams,
+        ) <= 1 &&
         Math.abs(
           first.runes + first.pentagrams - second.runes - second.pentagrams,
         ) <= 1,
@@ -134,7 +138,7 @@ function createField(
     Object.keys(FIELD_BUILDINGS) as FieldBuildingKind[],
     random,
   );
-  // One building per row preserves an unobstructed lane, even on dense fields.
+  // At most one obstacle leaves at least three unobstructed lanes.
   const board = kinds.slice(0, counts.buildings).map((kind, index) =>
     createFieldBuilding(kind, rows[index]!, Math.floor(random() * DEPTHS)),
   );

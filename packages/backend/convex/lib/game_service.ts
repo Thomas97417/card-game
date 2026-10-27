@@ -18,6 +18,7 @@ import { awardMatchRewards, ownedDeck, playerLeague } from "./progression";
 import { migratePlayerCatalogue } from "./catalogue";
 import { recordMissionProgress } from "./missions";
 import { observeHero, readHeroProgress } from "./heroes";
+import { COMBAT_EVENT_RETENTION_MS } from "./combat_retention";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -196,6 +197,7 @@ export async function saveTransition(
   await ctx.db.patch(gameId, {
     state,
     status: state.status,
+    ...(state.status === "finished" ? { finishedAt: Date.now() } : {}),
     ...(computerPlays.length
       ? {
           soloRecentCards: [
@@ -251,6 +253,11 @@ export async function saveTransition(
       if (activity?.gameId === gameId)
         await setActivity(ctx, player.userId, {});
     }
+    await ctx.scheduler.runAfter(
+      COMBAT_EVENT_RETENTION_MS,
+      internal.combatCleanup.purgeEvents,
+      { gameId },
+    );
   }
 }
 export async function requireMatch(

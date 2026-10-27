@@ -77,7 +77,7 @@ export function DuelScreen({
   onRestart,
   onPlaybackSettled,
 }: DuelScreenProps) {
-  const { display, event: combatEvent, playing } = useCombatPlayback(data);
+  const { display, event: combatEvent, events: combatEvents, playing } = useCombatPlayback(data);
   const [now, setNow] = useState(Date.now());
   const [selected, setSelected] = useState<string | null>(null);
   const [inspection, setInspection] = useState<DuelInspection | null>(null);
@@ -347,6 +347,7 @@ export function DuelScreen({
         hovered={hovered}
         canSummon={canSummon}
         combatEvent={combatEvent}
+        combatEvents={combatEvents}
         onPlace={(cardId, row, depth) => void place(cardId, row, depth)}
         onInspectUnit={(unit, playerIndex) => {
           inspect({

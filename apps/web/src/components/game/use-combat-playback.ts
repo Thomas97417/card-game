@@ -7,13 +7,14 @@ import {
   type GameView,
 } from "@sylve/game";
 import { COMBAT_TIMING } from "./combat-timing";
+import { combatFrames } from "./combat-frames";
 
 type View = GameView & { events: GameEvent[] };
 
 /** Animate committed engine events; mounting starts at the current snapshot. */
 export function useCombatPlayback(latest: View | undefined) {
   const [display, setDisplay] = useState<View | undefined>(latest);
-  const [event, setEvent] = useState<GameEvent | null>(null);
+  const [events, setEvents] = useState<GameEvent[]>([]);
   const [playing, setPlaying] = useState(false);
   const last = useRef<number | null>(latest?.sequence ?? null);
   useEffect(() => {
@@ -27,27 +28,31 @@ export function useCombatPlayback(latest: View | undefined) {
     if (!pending.length) {
       setDisplay(latest);
       setPlaying(false);
-      setEvent(null);
+      setEvents([]);
       return;
     }
     setPlaying(true);
     const timers: number[] = [];
     let delay = 0;
     let effectsEnd = 0;
-    for (const entry of pending) {
-      timers.push(window.setTimeout(() => setEvent(entry), delay));
-      const duration =
+    for (const frame of combatFrames(pending)) {
+      const entry = frame[0]!;
+      timers.push(window.setTimeout(() => setEvents(frame), delay));
+      const duration = Math.max(...frame.map((entry) =>
         entry.type === "attack"
           ? COMBAT_TIMING.attack
           : entry.type === "death"
             ? COMBAT_TIMING.death
             : entry.type === "summon"
               ? COMBAT_TIMING.summon
-              : entry.type === "ability" || entry.type === "hero_ability"
-                ? COMBAT_TIMING.ability
-                : entry.type === "withdraw"
-                  ? COMBAT_TIMING.withdraw
-                  : 0;
+              : entry.type === "hero_ability"
+                ? COMBAT_TIMING.heroAbility
+                : entry.type === "ability"
+                  ? COMBAT_TIMING.ability
+                  : entry.type === "withdraw"
+                    ? COMBAT_TIMING.withdraw
+                    : 0,
+      ));
       const commitAt =
         delay +
         (entry.type === "summon"
@@ -57,12 +62,11 @@ export function useCombatPlayback(latest: View | undefined) {
             : entry.type === "ability"
               ? COMBAT_TIMING.abilityImpact
               : duration);
-      if (entry.type === "attack" || entry.type === "ability")
+      if (frame.some((entry) => entry.type === "attack" || entry.type === "ability"))
         effectsEnd = Math.max(effectsEnd, commitAt + COMBAT_TIMING.damage);
       timers.push(
         window.setTimeout(() => {
-          setDisplay((previous) => {
-            if (!previous) return latest;
+          setDisplay((previous) => frame.reduce((previous, entry) => {
             if (entry.type === "turn" || entry.type === "victory")
               return latest;
             const players = previous.players.map((player, index) => {
@@ -163,13 +167,14 @@ export function useCombatPlayback(latest: View | undefined) {
                 })),
               })),
             };
-          });
+          }, previous ?? latest));
         }, commitAt),
       );
       delay += duration;
       timers.push(
         window.setTimeout(() => {
-          last.current = entry.seq;
+          last.current = frame[frame.length - 1]!.seq;
+          setEvents([]);
         }, delay),
       );
     }
@@ -178,7 +183,7 @@ export function useCombatPlayback(latest: View | undefined) {
         () => {
           setDisplay(latest);
           setPlaying(false);
-          setEvent(null);
+          setEvents([]);
           last.current = latest.sequence;
         },
         Math.max(delay + COMBAT_TIMING.settle, effectsEnd),
@@ -186,5 +191,5 @@ export function useCombatPlayback(latest: View | undefined) {
     );
     return () => timers.forEach(window.clearTimeout);
   }, [latest]);
-  return { display, event, playing };
+  return { display, event: events[0] ?? null, events, playing };
 }
