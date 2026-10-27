@@ -49,7 +49,7 @@ function fixture(emeralds = 10000, peakTrophies = 5000) {
   return { ...actions, props };
 }
 async function openMenu() {
-  fireEvent.click(screen.getByRole("button", { name: "Changer de héros" }));
+  fireEvent.click(screen.getByRole("img", { name: "Gardien de la Sylve" }));
   return within(await screen.findByRole("dialog"));
 }
 

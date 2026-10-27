@@ -56,6 +56,20 @@ export function GuardianHouse({
     progress?.nextMight == null
       ? 0
       : Math.max(0, progress.nextMight - progress.peakMight);
+  const portrait = (
+    <>
+      <img
+        src={hero.portrait}
+        alt={hero.name}
+        width={320}
+        height={400}
+        draggable={false}
+      />
+      {progress && (
+        <span className="guardian-level">Niveau {progress.level}</span>
+      )}
+    </>
+  );
 
   async function upgrade() {
     if (!progress?.canUpgrade || inFlight.current) return;
@@ -91,7 +105,7 @@ export function GuardianHouse({
             <span className="guardian-eyebrow">Maison des gardiens</span>
             <h1 id="guardian-name">{hero.name}</h1>
             <p>{hero.subtitle}</p>
-            {progress && onUnlock && onSelect && (
+            {progress && onUnlock && onSelect ? (
               <GuardianHeroMenu
                 progress={progress}
                 unlockedHeroIds={unlockedHeroIds}
@@ -100,20 +114,12 @@ export function GuardianHouse({
                 disabled={pending}
                 onUnlock={onUnlock}
                 onSelect={onSelect}
-              />
+              >
+                {portrait}
+              </GuardianHeroMenu>
+            ) : (
+              <div className="guardian-portrait">{portrait}</div>
             )}
-            <div className="guardian-portrait">
-              <img
-                src={hero.portrait}
-                alt={hero.name}
-                width={320}
-                height={400}
-                draggable={false}
-              />
-              {progress && (
-                <span className="guardian-level">Niveau {progress.level}</span>
-              )}
-            </div>
             {progress && (
               <dl className="guardian-vitals">
                 <div>

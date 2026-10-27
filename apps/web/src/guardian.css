@@ -63,23 +63,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.guardian-change-hero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 18px;
-  padding: 10px 16px;
-  border: 1px solid #d7bd7b80;
-  border-radius: 22px;
-  background: #12372ce8;
-  color: #f7dfaa;
-  font-size: 12px;
-  cursor: pointer;
-}
-.guardian-change-hero:hover {
-  background: #285444;
-}
 .game-dialog.guardian-roster-dialog[data-slot="dialog-content"] {
   width: min(1220px, calc(100vw - 28px));
   max-width: 1220px;
@@ -136,8 +119,7 @@
   background: #2e503e;
   box-shadow: 0 0 0 1px #d6b56d40;
 }
-.guardian-roster-entry:focus-visible,
-.guardian-change-hero:focus-visible {
+.guardian-roster-entry:focus-visible {
   outline: 2px solid #f3d38a;
   outline-offset: 3px;
 }
@@ -201,27 +183,8 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  padding-bottom: 40px;
   object-fit: contain;
   filter: drop-shadow(0 12px 18px #05171090);
-}
-.guardian-roster-portrait-status {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  border: 1px solid #d6bd7c55;
-  border-radius: 20px;
-  background: #152f26;
-  color: #d6c7a3;
-  font-size: 11px;
-  white-space: nowrap;
-}
-.guardian-roster-portrait-status[data-active="true"] {
-  border-color: #bcd09088;
-  background: #304b32;
-  color: #e0edbc;
 }
 .guardian-roster-preview > .hero-power-list {
   min-height: 0;
@@ -388,6 +351,19 @@
   max-height: min(450px, 36svh);
   object-fit: contain;
   filter: drop-shadow(0 8px 10px #071b16aa);
+}
+.guardian-portrait-trigger {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.guardian-portrait-trigger:hover:not(:disabled) > img {
+  filter: drop-shadow(0 8px 10px #071b16aa) brightness(1.08);
+}
+.guardian-portrait-trigger:disabled {
+  cursor: wait;
 }
 .guardian-level {
   position: absolute;
@@ -900,13 +876,9 @@
       .guardian-eyebrow,
       h1,
       p,
-      .guardian-change-hero,
       .guardian-explore-levels
     ) {
     grid-column: 1 / -1;
-  }
-  .guardian-change-hero {
-    justify-self: center;
   }
   .guardian-identity h1 {
     font-size: 36px;

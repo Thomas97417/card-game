@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, LockKeyhole } from "lucide-react";
 import {
@@ -30,6 +30,7 @@ export function GuardianHeroMenu({
   disabled,
   onUnlock,
   onSelect,
+  children,
 }: {
   progress: HeroProgress;
   unlockedHeroIds: readonly HeroId[];
@@ -38,6 +39,7 @@ export function GuardianHeroMenu({
   disabled?: boolean;
   onUnlock: (heroId: HeroId) => Promise<unknown>;
   onSelect: (heroId: HeroId) => Promise<unknown>;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [previewId, setPreviewId] = useState(progress.heroId);
@@ -87,8 +89,13 @@ export function GuardianHeroMenu({
         setOpen(value);
       }}
     >
-      <DialogTrigger className="guardian-change-hero" disabled={disabled}>
-        Changer de héros
+      <DialogTrigger
+        className="guardian-portrait guardian-portrait-trigger"
+        aria-label="Changer de héros"
+        title="Changer de héros"
+        disabled={disabled}
+      >
+        {children}
       </DialogTrigger>
       <DialogContent
         className="guardian-roster-dialog"
@@ -166,12 +173,6 @@ export function GuardianHeroMenu({
                 height={480}
                 draggable={false}
               />
-              <span
-                className="guardian-roster-portrait-status"
-                data-active={active}
-              >
-                {active ? "Héros actif" : owned ? "Débloqué" : "À recruter"}
-              </span>
             </div>
             <header className="guardian-roster-identity">
               <div>
@@ -188,26 +189,22 @@ export function GuardianHeroMenu({
             </header>
             <HeroPowerList level={level} heroId={previewId} />
             <div className="guardian-roster-action">
-              <p className="guardian-roster-requirement">
-                {owned ? (
-                  "Ce héros t’appartient. Tu peux le changer gratuitement entre deux duels."
-                ) : (
-                  <>
-                    Achat permanent ·{" "}
-                    <EmeraldAmount amount={hero.emeraldCost} />
-                    {hero.requiredTrophies > 0 && (
-                      <span
-                        className="guardian-roster-league"
-                        data-locked={leagueLocked}
-                      >
-                        Ligue requise : {leagueAt(hero.requiredTrophies).label}{" "}
-                        · {hero.requiredTrophies.toLocaleString("fr-FR")}{" "}
-                        trophées
-                      </span>
-                    )}
-                  </>
-                )}
-              </p>
+              {!owned && (
+                <p className="guardian-roster-requirement">
+                  Achat permanent ·{" "}
+                  <EmeraldAmount amount={hero.emeraldCost} />
+                  {hero.requiredTrophies > 0 && (
+                    <span
+                      className="guardian-roster-league"
+                      data-locked={leagueLocked}
+                    >
+                      Ligue requise : {leagueAt(hero.requiredTrophies).label}{" "}
+                      · {hero.requiredTrophies.toLocaleString("fr-FR")}{" "}
+                      trophées
+                    </span>
+                  )}
+                </p>
+              )}
               <button
                 type="button"
                 className="sylve-button"
