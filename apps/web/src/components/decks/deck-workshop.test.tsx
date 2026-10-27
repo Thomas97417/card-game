@@ -486,7 +486,7 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Épique" }));
     fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
     expect(
-      screen.getByText("Aucune carte ne correspond à tes filtres."),
+      screen.getByRole("heading", { name: "Aucune carte avec ces filtres" }),
     ).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", { name: "Voir toute la collection" }),
@@ -559,8 +559,15 @@ describe("l’atelier et la collection", () => {
     await waitFor(() =>
       expect(onUpgrade).toHaveBeenCalledWith("guardian:rare"),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Ajouter au deck" }));
+    expect(
+      screen.queryByRole("button", { name: "Ajouter au deck" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    dragCard(
+      rareButton,
+      deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
+    );
     expect(
       deckRow().getAllByRole("button", { name: /^Gardien du rempart,/ }),
     ).toHaveLength(1);
@@ -623,7 +630,7 @@ describe("l’atelier et la collection", () => {
         })) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(screen.getByText("0 / 25 exemplaires")).toBeTruthy();
+    expect(screen.getByText("0/25")).toBeTruthy();
   });
   it("disables an upgrade when copies are ready but gold is missing", async () => {
     const owned = fullCollection.map((entry) => ({ ...entry, copies: 25 }));

@@ -6,6 +6,7 @@ import {
   resolveCard,
   soulbindDefinitions,
   catalogueMigration,
+  cardsOfRarity,
 } from "@sylve/game";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
@@ -79,6 +80,11 @@ async function fixture() {
       ownerId,
       trophies: 2400,
       peakTrophies: 2400,
+    });
+    await ctx.db.patch(deckId, {
+      cardIds: cardsOfRarity("common")
+        .slice(0, 8)
+        .map((card) => card.id),
     });
     return ownerId;
   });

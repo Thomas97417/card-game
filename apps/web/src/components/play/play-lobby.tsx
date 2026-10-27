@@ -1,5 +1,6 @@
-import { useRef, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 import { GameHeader } from "@/components/game-header";
+import { GameIcon } from "@/components/game/game-icon";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
@@ -12,6 +13,7 @@ import {
   Sparkles,
   X,
   LoaderCircle,
+  ArrowRight,
 } from "lucide-react";
 import {
   leagueProgress,
@@ -49,6 +51,34 @@ export function remainingTime(milliseconds: number) {
   return hours
     ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}`
     : `${minutes}:${rest}`;
+}
+
+export function DeckCompletionNotice({
+  deckSize,
+  capacity,
+  id,
+}: {
+  deckSize: number;
+  capacity: number;
+  id?: string;
+}) {
+  const missing = Math.max(0, capacity - deckSize);
+  return (
+    <div className="play-deck-notice" id={id} role="status">
+      <GameIcon kind="all" size={32} />
+      <div>
+        <strong>Complète ton deck</strong>
+        <p>
+          Il manque {missing} carte{missing > 1 ? "s" : ""} ({deckSize}/
+          {capacity}). Remplis tous tes emplacements débloqués pour entrer dans
+          l’arène.
+        </p>
+        <Link to="/decks">
+          Compléter mon deck <ArrowRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 export function PlayLobby({
@@ -94,6 +124,10 @@ export function PlayLobby({
   );
   const full = chests.length >= unlockedSlots.length;
   const victoryReady = victoryChest.wins >= victoryChest.requiredWins;
+  const deckComplete = deckSize === league.deckCapacity;
+  const deckIncomplete = ready && !deckComplete;
+  const missingCards = Math.max(0, league.deckCapacity - deckSize);
+  const deckNoticeId = useId();
   const chestRow = useRef<HTMLDivElement>(null);
   const { isDragging, dragHandlers } = useHorizontalDrag(true);
   useHorizontalWheel(chestRow);
@@ -112,7 +146,12 @@ export function PlayLobby({
         <Link
           className="play-hero"
           to="/decks"
-          aria-label="Mon deck, voir et améliorer mes cartes"
+          aria-label={
+            deckIncomplete
+              ? "Compléter mon deck"
+              : "Mon deck, voir et améliorer mes cartes"
+          }
+          aria-describedby={deckIncomplete ? deckNoticeId : undefined}
         >
           <span className="play-hero-aura" />
           <img
@@ -122,21 +161,40 @@ export function PlayLobby({
             height={768}
             draggable={false}
           />
-          <span className="play-hero-plaque">
+          <span
+            className={`play-hero-plaque${deckIncomplete ? " is-incomplete" : ""}`}
+          >
             <strong>
               Mon deck{" "}
               <span>
                 {ready ? deckSize : "—"}/{league.deckCapacity}
               </span>
             </strong>
-            <small>Renforcer mes compagnons</small>
+            {deckIncomplete ? (
+              <>
+                <small
+                  className="play-deck-warning"
+                  id={deckNoticeId}
+                  role="status"
+                >
+                  Ajoute {missingCards} carte{missingCards > 1 ? "s" : ""} pour
+                  combattre.
+                </small>
+                <span className="play-hero-plaque-action">
+                  Compléter mon deck <ArrowRight size={14} aria-hidden="true" />
+                </span>
+              </>
+            ) : (
+              <small>Renforcer mes compagnons</small>
+            )}
           </span>
         </Link>
         <section className="play-battles" aria-label="Choisir un combat">
           <button
             type="button"
             className="play-battle-button play-solo"
-            disabled={!ready || locked}
+            disabled={!ready || locked || !deckComplete}
+            aria-describedby={ready && !deckComplete ? deckNoticeId : undefined}
             onClick={onSolo}
           >
             <Bot />
@@ -164,7 +222,10 @@ export function PlayLobby({
             <button
               type="button"
               className="play-battle-button play-public"
-              disabled={!ready || locked}
+              disabled={!ready || locked || !deckComplete}
+              aria-describedby={
+                ready && !deckComplete ? deckNoticeId : undefined
+              }
               onClick={onPublic}
             >
               <Swords />
@@ -181,7 +242,8 @@ export function PlayLobby({
           <button
             type="button"
             className="play-friendly"
-            disabled={!ready || busy || queued}
+            disabled={!ready || busy || queued || !deckComplete}
+            aria-describedby={ready && !deckComplete ? deckNoticeId : undefined}
             onClick={onPrivate}
           >
             <UsersRound size={17} />

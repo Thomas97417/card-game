@@ -10,7 +10,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PlayLobby, type LobbyChest } from "@/components/play/play-lobby";
+import {
+  DeckCompletionNotice,
+  PlayLobby,
+  type LobbyChest,
+} from "@/components/play/play-lobby";
 import { ChestUnlockDialog } from "@/components/play/chest-unlock-dialog";
 import { useEmeraldBalance } from "@/components/emerald-balance";
 import {
@@ -113,6 +117,8 @@ function ArenaPage() {
   const deck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
   const ready = initialized && !!deck && !!activity && !!treasures && !!league;
+  const deckComplete =
+    !!deck && !!league && deck.cardIds.length === league.deckCapacity;
   async function action(fn: () => Promise<unknown>) {
     if (actionLock.current) return;
     actionLock.current = true;
@@ -159,14 +165,15 @@ function ArenaPage() {
       locked={locked}
       queued={activity?.queued ?? false}
       onSolo={() => {
-        if (deck)
+        if (deck && deckComplete)
           void action(async () => {
             const gameId = await createSolo({ deckId: deck._id });
             await navigate({ to: "/game/$gameId", params: { gameId } });
           });
       }}
       onPublic={() => {
-        if (deck) void action(() => enqueue({ deckId: deck._id }));
+        if (deck && deckComplete)
+          void action(() => enqueue({ deckId: deck._id }));
       }}
       onPrivate={() => setPrivateOpen(true)}
       onCancelQueue={() => {
@@ -190,6 +197,12 @@ function ArenaPage() {
             Partage une invitation ou saisis le code de ton ami. Ces duels sont
             amicaux et ne rapportent ni coffre ni trophées.
           </DialogDescription>
+          {ready && league && !deckComplete && (
+            <DeckCompletionNotice
+              deckSize={deck?.cardIds.length ?? 0}
+              capacity={league.deckCapacity}
+            />
+          )}
           {activity?.status === "waiting" && activity.gameId ? (
             <div className="invitation-box">
               <span className="field-label">Ton code · Valable 10 minutes</span>
@@ -218,9 +231,9 @@ function ArenaPage() {
             <div className="friendly-actions">
               <button
                 className="sylve-button"
-                disabled={locked || !deck}
+                disabled={locked || !deckComplete}
                 onClick={() => {
-                  if (deck)
+                  if (deck && deckComplete)
                     void action(() => createPrivate({ deckId: deck._id }));
                 }}
               >
@@ -231,7 +244,7 @@ function ArenaPage() {
                 className="join-form"
                 onSubmit={(event) => {
                   event.preventDefault();
-                  if (deck)
+                  if (deck && deckComplete)
                     void action(async () => {
                       const gameId = await joinPrivate({
                         code,
@@ -259,7 +272,7 @@ function ArenaPage() {
                 />
                 <button
                   className="sylve-button secondary"
-                  disabled={locked || code.trim().length !== 8 || !deck}
+                  disabled={locked || code.trim().length !== 8 || !deckComplete}
                   type="submit"
                 >
                   Rejoindre

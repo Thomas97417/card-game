@@ -130,7 +130,7 @@ describe("le classement du refuge", () => {
       for (const ability of card.abilities ?? []) {
         expect(within(dialog).getAllByText(ability.description).length).toBeGreaterThan(0);
       }
-      expect(dialog.querySelector(".soulbind-panel > summary")?.textContent).toContain(`${card.soulbinds!.length} / 4`);
+      expect(within(dialog).getByRole("tab", { name: /Liens d’âme/ }).textContent).toContain(`${card.soulbinds!.length} / 4 actifs`);
       expect(within(dialog).queryByRole("region", { name: "Progression de la carte" })).toBeNull();
       expect(within(dialog).queryByRole("button", { name: /Améliorer|Ajouter au deck|Activer/ })).toBeNull();
       expect(within(dialog).queryByText("Prochaine amélioration")).toBeNull();
