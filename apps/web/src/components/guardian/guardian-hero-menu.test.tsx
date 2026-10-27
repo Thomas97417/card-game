@@ -97,7 +97,7 @@ describe("menu de choix du gardien", () => {
     ).toBe(true);
     expect(menu.getByText(/Il te manque 1 émeraude/)).toBeTruthy();
     fireEvent.click(menu.getByRole("button", { name: /Gardien des Ronces/ }));
-    expect(menu.getByText(/Ligue requise : Bronze III/)).toBeTruthy();
+    expect(menu.getByRole("img", { name: "Bronze III" })).toBeTruthy();
     fireEvent.click(menu.getByRole("button", { name: /Débloquer pour/ }));
     expect(onUnlock).not.toHaveBeenCalled();
   });

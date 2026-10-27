@@ -70,8 +70,11 @@ export function GuardianLevelExplorer({
         setOpen(value);
       }}
     >
-      <DialogTrigger className="guardian-explore-levels">
-        Explorer les niveaux
+      <DialogTrigger
+        className="guardian-level-trigger"
+        aria-label="Explorer les niveaux"
+        title="Explorer les niveaux"
+      >
         <ArrowUpRight size={15} aria-hidden="true" />
       </DialogTrigger>
       <DialogContent

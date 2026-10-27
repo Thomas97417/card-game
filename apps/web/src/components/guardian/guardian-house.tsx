@@ -57,18 +57,13 @@ export function GuardianHouse({
       ? 0
       : Math.max(0, progress.nextMight - progress.peakMight);
   const portrait = (
-    <>
-      <img
-        src={hero.portrait}
-        alt={hero.name}
-        width={320}
-        height={400}
-        draggable={false}
-      />
-      {progress && (
-        <span className="guardian-level">Niveau {progress.level}</span>
-      )}
-    </>
+    <img
+      src={hero.portrait}
+      alt={hero.name}
+      width={320}
+      height={400}
+      draggable={false}
+    />
   );
 
   async function upgrade() {
@@ -127,6 +122,10 @@ export function GuardianHouse({
                   <dd>
                     {progress.level}
                     <small>/ {maxHeroLevel(progress.heroId)}</small>
+                    <GuardianLevelExplorer
+                      key={progress.heroId}
+                      progress={progress}
+                    />
                   </dd>
                 </div>
                 <div>
@@ -137,12 +136,6 @@ export function GuardianHouse({
                   </dd>
                 </div>
               </dl>
-            )}
-            {progress && (
-              <GuardianLevelExplorer
-                key={progress.heroId}
-                progress={progress}
-              />
             )}
           </section>
 

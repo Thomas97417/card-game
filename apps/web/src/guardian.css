@@ -242,10 +242,17 @@
   padding-top: 14px;
 }
 .guardian-roster-requirement {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0 0 10px;
   color: #c6ceb9;
   font-size: 11px;
   line-height: 1.5;
+}
+.guardian-roster-requirement .league-division {
+  padding: 0 3px;
+  font-size: 10px;
 }
 .guardian-roster-requirement[data-locked="true"] {
   color: #e4bd87;
@@ -381,37 +388,27 @@
 .guardian-portrait-trigger:disabled {
   cursor: wait;
 }
-.guardian-level {
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 20px;
-  border: 1px solid #dac084;
-  border-radius: 24px;
-  background: #18362bf2;
-  color: #f0d99d;
-  font:
-    400 18px/1.1 Georgia,
-    serif;
-  white-space: nowrap;
-  box-shadow: 0 3px 16px #0b1e1780;
-}
 .guardian-vitals {
   display: grid;
   grid-template-columns: 1fr 1fr;
   max-width: 340px;
-  margin: 30px auto 20px;
-  padding: 18px 8px;
-  border-block: 1px solid #e4cf913d;
-  background: #15332899;
+  margin: 22px auto 0;
+  overflow: hidden;
+  border: 1px solid #d5c28b66;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #244232eb, #122c24ed);
+  box-shadow: 0 8px 24px #071d1740;
   backdrop-filter: blur(8px);
+}
+.guardian-vitals > div {
+  position: relative;
+  padding: 18px 14px;
 }
 .guardian-vitals > div + div {
   border-left: 1px solid #e4cf913d;
 }
 .guardian-vitals dt {
-  color: #d1d5bd;
+  color: #c9cfb6;
   font-size: 11px;
 }
 .guardian-vitals dd {
@@ -419,7 +416,7 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: #fff0cb;
   font:
     400 30px/1 Georgia,
@@ -430,6 +427,27 @@
   font:
     400 13px/1 "Avenir Next",
     sans-serif;
+}
+.guardian-level-trigger {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #d8c18b;
+  cursor: pointer;
+}
+.guardian-level-trigger:hover {
+  background: #e1d09b14;
+  color: #fff0bc;
+}
+.guardian-house .guardian-level-trigger:focus-visible {
+  outline: 2px solid #e8ce91;
+  outline-offset: -3px;
 }
 .guardian-panels {
   display: grid;
@@ -599,28 +617,6 @@
 }
 .guardian-powers .hero-power-list li {
   padding: 14px;
-}
-.guardian-explore-levels {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  margin-top: 16px;
-  padding: 8px 16px;
-  border: 1px solid #d4bd8855;
-  border-radius: 22px;
-  background: #153328cc;
-  color: #ead4a4;
-  font-size: 12px;
-  backdrop-filter: blur(8px);
-  transition:
-    background 150ms,
-    border-color 150ms;
-}
-.guardian-explore-levels:hover {
-  border-color: #e4ce92;
-  background: #2b4936ed;
 }
 .guardian-level-dialog[data-slot="dialog-content"] {
   width: min(720px, calc(100vw - 32px));
@@ -867,6 +863,8 @@
   }
   .guardian-vitals {
     margin-block: 18px 14px;
+  }
+  .guardian-vitals > div {
     padding-block: 14px;
   }
 }
@@ -887,13 +885,7 @@
     align-items: center;
     gap: 0 16px;
   }
-  .guardian-identity
-    > :is(
-      .guardian-eyebrow,
-      h1,
-      p,
-      .guardian-explore-levels
-    ) {
+  .guardian-identity > :is(.guardian-eyebrow, h1, p) {
     grid-column: 1 / -1;
   }
   .guardian-identity h1 {
@@ -903,29 +895,19 @@
     width: 120px;
     margin: 20px 0 16px;
   }
-  .guardian-level {
-    padding: 6px 12px;
-    font-size: 14px;
-  }
   .guardian-vitals {
     grid-column: 2;
     grid-template-columns: 1fr;
     width: 100%;
     max-width: none;
     margin: 16px 0;
-    padding: 14px 8px;
-    gap: 14px;
-    border: 1px solid #e4cf913d;
-    border-radius: 10px;
+  }
+  .guardian-vitals > div {
+    padding: 14px 12px;
   }
   .guardian-vitals > div + div {
-    padding-top: 14px;
     border-left: 0;
     border-top: 1px solid #e4cf913d;
-  }
-  .guardian-explore-levels {
-    justify-self: center;
-    margin-top: 12px;
   }
   .guardian-panel {
     padding: 22px 18px;

@@ -19,6 +19,7 @@ import {
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { GameIcon } from "@/components/game/game-icon";
 import { FactionIcon } from "@/components/game/faction-artwork";
+import { LeagueBadge } from "@/components/leagues/league-progress";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
 import type { HeroProgress } from "./guardian-house";
@@ -201,8 +202,11 @@ export function GuardianHeroMenu({
                   className="guardian-roster-requirement"
                   data-locked={leagueLocked}
                 >
-                  Ligue requise : {leagueAt(hero.requiredTrophies).label}{" "}
-                  · {hero.requiredTrophies.toLocaleString("fr-FR")} trophées
+                  Ligue requise :
+                  <LeagueBadge
+                    league={leagueAt(hero.requiredTrophies)}
+                    size={40}
+                  />
                 </p>
               )}
               <button
