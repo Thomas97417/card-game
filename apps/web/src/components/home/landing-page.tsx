@@ -18,6 +18,9 @@ import {
   abilityIconKind,
   type AbilityIconKind,
 } from "@/components/game/ability-icons";
+import { LEAGUES, deckCapacity } from "@sylve/game/leagues";
+import { CHEST_TYPES, chestName, chestRules } from "@sylve/game/progression";
+import { LeagueBadge } from "@/components/leagues/league-progress";
 
 const heroCards = [
   variantCard("fox", "epic"),
@@ -76,9 +79,6 @@ function Brand({ compact = false }: { compact?: boolean }) {
         <span className="landing-brand-name">
           Sylve<span>.</span>
         </span>
-        {!compact && (
-          <span className="landing-brand-tagline">Le cercle des gardiens</span>
-        )}
       </span>
     </span>
   );
@@ -107,9 +107,6 @@ function GameCardPreview({
           <CardArtwork card={card} showCopies={false} />
         </button>
       </div>
-      <figcaption className="rarity-label" data-rarity={card.rarity}>
-        {RARITY_LABELS[card.rarity ?? "common"]}
-      </figcaption>
     </figure>
   );
 }
@@ -131,9 +128,6 @@ function CollectionPreview({
       <div className="landing-container">
         <div className="landing-section-heading">
           <div>
-            <span className="landing-eyebrow">
-              Un bestiaire plein de caractère
-            </span>
             <h2 id="collection-title">
               Pas de légende<br />sans compagnons.
             </h2>
@@ -177,16 +171,9 @@ function CollectionPreview({
               aria-live="polite"
               aria-atomic="true"
             >
-              <span className="landing-faction-number">
-                0{factions.indexOf(faction) + 1} / 03
-              </span>
               <h3>{faction.title}</h3>
               <p>{faction.description}</p>
             </div>
-            <p className="landing-collection-note">
-              <span>{CARD_VARIANTS.length}</span> cartes à découvrir.<br />
-              Et tellement de façons de les jouer.
-            </p>
           </div>
           <div
             className="landing-collection-cards"
@@ -198,11 +185,6 @@ function CollectionPreview({
             ))}
           </div>
         </div>
-        <p className="landing-collection-footnote">
-          <Leaf size={14} aria-hidden="true" />
-          Clique sur une carte pour découvrir ses capacités. Mélange les factions
-          pour inventer ta propre alliance.
-        </p>
       </div>
     </section>
   );
@@ -283,7 +265,6 @@ function AlliancePreview({
       <div className="landing-container">
         <div className="landing-section-heading">
           <div>
-            <span className="landing-eyebrow">Les bonnes cartes. Les bonnes synergies.</span>
             <h2 id="alliances-title">
               Des milliards de decks.<br />Un style qui t’appartient.
             </h2>
@@ -315,7 +296,6 @@ function AlliancePreview({
             {alliance.cards.map((card) => (
               <GameCardPreview key={card.id} card={card} onInspect={onInspect} />
             ))}
-            <p>Deux compagnons. Le début d’une composition.</p>
           </div>
           <div className="landing-alliance-effects" aria-live="polite" aria-atomic="true">
             <h3>{alliance.title}</h3>
@@ -330,13 +310,11 @@ function AlliancePreview({
                     <div>
                       <strong>{ability.name}</strong>
                       <p>{ability.description}</p>
-                      <span>{card.name}</span>
                     </div>
                   </li>
                 );
               })}
             </ul>
-            <span className="landing-alliance-level">Effets présentés au niveau 1. Leur puissance évolue avec tes cartes.</span>
           </div>
         </div>
       </div>
@@ -344,69 +322,100 @@ function AlliancePreview({
   );
 }
 
-const duelUnits = [
-  { art: "fox-epic", side: "opponent", row: 1, column: 1 },
-  { art: "guardian-rare", side: "opponent", row: 2, column: 3 },
-  { art: "witch-rare", side: "opponent", row: 4, column: 2 },
-  { art: "turtle-rare", side: "player", row: 2, column: 4 },
-  { art: "dragon-legendary", side: "player", row: 3, column: 5 },
-  { art: "healer-epic", side: "player", row: 4, column: 6 },
-];
-
 function DuelPreview() {
   return (
-    <div className="landing-duel-preview">
-      <div
-        className="landing-duel-board"
-        role="img"
-        aria-label="Aperçu d’un duel tactique : deux équipes de créatures se font face sur quatre lignes."
-      >
-        <img
-          className="landing-duel-background"
-          src="/art/duel-arena-overhead.webp"
-          alt=""
-          width={1659}
-          height={948}
-          loading="lazy"
-        />
-        <div className="landing-duel-grid" aria-hidden="true">
-          {Array.from({ length: 24 }, (_, index) => (
-            <span
-              className="landing-duel-cell"
-              key={index}
-              style={{
-                gridRow: Math.floor(index / 6) + 1,
-                gridColumn: (index % 6) + 1,
-              }}
-            />
-          ))}
-          {duelUnits.map((unit) => (
-            <img
-              key={unit.art}
-              className={`landing-duel-unit is-${unit.side}`}
-              src={`/art/characters/evolutions/${unit.art}.webp`}
-              alt=""
-              width={512}
-              height={512}
-              loading="lazy"
-              style={{ gridRow: unit.row, gridColumn: unit.column }}
-            />
+    <a
+      className="landing-duel-preview"
+      href="/art/screenshots/duel-in-progress.jpg"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Agrandir la capture d’une partie de Sylve"
+    >
+      <img
+        src="/art/screenshots/duel-in-progress.jpg"
+        alt="Une partie de Sylve en cours, avec les créatures, leurs effets, les cartes en main et les pouvoirs du gardien."
+        width={1280}
+        height={720}
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+  );
+}
+
+const leagueStages = LEAGUES.filter(
+  (league, index) => index === 0 || league.tier !== LEAGUES[index - 1]!.tier,
+);
+
+function rewardRange(min: number, max: number) {
+  return min === max
+    ? min.toLocaleString("fr-FR")
+    : `${min.toLocaleString("fr-FR")}–${max.toLocaleString("fr-FR")}`;
+}
+
+function LeagueProgressPreview() {
+  const [selectedTier, setSelectedTier] = useState(leagueStages.at(-1)!.tier);
+  const league = leagueStages.find((entry) => entry.tier === selectedTier)!;
+  const chests = CHEST_TYPES.filter((type) => league.chestChances[type] > 0);
+  const rewards = chestRules("bigRare", league.minTrophies);
+
+  return (
+    <section className="landing-leagues" aria-labelledby="leagues-title">
+      <div className="landing-container">
+        <div className="landing-section-heading">
+          <h2 id="leagues-title">Chaque ligue,<br />de plus grands trésors.</h2>
+          <p>
+            De Fer à Challenger, gravis les dix ligues, agrandis ton deck et
+            débloque des coffres épiques puis légendaires. Plus tu montes, plus
+            tes coffres contiennent de cartes et d’or pour renforcer ton alliance.
+          </p>
+        </div>
+
+        <div className="landing-league-path" role="group" aria-label="Explorer les dix ligues">
+          {leagueStages.map((stage) => (
+            <button
+              key={stage.tier}
+              type="button"
+              aria-label={stage.name}
+              aria-pressed={selectedTier === stage.tier}
+              aria-controls="landing-league-rewards"
+              onClick={() => setSelectedTier(stage.tier)}
+            >
+              <LeagueBadge league={stage} size={68} />
+              <span>{stage.name}</span>
+            </button>
           ))}
         </div>
-        <span className="landing-duel-label">L’arène des gardiens</span>
+
+        <div className="landing-league-rewards" id="landing-league-rewards" aria-live="polite" aria-atomic="true">
+          <div className="landing-league-summary">
+            <h3>{league.name}</h3>
+            <p>Un deck jusqu’à {deckCapacity(league.minTrophies)} cartes et des trésors toujours plus généreux.</p>
+            <dl>
+              <div>
+                <dt>Cartes dans un grand coffre rare</dt>
+                <dd>{rewardRange(rewards.min, rewards.max)}</dd>
+              </div>
+              <div>
+                <dt>Or dans un grand coffre rare</dt>
+                <dd>
+                  <img src="/art/ui/gold-coins.webp" alt="" width={36} height={36} loading="lazy" />
+                  {rewardRange(rewards.minGold, rewards.maxGold)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div className="landing-league-chests" aria-label={`Coffres à remporter en ligue ${league.name}`}>
+            {chests.map((type) => (
+              <figure key={type}>
+                <img src={`/art/chests/${type}.webp`} alt="" width={512} height={512} loading="lazy" />
+                <figcaption>{chestName(type)}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
       </div>
-      <span className="landing-preview-caption">
-        <span /> Chaque placement compte.
-      </span>
-      <img
-        className="landing-duel-emblem"
-        src="/art/ui/arena-swords.webp"
-        alt=""
-        width={100}
-        height={100}
-        loading="lazy"
-      />
-    </div>
+    </section>
   );
 }
 
@@ -435,24 +444,20 @@ export function LandingPage() {
             search={{ returnTo: "/hub" }}
             className="landing-login"
           >
-            <span>Déjà gardien ?</span> Se connecter
+            Se connecter
             <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </div>
 
         <div className="landing-hero-content landing-container">
           <div className="landing-hero-copy">
-            <span className="landing-eyebrow">
-              <span className="landing-tiny-rule" />
-              Jeu de cartes tactique en ligne
-            </span>
             <h1 id="landing-title">
               Ta légende<br /><em>prend racine.</em>
             </h1>
             <p>
-              {CARD_VARIANTS.length} cartes. Des milliards de compositions possibles.
-              <br className="landing-desktop-break" /> Rallie tes monstres, combine
-              leurs pouvoirs et forge la stratégie qui fera ta légende.
+              Un jeu de cartes tactique gratuit, sans téléchargement. Rallie tes
+              monstres, combine leurs pouvoirs et invente ton deck parmi des
+              milliards de compositions.
             </p>
             <div className="landing-hero-actions">
               <Link
@@ -469,10 +474,6 @@ export function LandingPage() {
                 Essayer sans compte
               </Link>
             </div>
-            <p className="landing-hero-reassurance">
-              <span>Jouable gratuitement</span>
-              <span>Sans téléchargement</span>
-            </p>
           </div>
 
           <div
@@ -482,64 +483,18 @@ export function LandingPage() {
             <div className="landing-card-orbit" aria-hidden="true">
               <span /><span />
             </div>
-            <span className="landing-showcase-kicker">
-              Une rencontre peut tout changer
-            </span>
             <div className="landing-card-fan">
               {heroCards.map((card) => (
                 <GameCardPreview key={card.id} card={card} onInspect={setInspectedCard} />
               ))}
             </div>
-            <span className="landing-showcase-caption">
-              <span /> Ta prochaine alliance t’attend <span />
-            </span>
           </div>
         </div>
 
-        <a className="landing-scroll-cue" href="#decouvrir">
-          <span>Explore la Sylve</span>
+        <a className="landing-scroll-cue" href="#decouvrir" aria-label="Découvrir le jeu">
           <ArrowDown size={17} aria-hidden="true" />
         </a>
-        <span className="landing-hero-coordinate" aria-hidden="true">
-          Les terres de Sylve · Chapitre I
-        </span>
       </section>
-
-      <div className="landing-promises">
-        <div className="landing-container">
-          {[
-            {
-              icon: "all-cards",
-              title: "Rassemble l’extraordinaire",
-              text: "Une collection qui grandit avec toi",
-            },
-            {
-              icon: "arena-swords",
-              title: "Fais parler ta stratégie",
-              text: "Des duels au tour par tour",
-            },
-            {
-              icon: "guardian-emblem",
-              title: "Deviens un grand gardien",
-              text: "Des ligues et des défis à conquérir",
-            },
-          ].map((promise) => (
-            <div className="landing-promise" key={promise.icon}>
-              <img
-                src={`/art/ui/${promise.icon}.webp`}
-                alt=""
-                width={58}
-                height={58}
-                loading="lazy"
-              />
-              <div>
-                <strong>{promise.title}</strong>
-                <span>{promise.text}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       <CollectionPreview onInspect={setInspectedCard} />
       <AlliancePreview onInspect={setInspectedCard} />
@@ -548,55 +503,26 @@ export function LandingPage() {
         className="landing-strategy landing-container"
         aria-labelledby="strategy-title"
       >
-        <DuelPreview />
-        <div className="landing-strategy-copy">
-          <span className="landing-eyebrow">
-            Facile à prendre en main. Passionnant à maîtriser.
-          </span>
-          <h2 id="strategy-title">
-            Une carte bien placée.<br /><em>Et tout bascule.</em>
-          </h2>
+        <div className="landing-section-heading">
+          <h2 id="strategy-title">Une carte bien placée.<br /><em>Et tout bascule.</em></h2>
           <p>
-            Une ligne à défendre, une ouverture à saisir, un pouvoir à déclencher.
-            Ici, c’est ta façon de jouer qui fait la différence.
+            Protège tes alliés, ouvre une brèche et déclenche les pouvoirs de
+            ton gardien au moment décisif. Chaque placement et chaque capacité
+            peuvent renverser le duel.
           </p>
-          <ol className="landing-strategy-steps">
-            <li>
-              <span>01</span>
-              <div>
-                <h3>Compose ton deck</h3>
-                <p>Associe tes créatures et leurs capacités pour créer ta stratégie.</p>
-              </div>
-            </li>
-            <li>
-              <span>02</span>
-              <div>
-                <h3>Maîtrise le terrain</h3>
-                <p>Protège tes alliés, ouvre une brèche et attaque le gardien adverse.</p>
-              </div>
-            </li>
-            <li>
-              <span>03</span>
-              <div>
-                <h3>Renverse le duel</h3>
-                <p>Utilise les pouvoirs de ton héros au moment décisif.</p>
-              </div>
-            </li>
-          </ol>
-          <Link to="/practice" className="landing-text-link">
-            Lancer mon premier duel <ArrowRight size={17} aria-hidden="true" />
-          </Link>
-          <span className="landing-strategy-note">
-            Contre l’ordinateur · Sans inscription
-          </span>
         </div>
+        <DuelPreview />
+        <Link to="/practice" className="landing-button landing-practice-button">
+          Essayer un duel sans compte <ArrowRight size={18} aria-hidden="true" />
+        </Link>
       </section>
+
+      <LeagueProgressPreview />
 
       <section className="landing-adventure" aria-labelledby="adventure-title">
         <div className="landing-container">
           <div className="landing-section-heading">
             <div>
-              <span className="landing-eyebrow">Bien plus qu’un duel</span>
               <h2 id="adventure-title">
                 Toujours une raison<br />de revenir.
               </h2>
@@ -617,7 +543,6 @@ export function LandingPage() {
                 loading="lazy"
               />
               <div className="landing-feature-copy">
-                <span className="landing-eyebrow">Un lieu à toi</span>
                 <h3>Ton refuge.<br />Le début de tout.</h3>
                 <p>
                   Récolte les ressources de tes mines, relève tes missions et
@@ -643,23 +568,26 @@ export function LandingPage() {
                 loading="lazy"
               />
               <div className="landing-feature-copy">
-                <span className="landing-eyebrow">L’appel de l’inconnu</span>
                 <h3>Qui répondra à ton appel ?</h3>
                 <p>
                   Invoque de nouveaux compagnons au sanctuaire et enrichis tes alliances.
                 </p>
               </div>
             </article>
-            <article className="landing-feature landing-feature-rewards">
-              <div className="landing-reward-art" aria-hidden="true">
-                <img src="/art/chests/legendary.webp" alt="" width={512} height={512} loading="lazy" />
-                <img src="/art/leagues/diamond.webp" alt="" width={120} height={120} loading="lazy" />
-              </div>
+            <article className="landing-feature landing-feature-guardian">
+              <img
+                className="landing-feature-scenery"
+                src="/art/guardian-house.webp"
+                alt="La maison des gardiens dans la forêt"
+                width={1672}
+                height={941}
+                loading="lazy"
+              />
               <div className="landing-feature-copy">
-                <span className="landing-eyebrow">La victoire te va bien</span>
-                <h3>Vise toujours plus haut.</h3>
+                <h3>Fais grandir ton gardien.</h3>
                 <p>
-                  Remporte des coffres, améliore tes cartes et gravis les ligues de l’arène.
+                  Renforce ton héros et débloque de nouveaux pouvoirs pour mener
+                  tes compagnons au combat.
                 </p>
               </div>
             </article>
@@ -687,7 +615,6 @@ export function LandingPage() {
             />
           </div>
           <div className="landing-invitation-copy">
-            <span className="landing-eyebrow">Le cercle n’attend que toi</span>
             <h2 id="invitation-title">
               Le prochain gardien,<br /><em>c’est toi.</em>
             </h2>
@@ -703,7 +630,6 @@ export function LandingPage() {
               Rejoindre la Sylve <ArrowRight size={18} aria-hidden="true" />
             </Link>
             <span className="landing-invitation-login">
-              Déjà un compte ?
               <Link to="/sign-in" search={{ returnTo: "/hub" }}>
                 Retrouver mon refuge <ArrowUpRight size={13} aria-hidden="true" />
               </Link>
@@ -716,8 +642,7 @@ export function LandingPage() {
         <a href="#top" aria-label="Sylve — Retour en haut">
           <Brand compact />
         </a>
-        <p>Un cercle. Deux gardiens. Ton histoire.</p>
-        <span>Fait pour l’aventure.</span>
+        <Link to="/sign-in" search={{ returnTo: "/hub" }}>Se connecter</Link>
       </footer>
       <CardUpgradeDialog
         entry={inspectedCard ? { card: inspectedCard, copies: 0 } : undefined}
