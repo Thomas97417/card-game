@@ -200,6 +200,7 @@ export default defineSchema({
           trophies: v.number(),
           trophiesTotal: v.number(),
           previousTrophies: v.number(),
+          previousPeakTrophies: v.optional(v.number()),
           deckCapacity: v.number(),
           deckSlotsGained: v.number(),
         }),

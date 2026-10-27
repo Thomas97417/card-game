@@ -171,6 +171,7 @@ describe("ligues et trophées autoritaires", () => {
       trophyChange: {
         trophies: -15,
         previousTrophies: 200,
+        previousPeakTrophies: 200,
         trophiesTotal: 185,
         deckCapacity: 5,
         deckSlotsGained: 0,
@@ -193,6 +194,7 @@ describe("ligues et trophées autoritaires", () => {
     ).toMatchObject({
       trophies: 25,
       trophiesTotal: 210,
+      previousPeakTrophies: 200,
       deckCapacity: 5,
       deckSlotsGained: 0,
     });
@@ -212,6 +214,42 @@ describe("ligues et trophées autoritaires", () => {
     );
     expect(progress).toHaveLength(1);
     expect(progress[0]!.peakTrophies).toBe(210);
+  });
+
+  it("snapshots the previous trophy record so recovering Bronze never unlocks its features twice", async () => {
+    const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, 775);
+    const first = await winSolo(t, alice, deckId);
+    expect(
+      (await alice.query(api.games.get, { gameId: first })).trophyChange,
+    ).toMatchObject({
+      previousPeakTrophies: 775,
+      trophiesTotal: 800,
+      deckSlotsGained: 1,
+    });
+    const loss = await alice.mutation(api.games.createSolo, { deckId });
+    await alice.mutation(api.games.surrender, { gameId: loss });
+    expect(await alice.query(api.collection.league, {})).toMatchObject({
+      trophies: 785,
+      peakTrophies: 800,
+      current: { label: "Fer I" },
+    });
+    const recovered = await winSolo(t, alice, deckId);
+    const recovery = await alice.query(api.games.get, { gameId: recovered });
+    expect(recovery.trophyChange).toMatchObject({
+      previousTrophies: 785,
+      previousPeakTrophies: 800,
+      trophiesTotal: 810,
+      deckCapacity: 6,
+      deckSlotsGained: 0,
+    });
+    expect(
+      (await alice.query(api.games.get, { gameId: recovered })).trophyChange,
+    ).toEqual(recovery.trophyChange);
+    expect(
+      (await alice.query(api.games.get, { gameId: first })).trophyChange
+        ?.previousPeakTrophies,
+    ).toBe(775);
   });
 
   it("settles both public players atomically, exposes only personal trophy changes, and ignores friendly matches", async () => {
@@ -245,7 +283,11 @@ describe("ligues et trophées autoritaires", () => {
     expect(
       (await alice.query(api.games.get, { gameId: match.gameId! }))
         .trophyChange,
-    ).toMatchObject({ trophies: 25, trophiesTotal: 200 });
+    ).toMatchObject({
+      trophies: 25,
+      trophiesTotal: 200,
+      previousPeakTrophies: 175,
+    });
     expect(
       (await bob.query(api.games.get, { gameId: match.gameId! })).trophyChange,
     ).toMatchObject({ trophies: -15, trophiesTotal: 190 });

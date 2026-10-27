@@ -262,6 +262,7 @@ export async function awardMatchRewards(
       trophies: trophiesTotal - previousTrophies,
       trophiesTotal,
       previousTrophies,
+      previousPeakTrophies: previousPeak,
       deckCapacity: deckCapacity(peakTrophies),
       deckSlotsGained: deckCapacity(peakTrophies) - deckCapacity(previousPeak),
     });
