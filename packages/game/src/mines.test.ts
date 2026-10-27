@@ -4,7 +4,7 @@ import { changeMineLevel, HOUR_MS, mineAmount, mineRules, mineView, type MineSta
 const state: MineState = { amount: 0, updatedAt: 1000, heroLevel: 1, revision: 0 };
 
 describe("production des mines", () => {
-  it("scales hourly production and capped storage with the hero level", () => {
+  it("scales hourly production and capped storage with the mine level", () => {
     expect(mineRules("gold", 1)).toEqual({ perHour: 6, capacity: 48 });
     expect(mineRules("emeralds", 1)).toEqual({ perHour: 2, capacity: 16 });
     expect(mineRules("gold", 5)).toEqual({ perHour: 30, capacity: 240 });
@@ -24,5 +24,14 @@ describe("production des mines", () => {
     expect(upgraded.amount).toBe(48);
     expect(mineAmount("gold", upgraded, upgraded.updatedAt + HOUR_MS)).toBe(66);
     expect(mineRules("gold", 3).capacity).toBe(144);
+  });
+
+  it("settles legacy Guardian mines before rank migration and preserves earned reserves above the new cap", () => {
+    const old = { ...state, heroLevel: 10 };
+    const migrated = changeMineLevel("gold", old, 1, old.updatedAt + HOUR_MS * 8);
+    expect(migrated).toMatchObject({ amount: 480, level: 1 });
+    expect(migrated.heroLevel).toBeUndefined();
+    expect(mineAmount("gold", migrated, migrated.updatedAt + HOUR_MS * 10)).toBe(480);
+    expect(mineView("gold", migrated, migrated.updatedAt)).toMatchObject({ available: 480, full: true, progress: 1 });
   });
 });

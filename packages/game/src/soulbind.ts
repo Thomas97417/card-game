@@ -1,4 +1,5 @@
 import cw from "./data/cunt-wars.json";
+export { rankProgress } from "./ranks";
 import {
   cardSource,
   canonicalVariantId,
@@ -24,26 +25,6 @@ const troops: Record<CardRarity, number[]> = {
   epic: [20, 40, 60, 90],
   legendary: [45, 75, 105, 150],
 };
-
-export function rankProgress(experience: number) {
-  experience = Number.isFinite(experience)
-    ? Math.max(0, Math.floor(experience))
-    : 0;
-  let rank = 1,
-    spent = 0;
-  while (rank < cw.rankCosts.length) {
-    const cost = cw.rankCosts[rank - 1]!;
-    if (cost <= 0 || experience - spent < cost) break;
-    spent += cost;
-    rank++;
-  }
-  return {
-    rank,
-    experience,
-    earned: experience - spent,
-    required: cw.rankCosts[rank - 1] ?? 0,
-  };
-}
 
 export function soulbindDefinitions(variantId: string) {
   const source = cardSource(variantId);

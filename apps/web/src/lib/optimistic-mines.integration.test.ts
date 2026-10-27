@@ -7,7 +7,7 @@ import { HOUR_MS, type MineBoard, type MineKind } from "@sylve/game/mines";
 import { optimisticallyCollectMine } from "./optimistic-mines";
 
 const board: MineBoard = {
-  ownerId: "alice", serverNow: HOUR_MS, heroLevel: 1,
+  ownerId: "alice", serverNow: HOUR_MS, rank: 1, mineLevel: 1,
   mines: {
     gold: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },
     emeralds: { amount: 0, updatedAt: 0, heroLevel: 1, revision: 0 },

@@ -3,7 +3,7 @@ import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
-import { friendshipPair, FRIEND_LIMIT, socialDay } from "../convex/lib/social";
+import { friendshipPair, socialDay } from "../convex/lib/social";
 
 const modules = import.meta.glob("../convex/**/*.ts");
 function setup() {
@@ -37,6 +37,9 @@ async function player(t: ReturnType<typeof setup>, name: string) {
       },
     },
   });
+  await t.run((ctx) => ctx.db.insert("wallets", {
+    ownerId: String(user._id), gold: 0, experience: 120, catalogueVersion: 2,
+  }));
   return {
     id: String(user._id),
     client: t.withIdentity({ subject: user._id, sessionId: session._id }),
@@ -128,7 +131,7 @@ describe("amis et entraide", () => {
     expect((await b.client.query(api.social.list, {})).friends).toEqual([]);
   });
 
-  it("caps both lists at 25, including concurrent acceptances into the last slot", async () => {
+  it("caps both lists at their rank allowance, including concurrent acceptances into the last slot", async () => {
     const t = setup();
     const a = await player(t, "alice"),
       b = await player(t, "bob"),
@@ -136,7 +139,7 @@ describe("amis et entraide", () => {
     await b.client.mutation(api.social.request, { playerId: a.id });
     await c.client.mutation(api.social.request, { playerId: a.id });
     await t.run(async (ctx) => {
-      for (let i = 0; i < FRIEND_LIMIT - 1; i++)
+      for (let i = 0; i < 5 - 1; i++)
         await ctx.db.insert("friendships", {
           ...friendshipPair(a.id, `friend-${i}`),
           requestedBy: a.id,
@@ -157,14 +160,14 @@ describe("amis et entraide", () => {
           .filter((q) => q.eq(q.field("status"), "accepted"))
           .collect(),
       ),
-    ).toHaveLength(FRIEND_LIMIT);
+    ).toHaveLength(5);
     const d = await player(t, "david");
     await expect(
       d.client.mutation(api.social.request, { playerId: a.id }),
-    ).rejects.toThrow("déjà 25 amis");
+    ).rejects.toThrow("déjà 5 amis");
     await expect(
       a.client.mutation(api.social.request, { playerId: d.id }),
-    ).rejects.toThrow("déjà 25 amis");
+    ).rejects.toThrow("déjà 5 amis");
   });
 
   it("credits only the recipient once per friend per day, without resetting on remove and re-add", async () => {
@@ -266,14 +269,11 @@ describe("amis et entraide", () => {
   it("buys common/rare summons only with help tokens, retries without a second debit, and cannot borrow emeralds", async () => {
     const t = setup();
     const a = await player(t, "alice");
-    const walletId = await t.run((ctx) =>
-      ctx.db.insert("wallets", {
-        ownerId: a.id,
-        gold: 0,
-        diamonds: 99999,
-        friendshipTokens: 149,
-      }),
-    );
+    const walletId = await t.run(async (ctx) => {
+      const wallet = (await ctx.db.query("wallets").unique())!;
+      await ctx.db.patch(wallet._id, { diamonds: 99999, friendshipTokens: 149 });
+      return wallet._id;
+    });
     const request = {
       packId: "friendship" as const,
       count: 1 as const,

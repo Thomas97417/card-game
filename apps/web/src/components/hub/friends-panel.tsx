@@ -5,8 +5,8 @@ import { Check, LoaderCircle, MessageCircle, X } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import {
   FRIEND_HELP_TOKENS,
-  FRIEND_LIMIT,
 } from "@my-better-t-app/backend/convex/lib/social";
+import { FRIEND_HELP_EXPERIENCE, FRIENDS_UNLOCK_RANK } from "@sylve/game/ranks";
 import { leagueAt } from "@sylve/game/leagues";
 import { ConvexError } from "convex/values";
 import {
@@ -76,10 +76,20 @@ export function FriendsPanel({
     >
       <div className="social-friends-summary">
         <span>
-          <strong>{data?.friends.length ?? "—"}</strong> / {FRIEND_LIMIT} amis
+          <strong>{data?.friends.length ?? "—"}</strong> / {data?.limit ?? "—"} amis
         </span>
         {data && <FriendshipAmount amount={data.tokens} />}
       </div>
+      {data && (
+        <p className="social-notice social-rank-info">
+          {data.limit === 0
+            ? `Les amis se débloquent au rang ${FRIENDS_UNLOCK_RANK}. Améliore tes cartes pour y accéder.`
+            : `Rang ${data.rank} · Chaque aide envoyée te rapporte ${FRIEND_HELP_EXPERIENCE} XP.`}
+          {data.limit > 0 && data.nextUnlock && (
+            <> {data.nextUnlock.friends} places au rang {data.nextUnlock.rank}.</>
+          )}
+        </p>
+      )}
       {error && (
         <p className="social-notice social-error" role="alert">
           {error}
@@ -117,11 +127,11 @@ export function FriendsPanel({
                       <button
                         type="button"
                         className="social-icon-button"
-                        disabled={!!busy || data.friends.length >= FRIEND_LIMIT}
+                        disabled={!!busy || data.friends.length >= data.limit}
                         aria-label={`Accepter ${player.name}`}
                         title={
-                          data.friends.length >= FRIEND_LIMIT
-                            ? "Ta liste contient déjà 25 amis"
+                          data.friends.length >= data.limit
+                            ? data.limit === 0 ? `Débloqué au rang ${FRIENDS_UNLOCK_RANK}` : `Ta liste contient déjà ${data.limit} amis`
                             : "Accepter"
                         }
                         onClick={() =>
@@ -185,13 +195,13 @@ export function FriendsPanel({
                         title={
                           player.helpSent
                             ? "Aide envoyée aujourd’hui"
-                            : "+10 jetons pour cet ami"
+                            : `+10 jetons pour cet ami · +${FRIEND_HELP_EXPERIENCE} XP pour toi`
                         }
                         onClick={() =>
                           void act(
                             player.playerId,
                             sendHelp,
-                            `Aide envoyée : ${player.name} reçoit 10 jetons d’entraide.`,
+                            `Aide envoyée : ${player.name} reçoit 10 jetons d’entraide et tu gagnes ${FRIEND_HELP_EXPERIENCE} XP.`,
                           )
                         }
                       >
@@ -202,7 +212,7 @@ export function FriendsPanel({
                         ) : (
                           <>
                             <FriendshipIcon />
-                            <span>+10</span>
+                            <span>+10 <small>+{FRIEND_HELP_EXPERIENCE} XP</small></span>
                           </>
                         )}
                       </button>
@@ -212,10 +222,10 @@ export function FriendsPanel({
               ) : (
                 <div className="hub-world-chat-empty social-friends-empty">
                   <GameIcon kind="friends" size={68} />
-                  <strong>Une aventure à partager</strong>
+                  <strong>{data.limit === 0 ? `Les amis au rang ${FRIENDS_UNLOCK_RANK}` : "Une aventure à partager"}</strong>
                   <p>
-                    Clique sur l’icône d’un gardien dans le chat mondial, puis
-                    sur « Ajouter aux amis ».
+                    {data.limit === 0 ? "Améliore tes cartes pour gagner de l’expérience et accueillir tes premiers amis."
+                      : "Clique sur l’icône d’un gardien dans le chat mondial, puis sur « Ajouter aux amis »."}
                   </p>
                 </div>
               )}

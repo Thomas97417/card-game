@@ -175,7 +175,7 @@ describe("validation de la connexion avant les requêtes du jeu", () => {
       const board: MineBoard = {
         ownerId: "player",
         serverNow: 0,
-        heroLevel: 1,
+        rank: 6, mineLevel: 1,
         mines: {
           gold: { amount: 6, updatedAt: 0, heroLevel: 1, revision: 0 },
           emeralds: { amount: 2, updatedAt: 0, heroLevel: 1, revision: 0 },

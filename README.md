@@ -113,6 +113,7 @@ Les fichiers `routeTree.gen.ts` et `packages/backend/convex/_generated/` sont g√
 - [Ligues, coffres et progression](docs/progression.md)
 - [Invocations et tarifs du sanctuaire](docs/summoning.md)
 - [Mines du refuge](docs/mines.md)
+- [Rang du compte et r√©compenses](docs/ranks.md)
 - [Cadeaux quotidiens du refuge](docs/daily-rewards.md)
 - [Amis, messages et entraide](docs/social.md)
 - [Terrain et effets de combat](docs/field.md)

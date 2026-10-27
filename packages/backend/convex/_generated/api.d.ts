@@ -30,6 +30,7 @@ import type * as lib_mines from "../lib/mines.js";
 import type * as lib_missions from "../lib/missions.js";
 import type * as lib_polar_webhook from "../lib/polar_webhook.js";
 import type * as lib_progression from "../lib/progression.js";
+import type * as lib_ranks from "../lib/ranks.js";
 import type * as lib_social from "../lib/social.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as lib_wallet from "../lib/wallet.js";
@@ -72,6 +73,7 @@ declare const fullApi: ApiFromModules<{
   "lib/missions": typeof lib_missions;
   "lib/polar_webhook": typeof lib_polar_webhook;
   "lib/progression": typeof lib_progression;
+  "lib/ranks": typeof lib_ranks;
   "lib/social": typeof lib_social;
   "lib/validators": typeof lib_validators;
   "lib/wallet": typeof lib_wallet;

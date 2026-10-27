@@ -3,9 +3,10 @@ import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 import { requirePlayer } from "./lib/game_service";
 import { playerLeague, playerWallet } from "./lib/progression";
+import { FRIEND_HELP_EXPERIENCE, FRIENDS_UNLOCK_RANK } from "@sylve/game/ranks";
+import { addRankExperience, readRank } from "./lib/ranks";
 import {
   FRIEND_HELP_TOKENS,
-  FRIEND_LIMIT,
   friendship,
   friendshipPair,
   playerFriendships,
@@ -26,7 +27,7 @@ export const list = query({
   handler: async (ctx) => {
     const { userId } = await requirePlayer(ctx);
     const day = socialDay();
-    const [accepted, pending, help, wallet] = await Promise.all([
+    const [accepted, pending, help, wallet, rank] = await Promise.all([
       playerFriendships(ctx, userId, "accepted"),
       playerFriendships(ctx, userId, "pending"),
       ctx.db
@@ -36,6 +37,7 @@ export const list = query({
         )
         .collect(),
       playerWallet(ctx, userId),
+      readRank(ctx, userId),
     ]);
     const helped = new Set(help.map((item) => item.recipientId));
     const players = await Promise.all(
@@ -66,7 +68,9 @@ export const list = query({
       outgoing: available.filter(
         (item) => item.status === "pending" && !item.incoming,
       ),
-      limit: FRIEND_LIMIT,
+      limit: rank.friends,
+      rank: rank.rank,
+      nextUnlock: rank.nextFriends,
       tokens: wallet?.friendshipTokens ?? 0,
       day,
     };
@@ -98,20 +102,20 @@ export const request = mutation({
     // Canonical pairs make retries and crossed requests idempotent.
     const previous = await friendship(ctx, userId, playerId);
     if (previous) return;
-    const [own, other, pending] = await Promise.all([
+    const [own, other, pending, ownRank, otherRank] = await Promise.all([
       playerFriendships(ctx, userId, "accepted"),
       playerFriendships(ctx, playerId, "accepted"),
       playerFriendships(ctx, userId, "pending"),
+      readRank(ctx, userId),
+      readRank(ctx, playerId),
     ]);
-    if (own.length >= FRIEND_LIMIT)
-      throw new ConvexError("Ta liste contient déjà 25 amis.");
-    if (other.length >= FRIEND_LIMIT)
-      throw new ConvexError("Ce gardien a déjà 25 amis.");
+    requireFriendSlot(own.length, ownRank.friends, true);
+    requireFriendSlot(other.length, otherRank.friends, false);
     if (
       pending.filter((item) => item.requestedBy === userId).length >=
-      FRIEND_LIMIT
+      ownRank.friends
     )
-      throw new ConvexError("Tu as déjà 25 demandes en attente.");
+      throw new ConvexError(`Tu as déjà ${ownRank.friends} demandes en attente.`);
     await ctx.db.insert("friendships", {
       ...friendshipPair(userId, playerId),
       requestedBy: userId,
@@ -130,16 +134,16 @@ export const accept = mutation({
     if (relation.status === "accepted") return;
     if (relation.requestedBy === userId)
       throw new ConvexError("Ce gardien doit accepter ta demande.");
-    const [own, other] = await Promise.all([
+    const [own, other, ownRank, otherRank] = await Promise.all([
       playerFriendships(ctx, userId, "accepted"),
       playerFriendships(ctx, playerId, "accepted"),
+      readRank(ctx, userId),
+      readRank(ctx, playerId),
     ]);
     // Both indexed reads participate in the transaction: concurrent acceptances
     // cannot exceed the cap on either player's list.
-    if (own.length >= FRIEND_LIMIT)
-      throw new ConvexError("Ta liste contient déjà 25 amis.");
-    if (other.length >= FRIEND_LIMIT)
-      throw new ConvexError("Ce gardien a déjà 25 amis.");
+    requireFriendSlot(own.length, ownRank.friends, true);
+    requireFriendSlot(other.length, otherRank.friends, false);
     await ctx.db.patch(relation._id, { status: "accepted" });
   },
 });
@@ -166,7 +170,7 @@ export const sendHelp = mutation({
         q.eq("senderId", userId).eq("day", day).eq("recipientId", playerId),
       )
       .unique();
-    if (previous) return { sent: false, tokens: FRIEND_HELP_TOKENS };
+    if (previous) return { sent: false, tokens: FRIEND_HELP_TOKENS, experience: 0 };
     const user = await authComponent.getAnyUserById(ctx, playerId);
     if (!user) throw new ConvexError("Ce gardien est introuvable.");
     const wallet = await playerWallet(ctx, playerId);
@@ -186,6 +190,18 @@ export const sendHelp = mutation({
       recipientId: playerId,
       day,
     });
-    return { sent: true, tokens: FRIEND_HELP_TOKENS };
+    await addRankExperience(ctx, userId, FRIEND_HELP_EXPERIENCE);
+    return { sent: true, tokens: FRIEND_HELP_TOKENS, experience: FRIEND_HELP_EXPERIENCE };
   },
 });
+
+function requireFriendSlot(count: number, limit: number, own: boolean) {
+  if (limit === 0)
+    throw new ConvexError(own
+      ? `Les amis se débloquent au rang ${FRIENDS_UNLOCK_RANK}. Améliore tes cartes pour gagner de l’expérience.`
+      : `Ce gardien doit atteindre le rang ${FRIENDS_UNLOCK_RANK} pour ajouter des amis.`);
+  if (count >= limit)
+    throw new ConvexError(own
+      ? `Ta liste contient déjà ${limit} amis. Monte de rang pour obtenir plus de places.`
+      : `Ce gardien a déjà ${limit} amis.`);
+}

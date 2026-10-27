@@ -1,7 +1,6 @@
 import {
   maxCardLevel,
   heroDefinition,
-  heroProgress,
   resolveCard,
   upgradeCost,
   upgradeGoldCost,
@@ -14,6 +13,7 @@ import {
   evolutionOptions,
   SOULBIND_LEAGUE_INDEX,
   EVOLUTION_LEAGUE_INDEX,
+  rankBenefits,
 } from "@sylve/game";
 import { leagueAt } from "@sylve/game/leagues";
 import { ConvexError, v } from "convex/values";
@@ -35,8 +35,39 @@ import {
   readHeroProgress,
 } from "./lib/heroes";
 import { mineAmount, type MineBoard } from "@sylve/game/mines";
-import { syncMineLevel } from "./lib/mines";
+import { addRankExperience, readRank } from "./lib/ranks";
 import { heroIdValidator } from "./lib/validators";
+
+export const rank = query({
+  args: {},
+  handler: async (ctx) => readRank(ctx, (await requirePlayer(ctx)).userId),
+});
+
+export const ensureRank = mutation({
+  args: { expectedOwnerId: v.string() },
+  handler: async (ctx, { expectedOwnerId }) => {
+    const { userId } = await requirePlayer(ctx);
+    if (userId !== expectedOwnerId)
+      throw new ConvexError("Ta session a changé. Recharge ta progression.");
+    await addRankExperience(ctx, userId);
+  },
+});
+
+/** Acknowledges the displayed range only; rewards were already credited. */
+export const acknowledgeRank = mutation({
+  args: { throughRank: v.number(), expectedOwnerId: v.string() },
+  handler: async (ctx, { throughRank, expectedOwnerId }) => {
+    const { userId } = await requirePlayer(ctx);
+    if (userId !== expectedOwnerId)
+      throw new ConvexError("Ta session a changé. Recharge ta progression.");
+    const wallet = await playerWallet(ctx, userId);
+    if (!wallet || !Number.isSafeInteger(throughRank) || throughRank < 1 ||
+      throughRank > (wallet.rankRewardedThrough ?? 1))
+      throw new ConvexError("Ce rang n’a pas encore été atteint.");
+    if (throughRank > (wallet.rankAcknowledgedThrough ?? 1))
+      await ctx.db.patch(wallet._id, { rankAcknowledgedThrough: throughRank });
+  },
+});
 
 export const hero = query({
   args: {},
@@ -62,8 +93,6 @@ export const upgradeHero = mutation({
         "La puissance du deck est insuffisante pour ce niveau.",
       );
     const record = (await heroRecord(ctx, userId))!;
-    const wallet = await playerWallet(ctx, userId);
-    if (wallet) await syncMineLevel(ctx, wallet, progress.level + 1);
     await ctx.db.patch(record._id, { level: record.level + 1 });
     return observeHero(ctx, userId, cards);
   },
@@ -106,9 +135,6 @@ export const selectHero = mutation({
     const record = (await heroRecord(ctx, userId))!;
     if (heroId !== "sylve" && !record.unlockedHeroIds?.includes(heroId))
       throw new ConvexError("Débloque ce héros avant de le sélectionner.");
-    const progress = heroProgress([], { ...record, heroId });
-    const wallet = await playerWallet(ctx, userId);
-    if (wallet) await syncMineLevel(ctx, wallet, progress.level);
     await ctx.db.patch(record._id, { selectedHeroId: heroId });
     return readHeroProgress(ctx, userId);
   },
@@ -119,17 +145,15 @@ export const mineBoard = query({
   args: { refreshKey: v.number() },
   handler: async (ctx): Promise<MineBoard> => {
     const { userId } = await requirePlayer(ctx);
-    const [wallet, guardian] = await Promise.all([
+    const [wallet, progress] = await Promise.all([
       playerWallet(ctx, userId),
-      heroRecord(ctx, userId),
+      readRank(ctx, userId),
     ]);
     return {
       ownerId: userId,
       serverNow: Date.now(),
-      heroLevel: guardian
-        ? heroProgress([], { ...guardian, heroId: guardian.selectedHeroId })
-            .level
-        : 1,
+      rank: progress.rank,
+      mineLevel: progress.mineLevel,
       mines: wallet?.mines ?? null,
     };
   },
@@ -140,17 +164,13 @@ export const ensureMines = mutation({
   args: {},
   handler: async (ctx) => {
     const { userId } = await requirePlayer(ctx);
-    await migratePlayerCatalogue(ctx, userId, true);
-    const wallet = await ensureEmeraldWallet(ctx, userId);
-    const heroLevel = (await readHeroProgress(ctx, userId)).level;
-    if (wallet.mines) {
-      await syncMineLevel(ctx, wallet, heroLevel);
-      return;
-    }
+    const wallet = await addRankExperience(ctx, userId);
+    const level = rankBenefits(rankProgress(wallet.experience ?? 0).rank).mineLevel;
+    if (wallet.mines) return;
     const state = {
       amount: 0,
       updatedAt: Date.now(),
-      heroLevel,
+      level,
       revision: 0,
     };
     await ctx.db.patch(wallet._id, { mines: { gold: state, emeralds: state } });
@@ -173,7 +193,7 @@ export const collectMine = mutation({
       );
     if (!Number.isSafeInteger(revision) || revision < 0)
       throw new ConvexError("Cette collecte est invalide.");
-    const wallet = await playerWallet(ctx, userId);
+    const wallet = await addRankExperience(ctx, userId);
     if (!wallet?.mines)
       throw new ConvexError(
         "Les mines se préparent. Réessaie dans un instant.",
@@ -339,11 +359,9 @@ export const upgrade = mutation({
     const card = rules(() =>
       resolveCard(variantId, entry.level + 1, entry.soulbinds),
     );
-    const experience =
-      (wallet.experience ?? 0) + upgradeExperience(entry.level, current.rarity);
+    await addRankExperience(ctx, userId, upgradeExperience(entry.level, current.rarity));
     await ctx.db.patch(wallet._id, {
       gold: wallet.gold - goldCost,
-      experience,
     });
     await ctx.db.patch(entry._id, {
       level: entry.level + 1,

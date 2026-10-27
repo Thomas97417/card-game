@@ -41399,6 +41399,5008 @@
     8000,
     0
   ],
+  "rankBenefits": [
+    {
+      "friends": 0,
+      "mineLevel": 1,
+      "emeralds": 0
+    },
+    {
+      "friends": 0,
+      "mineLevel": 1,
+      "emeralds": 3
+    },
+    {
+      "friends": 0,
+      "mineLevel": 1,
+      "emeralds": 3
+    },
+    {
+      "friends": 0,
+      "mineLevel": 1,
+      "emeralds": 3
+    },
+    {
+      "friends": 5,
+      "mineLevel": 1,
+      "emeralds": 5
+    },
+    {
+      "friends": 5,
+      "mineLevel": 2,
+      "emeralds": 3
+    },
+    {
+      "friends": 5,
+      "mineLevel": 3,
+      "emeralds": 3
+    },
+    {
+      "friends": 5,
+      "mineLevel": 4,
+      "emeralds": 3
+    },
+    {
+      "friends": 5,
+      "mineLevel": 5,
+      "emeralds": 3
+    },
+    {
+      "friends": 7,
+      "mineLevel": 6,
+      "emeralds": 5
+    },
+    {
+      "friends": 7,
+      "mineLevel": 7,
+      "emeralds": 3
+    },
+    {
+      "friends": 9,
+      "mineLevel": 8,
+      "emeralds": 3
+    },
+    {
+      "friends": 9,
+      "mineLevel": 9,
+      "emeralds": 3
+    },
+    {
+      "friends": 11,
+      "mineLevel": 10,
+      "emeralds": 3
+    },
+    {
+      "friends": 11,
+      "mineLevel": 11,
+      "emeralds": 5
+    },
+    {
+      "friends": 13,
+      "mineLevel": 12,
+      "emeralds": 3
+    },
+    {
+      "friends": 13,
+      "mineLevel": 13,
+      "emeralds": 3
+    },
+    {
+      "friends": 15,
+      "mineLevel": 14,
+      "emeralds": 3
+    },
+    {
+      "friends": 15,
+      "mineLevel": 15,
+      "emeralds": 3
+    },
+    {
+      "friends": 17,
+      "mineLevel": 16,
+      "emeralds": 5
+    },
+    {
+      "friends": 17,
+      "mineLevel": 17,
+      "emeralds": 3
+    },
+    {
+      "friends": 17,
+      "mineLevel": 18,
+      "emeralds": 3
+    },
+    {
+      "friends": 17,
+      "mineLevel": 19,
+      "emeralds": 3
+    },
+    {
+      "friends": 18,
+      "mineLevel": 20,
+      "emeralds": 3
+    },
+    {
+      "friends": 18,
+      "mineLevel": 21,
+      "emeralds": 5
+    },
+    {
+      "friends": 18,
+      "mineLevel": 22,
+      "emeralds": 3
+    },
+    {
+      "friends": 18,
+      "mineLevel": 23,
+      "emeralds": 3
+    },
+    {
+      "friends": 19,
+      "mineLevel": 24,
+      "emeralds": 3
+    },
+    {
+      "friends": 19,
+      "mineLevel": 25,
+      "emeralds": 3
+    },
+    {
+      "friends": 19,
+      "mineLevel": 26,
+      "emeralds": 5
+    },
+    {
+      "friends": 19,
+      "mineLevel": 27,
+      "emeralds": 3
+    },
+    {
+      "friends": 20,
+      "mineLevel": 28,
+      "emeralds": 3
+    },
+    {
+      "friends": 20,
+      "mineLevel": 29,
+      "emeralds": 3
+    },
+    {
+      "friends": 20,
+      "mineLevel": 30,
+      "emeralds": 3
+    },
+    {
+      "friends": 20,
+      "mineLevel": 31,
+      "emeralds": 5
+    },
+    {
+      "friends": 21,
+      "mineLevel": 32,
+      "emeralds": 3
+    },
+    {
+      "friends": 21,
+      "mineLevel": 33,
+      "emeralds": 3
+    },
+    {
+      "friends": 21,
+      "mineLevel": 34,
+      "emeralds": 3
+    },
+    {
+      "friends": 21,
+      "mineLevel": 35,
+      "emeralds": 3
+    },
+    {
+      "friends": 22,
+      "mineLevel": 36,
+      "emeralds": 5
+    },
+    {
+      "friends": 22,
+      "mineLevel": 37,
+      "emeralds": 3
+    },
+    {
+      "friends": 22,
+      "mineLevel": 37,
+      "emeralds": 3
+    },
+    {
+      "friends": 22,
+      "mineLevel": 37,
+      "emeralds": 3
+    },
+    {
+      "friends": 22,
+      "mineLevel": 38,
+      "emeralds": 3
+    },
+    {
+      "friends": 22,
+      "mineLevel": 38,
+      "emeralds": 5
+    },
+    {
+      "friends": 23,
+      "mineLevel": 38,
+      "emeralds": 3
+    },
+    {
+      "friends": 23,
+      "mineLevel": 39,
+      "emeralds": 3
+    },
+    {
+      "friends": 23,
+      "mineLevel": 39,
+      "emeralds": 3
+    },
+    {
+      "friends": 23,
+      "mineLevel": 39,
+      "emeralds": 3
+    },
+    {
+      "friends": 23,
+      "mineLevel": 40,
+      "emeralds": 5
+    },
+    {
+      "friends": 23,
+      "mineLevel": 40,
+      "emeralds": 3
+    },
+    {
+      "friends": 24,
+      "mineLevel": 40,
+      "emeralds": 3
+    },
+    {
+      "friends": 24,
+      "mineLevel": 41,
+      "emeralds": 3
+    },
+    {
+      "friends": 24,
+      "mineLevel": 41,
+      "emeralds": 3
+    },
+    {
+      "friends": 24,
+      "mineLevel": 41,
+      "emeralds": 5
+    },
+    {
+      "friends": 24,
+      "mineLevel": 42,
+      "emeralds": 3
+    },
+    {
+      "friends": 24,
+      "mineLevel": 42,
+      "emeralds": 3
+    },
+    {
+      "friends": 25,
+      "mineLevel": 42,
+      "emeralds": 3
+    },
+    {
+      "friends": 25,
+      "mineLevel": 43,
+      "emeralds": 3
+    },
+    {
+      "friends": 25,
+      "mineLevel": 43,
+      "emeralds": 5
+    },
+    {
+      "friends": 25,
+      "mineLevel": 43,
+      "emeralds": 3
+    },
+    {
+      "friends": 25,
+      "mineLevel": 44,
+      "emeralds": 3
+    },
+    {
+      "friends": 25,
+      "mineLevel": 44,
+      "emeralds": 3
+    },
+    {
+      "friends": 26,
+      "mineLevel": 44,
+      "emeralds": 3
+    },
+    {
+      "friends": 26,
+      "mineLevel": 45,
+      "emeralds": 5
+    },
+    {
+      "friends": 26,
+      "mineLevel": 45,
+      "emeralds": 3
+    },
+    {
+      "friends": 26,
+      "mineLevel": 45,
+      "emeralds": 3
+    },
+    {
+      "friends": 26,
+      "mineLevel": 45,
+      "emeralds": 3
+    },
+    {
+      "friends": 26,
+      "mineLevel": 45,
+      "emeralds": 3
+    },
+    {
+      "friends": 27,
+      "mineLevel": 46,
+      "emeralds": 5
+    },
+    {
+      "friends": 27,
+      "mineLevel": 46,
+      "emeralds": 3
+    },
+    {
+      "friends": 27,
+      "mineLevel": 46,
+      "emeralds": 3
+    },
+    {
+      "friends": 27,
+      "mineLevel": 46,
+      "emeralds": 3
+    },
+    {
+      "friends": 27,
+      "mineLevel": 46,
+      "emeralds": 3
+    },
+    {
+      "friends": 27,
+      "mineLevel": 47,
+      "emeralds": 5
+    },
+    {
+      "friends": 28,
+      "mineLevel": 47,
+      "emeralds": 3
+    },
+    {
+      "friends": 28,
+      "mineLevel": 47,
+      "emeralds": 3
+    },
+    {
+      "friends": 28,
+      "mineLevel": 47,
+      "emeralds": 3
+    },
+    {
+      "friends": 28,
+      "mineLevel": 47,
+      "emeralds": 3
+    },
+    {
+      "friends": 28,
+      "mineLevel": 48,
+      "emeralds": 5
+    },
+    {
+      "friends": 28,
+      "mineLevel": 48,
+      "emeralds": 3
+    },
+    {
+      "friends": 29,
+      "mineLevel": 48,
+      "emeralds": 3
+    },
+    {
+      "friends": 29,
+      "mineLevel": 48,
+      "emeralds": 3
+    },
+    {
+      "friends": 29,
+      "mineLevel": 48,
+      "emeralds": 3
+    },
+    {
+      "friends": 29,
+      "mineLevel": 49,
+      "emeralds": 5
+    },
+    {
+      "friends": 29,
+      "mineLevel": 49,
+      "emeralds": 3
+    },
+    {
+      "friends": 29,
+      "mineLevel": 49,
+      "emeralds": 3
+    },
+    {
+      "friends": 30,
+      "mineLevel": 49,
+      "emeralds": 3
+    },
+    {
+      "friends": 30,
+      "mineLevel": 49,
+      "emeralds": 3
+    },
+    {
+      "friends": 30,
+      "mineLevel": 50,
+      "emeralds": 5
+    },
+    {
+      "friends": 30,
+      "mineLevel": 50,
+      "emeralds": 3
+    },
+    {
+      "friends": 30,
+      "mineLevel": 50,
+      "emeralds": 3
+    },
+    {
+      "friends": 30,
+      "mineLevel": 50,
+      "emeralds": 3
+    },
+    {
+      "friends": 31,
+      "mineLevel": 50,
+      "emeralds": 3
+    },
+    {
+      "friends": 31,
+      "mineLevel": 51,
+      "emeralds": 5
+    },
+    {
+      "friends": 31,
+      "mineLevel": 51,
+      "emeralds": 3
+    },
+    {
+      "friends": 31,
+      "mineLevel": 51,
+      "emeralds": 3
+    },
+    {
+      "friends": 31,
+      "mineLevel": 51,
+      "emeralds": 3
+    },
+    {
+      "friends": 31,
+      "mineLevel": 51,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 52,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 52,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 52,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 52,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 52,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 53,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 53,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 53,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 53,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 53,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 54,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 54,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 54,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 54,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 54,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 55,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 55,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 55,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 55,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 55,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 56,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 56,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 56,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 56,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 56,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 57,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 57,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 57,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 57,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 57,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 58,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 58,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 58,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 58,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 58,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 59,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 59,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 59,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 59,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 59,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 60,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 60,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 60,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 60,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 60,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 61,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 61,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 61,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 61,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 61,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 62,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 62,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 62,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 62,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 62,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 63,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 63,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 63,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 63,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 63,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 64,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 65,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 66,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 67,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 68,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 69,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 70,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 71,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 72,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 73,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 74,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 75,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 76,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 77,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 78,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 79,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 80,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 81,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 82,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 83,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 84,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 85,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 86,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 87,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 88,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 89,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 90,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 91,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 92,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 93,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 94,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 95,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 96,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 97,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 98,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 99,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 100,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 101,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 102,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 103,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 104,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 105,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 106,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 107,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 108,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 109,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 110,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 111,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 112,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 113,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 114,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 115,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 116,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 3
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 117,
+      "emeralds": 5
+    },
+    {
+      "friends": 32,
+      "mineLevel": 118,
+      "emeralds": 3
+    }
+  ],
   "soulbindCosts": {
     "common": [
       0,

@@ -1,6 +1,7 @@
 export * from "./cards";
 export * from "./field";
 export * from "./soulbind";
+export * from "./ranks";
 export * from "./catalogue-migration";
 export * from "./heroes";
 import {

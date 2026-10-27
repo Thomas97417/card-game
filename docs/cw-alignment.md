@@ -48,7 +48,7 @@ Les **336 liens** ont les rangs, niveaux de compagnons requis et bonus ATQ/PV et
 
 Conformément au choix du projet, les prérequis sont adaptés aux 22 familles : les cartes CW déjà présentes conservent leurs liens exacts ; les 107 noms absents sont remplacés de manière déterministe, en privilégiant la même rareté et faction et en évitant le bénéficiaire et les doublons d’un lien. `adaptedFrom` conserve le nom d’origine. Tous les prérequis sont atteignables avec les 84 variantes, au niveau 26 maximum.
 
-Le [Soulbind CW](https://cwars.miraheze.org/wiki/Soulbind) devient accessible à la ligue CW 26, soit **Bronze IV / 800 trophées Sylve**. Le meilleur classement conserve l’accès après rétrogradation. Le [rang de compte](https://cwars.miraheze.org/wiki/Rank) augmente avec l’expérience des améliorations ; les seuils et gains suivent les tables CW.
+Le [Soulbind CW](https://cwars.miraheze.org/wiki/Soulbind) devient accessible à la ligue CW 26, soit **Bronze IV / 800 trophées Sylve**. Le meilleur classement conserve l’accès après rétrogradation. Le [rang de compte](https://cwars.miraheze.org/wiki/Rank) augmente automatiquement avec l’expérience des améliorations et des aides quotidiennes. Ses 1 000 paliers déterminent les places d’amis, le niveau des deux mines et les récompenses en émeraudes. Les [règles de rang](ranks.md) précisent les tables CW et les adaptations Sylve.
 
 | Rareté | Lien I | Lien II | Lien III | Lien IV |
 |---|---:|---:|---:|---:|
