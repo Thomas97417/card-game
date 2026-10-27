@@ -525,10 +525,10 @@
   margin: 0;
   color: #e7d295;
 }
-.guardian-upgrade {
-  width: 100%;
-  min-height: 46px;
-  gap: 8px;
+.guardian-upgrade-level {
+  font:
+    700 29px/1.2 Georgia,
+    serif;
 }
 .guardian-workshop-link {
   display: flex;

@@ -40,6 +40,12 @@ Les combats solo, classés et amicaux enregistrent le héros au moment de la cr�
 
 ## Illustrations
 
-Deux icônes ont été générées avec l’outil intégré image_gen : `apps/web/public/art/abilities/freeze.webp` et `apps/web/public/art/abilities/execution.webp`. Les pouvoirs correspondants réutilisent les autres icônes existantes. Trois portraits ont été générés dans `apps/web/public/art/heroes/` : `hero-thorn.webp`, `hero-weaver.webp`, `hero-void.webp`. Les variantes réemploient des illustrations Sylve existantes.
+Deux icônes ont été générées avec l’outil intégré image_gen : `apps/web/public/art/abilities/freeze.webp` et `apps/web/public/art/abilities/execution.webp`. Les pouvoirs correspondants réutilisent les autres icônes existantes. Les onze héros possèdent chacun un portrait dédié dans `apps/web/public/art/heroes/` ; aucun ne reprend une illustration de carte. Les sept variantes utilisent désormais `hero-north.webp`, `hero-maestro.webp`, `hero-shaman.webp`, `hero-winter.webp`, `hero-moon.webp`, `hero-shadow.webp` et `hero-flame.webp`, générés avec le même outil.
 
-Les cinq prompts exacts et les chemins sont conservés dans [hero-art-prompts.json](hero-art-prompts.json). Les fichiers WebP conservent leur transparence.
+Les prompts exacts des icônes et des dix nouveaux portraits sont conservés avec leurs chemins dans [hero-art-prompts.json](hero-art-prompts.json). Les fichiers WebP conservent leur transparence.
+
+## Présentation et paliers de ligue
+
+Le bouton de promotion des héros partage le composant et le style du bouton d’amélioration des cartes. Il présente le niveau visé et reste soumis au record de puissance, sans coût en monnaie.
+
+La frise des ligues affiche les portraits et les noms des héros au seuil exact de leur recrutement. Sélectionner un portrait ouvre le palier correspondant ; sa fiche précise les héros accessibles et leur prix en émeraudes. Les deux héros du palier de départ et les deux du palier Or I restent présentés séparément. Le prochain déblocage prend aussi en compte les héros et le record de trophées conservé après rétrogradation. Atteindre une ligue ouvre l’accès au recrutement : l’achat permanent reste nécessaire.

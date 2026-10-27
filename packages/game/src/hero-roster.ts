@@ -81,7 +81,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "order",
     emeraldCost: 4500,
     requiredTrophies: 0,
-    portrait: "/art/characters/evolutions/guardian-legendary.webp",
+    portrait: "/art/heroes/hero-north.webp",
     sourceName: "Adam, King of the North",
   },
   {
@@ -92,7 +92,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "nature",
     emeraldCost: 7500,
     requiredTrophies: 3000,
-    portrait: "/art/characters/evolutions/bard-legendary.webp",
+    portrait: "/art/heroes/hero-maestro.webp",
     sourceName: "Jimmy Hard Cock",
   },
   {
@@ -103,7 +103,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "nature",
     emeraldCost: 5000,
     requiredTrophies: 800,
-    portrait: "/art/characters/evolutions/tree-epic.webp",
+    portrait: "/art/heroes/hero-shaman.webp",
     sourceName: "White Shaman",
   },
   {
@@ -114,7 +114,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "nature",
     emeraldCost: 7000,
     requiredTrophies: 3400,
-    portrait: "/art/characters/evolutions/bear-legendary.webp",
+    portrait: "/art/heroes/hero-winter.webp",
     sourceName: "Ginger Overlord",
   },
   {
@@ -125,7 +125,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "chaos",
     emeraldCost: 7000,
     requiredTrophies: 4200,
-    portrait: "/art/characters/evolutions/enchantress-legendary.webp",
+    portrait: "/art/heroes/hero-moon.webp",
     sourceName: "Oiran, Red Moon",
   },
   {
@@ -136,7 +136,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "nature",
     emeraldCost: 5500,
     requiredTrophies: 3800,
-    portrait: "/art/characters/evolutions/witch-legendary.webp",
+    portrait: "/art/heroes/hero-shadow.webp",
     sourceName: "Harbinger of Darkness",
   },
   {
@@ -147,7 +147,7 @@ export const HEROES: readonly HeroDefinition[] = [
     faction: "nature",
     emeraldCost: 5500,
     requiredTrophies: 3000,
-    portrait: "/art/characters/evolutions/dragon-legendary.webp",
+    portrait: "/art/heroes/hero-flame.webp",
     sourceName: "Rajan, Flaming",
   },
 ];

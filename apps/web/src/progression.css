@@ -583,7 +583,7 @@
   align-items: center;
   gap: 3px;
 }
-.game-dialog .upgrade-action {
+.sylve-button.upgrade-action {
   flex-direction: column;
   gap: 2px;
   width: 100%;
@@ -600,10 +600,10 @@
     inset 0 0 0 3px #eff8cf33,
     inset 0 2px #f1f8d38c;
 }
-.game-dialog .upgrade-action:hover:not(:disabled) {
+.sylve-button.upgrade-action:hover:not(:disabled) {
   background: linear-gradient(#d0e6a4, #a7c677);
 }
-.game-dialog .upgrade-action:disabled {
+.sylve-button.upgrade-action:disabled {
   opacity: 0.6;
   filter: saturate(0.45);
 }

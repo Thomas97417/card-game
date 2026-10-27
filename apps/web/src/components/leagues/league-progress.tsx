@@ -13,8 +13,9 @@ import {
   CHEST_LABELS,
   chestRules,
 } from "@sylve/game/progression";
-import { RARITY_LABELS } from "@sylve/game";
+import { HEROES, RARITY_LABELS } from "@sylve/game";
 import { CollectionIcon } from "@/components/game/game-icon";
+import { EmeraldAmount } from "@/components/emerald-balance";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import {
@@ -36,6 +37,9 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+const heroesAt = (trophies: number) =>
+  HEROES.filter((hero) => hero.requiredTrophies === trophies);
 
 export function TrophyIcon() {
   return (
@@ -102,6 +106,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
   const selectedChestSlot = CHEST_SLOT_UNLOCKS.find(
     (unlock) => unlock.trophies === selected.minTrophies,
   );
+  const selectedHeroes = heroesAt(selected.minTrophies);
   const nextMilestone = LEAGUES.find(
     (league) =>
       league.minTrophies > peakTrophies &&
@@ -110,7 +115,8 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
       ) ||
         CHEST_SLOT_UNLOCKS.some(
           (unlock) => unlock.trophies === league.minTrophies,
-        )),
+        ) ||
+        heroesAt(league.minTrophies).length > 0),
   );
   const nextDeckSlot = DECK_SLOT_UNLOCKS.find(
     (unlock) => unlock.trophies === nextMilestone?.minTrophies,
@@ -118,6 +124,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
   const nextChestSlot = CHEST_SLOT_UNLOCKS.find(
     (unlock) => unlock.trophies === nextMilestone?.minTrophies,
   );
+  const nextHeroes = nextMilestone ? heroesAt(nextMilestone.minTrophies) : [];
   const percentage = Math.min(100, Math.max(0, (earned / required) * 100));
   const progressLabel = `Progression vers ${next?.label ?? "le sommet des ligues"}`;
   const progressDescription = next
@@ -184,24 +191,52 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
 
         <aside className="league-next-milestone">
           <span className="league-milestone-icon" aria-hidden="true">
-            {nextMilestone ? <CollectionIcon size={25} /> : <Check size={25} />}
+            {nextHeroes.length && !nextDeckSlot && !nextChestSlot ? (
+              <img
+                src={nextHeroes[0]!.portrait}
+                alt=""
+                width={44}
+                height={56}
+                draggable={false}
+              />
+            ) : nextMilestone ? (
+              <CollectionIcon size={25} />
+            ) : (
+              <Check size={25} />
+            )}
           </span>
           <div>
             <span className="league-kicker">
-              {nextMilestone ? "PROCHAIN DÉBLOCAGE" : "TOUT EST DÉBLOQUÉ"}
+              {nextMilestone
+                ? "PROCHAIN DÉBLOCAGE"
+                : "TOUS LES PALIERS ATTEINTS"}
             </span>
             <h3>
               {nextDeckSlot
                 ? `Un deck de ${nextDeckSlot.slot} cartes`
-                : "Une place pour chaque trésor"}
+                : nextHeroes.length === 1
+                  ? nextHeroes[0]!.name
+                  : nextHeroes.length > 1
+                    ? `${nextHeroes.length} nouveaux héros`
+                    : nextMilestone
+                      ? "Une place pour chaque trésor"
+                      : "Tous les héros accessibles"}
             </h3>
             <p>
               {nextChestSlot
                 ? `Et un ${nextChestSlot.slot + 1}ᵉ emplacement de coffre.`
-                : nextMilestone
-                  ? "Une nouvelle place pour ta prochaine créature."
-                  : "Tes emplacements de deck et de coffre restent acquis."}
+                : nextHeroes.length
+                  ? "De nouvelles stratégies à recruter à la Maison des gardiens."
+                  : nextMilestone
+                    ? "Une nouvelle place pour ta prochaine créature."
+                    : "Tes accès aux héros et tes emplacements restent acquis."}
             </p>
+            {nextHeroes.length > 0 && (nextDeckSlot || nextChestSlot) && (
+              <p className="league-milestone-heroes">
+                {nextHeroes.map((hero) => hero.name).join(" et ")} : recrutement
+                accessible.
+              </p>
+            )}
             {nextMilestone && (
               <button
                 type="button"
@@ -272,6 +307,7 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
               const chestSlot = CHEST_SLOT_UNLOCKS.find(
                 (unlock) => unlock.trophies === league.minTrophies,
               );
+              const heroes = heroesAt(league.minTrophies);
               return (
                 <li
                   key={league.id}
@@ -375,6 +411,32 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                       {league.minTrophies.toLocaleString("fr-FR")}
                     </span>
                   </button>
+                  {heroes.length > 0 && (
+                    <span className="league-road-heroes">
+                      {heroes.map((hero) => (
+                        <button
+                          type="button"
+                          key={hero.id}
+                          className="league-road-hero"
+                          tabIndex={-1}
+                          aria-label={`Voir ${hero.name} au palier ${league.label}`}
+                          aria-controls={detailsId}
+                          onClick={() => selectStep(index, true)}
+                          title={`${hero.name} · ${hero.emeraldCost ? `${hero.emeraldCost.toLocaleString("fr-FR")} émeraudes` : "Héros de départ"}`}
+                        >
+                          <img
+                            src={hero.portrait}
+                            alt=""
+                            width={40}
+                            height={56}
+                            loading="lazy"
+                            draggable={false}
+                          />
+                          <small>{hero.name}</small>
+                        </button>
+                      ))}
+                    </span>
+                  )}
                   {(slot || chestSlot) && (
                     <span className="league-road-rewards">
                       {slot && (
@@ -467,6 +529,50 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                 .join(" et ")}
               .
             </p>
+          )}
+          {selectedHeroes.length > 0 && (
+            <section
+              className="league-hero-unlocks"
+              aria-label="Héros de ce palier"
+              data-unlocked={selectedUnlocked}
+            >
+              <h4>Les héros de ce palier</h4>
+              <p>
+                {selectedUnlocked
+                  ? "Recrutement accessible à la Maison des gardiens."
+                  : `Atteins ${selected.minTrophies.toLocaleString("fr-FR")} trophées pour accéder à leur recrutement.`}
+              </p>
+              <ul>
+                {selectedHeroes.map((hero) => (
+                  <li key={hero.id}>
+                    <img
+                      src={hero.portrait}
+                      alt={hero.name}
+                      width={72}
+                      height={94}
+                      draggable={false}
+                    />
+                    <div>
+                      <strong>{hero.name}</strong>
+                      <span>{hero.subtitle}</span>
+                      {hero.emeraldCost ? (
+                        <EmeraldAmount amount={hero.emeraldCost} />
+                      ) : (
+                        <small className="league-hero-free">
+                          Héros de départ · Gratuit
+                        </small>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {selectedHeroes.some((hero) => hero.emeraldCost > 0) && (
+                <small>
+                  Le palier ouvre l’accès à l’achat. Le recrutement est
+                  permanent et se règle en émeraudes.
+                </small>
+              )}
+            </section>
           )}
         </div>
         <div className="league-loot">

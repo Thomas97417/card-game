@@ -8,9 +8,10 @@ import {
   heroMight,
   type heroProgress,
 } from "@sylve/game";
-import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { GameHeader } from "@/components/game-header";
 import { GameIcon } from "@/components/game/game-icon";
+import { LevelUpgradeButton } from "@/components/game/level-upgrade-button";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
 import { GuardianHeroMenu } from "./guardian-hero-menu";
@@ -231,17 +232,21 @@ export function GuardianHouse({
                           </p>
                         ))}
                       </div>
-                      <button
-                        type="button"
-                        className="sylve-button guardian-upgrade"
+                      <LevelUpgradeButton
+                        className="guardian-upgrade"
+                        label={pending ? "Amélioration…" : "Améliorer le héros"}
+                        aria-label={
+                          pending
+                            ? "Amélioration…"
+                            : `Améliorer au niveau ${next.level}`
+                        }
                         disabled={pending || !progress.canUpgrade}
                         onClick={() => void upgrade()}
                       >
-                        <ArrowUp size={17} aria-hidden="true" />
-                        {pending
-                          ? "Amélioration…"
-                          : `Améliorer au niveau ${next.level}`}
-                      </button>
+                        <span className="guardian-upgrade-level">
+                          Niveau {next.level}
+                        </span>
+                      </LevelUpgradeButton>
                     </>
                   )}
                   <Link to="/decks" className="guardian-workshop-link">
