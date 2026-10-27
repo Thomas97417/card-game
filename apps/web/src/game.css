@@ -1259,12 +1259,14 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   top: 25%;
-  left: 3%;
-  right: 3%;
+  /* Portraits exceed their tile width; keep statistics inside the same tile. */
+  left: 15%;
+  right: 15%;
+  container-type: inline-size;
   z-index: 2;
 }
 .unit-stats .stat-badge {
-  width: clamp(22px, 2.8vw, 43px);
+  width: min(clamp(22px, 2.8vw, 43px), 42%);
   height: auto;
   aspect-ratio: 1;
 }
@@ -1277,7 +1279,8 @@ button:disabled {
 .unit-stats .stat-badge strong {
   align-self: center;
   margin-top: -1px;
-  font-size: clamp(15px, 1.7vw, 26px);
+  font-size: min(clamp(15px, 1.7vw, 26px), 26cqw);
+  -webkit-text-stroke-width: min(3px, 3cqw);
 }
 .hero-slot {
   position: absolute;
@@ -2940,7 +2943,6 @@ button:disabled {
 .neutral-building .unit-stats {
   justify-content: flex-end;
   top: 5%;
-  right: 7%;
 }
 .neutral-building[data-field-object="spikes"] .unit-stats,
 .neutral-building[data-field-object="mossy-rock"] .unit-stats {
