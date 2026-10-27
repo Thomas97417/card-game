@@ -1,0 +1,301 @@
+.hub-rewards-trigger {
+  position: absolute;
+  z-index: 30;
+  top: 25%;
+  left: max(20px, env(safe-area-inset-left));
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  padding: 4px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.hub-rewards-art {
+  position: relative;
+  display: block;
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 5px 5px #061a11b3);
+  transition:
+    transform 180ms,
+    filter 180ms;
+}
+.hub-rewards-art > .game-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.hub-rewards-trigger[data-ready] > .hub-rewards-art {
+  filter: drop-shadow(0 5px 5px #061a11b3) drop-shadow(0 0 14px #f4cf7266);
+}
+.hub-rewards-trigger:hover > .hub-rewards-art,
+.hub-rewards-trigger:focus-visible > .hub-rewards-art,
+.hub-rewards-trigger[aria-expanded="true"] > .hub-rewards-art {
+  transform: translateY(-3px) scale(1.06);
+  filter: drop-shadow(0 5px 5px #061a11b3) drop-shadow(0 0 16px #f4cf7288);
+}
+.hub-rewards-trigger:focus-visible {
+  outline: 2px solid #f1d494;
+  outline-offset: 3px;
+}
+.hub-rewards-ready {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+}
+.hub-rewards-ready > .mission-check {
+  width: 100%;
+  height: 100%;
+}
+.hub-daily-rewards {
+  height: auto;
+}
+.daily-rewards-content {
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b99b6066 transparent;
+}
+.daily-rewards-loading {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+}
+.daily-rewards-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #b4aa7f55;
+  border-top-color: #f3d792;
+  border-radius: 50%;
+  animation: daily-rewards-spin 800ms linear infinite;
+}
+.daily-rewards-loading > .daily-rewards-spinner {
+  width: 24px;
+  height: 24px;
+}
+@keyframes daily-rewards-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.daily-rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.daily-rewards-grid > li {
+  min-width: 0;
+}
+.daily-reward {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 148px;
+  padding: 10px 6px 8px;
+  overflow: hidden;
+  border: 1px solid #b7ad7d3d;
+  border-radius: 12px;
+  background:
+    radial-gradient(ellipse at 50% 42%, #adc77c14, transparent 70%), #0d241db3;
+  color: #e0e4ce;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms,
+    transform 160ms;
+}
+.daily-reward:disabled {
+  cursor: default;
+}
+.daily-reward-day {
+  color: #b9c7ae;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.daily-reward-art {
+  width: 76px;
+  height: 68px;
+  margin: 4px 0;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 5px #04180dbb);
+}
+.daily-reward-name {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: #eee5c8;
+  font:
+    14px/1.3 Georgia,
+    serif;
+  font-variant-numeric: tabular-nums;
+}
+.daily-reward-status {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin-top: auto;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+.daily-reward-status > .mission-check {
+  width: 22px;
+  height: 22px;
+}
+.daily-reward-status > .game-icon {
+  object-fit: contain;
+}
+.daily-reward[data-status="ready"] {
+  border-color: #e9c16e;
+  background:
+    radial-gradient(ellipse at 50% 40%, #e5bc4d33, transparent 75%), #2b3822;
+  box-shadow:
+    inset 0 0 18px #e5bc4d12,
+    0 0 16px #e5bc4d18;
+}
+.daily-reward[data-status="ready"]:enabled:hover {
+  border-color: #ffe3a0;
+  box-shadow:
+    inset 0 0 22px #e5bc4d22,
+    0 0 20px #e5bc4d30;
+  transform: translateY(-2px);
+}
+.daily-reward[data-status="ready"] .daily-reward-day {
+  color: #ffe4a0;
+}
+.daily-reward[data-status="ready"] .daily-reward-status {
+  background: linear-gradient(130deg, #eaca7c, #c9a252);
+  color: #26321c;
+  font-weight: 800;
+}
+.daily-reward[data-status="claimed"] {
+  border-color: #8bba864d;
+  background: #213c2c88;
+}
+.daily-reward[data-status="claimed"] .daily-reward-art {
+  opacity: 0.6;
+}
+.daily-reward-final {
+  grid-column: span 2;
+}
+.daily-reward[data-final] {
+  padding: 12px;
+  border-color: #b992db66;
+  background:
+    radial-gradient(ellipse at 25% 50%, #c186ed24, transparent 75%), #202639;
+}
+.daily-reward[data-final] .daily-reward-day {
+  color: #ddc0fa;
+}
+.daily-reward[data-final] .daily-reward-art {
+  width: 112px;
+  height: 88px;
+  margin: 0;
+}
+.daily-reward[data-final][data-status="ready"] {
+  border-color: #dfb6ff;
+  box-shadow: 0 0 20px #c186ed33;
+}
+.daily-reward[data-final][data-status="claimed"] {
+  border-color: #8bba864d;
+}
+.daily-rewards-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: #f0d9a2;
+  font-size: 13px;
+}
+.daily-rewards-next > .game-icon {
+  object-fit: contain;
+}
+.daily-rewards-next time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 600px) {
+  .hub-rewards-trigger {
+    left: max(12px, env(safe-area-inset-left));
+    width: 72px;
+    height: 72px;
+  }
+  .hub-rewards-art {
+    width: 64px;
+    height: 64px;
+  }
+  .hub-rewards-ready {
+    width: 24px;
+    height: 24px;
+  }
+}
+@media (max-width: 480px) {
+  .daily-rewards-content {
+    padding: 10px;
+  }
+  .daily-rewards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .daily-reward {
+    min-height: 122px;
+    padding: 7px 4px;
+  }
+  .daily-reward-art {
+    width: 56px;
+    height: 48px;
+    margin-block: 2px;
+  }
+  .daily-reward-name {
+    font-size: 12px;
+  }
+  .daily-reward-status {
+    min-height: 22px;
+    padding-inline: 5px;
+  }
+  .daily-reward-status > .game-icon {
+    width: 19px;
+    height: 19px;
+  }
+  .daily-reward-final {
+    grid-column: 1 / -1;
+  }
+  .daily-reward[data-final] {
+    min-height: 104px;
+    padding: 8px;
+  }
+  .daily-reward[data-final] .daily-reward-art {
+    height: 72px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-rewards-art,
+  .daily-reward {
+    transition: none;
+  }
+  .daily-rewards-spinner {
+    animation: none;
+  }
+}

@@ -34,6 +34,19 @@ export default defineSchema({
     ownerId: v.string(),
     ...missionStateFields,
   }).index("by_owner", ["ownerId"]),
+  dailyRewards: defineTable({
+    ownerId: v.string(),
+    claims: v.array(
+      v.object({
+        day: v.number(),
+        claimedAt: v.number(),
+        gold: v.number(),
+        emeralds: v.number(),
+        rarity: v.optional(chestTypeValidator),
+        reveals: v.array(revealValidator),
+      }),
+    ),
+  }).index("by_owner", ["ownerId"]),
   worldMessages: defineTable({
     senderId: v.string(),
     senderName: v.string(),
