@@ -21,7 +21,9 @@ const state = vi.hoisted(() => ({
     ],
     outgoing: [],
     tokens: 310,
-    limit: 25,
+    limit: 5,
+    rank: 5,
+    nextUnlock: { rank: 10, friends: 7 },
   },
   relationship: "none",
   world: [
@@ -95,7 +97,9 @@ beforeEach(() => {
     ],
     outgoing: [],
     tokens: 310,
-    limit: 25,
+    limit: 5,
+    rank: 5,
+    nextUnlock: { rank: 10, friends: 7 },
   };
   state.relationship = "none";
   for (const mutation of [
@@ -117,6 +121,20 @@ function openFriends() {
 }
 
 describe("la vie sociale du refuge", () => {
+  it("shows the rank allowance and blocks pending acceptances while friends are locked", () => {
+    state.data.friends = [];
+    state.data.rank = 1;
+    state.data.limit = 0;
+    state.data.nextUnlock = { rank: 5, friends: 5 };
+    render(<HubDock />);
+    openFriends();
+    expect(screen.getByText("Les amis au rang 5")).toBeTruthy();
+    const accept = screen.getByRole("button", { name: "Accepter Clara" });
+    expect(accept.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(accept);
+    expect(state.accept).not.toHaveBeenCalled();
+  });
+
   it("opens an avatar action menu, sends a friend request and shows the public profile", async () => {
     render(<HubDock />);
     openWorld();

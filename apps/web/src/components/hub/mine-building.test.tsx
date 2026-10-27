@@ -6,7 +6,7 @@ import { MineBuildings } from "./mine-building";
 const board: MineBoard = {
   ownerId: "alice",
   serverNow: 10 * HOUR_MS,
-  heroLevel: 2,
+  rank: 6, mineLevel: 2,
   mines: {
     gold: { amount: 0, updatedAt: 9 * HOUR_MS, heroLevel: 2, revision: 3 },
     emeralds: { amount: 0, updatedAt: 9 * HOUR_MS, heroLevel: 2, revision: 0 },

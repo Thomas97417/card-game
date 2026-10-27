@@ -1,7 +1,6 @@
 import { ConvexError } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 
-export const FRIEND_LIMIT = 25;
 export const FRIEND_HELP_TOKENS = 10;
 
 /** Daily help resets at midnight in the game's French timezone, including DST. */
