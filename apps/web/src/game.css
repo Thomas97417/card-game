@@ -1247,22 +1247,12 @@ button:disabled {
   object-fit: contain;
   object-position: center bottom;
   z-index: 1;
-  filter: drop-shadow(0 3px 2px #142b3d55);
 }
 .board-half.enemy .board-unit > .creature-portrait {
   transform: scaleX(-1);
 }
 .board-unit.blocked > .creature-portrait {
   opacity: 0.6;
-}
-.unit-shadow {
-  position: absolute;
-  width: 66%;
-  height: 12px;
-  bottom: 1px;
-  border-radius: 50%;
-  background: #183d384f;
-  filter: blur(3px);
 }
 .unit-name {
   position: absolute;
@@ -1288,7 +1278,7 @@ button:disabled {
   position: absolute;
   display: flex;
   justify-content: space-between;
-  top: 0;
+  top: 25%;
   left: 3%;
   right: 3%;
   z-index: 2;
