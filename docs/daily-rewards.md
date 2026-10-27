@@ -1,6 +1,6 @@
 # Cadeaux quotidiens du refuge
 
-L’icône « Récompenses » du hub ouvre un parcours de sept cadeaux. Une coche signale qu’un cadeau peut être récupéré.
+L’icône cadeau flotte sur le bord gauche du hub, à 75 % de sa hauteur, et ouvre les sept récompenses. Une coche signale qu’un cadeau peut être récupéré. Le menu affiche les jours, les cadeaux et le compte à rebours du prochain déblocage. Les états verrouillés et récupérés sont indiqués par des icônes.
 
 | Jour | Cadeau |
 | --- | --- |

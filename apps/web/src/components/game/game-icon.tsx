@@ -1,5 +1,3 @@
-import { Gift } from "lucide-react";
-
 const ICON_ARTWORK = {
   health: "health-heart",
   melee: "melee-sword",
@@ -20,10 +18,13 @@ const ICON_ARTWORK = {
   ranking: "ranking-trophy",
   friends: "friends-handshake",
   missions: "missions-scroll",
+  rewards: "rewards-gift",
+  rewardLock: "rewards-lock",
+  rewardClock: "rewards-clock",
   chat: "world-chat-globe",
 } as const;
 
-export type GameIconKind = keyof typeof ICON_ARTWORK | "rewards";
+export type GameIconKind = keyof typeof ICON_ARTWORK;
 
 interface IconProps {
   size?: number;
@@ -38,15 +39,6 @@ export function GameIcon({
 }: IconProps & {
   kind: GameIconKind;
 }) {
-  if (kind === "rewards")
-    return (
-      <Gift
-        className={`game-icon game-icon-gift ${className}`}
-        size={size}
-        strokeWidth={1.6}
-        aria-hidden="true"
-      />
-    );
   return (
     <img
       className={`game-icon ${className}`}

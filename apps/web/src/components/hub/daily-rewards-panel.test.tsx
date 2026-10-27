@@ -21,6 +21,15 @@ describe("cadeaux du hub", () => {
       <HubDock dailyRewards={{ board: dailyRewardsBoard([], now), onClaim }} />,
     );
     const trigger = screen.getByRole("button", { name: /Récompenses/ });
+    expect(trigger.closest(".hub-footer")).toBeNull();
+    expect(trigger.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/ui/rewards-gift.webp",
+    );
+    expect(
+      within(
+        screen.getByRole("navigation", { name: "Communauté du refuge" }),
+      ).queryByRole("button", { name: "Récompenses" }),
+    ).toBeNull();
     expect(
       within(trigger).getByLabelText("Cadeau quotidien à récupérer"),
     ).toBeTruthy();
@@ -70,7 +79,7 @@ describe("cadeaux du hub", () => {
     const { rerender } = render(<HubDock dailyRewards={{ board, onClaim }} />);
     expect(screen.queryByLabelText("Cadeau quotidien à récupérer")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Récompenses" }));
-    expect(screen.getByText("00 h 00 min 02 s")).toBeTruthy();
+    expect(screen.getByText("00:00:02")).toBeTruthy();
     expect(
       (
         screen.getByRole("button", {
@@ -102,14 +111,14 @@ describe("cadeaux du hub", () => {
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(screen.getByText("24 h 00 min 00 s")).toBeTruthy();
+    expect(screen.getByText("24:00:00")).toBeTruthy();
   });
 
   it("handles loading and the completed epic gift without offering another claim", () => {
     const { rerender } = render(<HubDock />);
     fireEvent.click(screen.getByRole("button", { name: "Récompenses" }));
     expect(screen.getByRole("status").textContent).toContain(
-      "Chargement des cadeaux",
+      "Chargement des récompenses",
     );
     const board = dailyRewardsBoard(
       Array.from({ length: 7 }, (_, i) => ({
@@ -119,7 +128,7 @@ describe("cadeaux du hub", () => {
     );
     rerender(<HubDock dailyRewards={{ board, onClaim: vi.fn() }} />);
     expect(screen.getByRole("status").textContent).toContain(
-      "Les 7 cadeaux sont à toi",
+      "7 récompenses récupérées",
     );
     expect(screen.queryByLabelText("Cadeau quotidien à récupérer")).toBeNull();
     const list = screen.getByRole("list", { name: "Les 7 cadeaux du refuge" });

@@ -1,4 +1,3 @@
-import { Clock3, LoaderCircle, LockKeyhole, Sparkles } from "lucide-react";
 import {
   DAILY_REWARDS,
   canClaimDailyReward,
@@ -6,6 +5,7 @@ import {
   type DailyRewardsBoard,
 } from "@sylve/game/daily-rewards";
 import { chestName } from "@sylve/game/progression";
+import { GameIcon } from "@/components/game/game-icon";
 import { HubPanel } from "./hub-panel";
 import { MissionCheck } from "./mission-icons";
 
@@ -24,7 +24,7 @@ function countdown(milliseconds: number) {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  return `${String(hours).padStart(2, "0")} h ${String(minutes).padStart(2, "0")} min ${String(seconds % 60).padStart(2, "0")} s`;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 export function DailyRewardsPanel({
@@ -42,7 +42,6 @@ export function DailyRewardsPanel({
     <HubPanel
       id={id}
       title="Récompenses"
-      description="Un rendez-vous, un cadeau, chaque jour."
       icon="rewards"
       closeLabel="Fermer les récompenses"
       className="hub-daily-rewards"
@@ -50,24 +49,11 @@ export function DailyRewardsPanel({
     >
       {!board ? (
         <div className="daily-rewards-loading" role="status">
-          <LoaderCircle size={24} className="animate-spin" aria-hidden="true" />
-          Chargement des cadeaux…
+          <span className="daily-rewards-spinner" aria-hidden="true" />
+          <span className="sr-only">Chargement des récompenses…</span>
         </div>
       ) : (
         <div className="daily-rewards-content">
-          <div className="daily-rewards-intro">
-            <div>
-              <h3>7 jours de cadeaux</h3>
-              <p>Le suivant arrive 24 h après ta récupération.</p>
-            </div>
-            <span
-              className="daily-rewards-progress"
-              aria-label={`${board.claimedDays} cadeaux récupérés sur 7`}
-            >
-              <strong>{board.claimedDays}</strong> / 7
-            </span>
-          </div>
-
           <ol
             className="daily-rewards-grid"
             aria-label="Les 7 cadeaux du refuge"
@@ -112,34 +98,30 @@ export function DailyRewardsPanel({
                     onClick={() => onClaim?.(day)}
                   >
                     <span className="daily-reward-day">Jour {day}</span>
-                    {final && (
-                      <span className="daily-reward-special">
-                        <Sparkles size={12} aria-hidden="true" /> Le grand
-                        cadeau
-                      </span>
-                    )}
                     <img
                       className="daily-reward-art"
                       src={image}
                       alt=""
                       draggable={false}
                     />
-                    <strong className="daily-reward-name">{label}</strong>
+                    <strong className="daily-reward-name">
+                      {gift.kind === "chest"
+                        ? label
+                        : gift.amount.toLocaleString("fr-FR")}
+                    </strong>
                     <span className="daily-reward-status">
                       {claiming ? (
-                        <LoaderCircle
-                          size={14}
-                          className="animate-spin"
+                        <span
+                          className="daily-rewards-spinner"
                           aria-hidden="true"
                         />
                       ) : claimed ? (
                         <MissionCheck />
                       ) : available ? (
-                        <Sparkles size={13} aria-hidden="true" />
+                        "Récupérer"
                       ) : (
-                        <LockKeyhole size={12} aria-hidden="true" />
+                        <GameIcon kind="rewardLock" size={22} />
                       )}
-                      {claiming ? "Récupération…" : status}
                     </span>
                   </button>
                 </li>
@@ -147,27 +129,23 @@ export function DailyRewardsPanel({
             })}
           </ol>
 
-          <div className="daily-rewards-next">
-            {completed ? (
-              <p role="status">
-                <Sparkles size={17} aria-hidden="true" /> Les 7 cadeaux sont à
-                toi. Beau parcours !
-              </p>
-            ) : ready ? (
-              <p role="status">
-                <Sparkles size={17} aria-hidden="true" /> Ton cadeau du jour{" "}
-                {board.claimedDays + 1} t’attend !
-              </p>
-            ) : (
-              <p>
-                <Clock3 size={17} aria-hidden="true" /> Prochain cadeau dans{" "}
-                <time>{countdown(board.nextClaimAt! - now)}</time>
-              </p>
-            )}
-            <span>
-              Tes cadeaux restent disponibles, même si tu manques un jour.
-            </span>
-          </div>
+          {!ready && board.nextClaimAt !== null && (
+            <div className="daily-rewards-next" aria-label="Prochain cadeau">
+              <GameIcon kind="rewardClock" size={24} />
+              <time
+                aria-label={`Prochain cadeau dans ${countdown(board.nextClaimAt - now)}`}
+              >
+                {countdown(board.nextClaimAt - now)}
+              </time>
+            </div>
+          )}
+          <span className="sr-only" role="status">
+            {completed
+              ? "7 récompenses récupérées"
+              : ready
+                ? `Cadeau du jour ${board.claimedDays + 1} disponible`
+                : ""}
+          </span>
         </div>
       )}
     </HubPanel>

@@ -1,53 +1,84 @@
+.hub-rewards-trigger {
+  position: absolute;
+  z-index: 30;
+  top: 75%;
+  left: max(20px, env(safe-area-inset-left));
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  padding: 4px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.hub-rewards-trigger > .game-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 5px #061a11b3);
+  transition:
+    transform 180ms,
+    filter 180ms;
+}
+.hub-rewards-trigger[data-ready] > .game-icon {
+  filter: drop-shadow(0 5px 5px #061a11b3) drop-shadow(0 0 14px #f4cf7266);
+}
+.hub-rewards-trigger:hover > .game-icon,
+.hub-rewards-trigger[aria-expanded="true"] > .game-icon {
+  transform: translateY(-3px) scale(1.06);
+  filter: drop-shadow(0 5px 5px #061a11b3) drop-shadow(0 0 16px #f4cf7288);
+}
+.hub-rewards-trigger:focus-visible {
+  outline: 2px solid #f1d494;
+  outline-offset: 3px;
+}
+.hub-rewards-ready {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+}
+.hub-rewards-ready > .mission-check {
+  width: 100%;
+  height: 100%;
+}
+.hub-daily-rewards {
+  height: auto;
+}
 .daily-rewards-content {
   min-height: 0;
-  padding: 18px;
+  padding: 16px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: #b99b6066 transparent;
 }
 .daily-rewards-loading {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: #c5cfb7;
-  font-size: 13px;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
 }
-.daily-rewards-intro {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+.daily-rewards-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #b4aa7f55;
+  border-top-color: #f3d792;
+  border-radius: 50%;
+  animation: daily-rewards-spin 800ms linear infinite;
 }
-.daily-rewards-intro h3 {
-  color: #fae9bd;
-  font:
-    21px/1.25 Georgia,
-    serif;
+.daily-rewards-loading > .daily-rewards-spinner {
+  width: 24px;
+  height: 24px;
 }
-.daily-rewards-intro p {
-  max-width: 340px;
-  margin-top: 6px;
-  color: #b7c4ac;
-  font-size: 11px;
-  line-height: 1.6;
-}
-.daily-rewards-progress {
-  flex-shrink: 0;
-  margin-left: auto;
-  padding: 8px 12px;
-  border: 1px solid #c5a76b33;
-  border-radius: 10px;
-  background: #0c221b88;
-  color: #b5bd9d;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-.daily-rewards-progress strong {
-  color: #f4d58a;
-  font-size: 20px;
+@keyframes daily-rewards-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .daily-rewards-grid {
   display: grid;
@@ -67,8 +98,8 @@
   align-items: center;
   width: 100%;
   height: 100%;
-  min-height: 158px;
-  padding: 11px 6px 9px;
+  min-height: 148px;
+  padding: 10px 6px 8px;
   overflow: hidden;
   border: 1px solid #b7ad7d3d;
   border-radius: 12px;
@@ -95,7 +126,7 @@
 .daily-reward-art {
   width: 76px;
   height: 68px;
-  margin: 5px 0 4px;
+  margin: 4px 0;
   object-fit: contain;
   filter: drop-shadow(0 4px 5px #04180dbb);
 }
@@ -106,24 +137,26 @@
   justify-content: center;
   color: #eee5c8;
   font:
-    13px/1.3 Georgia,
+    14px/1.3 Georgia,
     serif;
+  font-variant-numeric: tabular-nums;
 }
 .daily-reward-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
   min-height: 24px;
-  margin-top: 7px;
-  padding: 3px 7px;
+  margin-top: 5px;
+  padding: 2px 7px;
   border-radius: 6px;
-  color: #a8b8a3;
   font-size: 10px;
 }
 .daily-reward-status > .mission-check {
-  width: 17px;
-  height: 17px;
+  width: 22px;
+  height: 22px;
+}
+.daily-reward-status > .game-icon {
+  object-fit: contain;
 }
 .daily-reward[data-status="ready"] {
   border-color: #e9c16e;
@@ -155,16 +188,13 @@
 .daily-reward[data-status="claimed"] .daily-reward-art {
   opacity: 0.6;
 }
-.daily-reward[data-status="claimed"] .daily-reward-status {
-  color: #acd59c;
-}
 .daily-reward-final {
   grid-column: span 2;
 }
 .daily-reward[data-final] {
   display: grid;
   grid-template-columns: 45% 1fr;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
   column-gap: 4px;
   padding: 12px;
   border-color: #b992db66;
@@ -176,22 +206,17 @@
   color: #ddc0fa;
 }
 .daily-reward[data-final] .daily-reward-art {
-  grid-row: 2 / 5;
+  grid-column: 1;
+  grid-row: 2 / 4;
   width: 100%;
-  height: 104px;
+  height: 100px;
   margin: 0;
 }
-.daily-reward-special {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 12px;
-  color: #d8b7f3;
-  font-size: 9px;
-}
 .daily-reward[data-final] .daily-reward-name {
-  font-size: 17px;
+  font-size: 18px;
+}
+.daily-reward[data-final] .daily-reward-status {
+  justify-self: center;
 }
 .daily-reward[data-final][data-status="ready"] {
   border-color: #dfb6ff;
@@ -201,111 +226,64 @@
   border-color: #8bba864d;
 }
 .daily-rewards-next {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid #c5a76b26;
-  text-align: center;
-}
-.daily-rewards-next p {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
+  margin-top: 12px;
   color: #f0d9a2;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+}
+.daily-rewards-next > .game-icon {
+  object-fit: contain;
 }
 .daily-rewards-next time {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-.daily-rewards-next > span {
-  display: block;
-  margin-top: 6px;
-  color: #acbda5;
-  font-size: 10px;
-  line-height: 1.6;
-}
-@media (min-width: 481px) and (max-height: 800px) {
-  .daily-rewards-content {
-    padding: 12px 16px;
+@media (max-width: 600px) {
+  .hub-rewards-trigger {
+    left: max(12px, env(safe-area-inset-left));
+    width: 72px;
+    height: 72px;
   }
-  .daily-rewards-intro {
-    margin-bottom: 12px;
+  .hub-rewards-trigger > .game-icon {
+    width: 64px;
+    height: 64px;
   }
-  .daily-rewards-intro h3 {
-    font-size: 19px;
-  }
-  .daily-rewards-intro p {
-    font-size: 10px;
-    line-height: 1.5;
-  }
-  .daily-rewards-grid {
-    gap: 8px;
-  }
-  .daily-reward {
-    min-height: 126px;
-    padding-block: 8px;
-  }
-  .daily-reward-art {
-    width: 60px;
-    height: 48px;
-    margin-block: 3px;
-  }
-  .daily-reward-name {
-    font-size: 12px;
-  }
-  .daily-reward-status {
-    min-height: 21px;
-    margin-top: 4px;
-  }
-  .daily-reward[data-final] .daily-reward-art {
-    height: 76px;
-  }
-  .daily-reward-special {
-    margin-top: 7px;
-  }
-  .daily-rewards-next {
-    margin-top: 10px;
-    padding-top: 10px;
-  }
-  .daily-rewards-next p {
-    font-size: 11px;
+  .hub-rewards-ready {
+    width: 24px;
+    height: 24px;
   }
 }
 @media (max-width: 480px) {
   .daily-rewards-content {
     padding: 10px;
   }
-  .daily-rewards-intro {
-    margin-bottom: 12px;
-  }
-  .daily-rewards-intro p {
-    font-size: 10px;
-    line-height: 1.5;
-  }
   .daily-rewards-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
   .daily-reward {
-    min-height: 118px;
+    min-height: 122px;
     padding: 7px 4px;
   }
   .daily-reward-art {
-    width: 48px;
-    height: 38px;
+    width: 56px;
+    height: 48px;
     margin-block: 2px;
   }
   .daily-reward-name {
-    font-size: 11px;
+    font-size: 12px;
   }
   .daily-reward-status {
-    min-height: 20px;
-    margin-top: 4px;
+    min-height: 22px;
+    margin-top: 3px;
     padding-inline: 5px;
-    font-size: 9px;
+  }
+  .daily-reward-status > .game-icon {
+    width: 19px;
+    height: 19px;
   }
   .daily-reward-final {
     grid-column: 1 / -1;
@@ -321,19 +299,13 @@
   .daily-reward[data-final] .daily-reward-name {
     font-size: 19px;
   }
-  .daily-rewards-intro h3 {
-    font-size: 19px;
-  }
-  .daily-rewards-next {
-    margin-top: 10px;
-    padding-top: 10px;
-  }
-  .daily-rewards-next p {
-    font-size: 11px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hub-rewards-trigger > .game-icon,
   .daily-reward {
     transition: none;
+  }
+  .daily-rewards-spinner {
+    animation: none;
   }
 }

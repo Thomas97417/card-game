@@ -207,7 +207,7 @@ export function VillageHub({
         </div>
       </div>
 
-      <div className="hub-footer">
+      <HubDock missions={missions} dailyRewards={dailyRewards}>
         {isPannable && (
           <button
             type="button"
@@ -218,7 +218,6 @@ export function VillageHub({
             <ChevronLeft size={20} />
           </button>
         )}
-        <HubDock missions={missions} dailyRewards={dailyRewards} />
         {isPannable && (
           <button
             type="button"
@@ -229,7 +228,7 @@ export function VillageHub({
             <ChevronRight size={20} />
           </button>
         )}
-      </div>
+      </HubDock>
     </main>
   );
 }
