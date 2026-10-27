@@ -18,8 +18,8 @@ import {
   abilityIconKind,
   type AbilityIconKind,
 } from "@/components/game/ability-icons";
-import { LEAGUES, deckCapacity } from "@sylve/game/leagues";
-import { CHEST_TYPES, chestName, chestRules } from "@sylve/game/progression";
+import { LEAGUES } from "@sylve/game/leagues";
+import { chestName } from "@sylve/game/progression";
 import { LeagueBadge } from "@/components/leagues/league-progress";
 
 const heroCards = [
@@ -347,72 +347,36 @@ const leagueStages = LEAGUES.filter(
   (league, index) => index === 0 || league.tier !== LEAGUES[index - 1]!.tier,
 );
 
-function rewardRange(min: number, max: number) {
-  return min === max
-    ? min.toLocaleString("fr-FR")
-    : `${min.toLocaleString("fr-FR")}–${max.toLocaleString("fr-FR")}`;
-}
+const landingChests = ["common", "rare", "epic", "legendary"] as const;
 
 function LeagueProgressPreview() {
-  const [selectedTier, setSelectedTier] = useState(leagueStages.at(-1)!.tier);
-  const league = leagueStages.find((entry) => entry.tier === selectedTier)!;
-  const chests = CHEST_TYPES.filter((type) => league.chestChances[type] > 0);
-  const rewards = chestRules("bigRare", league.minTrophies);
-
   return (
     <section className="landing-leagues" aria-labelledby="leagues-title">
       <div className="landing-container">
         <div className="landing-section-heading">
           <h2 id="leagues-title">Chaque ligue,<br />de plus grands trésors.</h2>
           <p>
-            De Fer à Challenger, gravis les dix ligues, agrandis ton deck et
-            débloque des coffres épiques puis légendaires. Plus tu montes, plus
-            tes coffres contiennent de cartes et d’or pour renforcer ton alliance.
+            De ton premier coffre en bois aux trésors légendaires, gravis les
+            ligues et décroche des récompenses toujours plus généreuses.
           </p>
         </div>
 
-        <div className="landing-league-path" role="group" aria-label="Explorer les dix ligues">
+        <ol className="landing-league-path" aria-label="Les dix ligues de Sylve">
           {leagueStages.map((stage) => (
-            <button
-              key={stage.tier}
-              type="button"
-              aria-label={stage.name}
-              aria-pressed={selectedTier === stage.tier}
-              aria-controls="landing-league-rewards"
-              onClick={() => setSelectedTier(stage.tier)}
-            >
-              <LeagueBadge league={stage} size={68} />
+            <li key={stage.tier}>
+              <LeagueBadge league={stage} size={68} showDivision={false} />
               <span>{stage.name}</span>
-            </button>
+            </li>
           ))}
-        </div>
+        </ol>
 
-        <div className="landing-league-rewards" id="landing-league-rewards" aria-live="polite" aria-atomic="true">
-          <div className="landing-league-summary">
-            <h3>{league.name}</h3>
-            <p>Un deck jusqu’à {deckCapacity(league.minTrophies)} cartes et des trésors toujours plus généreux.</p>
-            <dl>
-              <div>
-                <dt>Cartes dans un grand coffre rare</dt>
-                <dd>{rewardRange(rewards.min, rewards.max)}</dd>
-              </div>
-              <div>
-                <dt>Or dans un grand coffre rare</dt>
-                <dd>
-                  <img src="/art/ui/gold-coins.webp" alt="" width={36} height={36} loading="lazy" />
-                  {rewardRange(rewards.minGold, rewards.maxGold)}
-                </dd>
-              </div>
-            </dl>
-          </div>
-          <div className="landing-league-chests" aria-label={`Coffres à remporter en ligue ${league.name}`}>
-            {chests.map((type) => (
-              <figure key={type}>
-                <img src={`/art/chests/${type}.webp`} alt="" width={512} height={512} loading="lazy" />
-                <figcaption>{chestName(type)}</figcaption>
-              </figure>
-            ))}
-          </div>
+        <div className="landing-league-chests" aria-label="Des coffres de plus en plus précieux">
+          {landingChests.map((type) => (
+            <figure key={type}>
+              <img src={`/art/chests/${type}.webp`} alt="" width={512} height={512} loading="lazy" />
+              <figcaption>{type === "common" ? "Coffre en bois" : chestName(type)}</figcaption>
+            </figure>
+          ))}
         </div>
       </div>
     </section>
@@ -642,7 +606,11 @@ export function LandingPage() {
         <a href="#top" aria-label="Sylve — Retour en haut">
           <Brand compact />
         </a>
-        <Link to="/sign-in" search={{ returnTo: "/hub" }}>Se connecter</Link>
+        <nav className="landing-footer-links" aria-label="Liens utiles">
+          <Link to="/cgu">CGU</Link>
+          <Link to="/mentions-legales">Mentions légales</Link>
+          <Link to="/sign-in" search={{ returnTo: "/hub" }}>Se connecter</Link>
+        </nav>
       </footer>
       <CardUpgradeDialog
         entry={inspectedCard ? { card: inspectedCard, copies: 0 } : undefined}

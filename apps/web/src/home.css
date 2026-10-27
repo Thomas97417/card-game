@@ -607,6 +607,8 @@
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 7px;
   margin-bottom: 45px;
+  padding: 0;
+  list-style: none;
 }
 
 .landing-league-path::before {
@@ -619,7 +621,7 @@
   background: #9aab8b99;
 }
 
-.landing-league-path button {
+.landing-league-path li {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -633,62 +635,6 @@
   background: #f2eee3;
   font-size: 12px;
   line-height: 1.4;
-  transition: background 160ms, border-color 160ms;
-}
-
-.landing-league-path button:hover,
-.landing-league-path button[aria-pressed="true"] {
-  border-color: #859b78;
-  background: #dfe5d5;
-  color: #263b2d;
-}
-
-.landing-league-rewards {
-  display: grid;
-  grid-template-columns: 295px minmax(0, 1fr);
-  align-items: center;
-  gap: 55px;
-  padding-top: 30px;
-  border-top: 1px solid #a9b39b77;
-}
-
-.landing-league-summary h3 {
-  margin-bottom: 15px;
-  font-size: 34px;
-  letter-spacing: -0.8px;
-}
-
-.landing-league-summary > p {
-  color: #606b5c;
-  font-size: 13px;
-  line-height: 1.9;
-}
-
-.landing-league-summary dl {
-  display: grid;
-  gap: 24px;
-  margin-top: 28px;
-}
-
-.landing-league-summary dt {
-  margin-bottom: 7px;
-  color: #606b5c;
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.landing-league-summary dd {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font: 30px/1.3 Georgia, serif;
-  font-variant-numeric: tabular-nums;
-}
-
-.landing-league-summary dd img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
 }
 
 .landing-league-chests {
@@ -697,6 +643,8 @@
   justify-content: space-around;
   gap: 12px;
   min-width: 0;
+  padding-top: 30px;
+  border-top: 1px solid #a9b39b77;
 }
 
 .landing-league-chests figure {
@@ -923,6 +871,26 @@
   font-size: 13px;
 }
 
+.landing-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: end;
+  gap: 12px 28px;
+}
+
+.landing-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.landing-footer-links a:hover {
+  color: #f3e6c8;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .landing-brand.is-compact .landing-brand-mark {
   width: 30px;
   height: 34px;
@@ -969,8 +937,7 @@
   .landing-alliance-layout { gap: 40px; }
   .landing-alliance-picker button { font-size: 11px; gap: 8px; }
   .landing-league-path { gap: 3px; }
-  .landing-league-path button { font-size: 11px; }
-  .landing-league-rewards { grid-template-columns: 240px minmax(0, 1fr); gap: 30px; }
+  .landing-league-path li { font-size: 11px; }
   .landing-league-chests { gap: 8px; }
   .landing-feature h3 { font-size: 25px; }
   .landing-feature-refuge h3 { font-size: 40px; }
@@ -1041,12 +1008,9 @@
   .landing-leagues { padding-block: 60px; }
   .landing-league-path { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px 4px; margin-bottom: 26px; }
   .landing-league-path::before { display: none; }
-  .landing-league-path button { gap: 8px; padding: 9px 2px; font-size: 12px; }
+  .landing-league-path li { gap: 8px; padding: 9px 2px; font-size: 12px; }
   .landing-league-path .league-badge { width: 48px !important; height: 48px !important; }
   .landing-league-path .league-badge > img { width: 100%; height: 100%; }
-  .landing-league-rewards { grid-template-columns: minmax(0, 1fr); gap: 30px; }
-  .landing-league-summary dl { grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; }
-  .landing-league-summary dd { font-size: 26px; }
   .landing-league-chests { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
   .landing-league-chests figure { gap: 10px; }
   .landing-league-chests img, .landing-league-chests figure:nth-child(2) img { height: 135px; }
@@ -1072,8 +1036,8 @@
   .landing-invitation .landing-button { padding-inline: 15px; gap: 16px; font-size: 10px; }
   .landing-invitation-login { font-size: 12px; line-height: 1.8; }
   .landing-desktop-break { display: none; }
-  .landing-footer { flex-wrap: wrap; gap: 14px; padding-block: 25px; font-size: 9px; }
-  .landing-footer > span { display: none; }
+  .landing-footer { flex-direction: column; align-items: start; gap: 14px; padding-block: 25px; font-size: 12px; }
+  .landing-footer-links { justify-content: start; gap: 8px 22px; }
 }
 
 @media (max-width: 370px) {

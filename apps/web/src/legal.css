@@ -1,0 +1,83 @@
+.legal-scroll-container {
+  background: #f2eee3;
+}
+
+.legal-page {
+  min-height: 100svh;
+  padding: 64px 24px;
+  color: #263d30;
+  background: #f2eee3;
+  color-scheme: light;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+}
+
+.legal-container {
+  max-width: 700px;
+  margin-inline: auto;
+}
+
+.legal-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-bottom: 40px;
+  color: #52684e;
+  font-size: 13px;
+}
+
+.legal-page h1 {
+  margin-bottom: 36px;
+  font: 400 44px/1.15 Georgia, serif;
+  letter-spacing: -1.3px;
+}
+
+.legal-copy section + section {
+  margin-top: 28px;
+}
+
+.legal-copy h2 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.legal-copy p {
+  color: #586751;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid #cbd2be;
+  color: #36563d;
+  font-size: 13px;
+}
+
+.legal-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.legal-page a:hover,
+.legal-links a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legal-page a:focus-visible {
+  outline: 2px solid #557654;
+  outline-offset: 4px;
+}
+
+@media (max-width: 760px) {
+  .legal-page { padding: 28px 24px 40px; }
+  .legal-back-link { margin-bottom: 28px; }
+  .legal-page h1 { font-size: 34px; margin-bottom: 28px; }
+}

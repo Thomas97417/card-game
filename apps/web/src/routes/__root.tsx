@@ -108,6 +108,10 @@ function RootDocument() {
     select: (state) => state.matches.find((match) => match.routeId.startsWith("/(auth)/"))?.routeId,
   });
   const isAuthPage = authRouteId !== undefined;
+  const legalRouteId = useRouterState({
+    select: (state) => state.matches.find((match) => match.routeId.startsWith("/(legal)/"))?.routeId,
+  });
+  const isLegalPage = legalRouteId !== undefined;
   const requiresAuth = useRouterState({
     select: (state) =>
       state.matches.some(
@@ -133,7 +137,7 @@ function RootDocument() {
       );
     },
   });
-  const showHeader = !isImmersive && !isLanding && !isAuthPage;
+  const showHeader = !isImmersive && !isLanding && !isAuthPage && !isLegalPage;
 
   return (
     <ConvexBetterAuthProvider
@@ -166,7 +170,7 @@ function RootDocument() {
                       >
                         {showHeader && <Header />}
                         <div
-                          key={authRouteId}
+                          key={authRouteId ?? legalRouteId}
                           className={
                             isImmersive
                               ? "min-h-0 overflow-hidden"
@@ -174,7 +178,9 @@ function RootDocument() {
                                 ? "landing-scroll-container min-h-0 overflow-y-auto"
                                 : isAuthPage
                                   ? "auth-scroll-container min-h-0 overflow-y-auto"
-                                  : "min-h-0 overflow-y-auto"
+                                  : isLegalPage
+                                    ? "legal-scroll-container min-h-0 overflow-y-auto"
+                                    : "min-h-0 overflow-y-auto"
                           }
                         >
                           <Outlet />
