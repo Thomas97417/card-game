@@ -101,6 +101,9 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
+  const isLanding = useRouterState({
+    select: (state) => state.location.pathname === "/",
+  });
   const requiresAuth = useRouterState({
     select: (state) =>
       state.matches.some(
@@ -150,17 +153,19 @@ function RootDocument() {
                     <PlayerHeaderProvider>
                       <div
                         className={
-                          isImmersive
+                          isImmersive || isLanding
                             ? "grid h-svh grid-rows-[minmax(0,1fr)]"
                             : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                         }
                       >
-                        {!isImmersive && <Header />}
+                        {!isImmersive && !isLanding && <Header />}
                         <div
                           className={
                             isImmersive
                               ? "min-h-0 overflow-hidden"
-                              : "min-h-0 overflow-y-auto"
+                              : isLanding
+                                ? "landing-scroll-container min-h-0 overflow-y-auto"
+                                : "min-h-0 overflow-y-auto"
                           }
                         >
                           <Outlet />
