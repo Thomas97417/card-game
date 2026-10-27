@@ -7,20 +7,23 @@ export interface MineState {
   /** Fractional resources are retained between collections. */
   amount: number;
   updatedAt: number;
-  heroLevel: number;
+  level?: number;
+  /** Legacy mines accrued at the Guardian level until their first rank sync. */
+  heroLevel?: number;
   revision: number;
 }
 
 export interface MineBoard {
   ownerId: string;
   serverNow: number;
-  heroLevel: number;
+  rank: number;
+  mineLevel: number;
   mines: Record<MineKind, MineState> | null;
 }
 
-export function mineRules(kind: MineKind, heroLevel: number) {
-  const level = Number.isFinite(heroLevel)
-    ? Math.max(1, Math.floor(heroLevel))
+export function mineRules(kind: MineKind, mineLevel: number) {
+  const level = Number.isFinite(mineLevel)
+    ? Math.max(1, Math.floor(mineLevel))
     : 1;
   const perHour = (kind === "gold" ? 6 : 2) * level;
   return { perHour, capacity: perHour * MINE_STORAGE_HOURS };
@@ -28,19 +31,20 @@ export function mineRules(kind: MineKind, heroLevel: number) {
 
 /** The stored level applies to elapsed time, including time spent offline. */
 export function mineAmount(kind: MineKind, state: MineState, now: number) {
-  const { perHour, capacity } = mineRules(kind, state.heroLevel);
+  const { perHour, capacity } = mineRules(kind, state.level ?? state.heroLevel ?? 1);
   const elapsed = Math.max(0, now - state.updatedAt);
-  return Math.min(capacity, state.amount + (elapsed / HOUR_MS) * perHour);
+  // Preserve already earned reserves when migrating a higher legacy mine.
+  return Math.min(Math.max(capacity, state.amount), state.amount + (elapsed / HOUR_MS) * perHour);
 }
 
 export function mineView(kind: MineKind, state: MineState, now: number) {
-  const rules = mineRules(kind, state.heroLevel);
+  const rules = mineRules(kind, state.level ?? state.heroLevel ?? 1);
   const amount = mineAmount(kind, state, now);
   const available = Math.floor(amount);
   return {
     ...rules,
     available,
-    progress: amount / rules.capacity,
+    progress: Math.min(1, amount / rules.capacity),
     full: available >= rules.capacity,
     nextInMs: Math.ceil(((1 - (amount - available)) / rules.perHour) * HOUR_MS),
   };
@@ -50,14 +54,15 @@ export function mineView(kind: MineKind, state: MineState, now: number) {
 export function changeMineLevel(
   kind: MineKind,
   state: MineState,
-  heroLevel: number,
+  level: number,
   now: number,
 ): MineState {
-  if (state.heroLevel === heroLevel) return state;
+  if (state.level === level && state.heroLevel === undefined) return state;
+  const { heroLevel: _legacyLevel, ...current } = state;
   return {
-    ...state,
+    ...current,
     amount: mineAmount(kind, state, now),
     updatedAt: Math.max(state.updatedAt, now),
-    heroLevel,
+    level,
   };
 }

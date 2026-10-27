@@ -43,6 +43,8 @@ import dailyRewardsCss from "../daily-rewards.css?url";
 import legendaryOffersCss from "../legendary-offers.css?url";
 import guardianCss from "../guardian.css?url";
 import factionsCss from "../factions.css?url";
+import rankCss from "../rank.css?url";
+import { RankProvider } from "@/components/rank-progress";
 
 const getAuth = createServerFn({ method: "GET" }).handler(async () => {
   return await getToken();
@@ -88,6 +90,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: legendaryOffersCss },
       { rel: "stylesheet", href: guardianCss },
       { rel: "stylesheet", href: factionsCss },
+      { rel: "stylesheet", href: rankCss },
     ],
   }),
 
@@ -172,34 +175,36 @@ function RootDocument() {
                 <EmeraldProvider>
                   <FriendshipProvider>
                     <PlayerHeaderProvider>
-                      <DuelTransitionProvider>
-                        <div
-                          className={
-                            showHeader
-                              ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                              : "grid h-svh grid-rows-[minmax(0,1fr)]"
-                          }
-                        >
-                          {showHeader && <Header />}
+                      <RankProvider>
+                        <DuelTransitionProvider>
                           <div
-                            key={authRouteId ?? legalRouteId}
                             className={
-                              isImmersive
-                                ? "min-h-0 overflow-hidden"
-                                : isLanding
-                                  ? "landing-scroll-container min-h-0 overflow-y-auto"
-                                  : isAuthPage
-                                    ? "auth-scroll-container min-h-0 overflow-y-auto"
-                                    : isLegalPage
-                                      ? "legal-scroll-container min-h-0 overflow-y-auto"
-                                      : "min-h-0 overflow-y-auto"
+                              showHeader
+                                ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                                : "grid h-svh grid-rows-[minmax(0,1fr)]"
                             }
                           >
-                            <Outlet />
+                            {showHeader && <Header />}
+                            <div
+                              key={authRouteId ?? legalRouteId}
+                              className={
+                                isImmersive
+                                  ? "min-h-0 overflow-hidden"
+                                  : isLanding
+                                    ? "landing-scroll-container min-h-0 overflow-y-auto"
+                                    : isAuthPage
+                                      ? "auth-scroll-container min-h-0 overflow-y-auto"
+                                      : isLegalPage
+                                        ? "legal-scroll-container min-h-0 overflow-y-auto"
+                                        : "min-h-0 overflow-y-auto"
+                              }
+                            >
+                              <Outlet />
+                            </div>
                           </div>
-                        </div>
-                      </DuelTransitionProvider>
-                      <Toaster richColors />
+                        </DuelTransitionProvider>
+                        <Toaster richColors />
+                      </RankProvider>
                     </PlayerHeaderProvider>
                   </FriendshipProvider>
                 </EmeraldProvider>

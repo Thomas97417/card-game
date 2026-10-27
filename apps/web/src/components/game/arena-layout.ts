@@ -3,6 +3,8 @@ import { DEPTHS, ROWS } from "@sylve/game";
 export const ARENA_WIDTH = 1659;
 export const ARENA_HEIGHT = 948;
 const COLUMNS = DEPTHS * 2;
+// Keep each camp's three columns while reserving a narrow strip between them.
+export const ARENA_CAMP_GAP = 0.004;
 type Point = { x: number; y: number };
 
 // Inner corners of the gold curb in duel-arena-overhead.webp, in image pixels.
@@ -41,20 +43,62 @@ export function projectGround(u: number, v: number): Point {
 export const groundPoints = (points: readonly Point[]) =>
   points.map(({ x, y }) => `${x.toFixed(3)},${y.toFixed(3)}`).join(" ");
 
+export function projectCampGround(camp: 0 | 1, u: number, v: number): Point {
+  const width = (1 - ARENA_CAMP_GAP) / 2;
+  const start = camp === 0 ? 0 : (1 + ARENA_CAMP_GAP) / 2;
+  return projectGround(start + u * width, v);
+}
+
+/** Shared plane for tiles, sprite anchors, hit areas and missing-target effects. */
+export function projectCellPoint(row: number, column: number, u = 0.5, v = 0.5): Point {
+  return projectCampGround(
+    column < DEPTHS ? 0 : 1,
+    ((column % DEPTHS) + u) / DEPTHS,
+    (row + v) / ROWS,
+  );
+}
+
+export const ARENA_CAMPS = ([0, 1] as const).map((camp) => {
+  const points = [
+    projectCampGround(camp, 0, 0), projectCampGround(camp, 1, 0),
+    projectCampGround(camp, 1, 1), projectCampGround(camp, 0, 1),
+  ];
+  const outerTop = ARENA_CORNERS[camp === 0 ? 0 : 1];
+  const outerBottom = ARENA_CORNERS[camp === 0 ? 3 : 2];
+  const scale = 1 - ARENA_CAMP_GAP;
+  // This trapezoid has horizontal rows: a horizontal scale and shear keep the
+  // texture's painted seams on the projected grid without changing the scenery.
+  const shear = ARENA_CAMP_GAP *
+    (outerBottom.x - outerTop.x) / (outerBottom.y - outerTop.y);
+  const translate = ARENA_CAMP_GAP * outerTop.x - shear * outerTop.y;
+  return {
+    camp,
+    points,
+    polygon: groundPoints(points),
+    textureMatrix: [scale, 0, shear, 1, translate, 0] as const,
+    textureTransform: `matrix(${scale} 0 ${shear} 1 ${translate} 0)`,
+  };
+});
+
+export const ARENA_GAP_POINTS = groundPoints([
+  projectCampGround(0, 1, 0), projectCampGround(1, 0, 0),
+  projectCampGround(1, 0, 1), projectCampGround(0, 1, 1),
+]);
+
 function makeCell(row: number, column: number) {
   const points = [
-    projectGround(column / COLUMNS, row / ROWS),
-    projectGround((column + 1) / COLUMNS, row / ROWS),
-    projectGround((column + 1) / COLUMNS, (row + 1) / ROWS),
-    projectGround(column / COLUMNS, (row + 1) / ROWS),
+    projectCellPoint(row, column, 0, 0),
+    projectCellPoint(row, column, 1, 0),
+    projectCellPoint(row, column, 1, 1),
+    projectCellPoint(row, column, 0, 1),
   ];
   const left = Math.min(...points.map((point) => point.x));
   const top = Math.min(...points.map((point) => point.y));
   const width = Math.max(...points.map((point) => point.x)) - left;
   const height = Math.max(...points.map((point) => point.y)) - top;
-  const anchor = projectGround((column + 0.5) / COLUMNS, (row + 0.92) / ROWS);
-  const centerLeft = projectGround(column / COLUMNS, (row + 0.5) / ROWS);
-  const centerRight = projectGround((column + 1) / COLUMNS, (row + 0.5) / ROWS);
+  const anchor = projectCellPoint(row, column, 0.5, 0.92);
+  const centerLeft = projectCellPoint(row, column, 0, 0.5);
+  const centerRight = projectCellPoint(row, column, 1, 0.5);
   const cellWidth = Math.hypot(
     centerRight.x - centerLeft.x,
     centerRight.y - centerLeft.y,
@@ -79,12 +123,12 @@ function makeCell(row: number, column: number) {
     aboveUnit: {
       left: `${(anchor.x / ARENA_WIDTH) * 100}%`,
       top: `${(anchor.y / ARENA_HEIGHT) * 100}%`,
-      marginTop: `${-((cellWidth * 1.1) / ARENA_WIDTH) * 100}vw`,
+      marginTop: `${-((cellWidth * 1.34) / ARENA_WIDTH) * 100}vw`,
     },
     unit: {
       left: `${((anchor.x - left) / width) * 100}%`,
       top: `${((anchor.y - top) / height) * 100}%`,
-      width: `${((cellWidth * 0.94) / width) * 100}%`,
+      width: `${((cellWidth * 1.22) / width) * 100}%`,
       aspectRatio: "1 / 1.1",
     },
   };

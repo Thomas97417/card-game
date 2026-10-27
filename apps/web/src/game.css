@@ -1145,10 +1145,8 @@ button:disabled {
   stroke-width: 1;
   stroke-linejoin: round;
 }
-.ground-frontier {
-  fill: none;
-  stroke: #c8ac705e;
-  stroke-width: 1.5;
+.ground-gap {
+  fill: url(#arena-gap);
 }
 .hero-figure:focus-visible,
 .board-unit-control:focus-visible {
@@ -1254,37 +1252,19 @@ button:disabled {
 .board-unit.blocked > .creature-portrait {
   opacity: 0.6;
 }
-.unit-name {
-  position: absolute;
-  bottom: -10px;
-  z-index: 3;
-  max-width: 140%;
-  white-space: nowrap;
-  font:
-    9px/1.3 Georgia,
-    serif;
-  color: #fff7d6;
-  padding: 2px 5px;
-  border-radius: 3px;
-  background: #263e31c9;
-  opacity: 0;
-}
-.board-unit-control:hover .unit-name,
-.board-unit-control:focus-visible .unit-name,
-.unit-selected .unit-name {
-  opacity: 1;
-}
 .unit-stats {
   position: absolute;
   display: flex;
   justify-content: space-between;
   top: 25%;
-  left: 3%;
-  right: 3%;
+  /* Portraits exceed their tile width; keep statistics inside the same tile. */
+  left: 15%;
+  right: 15%;
+  container-type: inline-size;
   z-index: 2;
 }
 .unit-stats .stat-badge {
-  width: clamp(22px, 2.8vw, 43px);
+  width: min(clamp(22px, 2.8vw, 43px), 42%);
   height: auto;
   aspect-ratio: 1;
 }
@@ -1297,7 +1277,8 @@ button:disabled {
 .unit-stats .stat-badge strong {
   align-self: center;
   margin-top: -1px;
-  font-size: clamp(15px, 1.7vw, 26px);
+  font-size: min(clamp(15px, 1.7vw, 26px), 26cqw);
+  -webkit-text-stroke-width: min(3px, 3cqw);
 }
 .hero-slot {
   position: absolute;
@@ -2307,6 +2288,32 @@ button:disabled {
   z-index: 15;
   pointer-events: none;
 }
+.battle-pixi-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+.battle-pixi-layer > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+[data-combat-sprite] {
+  transform-origin: center 85%;
+}
+/* GSAP owns sprite transforms; CSS remains the fallback before loading. */
+.arena[data-combat-motion="enhanced"] .board-unit,
+.arena[data-combat-motion="enhanced"] .hero-figure,
+.arena[data-combat-motion="enhanced"] .hero-figure > img {
+  animation: none;
+}
+.arena[data-combat-renderer="webgl"] .ability-trail,
+.arena[data-combat-renderer="webgl"] .ability-origin-ring {
+  visibility: hidden;
+}
 .board-unit.ability-casting,
 .hero-figure.ability-casting > img {
   transform-origin: center bottom;
@@ -2464,9 +2471,7 @@ button:disabled {
 .damage-float {
   position: absolute;
   transform: translate(-50%, -50%);
-  padding: 5px 13px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #632e24c4, #632e2400 72%);
+  padding: 0;
   color: #fff1d0;
   font:
     900 clamp(30px, 3.4vw, 54px)/1.1 "Avenir Next",
@@ -2745,7 +2750,7 @@ button:disabled {
     inset: 0;
     background: url("/art/duel-arena-overhead.webp") center / cover no-repeat;
   }
-  .arena-ground image {
+  .arena-ground > .arena-background {
     opacity: 0;
   }
 }
@@ -2877,54 +2882,60 @@ button:disabled {
 }
 .field-mark {
   position: absolute;
-  inset: 0 5% 5%;
   display: grid;
   place-items: center;
-  color: #3e7d56;
+  color: #f6ffd4;
   background: transparent;
   pointer-events: none;
 }
+.field-mark-rune {
+  inset: 14% 28% 16%;
+}
+.field-mark-pentagram {
+  inset: 14% 18%;
+}
 .field-mark-attack {
-  color: #89549c;
+  color: #fff1bc;
 }
 .field-mark-art {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 2px #61472545);
+  opacity: 0.9;
+}
+.field-mark-pentagram .field-mark-art {
+  opacity: 0.72;
+}
+.field-mark-pentagram.field-mark-attack .field-mark-art {
+  transform: translateY(-12%);
 }
 .field-mark-spent .field-mark-art {
-  opacity: 0.52;
-  filter: saturate(0.6);
+  opacity: 0.25;
+  filter: saturate(0.55);
 }
 .field-mark-bonus {
   position: absolute;
   z-index: 2;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 7px 1px 3px;
-  border: 1px solid #d5e6aa;
-  border-radius: 20px;
-  color: #f5f2cc;
-  background: #26472eeb;
-  box-shadow: 0 2px 5px #273c2f33;
-  font-size: clamp(10px, 1.15vw, 17px);
+  gap: 1px;
+  font-size: clamp(11px, 1.05vw, 16px);
+  font-weight: 900;
   line-height: 1;
-  --ability-size: clamp(16px, 1.7vw, 25px);
+  white-space: nowrap;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1px #3c4b2b;
+  text-shadow: 0 1px 2px #22321de6;
+  --ability-size: clamp(12px, 1.15vw, 17px);
 }
 .field-mark-attack .field-mark-bonus {
-  background: #54365feb;
-  border-color: #d7b4df;
+  -webkit-text-stroke-color: #543b29;
 }
-.field-mark-bonus small {
-  font-size: 0.62em;
-  padding-left: 1px;
-}
-.occupied .field-mark-bonus {
-  top: calc(100% + 8px);
-  bottom: auto;
+.field-mark-pentagram .field-mark-bonus {
+  font-size: clamp(12px, 1.3vw, 18px);
 }
 .marked-cell .placement-hint {
   position: absolute;
@@ -2940,18 +2951,10 @@ button:disabled {
 .neutral-building .unit-stats {
   justify-content: flex-end;
   top: 5%;
-  right: 7%;
-}
-.neutral-building .unit-name {
-  background: #554b36ed;
 }
 .neutral-building[data-field-object="spikes"] .unit-stats,
 .neutral-building[data-field-object="mossy-rock"] .unit-stats {
   top: 38%;
-}
-.neutral-building[data-field-object="spikes"] .unit-statuses,
-.neutral-building[data-field-object="mossy-rock"] .unit-statuses {
-  top: 60%;
 }
 .field-mark-preview {
   position: relative;
@@ -2959,9 +2962,17 @@ button:disabled {
   height: 150px;
   margin: 8px auto 18px;
 }
+.field-mark-preview .field-mark {
+  inset: 0;
+}
 .field-mark-preview .field-mark-bonus {
   font-size: 19px;
   --ability-size: 29px;
+}
+.damage-float.combat-bonus {
+  font-size: clamp(20px, 2.2vw, 32px);
+  -webkit-text-stroke: 1.3px #244331;
+  white-space: nowrap;
 }
 .damage-float.positive-effect {
   color: #bafa8a;
@@ -2972,41 +2983,31 @@ button:disabled {
 .damage-float.seal-gain,
 .damage-float.stat-loss {
   z-index: 1;
-  padding: 7px 13px;
-  border: 1px solid #c3f8a4a6;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #183c30f5, #254b30de);
-  box-shadow: 0 0 20px #b7e39b66;
-  -webkit-text-stroke: 0;
-  white-space: nowrap;
 }
 .damage-float.seal-gain-attack {
   color: #ffdf95;
-  border-color: #ffdc93b3;
-  background: linear-gradient(135deg, #44331cf5, #584323de);
-  box-shadow: 0 0 20px #ffdc9366;
+  -webkit-text-stroke-color: #543b1c;
   text-shadow: 0 2px 2px #543b1c;
 }
 .damage-float.stat-loss {
   color: #ffb1a5;
-  border-color: #ff8f83b3;
-  background: linear-gradient(135deg, #4b2022f5, #632d2fde);
-  box-shadow: 0 0 20px #ff786666;
+  -webkit-text-stroke-color: #632d2f;
   text-shadow: 0 2px 2px #42181c;
 }
 .stat-change-value {
-  display: grid;
-  justify-items: center;
-  gap: 1px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
 }
 .stat-change-value strong {
-  font-size: clamp(23px, 2.5vw, 36px);
+  font-size: inherit;
   line-height: 1;
 }
 .stat-change-value small {
-  font-size: clamp(10px, 0.95vw, 14px);
+  font-size: clamp(10px, 0.9vw, 13px);
   font-weight: 700;
   line-height: 1.2;
+  -webkit-text-stroke: 0;
 }
 
 .ability-icon {
@@ -3095,13 +3096,21 @@ button:disabled {
 .unit-ability-icons {
   position: absolute;
   left: 0;
-  bottom: -7px;
-  gap: 3px;
-  flex-wrap: nowrap;
-  --ability-size: clamp(16px, 1.7vw, 23px);
+  bottom: 0;
+  width: max-content;
+  max-width: 100%;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap-reverse;
+  gap: 4px;
+  --ability-size: clamp(28px, 3.2vw, 44px);
 }
-.unit-name {
-  bottom: calc(100% + 3px);
+.unit-ability-icons .effect-badge {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 .ability-title > :is(span, .ability-next-trigger) {
   display: inline-flex;
@@ -3141,11 +3150,6 @@ button:disabled {
 .unit-effects-details li > span > span {
   font-size: 10px;
   line-height: 1.5;
-}
-.damage-float:has(.ability-icon) {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 .combat-history li:has(.ability-icon) {
   display: flex;

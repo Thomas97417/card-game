@@ -144,7 +144,12 @@ describe("collecte des mines côté serveur", () => {
     await alice.client.mutation(api.collection.ensureMines, {});
     await t.run(async (ctx) => {
       const wallet = await ctx.db.query("wallets").unique();
-      await ctx.db.patch(wallet!._id, { friendshipTokens: 150 });
+      await ctx.db.patch(wallet!._id, {
+        friendshipTokens: 150, experience: 120, rankRewardedThrough: 5,
+      });
+      await ctx.db.insert("wallets", {
+        ownerId: bob.userId, gold: 0, experience: 120, catalogueVersion: 2,
+      });
     });
     await alice.client.mutation(api.social.request, { playerId: bob.userId });
     await bob.client.mutation(api.social.accept, { playerId: alice.userId });
@@ -291,7 +296,7 @@ describe("collecte des mines côté serveur", () => {
     ).toMatchObject({ amount: 1 });
   });
 
-  it("uses the Guardian level and applies a promotion prospectively", async () => {
+  it("uses account rank prospectively and keeps Guardian promotions and selection independent", async () => {
     const t = setup();
     const { client, userId } = await player(t);
     await t.run(async (ctx) => {
@@ -299,7 +304,7 @@ describe("collecte des mines côté serveur", () => {
         ownerId: userId,
         gold: 100000,
         diamonds: 0,
-        experience: 1000,
+        experience: 149,
         catalogueVersion: 2,
       });
       await ctx.db.insert("heroes", {
@@ -321,15 +326,32 @@ describe("collecte des mines côté serveur", () => {
     });
     expect(
       (await client.query(api.collection.mineBoard, { refreshKey: 1 }))
-        .heroLevel,
-    ).toBe(1);
+        .mineLevel,
+    ).toBe(2);
+    const beforePromotion = await client.query(api.collection.mineBoard, { refreshKey: 0 });
     await client.mutation(api.collection.upgradeHero, { expectedLevel: 1 });
     const board = await client.query(api.collection.mineBoard, {
       refreshKey: 0,
     });
-    expect(board.heroLevel).toBe(2);
-    expect(board.mines!.gold).toMatchObject({ amount: 6, heroLevel: 2 });
-    expect(board.mines!.emeralds).toMatchObject({ amount: 2, heroLevel: 2 });
+    expect(board.rank).toBe(6);
+    expect(board.mineLevel).toBe(2);
+    expect(board.mines).toEqual(beforePromotion.mines);
+    expect(board.mines!.gold).toMatchObject({ amount: 6, level: 2 });
+    expect(board.mines!.emeralds).toMatchObject({ amount: 2, level: 2 });
+    await t.run(async (ctx) => {
+      const hero = (await ctx.db.query("heroes").unique())!;
+      await ctx.db.patch(hero._id, {
+        level: 92,
+        selectedHeroId: "maestro",
+        unlockedHeroIds: ["sylve", "maestro"],
+      });
+    });
+    await client.mutation(api.collection.selectHero, { heroId: "sylve" });
+    expect((await client.query(api.collection.hero, {})).level).toBe(91);
+    expect((await client.query(api.collection.mineBoard, { refreshKey: 0 })).mines).toEqual(board.mines);
+    await client.mutation(api.collection.selectHero, { heroId: "maestro" });
+    expect((await client.query(api.collection.hero, {})).level).toBe(92);
+    expect((await client.query(api.collection.mineBoard, { refreshKey: 0 })).mines).toEqual(board.mines);
     vi.setSystemTime(startedAt + HOUR_MS * 2);
     expect(
       await client.mutation(api.collection.collectMine, {

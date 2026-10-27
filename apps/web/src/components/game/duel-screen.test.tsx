@@ -271,7 +271,7 @@ describe("éléments du terrain", () => {
     const stat = name.endsWith("vie") ? "health" : "attack";
     expect(
       document.querySelector(".field-mark-preview img")?.getAttribute("src"),
-    ).toBe(`/art/field/${kind}-${stat}.webp`);
+    ).toBe(`/art/field/${kind}-${stat}-${kind === "rune" ? "orb" : "glyph"}-v2.webp`);
   });
 
   it("allows deployment on a pentagram while keeping an obstacle occupied", async () => {

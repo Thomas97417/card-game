@@ -1,17 +1,17 @@
 # Mines du refuge
 
-Les deux mines démarrent à la première visite du hub et produisent même hors connexion. Le niveau utilisé est le **niveau du Gardien**, conservé dans `heroes` et augmenté manuellement dans la Maison des gardiens lorsque la puissance du deck le permet. Le rang d’expérience des liens d’âme reste indépendant. Aucun niveau de mine séparé ni achat n’est nécessaire.
+Les deux mines démarrent à la première visite du hub et produisent même hors connexion. Le niveau des deux mines suit automatiquement le **rang du compte**, selon le barème CW importé : niveau 1 aux rangs 1–5, niveau 2 au rang 6, niveau 6 au rang 10, puis les paliers historiques jusqu’au niveau 118 au rang 1 000. Aucun achat ni promotion du Gardien n’est nécessaire. Les [règles de rang](ranks.md) décrivent l’expérience et les récompenses.
 
 | Mine | Production horaire | Capacité | Exemple au niveau 3 |
 | --- | --- | --- | --- |
-| Or | 6 × niveau du héros | 48 × niveau du héros | 18 pièces/h, réserve de 144 |
-| Émeraudes | 2 × niveau du héros | 16 × niveau du héros | 6 émeraudes/h, réserve de 48 |
+| Or | 6 × niveau de la mine | 48 × niveau de la mine | 18 pièces/h, réserve de 144 |
+| Émeraudes | 2 × niveau de la mine | 16 × niveau de la mine | 6 émeraudes/h, réserve de 48 |
 
 La réserve correspond à huit heures de production. Une fois pleine, la production s’arrête : les heures supplémentaires ne sont pas reportées. Les paramètres sont centralisés dans `packages/game/src/mines.ts`.
 
 Dès qu’une unité entière est disponible, une icône de monnaie et la quantité apparaissent au-dessus de la mine. Le nombre chevauche légèrement le bas de l’icône, sans fond ni bordure, avec une ombre pour rester lisible ; l’ensemble flotte d’un seul mouvement, sans libellé visible. Cliquer dessus transfère toute la quantité entière disponible au portefeuille et conserve la fraction restante. La production reprend immédiatement après la collecte. Les deux réserves sont indépendantes. Les mines sont accessibles en parcourant la carte.
 
-Les étiquettes des mines reprennent le format compact des autres bâtiments : une icône illustrée de 32 px, le nom, le rendement horaire et la réserve sur une ligne, puis une fine barre de remplissage. Le niveau du héros, les huit heures de stockage et le délai avant la prochaine unité sont accessibles au survol et aux lecteurs d’écran. Les deux icônes de pioche et de minerai, or et émeraudes, ont été créées avec ImageGen intégré puis enregistrées en WebP transparent de 256 px dans `public/art/ui/`. Les [prompts](art-prompts.json) sont conservés.
+Les étiquettes des mines reprennent le format compact des autres bâtiments : une icône illustrée de 32 px, le nom, le rendement horaire et la réserve sur une ligne, puis une fine barre de remplissage. Le niveau de la mine, les huit heures de stockage et le délai avant la prochaine unité sont accessibles au survol et aux lecteurs d’écran. Les deux icônes de pioche et de minerai, or et émeraudes, ont été créées avec ImageGen intégré puis enregistrées en WebP transparent de 256 px dans `public/art/ui/`. Les [prompts](art-prompts.json) sont conservés.
 
 Dès le clic, le solde affiché augmente, la réserve se vide et une petite animation « + X » avec l’icône de la monnaie apparaît pendant deux secondes sous son compteur dans l’en-tête. Cette mise à jour est une anticipation locale gérée par le cache optimiste de Convex. La requête serveur contient le type de mine, la révision et l’identifiant du compte attendu ; aucun montant estimé ni heure du client n’est envoyé. Le curseur reste normal et les clics supplémentaires sur la même mine sont bloqués jusqu’à la réponse. L’autre mine peut être collectée immédiatement et ses gains sont indépendants.
 
@@ -19,12 +19,14 @@ Dès le clic, le solde affiché augmente, la réserve se vide et une petite anim
 
 L’horloge monotone continue lors d’un retour arrière : une pièce devenue disponible après la dernière lecture serveur redevient immédiatement récupérable. Une ancienne lecture en erreur ne masque pas une nouvelle réponse valide. Si la session expire ou si le joueur quitte le hub, les animations en attente sont annulées et les réponses tardives ne déclenchent plus de gain ni de message sur la page suivante. Une collecte en attente est liée au compte qui l’a déclenchée : le serveur refuse son exécution sous un autre compte, et le cache optimiste ignore les données de cet autre joueur. Une coupure réseau laisse la mutation en attente de reconnexion ; elle ne constitue pas à elle seule un refus du serveur et ne déclenche pas de seconde collecte.
 
-L’état de chaque mine (réserve fractionnaire, date de calcul, niveau du héros et révision de collecte) est stocké dans le champ optionnel `wallets.mines`, compatible avec les anciens portefeuilles. L’initialisation est idempotente et conserve les soldes existants, dont un solde d’émeraudes nul. Le bonus de bienvenue reste attribué une seule fois selon les règles existantes.
+L’état de chaque mine (réserve fractionnaire, date de calcul, niveau de la mine et révision de collecte) est stocké dans le champ optionnel `wallets.mines`, compatible avec les anciens portefeuilles. L’initialisation est idempotente et conserve les soldes existants, dont un solde d’émeraudes nul. Le bonus de bienvenue reste attribué une seule fois selon les règles existantes.
 
 `collection.mineBoard` renvoie l’état privé du joueur avec son identifiant de propriétaire et l’heure serveur. Le client actualise l’affichage chaque seconde avec une horloge monotone et resynchronise la lecture toutes les trente secondes ; le paramètre de rafraîchissement sert uniquement à invalider le cache. Le serveur calcule les récompenses avec sa propre heure et déduit le propriétaire de la session validée. L’identifiant attendu sert uniquement à refuser une requête devenue obsolète après un changement de compte. Le client ne choisit ni le montant, ni le propriétaire, ni la date de production.
 
 `collection.collectMine` vérifie la révision et crédite le portefeuille dans la même transaction que la remise à zéro de la réserve. Les doubles clics, requêtes rejouées et collectes simultanées depuis plusieurs onglets ne peuvent pas créditer deux fois une réserve. Une collecte vide ne réinitialise pas le temps de production.
 
-Lors d’une promotion du Gardien, la transaction calcule d’abord la production et le plafond de l’ancien niveau, puis applique le nouveau rendement à partir de cet instant. Les heures passées ne sont jamais recalculées au nouveau niveau. Une simple amélioration de carte ou un gain d’expérience n’augmente pas le rendement sans promotion du Gardien.
+Lorsqu’une amélioration de carte ou une aide quotidienne franchit un rang qui augmente le niveau des mines, la transaction calcule d’abord la production et le plafond de l’ancien niveau, puis applique le nouveau rendement à partir de cet instant. Les heures passées ne sont jamais recalculées au nouveau niveau. Une promotion du Gardien ne change pas les mines.
+
+Les anciens états `heroLevel` restent lisibles et migrent vers `level` lors de la première synchronisation de rang. La production déjà acquise à l’ancien rendement est conservée, même si elle dépasse le nouveau plafond : elle reste collectable et la production attend la collecte pour reprendre.
 
 Le décor panoramique 3:1 conserve les cinq bâtiments existants et ajoute une mine d’or à l’ouest et une mine d’émeraudes à l’est. Les zones cliquables utilisent les coordonnées de cette nouvelle illustration. Le [manifeste des illustrations](art-prompts.json) conserve son prompt et son chemin.

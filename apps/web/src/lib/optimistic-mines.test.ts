@@ -8,7 +8,7 @@ import { optimisticallyCollectMine, projectMineCollection } from "./optimistic-m
 const board: MineBoard = {
   ownerId: "alice",
   serverNow: 4 * HOUR_MS,
-  heroLevel: 1,
+  rank: 6, mineLevel: 1,
   mines: {
     gold: { amount: 0, updatedAt: 3 * HOUR_MS, heroLevel: 1, revision: 0 },
     emeralds: { amount: 0, updatedAt: 3 * HOUR_MS, heroLevel: 1, revision: 0 },

@@ -5,7 +5,8 @@ import { missionStateFields } from "./lib/missions";
 const mineState = v.object({
   amount: v.number(),
   updatedAt: v.number(),
-  heroLevel: v.number(),
+  level: v.optional(v.number()),
+  heroLevel: v.optional(v.number()),
   revision: v.number(),
 });
 
@@ -86,6 +87,8 @@ export default defineSchema({
     gold: v.number(),
     soulDust: v.optional(v.number()),
     experience: v.optional(v.number()),
+    rankRewardedThrough: v.optional(v.number()),
+    rankAcknowledgedThrough: v.optional(v.number()),
     catalogueVersion: v.optional(v.literal(2)),
     diamonds: v.optional(v.number()),
     friendshipTokens: v.optional(v.number()),

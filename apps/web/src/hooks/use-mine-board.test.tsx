@@ -8,7 +8,7 @@ import { useMineBoard } from "./use-mine-collection";
 const board: MineBoard = {
   ownerId: "alice",
   serverNow: HOUR_MS,
-  heroLevel: 1,
+  rank: 6, mineLevel: 1,
   mines: {
     gold: { amount: 6, updatedAt: HOUR_MS, heroLevel: 1, revision: 0 },
     emeralds: { amount: 2, updatedAt: HOUR_MS, heroLevel: 1, revision: 0 },

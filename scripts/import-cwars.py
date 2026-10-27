@@ -425,8 +425,10 @@ for rarity, table in zip(RARITIES, RULES["Level_up_requirement"]["tables"]):
 rank_rows = [r for t in RULES["Rank"]["tables"] for r in t["rows"] if r[0].isdigit()]
 rank_costs = [int(r[1].replace(",", "")) if r[1].replace(",", "").isdigit() else 0 for r in rank_rows]
 assert len(rank_costs) >= 100
+rank_benefits = [dict(friends=int(r[2]) if r[2].isdigit() else 0,
+                      mineLevel=int(r[3]), emeralds=int(r[4])) for r in rank_rows]
 data = dict(version=2, source="docs/references/cunt-wars", families=FAMILIES, cards=cards, tokens=tokens,
-            upgrade=upgrade, rankCosts=rank_costs,
+            upgrade=upgrade, rankCosts=rank_costs, rankBenefits=rank_benefits,
             soulbindCosts=dict(common=[0,50,100,150], rare=[0,75,125,175], epic=[100,150,200,250], legendary=[200,250,300,350]))
 (OUT / "cunt-wars.json").write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
 print(f"Imported {len(cards)} CW profiles, {sum(len(c['stats']) for c in cards)} stat pairs, {sum(len(c['skills']) for c in cards)} skills and {sum(len(c['soulbinds']) for c in cards)} Soulbind links.")

@@ -97,7 +97,7 @@ function MineBuilding({
       <div
         className="hub-mine-label"
         title={view ? [
-          `Héros niv. ${state!.heroLevel} · ${view.perHour.toLocaleString("fr-FR")} ${unit} / h`,
+          `Mine niv. ${state!.level ?? state!.heroLevel ?? 1} · Rang ${board!.rank} · ${view.perHour.toLocaleString("fr-FR")} ${unit} / h`,
           `Réserve : ${view.available.toLocaleString("fr-FR")} / ${view.capacity.toLocaleString("fr-FR")} · ${MINE_STORAGE_HOURS} h de stockage`,
           view.full ? "Production en pause" : !ready ? `Prochaine ${kind === "gold" ? "pièce" : "émeraude"} dans ${minutes} min` : "",
         ].filter(Boolean).join("\n") : undefined}
@@ -117,13 +117,13 @@ function MineBuilding({
                   role="progressbar"
                   aria-label={`Réserve de la ${name.toLocaleLowerCase("fr-FR")}`}
                   aria-valuemin={0}
-                  aria-valuemax={view.capacity}
+                  aria-valuemax={Math.max(view.capacity, view.available)}
                   aria-valuenow={view.available}
                 >
                   <span style={{ width: `${view.progress * 100}%` }} />
                 </div>
                 <span className="sr-only">
-                  Héros niv. {state!.heroLevel}. {view.perHour} {unit} par heure.
+                  Mine niv. {state!.level ?? state!.heroLevel ?? 1}, liée à ton rang {board!.rank}. {view.perHour} {unit} par heure.
                   {MINE_STORAGE_HOURS} h de réserve.
                   {view.full && <span>Production en pause</span>}
                   {!ready && <>Prochaine {kind === "gold" ? "pièce" : "émeraude"} dans {minutes} min.</>}
