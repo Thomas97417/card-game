@@ -28,7 +28,9 @@ function fresh(cards = validateDeck(DEFAULT_DECK)) {
   return state;
 }
 
-function Arena({ view, event = null }: { view: GameView; event?: GameEvent | null }) {
+function Arena({ view, event = null, events }: {
+  view: GameView; event?: GameEvent | null; events?: GameEvent[];
+}) {
   return (
     <DuelArena
       mine={view.players[0]!}
@@ -39,6 +41,7 @@ function Arena({ view, event = null }: { view: GameView; event?: GameEvent | nul
       hovered={null}
       canSummon={false}
       combatEvent={event}
+      combatEvents={events}
       onPlace={() => {}}
       onInspectUnit={() => {}}
       onInspectHero={() => {}}
@@ -49,8 +52,8 @@ function Arena({ view, event = null }: { view: GameView; event?: GameEvent | nul
 
 type PlaybackView = GameView & { events: GameEvent[] };
 function Playback({ view }: { view: PlaybackView }) {
-  const { display, event } = useCombatPlayback(view);
-  return display && <Arena view={display} event={event} />;
+  const { display, event, events } = useCombatPlayback(view);
+  return display && <Arena view={display} event={event} events={events} />;
 }
 
 function debuffMatch(stat: "health" | "attack", target: number, attack?: number, hp?: number) {
@@ -103,6 +106,7 @@ describe("activation illustrée des sceaux", () => {
     expect(container.querySelector(`.board-half.own .stat-badge.${stat}`)?.getAttribute("data-stat-change")).toBe("normal");
     act(() => vi.advanceTimersByTime(1));
     const glow = container.querySelector<HTMLElement>(".seal-activation")!;
+    expect(container.querySelector(".ability-origin")).toBeNull();
     expect(glow.dataset.sealKind).toBe(kind);
     expect(glow.classList.contains(`seal-activation-${stat}`)).toBe(true);
     expect(glow.style.left).toBe(groundCell(1, 1).bounds.left);

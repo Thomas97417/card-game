@@ -186,7 +186,7 @@ describe("icônes des capacités et états", () => {
       events: transition.events,
     };
     function Playback({ data }: { data: typeof initial }) {
-      const { display, event } = useCombatPlayback(data);
+      const { display, event, events } = useCombatPlayback(data);
       return (
         display && (
           <DuelArena
@@ -198,6 +198,7 @@ describe("icônes des capacités et états", () => {
             hovered={null}
             canSummon={false}
             combatEvent={event}
+            combatEvents={events}
             onPlace={() => {}}
             onInspectUnit={() => {}}
             onInspectHero={() => {}}

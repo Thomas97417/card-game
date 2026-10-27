@@ -247,8 +247,12 @@ export default defineSchema({
     guestId: v.optional(v.string()),
     inviteCode: v.optional(v.string()),
     waitingExpiresAt: v.optional(v.number()),
+    finishedAt: v.optional(v.number()),
+    eventsPurged: v.optional(v.boolean()),
     state: v.optional(stateValidator),
-  }).index("by_code", ["inviteCode"]),
+  })
+    .index("by_code", ["inviteCode"])
+    .index("by_event_cleanup", ["status", "eventsPurged", "finishedAt"]),
   gameEvents: defineTable({
     gameId: v.id("games"),
     seq: v.number(),

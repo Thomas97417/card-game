@@ -13,6 +13,7 @@ import {
   RARITY_LABELS,
   combatTypeLabel,
   createGame,
+  createFieldBuilding,
   isDeploymentDepth,
   playerView,
   validateDeck,
@@ -80,6 +81,7 @@ function fieldData(): DuelData {
     () => 0.25,
   );
   state.activePlayer = 0;
+  state.players[0]!.board = [createFieldBuilding("spikes", 0, 0)];
   state.players[0]!.runes = [
     { row: 0, depth: 1, health: 3 },
     { row: 1, depth: 1, attack: 2 },

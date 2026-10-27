@@ -4,6 +4,7 @@ export const COMBAT_TIMING = {
   impact: 260,
   ability: 360,
   abilityImpact: 180,
+  heroAbility: 800,
   death: 380,
   summon: 420,
   withdraw: 320,

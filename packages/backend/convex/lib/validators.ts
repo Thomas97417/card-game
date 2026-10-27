@@ -325,6 +325,14 @@ export const eventValidator = v.object({
   ),
   heroAbilityUses: v.optional(v.number()),
   ability: v.optional(v.string()),
+  abilityBatch: v.optional(v.number()),
+  source: v.optional(
+    v.object({
+      cardId: v.string(),
+      row: v.number(),
+      depth: v.number(),
+    }),
+  ),
   amount: v.optional(v.number()),
   unit: v.optional(unitValidator),
   runes: v.optional(v.array(runeValidator)),
