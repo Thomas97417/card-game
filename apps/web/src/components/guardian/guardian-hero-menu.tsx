@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Check, ChevronRight, LockKeyhole, UsersRound } from "lucide-react";
+import { Check, LockKeyhole } from "lucide-react";
 import {
   HEROES,
   FACTION_LABELS,
@@ -88,8 +88,7 @@ export function GuardianHeroMenu({
       }}
     >
       <DialogTrigger className="guardian-change-hero" disabled={disabled}>
-        <UsersRound size={17} aria-hidden="true" /> Changer de héros{" "}
-        <ChevronRight size={15} aria-hidden="true" />
+        Changer de héros
       </DialogTrigger>
       <DialogContent
         className="guardian-roster-dialog"
@@ -159,14 +158,22 @@ export function GuardianHeroMenu({
             aria-label={`Aperçu de ${hero.name}`}
             aria-busy={pending}
           >
-            <header className="guardian-roster-identity">
+            <div className="guardian-roster-portrait">
               <img
                 src={hero.portrait}
                 alt={hero.name}
-                width={130}
-                height={170}
+                width={320}
+                height={480}
                 draggable={false}
               />
+              <span
+                className="guardian-roster-portrait-status"
+                data-active={active}
+              >
+                {active ? "Héros actif" : owned ? "Débloqué" : "À recruter"}
+              </span>
+            </div>
+            <header className="guardian-roster-identity">
               <div>
                 <span className="guardian-eyebrow">
                   {FACTION_LABELS[hero.faction]}

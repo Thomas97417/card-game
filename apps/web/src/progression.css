@@ -607,6 +607,18 @@
   opacity: 0.6;
   filter: saturate(0.45);
 }
+.sylve-button.upgrade-action[data-size="compact"] {
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+.upgrade-action[data-size="compact"] .upgrade-action-label {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
 .upgrade-action-label {
   display: inline-flex;
   align-items: center;

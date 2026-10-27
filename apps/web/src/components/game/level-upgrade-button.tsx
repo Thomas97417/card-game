@@ -5,18 +5,21 @@ import { ArrowUp, Crown } from "lucide-react";
 export function LevelUpgradeButton({
   label,
   maxLevel = false,
+  size = "default",
   className = "",
   children,
   ...props
 }: Omit<ComponentProps<"button">, "children"> & {
   label: string;
   maxLevel?: boolean;
+  size?: "default" | "compact";
   children?: ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
+      data-size={size}
       {...props}
       className={`sylve-button upgrade-action ${className}`}
     >

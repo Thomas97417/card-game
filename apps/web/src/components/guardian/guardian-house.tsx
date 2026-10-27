@@ -156,24 +156,40 @@ export function GuardianHouse({
                           : `Vers le niveau ${next.level}`}
                     </h2>
                   </header>
-                  <div className="guardian-might">
-                    <span>Puissance actuelle</span>
-                    <strong>
-                      {number(progress.might)}
-                      {progress.nextMight != null && (
-                        <small> / {number(progress.nextMight)}</small>
-                      )}
-                    </strong>
+                  <div className="guardian-progress-row">
+                    <div className="guardian-might">
+                      <span>Puissance actuelle</span>
+                      <strong>
+                        {number(progress.might)}
+                        {progress.nextMight != null && (
+                          <small> / {number(progress.nextMight)}</small>
+                        )}
+                      </strong>
+                    </div>
+                    <progress
+                      max={progress.nextMight ?? 1}
+                      value={
+                        progress.nextMight == null
+                          ? 1
+                          : Math.min(progress.peakMight, progress.nextMight)
+                      }
+                      aria-label="Record de puissance pour le prochain niveau du Gardien"
+                    />
+                    {next && (
+                      <LevelUpgradeButton
+                        size="compact"
+                        className="guardian-upgrade"
+                        label={pending ? "Amélioration…" : `Niveau ${next.level}`}
+                        aria-label={
+                          pending
+                            ? "Amélioration…"
+                            : `Améliorer au niveau ${next.level}`
+                        }
+                        disabled={pending || !progress.canUpgrade}
+                        onClick={() => void upgrade()}
+                      />
+                    )}
                   </div>
-                  <progress
-                    max={progress.nextMight ?? 1}
-                    value={
-                      progress.nextMight == null
-                        ? 1
-                        : Math.min(progress.peakMight, progress.nextMight)
-                    }
-                    aria-label="Record de puissance pour le prochain niveau du Gardien"
-                  />
                   <p className="guardian-power-record">
                     {progress.canUpgrade &&
                     progress.nextMight != null &&
@@ -232,21 +248,6 @@ export function GuardianHouse({
                           </p>
                         ))}
                       </div>
-                      <LevelUpgradeButton
-                        className="guardian-upgrade"
-                        label={pending ? "Amélioration…" : "Améliorer le héros"}
-                        aria-label={
-                          pending
-                            ? "Amélioration…"
-                            : `Améliorer au niveau ${next.level}`
-                        }
-                        disabled={pending || !progress.canUpgrade}
-                        onClick={() => void upgrade()}
-                      >
-                        <span className="guardian-upgrade-level">
-                          Niveau {next.level}
-                        </span>
-                      </LevelUpgradeButton>
                     </>
                   )}
                   <Link to="/decks" className="guardian-workshop-link">
