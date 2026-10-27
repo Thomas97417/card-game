@@ -29,6 +29,8 @@ import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
+import { useBattleAnimations } from "./use-battle-animations";
+import { abilityOrigins, abilitySource, combatActorKey, combatFrameTiming, sealActivation } from "./combat-visuals";
 import {
   AbilityIcon,
   CardAbilityIcons,
@@ -47,47 +49,6 @@ import {
 
 type Player = GameView["players"][number];
 
-const sealActivations = {
-  "Rune de blocage": { kind: "rune", stat: "block" },
-  "Rune de vie": { kind: "rune", stat: "health" },
-  "Rune de puissance": { kind: "rune", stat: "attack" },
-  "Pentagramme de vie": { kind: "pentagram", stat: "health" },
-  "Pentagramme de puissance": { kind: "pentagram", stat: "attack" },
-} as const;
-
-function sealActivation(event: GameEvent) {
-  if (event.type !== "ability" || !event.unit || (event.amount ?? 0) <= 0)
-    return undefined;
-  return sealActivations[event.ability as keyof typeof sealActivations];
-}
-
-/** Reinforcement coordinates describe the new unit, so its caster is explicit. */
-function abilitySource(event: GameEvent | null) {
-  if (!event?.ability) return null;
-  if (event.type === "hero_ability")
-    return { player: event.player, cardId: "hero", row: -1, depth: -1 };
-  if (event.type === "summon")
-    return event.source ? { ...event.source, player: event.player } : null;
-  if (
-    event.type !== "ability" ||
-    !event.cardId ||
-    sealActivation(event) ||
-    ["Poison", "Fin de l’entrave", "Fin du bonus temporaire"].includes(event.ability)
-  )
-    return null;
-  if (
-    event.cardId !== "hero" &&
-    (event.row === undefined || event.depth === undefined || event.row < 0 || event.depth < 0)
-  )
-    return null;
-  return {
-    player: event.player,
-    cardId: event.cardId,
-    row: event.row ?? -1,
-    depth: event.depth ?? -1,
-  };
-}
-
 function abilityPoint(player: number, me: number, row?: number, depth?: number) {
   if (row === undefined || depth === undefined || row < 0 || depth < 0)
     return { x: player === me ? 8 : 92, y: 48 };
@@ -99,19 +60,6 @@ function abilityPoint(player: number, me: number, row?: number, depth?: number) 
     y: parseFloat(cell.impact.top) +
       parseFloat(cell.impact.marginTop) * ARENA_WIDTH / ARENA_HEIGHT,
   };
-}
-
-function abilityOrigins(events: readonly GameEvent[]) {
-  const origins = new Map<string, GameEvent>();
-  for (const event of events) {
-    const source = abilitySource(event);
-    if (!source) continue;
-    const key = `${source.player}:${source.cardId}:${source.row}:${source.depth}`;
-    const previous = origins.get(key);
-    if (!previous || ["Immunité", "Bouclier mental"].includes(previous.ability ?? ""))
-      origins.set(key, event);
-  }
-  return [...origins.values()];
 }
 
 type StatLoss = { stat: "health" | "attack"; amount: number };
@@ -184,6 +132,9 @@ export function DuelArena({
     () => combatEvents ?? (combatEvent ? [combatEvent] : []),
     [combatEvents, combatEvent],
   );
+  const arena = useRef<HTMLElement>(null);
+  const effectsLayer = useRef<HTMLDivElement>(null);
+  useBattleAnimations(arena, effectsLayer, events);
   const sources = abilityOrigins(events).map((event) => abilitySource(event)!);
   const current = events[0];
   function heroFigure(player: Player, index: number, own: boolean) {
@@ -201,6 +152,7 @@ export function DuelArena({
       >
         <button
           type="button"
+          data-combat-actor={combatActorKey({ player: index, cardId: "hero" })}
           className={`hero-figure ${hit ? "hero-hit" : ""} ${casting ? "ability-casting" : ""}`}
           aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
@@ -211,6 +163,7 @@ export function DuelArena({
             <span className="hero-level-badge">Niv. {player.heroLevel}</span>
           )}
           <img
+            data-combat-sprite=""
             key={casting ? current!.seq : "idle"}
             src={heroPortrait(player.heroId, !own)}
             alt={
@@ -338,15 +291,19 @@ export function DuelArena({
                 <button
                   type="button"
                   className="board-unit-control"
+                  data-combat-actor={combatActorKey({ player: playerIndex, cardId: unit.cardId, row, depth })}
+                  data-combat-type={getCombatType(unit.card)}
+                  data-combat-faction={unit.card.faction}
                   style={cell.unit}
                   aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
                   onClick={() => onInspectUnit(unit, playerIndex)}
                 >
                   <div
+                    data-combat-sprite=""
                     key={casting || hit || acting ? current!.seq : "idle"}
                     data-field-object={unit.fieldObject}
-                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${casting ? "ability-casting" : ""} ${acting?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${!own && acting?.type === "summon" ? "spawning" : ""} ${acting?.type === "death" || acting?.type === "withdraw" ? "dying" : ""}`}
+                    className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${casting ? "ability-casting" : ""} ${acting?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting?.type === "summon" ? "spawning" : ""} ${acting?.type === "death" || acting?.type === "withdraw" ? "dying" : ""}`}
                   >
                     <CreaturePortrait card={unit.card} />
                     <div className="unit-stats">
@@ -389,7 +346,9 @@ export function DuelArena({
   return (
     <div className="arena-scroll">
       <section
+        ref={arena}
         className="arena"
+        data-combat-viewer={me}
         aria-label="Terrain de duel de la Sylve"
         style={
           {
@@ -443,6 +402,7 @@ export function DuelArena({
         </div>
         {heroFigure(mine, me, true)}
         {heroFigure(enemy, 1 - me, false)}
+        <div ref={effectsLayer} className="battle-pixi-layer" aria-hidden="true" />
         <CombatEffects events={events} mine={mine} enemy={enemy} me={me} />
       </section>
     </div>
@@ -491,8 +451,7 @@ function CombatEffects({
       incoming.push({ event, loss });
     }
     if (!incoming.length) return;
-    const delay = events[0]?.type === "ability" ? COMBAT_TIMING.abilityImpact
-      : events[0]?.type === "summon" ? 0 : COMBAT_TIMING.impact;
+    const delay = combatFrameTiming(events).impact;
     const timer = window.setTimeout(() => {
       setHits((previous) => {
         const seen = new Set(previous.map((hit) => hit.event.seq));
@@ -668,7 +627,7 @@ function DamageNumber({
   }, [hit.seq, onComplete]);
   return (
     <span
-      className={`damage-float ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""} ${seal ? `seal-gain seal-gain-${seal.stat}` : ""} ${loss ? "stat-loss" : ""}`}
+      className={`damage-float ${hit.type !== "attack" ? "combat-bonus" : ""} ${hit.type === "ability" && (hit.amount ?? 0) > 0 ? "positive-effect" : ""} ${seal ? `seal-gain seal-gain-${seal.stat}` : ""} ${loss ? "stat-loss" : ""}`}
       style={position}
       aria-label={
         hit.type === "ability" || hit.type === "summon"
@@ -676,7 +635,6 @@ function DamageNumber({
           : `${targetName} subit ${hit.damage} dégâts`
       }
     >
-      {icon && <AbilityIcon kind={icon} size={30} />}
       {stat ? (
         <span className="stat-change-value">
           <strong>

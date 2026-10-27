@@ -79,12 +79,12 @@ function makeCell(row: number, column: number) {
     aboveUnit: {
       left: `${(anchor.x / ARENA_WIDTH) * 100}%`,
       top: `${(anchor.y / ARENA_HEIGHT) * 100}%`,
-      marginTop: `${-((cellWidth * 1.1) / ARENA_WIDTH) * 100}vw`,
+      marginTop: `${-((cellWidth * 1.34) / ARENA_WIDTH) * 100}vw`,
     },
     unit: {
       left: `${((anchor.x - left) / width) * 100}%`,
       top: `${((anchor.y - top) / height) * 100}%`,
-      width: `${((cellWidth * 0.94) / width) * 100}%`,
+      width: `${((cellWidth * 1.22) / width) * 100}%`,
       aspectRatio: "1 / 1.1",
     },
   };

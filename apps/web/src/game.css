@@ -2307,6 +2307,32 @@ button:disabled {
   z-index: 15;
   pointer-events: none;
 }
+.battle-pixi-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+.battle-pixi-layer > canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+[data-combat-sprite] {
+  transform-origin: center 85%;
+}
+/* GSAP owns sprite transforms; CSS remains the fallback before loading. */
+.arena[data-combat-motion="enhanced"] .board-unit,
+.arena[data-combat-motion="enhanced"] .hero-figure,
+.arena[data-combat-motion="enhanced"] .hero-figure > img {
+  animation: none;
+}
+.arena[data-combat-renderer="webgl"] .ability-trail,
+.arena[data-combat-renderer="webgl"] .ability-origin-ring {
+  visibility: hidden;
+}
 .board-unit.ability-casting,
 .hero-figure.ability-casting > img {
   transform-origin: center bottom;
@@ -2464,9 +2490,7 @@ button:disabled {
 .damage-float {
   position: absolute;
   transform: translate(-50%, -50%);
-  padding: 5px 13px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, #632e24c4, #632e2400 72%);
+  padding: 0;
   color: #fff1d0;
   font:
     900 clamp(30px, 3.4vw, 54px)/1.1 "Avenir Next",
@@ -2963,6 +2987,11 @@ button:disabled {
   font-size: 19px;
   --ability-size: 29px;
 }
+.damage-float.combat-bonus {
+  font-size: clamp(20px, 2.2vw, 32px);
+  -webkit-text-stroke: 1.3px #244331;
+  white-space: nowrap;
+}
 .damage-float.positive-effect {
   color: #bafa8a;
   text-shadow:
@@ -2972,41 +3001,31 @@ button:disabled {
 .damage-float.seal-gain,
 .damage-float.stat-loss {
   z-index: 1;
-  padding: 7px 13px;
-  border: 1px solid #c3f8a4a6;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #183c30f5, #254b30de);
-  box-shadow: 0 0 20px #b7e39b66;
-  -webkit-text-stroke: 0;
-  white-space: nowrap;
 }
 .damage-float.seal-gain-attack {
   color: #ffdf95;
-  border-color: #ffdc93b3;
-  background: linear-gradient(135deg, #44331cf5, #584323de);
-  box-shadow: 0 0 20px #ffdc9366;
+  -webkit-text-stroke-color: #543b1c;
   text-shadow: 0 2px 2px #543b1c;
 }
 .damage-float.stat-loss {
   color: #ffb1a5;
-  border-color: #ff8f83b3;
-  background: linear-gradient(135deg, #4b2022f5, #632d2fde);
-  box-shadow: 0 0 20px #ff786666;
+  -webkit-text-stroke-color: #632d2f;
   text-shadow: 0 2px 2px #42181c;
 }
 .stat-change-value {
-  display: grid;
-  justify-items: center;
-  gap: 1px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
 }
 .stat-change-value strong {
-  font-size: clamp(23px, 2.5vw, 36px);
+  font-size: inherit;
   line-height: 1;
 }
 .stat-change-value small {
-  font-size: clamp(10px, 0.95vw, 14px);
+  font-size: clamp(10px, 0.9vw, 13px);
   font-weight: 700;
   line-height: 1.2;
+  -webkit-text-stroke: 0;
 }
 
 .ability-icon {
@@ -3141,11 +3160,6 @@ button:disabled {
 .unit-effects-details li > span > span {
   font-size: 10px;
   line-height: 1.5;
-}
-.damage-float:has(.ability-icon) {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
 }
 .combat-history li:has(.ability-icon) {
   display: flex;
