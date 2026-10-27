@@ -63,6 +63,253 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+.guardian-change-hero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 10px 16px;
+  border: 1px solid #d7bd7b80;
+  border-radius: 22px;
+  background: #12372ce8;
+  color: #f7dfaa;
+  font-size: 12px;
+  cursor: pointer;
+}
+.guardian-change-hero:hover {
+  background: #285444;
+}
+.game-dialog.guardian-roster-dialog[data-slot="dialog-content"] {
+  width: min(1040px, calc(100vw - 28px));
+  max-width: 1040px;
+  height: min(820px, calc(100svh - 32px));
+  overflow: hidden;
+}
+.guardian-roster-dialog > [data-slot="dialog-body"] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.guardian-roster-intro {
+  margin: 0 0 16px;
+  color: #c2c8b1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.guardian-roster-layout {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.5fr);
+  gap: 24px;
+  min-height: 0;
+}
+.guardian-roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 7px 2px 2px;
+  scrollbar-width: thin;
+}
+.guardian-roster-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 78px;
+  padding: 5px 12px 5px 6px;
+  border: 1px solid #d9c18426;
+  border-radius: 10px;
+  background: #14372e9c;
+  color: #e8dfc3;
+  text-align: left;
+  cursor: pointer;
+}
+.guardian-roster-entry:hover {
+  background: #2f5144;
+}
+.guardian-roster-entry[aria-pressed="true"] {
+  border-color: #d6b56d;
+  background: #2e503e;
+  box-shadow: 0 0 0 1px #d6b56d40;
+}
+.guardian-roster-entry:focus-visible,
+.guardian-change-hero:focus-visible {
+  outline: 2px solid #f3d38a;
+  outline-offset: 3px;
+}
+.guardian-roster-thumb {
+  display: flex;
+  justify-content: center;
+  width: 48px;
+  height: 66px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.guardian-roster-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top;
+}
+.guardian-roster-entry-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+.guardian-roster-entry-copy strong {
+  font:
+    400 16px/1.15 Georgia,
+    serif;
+}
+.guardian-roster-entry-copy small {
+  color: #b6c7ae;
+  font-size: 10px;
+}
+.guardian-roster-preview {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.guardian-roster-preview > .hero-power-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: thin;
+}
+.guardian-roster-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+  min-height: 120px;
+  flex-shrink: 0;
+}
+.guardian-roster-identity > img {
+  width: 85px;
+  height: 120px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 12px #05171090);
+}
+.guardian-roster-identity h3 {
+  margin: 7px 0;
+  color: #f7e3b1;
+  font:
+    400 30px/1.05 Georgia,
+    serif;
+}
+.guardian-roster-identity p {
+  margin: 7px 0 13px;
+  color: #c2c8b1;
+  font-size: 12px;
+}
+.guardian-roster-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #edcf94;
+  font-size: 12px;
+}
+.guardian-roster-action {
+  margin-top: 16px;
+  border-top: 1px solid #d9c18426;
+  padding-top: 14px;
+}
+.guardian-roster-requirement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  color: #c6ceb9;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.guardian-roster-league {
+  flex-basis: 100%;
+}
+.guardian-roster-requirement [data-locked="true"] {
+  color: #e4bd87;
+}
+.guardian-roster-action .sylve-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+}
+.guardian-roster-action .emerald-icon {
+  width: 21px;
+  height: 21px;
+}
+.guardian-roster-missing,
+.guardian-roster-notice {
+  color: #cbcfb6;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.guardian-roster-missing a {
+  color: #edcf94;
+  text-decoration: underline;
+}
+.guardian-roster-notice:empty {
+  display: none;
+}
+@media (max-width: 640px) {
+  .guardian-roster-dialog > [data-slot="dialog-body"] {
+    display: block;
+    overflow-y: auto;
+  }
+  .guardian-roster-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .guardian-roster-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 190px;
+  }
+  .guardian-roster-preview > .hero-power-list {
+    flex: none;
+    overflow: visible;
+    padding: 0;
+  }
+  .guardian-roster-entry {
+    min-height: 64px;
+    gap: 6px;
+    padding: 5px;
+  }
+  .guardian-roster-thumb {
+    width: 32px;
+    height: 49px;
+  }
+  .guardian-roster-entry-copy strong {
+    font-size: 13px;
+  }
+  .guardian-roster-entry-copy small {
+    font-size: 9px;
+  }
+  .guardian-roster-entry > svg {
+    display: none;
+  }
+  .guardian-roster-identity {
+    min-height: 120px;
+  }
+  .guardian-roster-identity > img {
+    width: 80px;
+    height: 120px;
+  }
+  .guardian-roster-identity h3 {
+    font-size: 25px;
+  }
+}
 .guardian-identity h1 {
   margin: 14px 0 10px;
   font:

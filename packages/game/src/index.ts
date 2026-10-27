@@ -10,6 +10,8 @@ import {
   heroMight,
   heroArcherLevel,
   nextHeroAbility,
+  heroMinion,
+  type HeroId,
   type HeroAbilityId,
 } from "./heroes";
 import { populateField, type FieldBuildingKind } from "./field";
@@ -108,6 +110,7 @@ export interface Unit {
   attackLimit?: number;
   formationAttack?: number;
   temporaryAttack?: number;
+  frozen?: boolean;
   /** Definitions for summoned tokens and scenery outside the collectible deck. */
   definition?: CardDefinition;
   /** Neutral scenery present at creation; cannot be voluntarily withdrawn. */
@@ -119,6 +122,7 @@ export interface FieldBonus {
   /** One stat per seal; optional fields preserve older saved matches. */
   health?: number;
   attack?: number;
+  block?: number;
 }
 export interface Rune extends FieldBonus {
   /** Applied once on arrival; remains bound to its occupant until departure. */
@@ -127,12 +131,15 @@ export interface Rune extends FieldBonus {
 export type Pentagram = FieldBonus;
 
 export function fieldBonus(mark: FieldBonus) {
+  if (mark.block !== undefined)
+    return { stat: "block" as const, value: mark.block };
   return mark.attack !== undefined
     ? { stat: "attack" as const, value: mark.attack }
     : { stat: "health" as const, value: mark.health ?? 0 };
 }
 
 export function fieldMarkName(kind: "rune" | "pentagram", mark: FieldBonus) {
+  if (mark.block !== undefined) return "Rune de blocage";
   return `${kind === "rune" ? "Rune" : "Pentagramme"} de ${fieldBonus(mark).stat === "health" ? "vie" : "puissance"}`;
 }
 export function unitCard(
@@ -294,6 +301,11 @@ export interface PlayerState {
   heroLevel?: number;
   heroMight?: number;
   heroAbilityUses?: number;
+  heroId?: HeroId;
+  heroSpikes?: number;
+  heroSpikesUntil?: number;
+  heroPreemptiveDamage?: number;
+  heroPreemptiveUntil?: number;
   cards: CardDefinition[];
   hand: string[];
   /** Variants outside the hand, all eligible even while deployed. */
@@ -353,6 +365,7 @@ export interface PlayerInput {
   name: string;
   cards: CardDefinition[];
   heroLevel?: number;
+  heroId?: HeroId;
 }
 
 function cloneGame(input: GameState): GameState {
@@ -415,7 +428,7 @@ export function createGame(
       const level =
         player.heroLevel ??
         (player.cards.some((c) => c.rulesVersion === 2)
-          ? heroLevelForDeck(player.cards)
+          ? heroLevelForDeck(player.cards, player.heroId)
           : undefined);
       return {
         userId: player.userId,
@@ -424,13 +437,18 @@ export function createGame(
           ...cloneCard(c),
           combatType: getCombatType(c),
         })),
-        heroHp: level === undefined ? HERO_HP : heroStats(level).health,
+        heroHp:
+          level === undefined
+            ? HERO_HP
+            : heroStats(level, player.heroId).health,
         ...(level === undefined
           ? {}
           : {
               heroLevel: level,
-              heroMaxHp: heroStats(level).health,
-              heroMight: deckMight(player.cards) + heroMight(level),
+              ...(player.heroId ? { heroId: player.heroId } : {}),
+              heroMaxHp: heroStats(level, player.heroId).health,
+              heroMight:
+                deckMight(player.cards) + heroMight(level, player.heroId),
               heroAbilityUses: 0,
             }),
         hand: [],
@@ -551,7 +569,9 @@ export function withdraw(
     throw new GameError(
       "Un bâtiment neutre doit être détruit pour libérer sa case.",
     );
-  throw new GameError("Les cartes posées ne peuvent pas être retirées du terrain.");
+  throw new GameError(
+    "Les cartes posées ne peuvent pas être retirées du terrain.",
+  );
 }
 
 function activeAbilities(
@@ -837,6 +857,18 @@ function targets(
       return allies;
     case "all_enemies":
       return state.players[1 - player]!.board.filter((u) => u.hp > 0);
+    case "line_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) => u.hp > 0 && u.row === source.row,
+      );
+    case "enemy_creatures":
+    case "non_melee_enemies":
+      return state.players[1 - player]!.board.filter(
+        (u) =>
+          u.hp > 0 &&
+          getCombatType(unitCard(u, state.players[1 - player]!.cards)) !==
+            (a.target === "enemy_creatures" ? "building" : "melee"),
+      );
     default:
       return [];
   }
@@ -963,7 +995,9 @@ function applyFieldBonus(
 ) {
   const owner = state.players[player]!;
   const bonus = fieldBonus(mark);
-  if (bonus.stat === "health") {
+  if (bonus.stat === "block") {
+    unit.block = (unit.block ?? 0) + bonus.value;
+  } else if (bonus.stat === "health") {
     unit.maxHp = unitMaxHp(unit, owner.cards) + bonus.value;
     unit.hp += bonus.value;
   } else {
@@ -1095,9 +1129,13 @@ function applyAbilities(
       continue;
     }
     if (
-      ["rune", "attack_rune", "attack_pentagram", "health_pentagram"].includes(
-        a.effect,
-      )
+      [
+        "rune",
+        "attack_rune",
+        "attack_pentagram",
+        "health_pentagram",
+        "block_rune",
+      ].includes(a.effect)
     ) {
       const pentagram =
         a.effect === "attack_pentagram" || a.effect === "health_pentagram";
@@ -1125,12 +1163,14 @@ function applyAbilities(
             ...(pentagram ? (owner.pentagrams ?? []) : (owner.runes ?? [])),
             {
               ...cell,
-              ...(healthMark
-                ? { health: a.value }
-                : {
-                    attack: a.value,
-                    ...(a.effect === "attack_rune" ? { health: 0 } : {}),
-                  }),
+              ...(a.effect === "block_rune"
+                ? { block: a.value }
+                : healthMark
+                  ? { health: a.value }
+                  : {
+                      attack: a.value,
+                      ...(a.effect === "attack_rune" ? { health: 0 } : {}),
+                    }),
             },
           ];
           if (pentagram) owner.pentagrams = marks;
@@ -1231,6 +1271,27 @@ function applyAbilities(
         ? 1 - player
         : player;
       const targetOwner = state.players[targetPlayer]!;
+      if (
+        a.effect === "execute" &&
+        target.hp >= unitMaxHp(target, targetOwner.cards)
+      )
+        continue;
+      if (a.effect === "sacrifice") {
+        const lost = target.hp;
+        target.hp = 0;
+        effectEvent(
+          state,
+          events,
+          player,
+          source,
+          a.name,
+          targetPlayer,
+          target,
+          -lost,
+        );
+        continue;
+      }
+      let appliedAmount = value;
       if (target.immune) {
         effectEvent(
           state,
@@ -1252,6 +1313,9 @@ function applyAbilities(
           "attack_curse",
           "poison_enemy",
           "steal_attack",
+          "freeze",
+          "execute",
+          "set_health",
         ].includes(a.effect)
       ) {
         consumeShield(
@@ -1269,6 +1333,7 @@ function applyAbilities(
         delete target.poisoned;
         delete target.attackCurse;
         delete target.attackLimit;
+        delete target.frozen;
         target.attack = Math.max(
           target.attack ?? unitCard(target, targetOwner.cards).attack,
           unitCard(target, targetOwner.cards).attack,
@@ -1308,6 +1373,13 @@ function applyAbilities(
           "formationAttack",
         ] as const)
           delete target[key];
+      } else if (a.effect === "freeze") target.frozen = true;
+      else if (a.effect === "set_health") {
+        appliedAmount = Math.min(target.hp, value) - target.hp;
+        target.hp = Math.min(target.hp, value);
+      } else if (a.effect === "execute") {
+        appliedAmount = -target.hp;
+        target.hp = 0;
       } else if (a.effect === "set_attack") target.attackLimit = value;
       else if (a.effect === "evasion") target.evasion = true;
       else if (a.effect === "attack_curse")
@@ -1454,7 +1526,7 @@ function applyAbilities(
         a.name,
         targetPlayer,
         target,
-        value,
+        appliedAmount,
       );
       if (a.effect === "attack" && value > 0)
         punishAttack(state, events, targetPlayer, target, random);
@@ -1787,7 +1859,12 @@ export function useHeroAbility(
   const uses = original.heroAbilityUses ?? 0;
   if (uses !== expectedUses)
     throw new GameError("La pile de pouvoirs a changé.");
-  const ability = nextHeroAbility(original.heroLevel, uses, input.turn);
+  const ability = nextHeroAbility(
+    original.heroLevel,
+    uses,
+    input.turn,
+    original.heroId,
+  );
   if (ability.id !== abilityId)
     throw new GameError("Utilise d’abord le premier pouvoir de la pile.");
   if (ability.state === "level")
@@ -1809,7 +1886,7 @@ export function useHeroAbility(
     heroAbilityUses: uses + 1,
     ability: ability.name,
   });
-  const stats = heroStats(owner.heroLevel!);
+  const stats = heroStats(owner.heroLevel!, owner.heroId);
   const skill: CardAbility = {
     id: ability.id,
     name: ability.name,
@@ -1818,19 +1895,10 @@ export function useHeroAbility(
     active: true,
     trigger: "deploy",
     value: ability.value,
-    effect:
-      ability.id === "call_to_arms"
-        ? "summon"
-        : ability.id === "heavenly_power"
-          ? "attack"
-          : "damage",
-    target:
-      ability.id === "storm"
-        ? "all_enemies"
-        : ability.id === "sudden_death"
-          ? "enemy_hero"
-          : "all_allies",
-    ...(ability.id === "heavenly_power" ? { temporary: true } : {}),
+    effect: ability.effect,
+    target: ability.target,
+    ...(ability.temporary ? { temporary: true } : {}),
+    ...(ability.count ? { count: ability.count } : {}),
     ...(ability.id === "call_to_arms"
       ? {
           count: 2,
@@ -1862,7 +1930,68 @@ export function useHeroAbility(
       abilities: [skill],
     },
   };
-  applyAbilities(state, playerIndex, source, "deploy", events, random);
+  if (ability.id === "hero_spikes") {
+    owner.heroSpikes = ability.value;
+    owner.heroSpikesUntil = state.turn + 3;
+    effectEvent(
+      state,
+      events,
+      playerIndex,
+      source,
+      ability.name,
+      playerIndex,
+      undefined,
+      ability.value,
+    );
+  } else if (ability.id === "preventive_strike") {
+    owner.heroPreemptiveDamage = ability.value;
+    owner.heroPreemptiveUntil = state.turn + 1;
+    effectEvent(
+      state,
+      events,
+      playerIndex,
+      source,
+      ability.name,
+      playerIndex,
+      undefined,
+      ability.value,
+    );
+  } else if (ability.minion) {
+    const definition = heroMinion(
+      owner.heroId!,
+      owner.heroLevel!,
+      ability.minion,
+    );
+    const firstColumn =
+      ability.minion === "gift" || ability.minion === "vampire";
+    for (let i = 0; i < (ability.count ?? 1); i++) {
+      const cells = legalPlacements(definition, owner.board).filter(
+        (c) => !firstColumn || c.depth === 0,
+      );
+      const cell = pick(cells, random)[0];
+      if (!cell) break;
+      const unit: Unit = {
+        cardId: definition.id,
+        ...cell,
+        hp: definition.health,
+        definition: cloneCard(definition),
+      };
+      initializePassives(unit, unit.definition!);
+      owner.board.push(unit);
+      emit(state, events, {
+        type: "summon",
+        player: playerIndex,
+        cardId: unit.cardId,
+        ...cell,
+        unit: snapshot(unit),
+        ability: ability.name,
+      });
+      applyAbilities(state, playerIndex, unit, "deploy", events, random);
+      appeared(state, playerIndex, unit, events, random);
+      removeDead(state, events, random);
+      if (victory(state, events)) return { state, events };
+    }
+  } else applyAbilities(state, playerIndex, source, "deploy", events, random);
   removeDead(state, events, random);
   victory(state, events);
   return { state, events };
@@ -1883,8 +2012,25 @@ export function endTurn(
   const defender = state.players[opponentIndex]!;
   const ordered = (board: Unit[]) =>
     [...board].sort((a, b) => a.row - b.row || a.depth - b.depth);
+  const heroSource = (owner: PlayerState): Unit => ({
+    cardId: "hero",
+    row: -1,
+    depth: -1,
+    hp: owner.heroHp,
+    definition: {
+      id: "hero",
+      name: owner.name,
+      title: "Héros",
+      kind: "hero",
+      color: "#b0c78f",
+      attack: 0,
+      health: owner.heroMaxHp ?? HERO_HP,
+      abilities: [],
+    },
+  });
   for (const unit of ordered(attacker.board)) {
     if (unit.hp <= 0 || !attacker.board.includes(unit)) continue;
+    if (unit.frozen) continue;
     const card = unitCard(unit, attacker.cards);
     if (
       getCombatType(card) === "building" ||
@@ -1908,6 +2054,27 @@ export function endTurn(
       if (unit.hp <= 0) break;
       const power = unitAttack(unit, attacker, defender);
       if (power <= 0) break;
+      if (
+        defender.heroPreemptiveDamage &&
+        state.turn <= (defender.heroPreemptiveUntil ?? 0)
+      ) {
+        const source = heroSource(defender);
+        damageUnit(
+          state,
+          events,
+          opponentIndex,
+          source,
+          playerIndex,
+          unit,
+          defender.heroPreemptiveDamage,
+          false,
+          "Riposte des Braises",
+          random,
+        );
+        removeDead(state, events, random);
+        if (victory(state, events)) return { state, events };
+        if (unit.hp <= 0 || !attacker.board.includes(unit)) break;
+      }
       react(state, opponentIndex, "before_enemy_attack", events, random);
       if (getCombatType(card) === "ranged")
         react(
@@ -1925,6 +2092,11 @@ export function endTurn(
           events,
           random,
         );
+      if (unit.hp <= 0) {
+        removeDead(state, events, random);
+        if (victory(state, events)) return { state, events };
+        break;
+      }
       const target = ordered(defender.board).find(
         (other) => other.row === unit.row && other.hp > 0,
       );
@@ -2051,6 +2223,25 @@ export function endTurn(
         }
       } else {
         heroDamage(state, events, playerIndex, unit, power);
+        if (
+          defender.heroSpikes &&
+          state.turn <= (defender.heroSpikesUntil ?? 0) &&
+          unit.hp > 0
+        ) {
+          const source = heroSource(defender);
+          damageUnit(
+            state,
+            events,
+            opponentIndex,
+            source,
+            playerIndex,
+            unit,
+            defender.heroSpikes,
+            false,
+            "Armure de ronces",
+            random,
+          );
+        }
         splashDamage(state, playerIndex, unit, undefined, events, random);
         react(state, opponentIndex, "ally_hero_attacked", events, random);
         applyAbilities(state, playerIndex, unit, "hero_attack", events, random);
@@ -2099,6 +2290,18 @@ export function endTurn(
     if (victory(state, events)) return { state, events };
   }
   for (const unit of attacker.board) {
+    if (unit.frozen) {
+      delete unit.frozen;
+      effectEvent(
+        state,
+        events,
+        playerIndex,
+        unit,
+        "Fin du gel",
+        playerIndex,
+        unit,
+      );
+    }
     if (unit.attackLimit !== undefined) {
       delete unit.attackLimit;
       effectEvent(
@@ -2131,6 +2334,22 @@ export function endTurn(
   }
   state.activePlayer = opponentIndex;
   state.turn++;
+  for (const owner of state.players) {
+    if (
+      owner.heroSpikesUntil !== undefined &&
+      state.turn > owner.heroSpikesUntil
+    ) {
+      delete owner.heroSpikes;
+      delete owner.heroSpikesUntil;
+    }
+    if (
+      owner.heroPreemptiveUntil !== undefined &&
+      state.turn > owner.heroPreemptiveUntil
+    ) {
+      delete owner.heroPreemptiveDamage;
+      delete owner.heroPreemptiveUntil;
+    }
+  }
   state.hasSummoned = false;
   state.turnEndsAt = now + TURN_MS;
   for (const unit of ordered(defender.board)) {
@@ -2224,6 +2443,11 @@ export function playerView(state: GameState, userId: string) {
       ...(player.heroLevel !== undefined
         ? {
             heroLevel: player.heroLevel,
+            ...(player.heroId ? { heroId: player.heroId } : {}),
+            heroSpikes: player.heroSpikes,
+            heroSpikesUntil: player.heroSpikesUntil,
+            heroPreemptiveDamage: player.heroPreemptiveDamage,
+            heroPreemptiveUntil: player.heroPreemptiveUntil,
             heroMight: player.heroMight,
             heroAbilityUses: player.heroAbilityUses ?? 0,
           }

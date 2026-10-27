@@ -13,6 +13,8 @@ import {
   fieldMarkName,
   unitCard,
   nextHeroAbility,
+  heroPortrait,
+  heroDefinition,
   GENDER_LABELS,
   type CardDefinition,
   type GameView,
@@ -75,6 +77,7 @@ export function DuelDetailsDialog({
       localPlayer.heroLevel,
       localPlayer.heroAbilityUses ?? 0,
       view.turn,
+      localPlayer.heroId,
     ).unlockLevel <= localPlayer.heroLevel;
   const own = inspection?.playerIndex === view.me;
   const inspectedCard = inspection?.type === "card" ? inspection.card : null;
@@ -190,9 +193,11 @@ export function DuelDetailsDialog({
                         ? "L’unité qui apparaît sur cette case gagne immédiatement, une seule fois, "
                         : "L’unité sur cette case gagne à chaque début de son tour "}
                       <strong>
-                        {bonus.stat === "health"
-                          ? `+${bonus.value} PV actuels et maximum`
-                          : `+${bonus.value} attaque`}
+                        {bonus.stat === "block"
+                          ? `+${bonus.value} blocage`
+                          : bonus.stat === "health"
+                            ? `+${bonus.value} PV actuels et maximum`
+                            : `+${bonus.value} attaque`}
                       </strong>
                       .
                       {inspection.kind === "pentagram" &&
@@ -403,9 +408,14 @@ export function DuelDetailsDialog({
                 <DialogDescription className="sr-only">
                   Caractéristiques, pouvoirs et deck de {player.name}.
                 </DialogDescription>
+                {player.heroId && (
+                  <p className="details-note">
+                    {heroDefinition(player.heroId).name}
+                  </p>
+                )}
                 <div className="hero-details-summary">
                   <img
-                    src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
+                    src={heroPortrait(player.heroId, !own)}
                     alt={player.name}
                     width={120}
                     height={150}
@@ -444,9 +454,22 @@ export function DuelDetailsDialog({
                     </div>
                   </dl>
                 </div>
+                {!!player.heroSpikes && (
+                  <p className="details-note">
+                    Armure de ronces : renvoie {player.heroSpikes} dégâts aux
+                    unités qui attaquent ce héros.
+                  </p>
+                )}
+                {!!player.heroPreemptiveDamage && (
+                  <p className="details-note">
+                    Riposte des Braises : {player.heroPreemptiveDamage} dégâts à
+                    chaque ennemi avant son attaque.
+                  </p>
+                )}
                 {player.heroLevel !== undefined && (
                   <HeroPowerList
                     level={player.heroLevel}
+                    heroId={player.heroId}
                     uses={player.heroAbilityUses}
                     turn={view.turn}
                     inBattle

@@ -1,3 +1,4 @@
+import { heroAbilityIdValidator } from "./lib/validators";
 import {
   endTurn as resolveTurn,
   playerView,
@@ -88,12 +89,14 @@ export const createPrivate = mutation({
         .first()
     );
     const expiresAt = Date.now() + 10 * 60_000;
+    const hero = await readHeroProgress(ctx, user.userId, cards);
     const gameId = await ctx.db.insert("games", {
       mode: "private",
       hostId: user.userId,
       hostName: user.name,
       hostCards: cards,
-      hostHeroLevel: (await readHeroProgress(ctx, user.userId, cards)).level,
+      hostHeroLevel: hero.level,
+      hostHeroId: hero.heroId,
       status: "waiting",
       inviteCode: code,
       waitingExpiresAt: expiresAt,
@@ -196,12 +199,7 @@ export const playCard = mutation({
 export const playHeroAbility = mutation({
   args: {
     gameId: v.id("games"),
-    abilityId: v.union(
-      v.literal("storm"),
-      v.literal("call_to_arms"),
-      v.literal("heavenly_power"),
-      v.literal("sudden_death"),
-    ),
+    abilityId: heroAbilityIdValidator,
     expectedUses: v.number(),
     expectedTurn: v.number(),
   },
@@ -302,12 +300,14 @@ export const createSolo = mutation({
       cards,
       Math.random,
     );
+    const hero = await readHeroProgress(ctx, user.userId, cards);
     const state = createGame(
       [
         {
           ...user,
           cards,
-          heroLevel: (await readHeroProgress(ctx, user.userId, cards)).level,
+          heroLevel: hero.level,
+          heroId: hero.heroId,
         },
         {
           userId: PRACTICE_COMPUTER_ID,

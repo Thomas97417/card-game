@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  HERO_LEVELS,
+  heroDefinition,
+  maxHeroLevel,
+  type HeroId,
   heroAbilities,
   heroMight,
   type heroProgress,
@@ -11,6 +13,7 @@ import { GameHeader } from "@/components/game-header";
 import { GameIcon } from "@/components/game/game-icon";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
+import { GuardianHeroMenu } from "./guardian-hero-menu";
 import { GuardianLevelExplorer } from "./guardian-level-explorer";
 
 export type HeroProgress = ReturnType<typeof heroProgress>;
@@ -19,15 +22,32 @@ const number = (value: number) => value.toLocaleString("fr-FR");
 export function GuardianHouse({
   progress,
   onUpgrade,
+  onUnlock,
+  onSelect,
+  emeralds,
+  peakTrophies = 0,
+  unlockedHeroIds = ["sylve"],
 }: {
   progress: HeroProgress | undefined;
   onUpgrade: (expectedLevel: number) => Promise<unknown>;
+  onUnlock?: (heroId: HeroId) => Promise<unknown>;
+  onSelect?: (heroId: HeroId) => Promise<unknown>;
+  emeralds?: number | null;
+  peakTrophies?: number;
+  unlockedHeroIds?: readonly HeroId[];
 }) {
   const [pending, setPending] = useState(false);
   const inFlight = useRef(false);
   const next = progress?.next;
+  const hero = heroDefinition(progress?.heroId);
+  const currentPowers = progress
+    ? heroAbilities(progress.level, 0, 1, progress.heroId)
+    : [];
+  const nextPowers = next
+    ? heroAbilities(next.level, 0, 1, progress?.heroId)
+    : [];
   const unlocks = next
-    ? heroAbilities(next.level, 0, 1).filter(
+    ? heroAbilities(next.level, 0, 1, progress?.heroId).filter(
         (power) => power.unlockLevel === next.level,
       )
     : [];
@@ -68,12 +88,23 @@ export function GuardianHouse({
             aria-labelledby="guardian-name"
           >
             <span className="guardian-eyebrow">Maison des gardiens</span>
-            <h1 id="guardian-name">Gardien de la Sylve</h1>
-            <p>Le protecteur de ton alliance.</p>
+            <h1 id="guardian-name">{hero.name}</h1>
+            <p>{hero.subtitle}</p>
+            {progress && onUnlock && onSelect && (
+              <GuardianHeroMenu
+                progress={progress}
+                unlockedHeroIds={unlockedHeroIds}
+                emeralds={emeralds}
+                peakTrophies={peakTrophies}
+                disabled={pending}
+                onUnlock={onUnlock}
+                onSelect={onSelect}
+              />
+            )}
             <div className="guardian-portrait">
               <img
-                src="/art/heroes/hero-sylve.webp"
-                alt="Gardien de la Sylve"
+                src={hero.portrait}
+                alt={hero.name}
                 width={320}
                 height={400}
                 draggable={false}
@@ -88,7 +119,7 @@ export function GuardianHouse({
                   <dt>Niveau</dt>
                   <dd>
                     {progress.level}
-                    <small>/ {HERO_LEVELS.length}</small>
+                    <small>/ {maxHeroLevel(progress.heroId)}</small>
                   </dd>
                 </div>
                 <div>
@@ -100,7 +131,12 @@ export function GuardianHouse({
                 </div>
               </dl>
             )}
-            {progress && <GuardianLevelExplorer progress={progress} />}
+            {progress && (
+              <GuardianLevelExplorer
+                key={progress.heroId}
+                progress={progress}
+              />
+            )}
           </section>
 
           <div className="guardian-panels">
@@ -153,7 +189,9 @@ export function GuardianHouse({
                     </div>
                     <div>
                       <dt>Bonus du Gardien</dt>
-                      <dd>+{number(heroMight(progress.level))}</dd>
+                      <dd>
+                        +{number(heroMight(progress.level, progress.heroId))}
+                      </dd>
                     </div>
                   </dl>
                   {next && (
@@ -176,31 +214,16 @@ export function GuardianHouse({
                             </small>
                           </strong>
                         </div>
-                        <div>
-                          <span>Tempête de feuilles</span>
-                          <strong>
-                            {progress.storm}
-                            <ArrowRight size={16} aria-hidden="true" />
-                            <em>{next.storm} dégâts</em>
-                          </strong>
-                        </div>
-                        {next.level > 11 &&
-                          (next.archerAttack !== progress.archerAttack ||
-                            next.archerHealth !== progress.archerHealth) && (
-                            <div>
-                              <span>Éclaireuses</span>
-                              <strong>
-                                {next.archerAttack} ATQ / {next.archerHealth} PV
-                              </strong>
+                        {nextPowers.slice(0, 3).map((power, index) =>
+                          power.unlockLevel <= progress.level &&
+                          power.description !==
+                            currentPowers[index]?.description ? (
+                            <div key={power.id}>
+                              <span>{power.name}</span>
+                              <strong>{power.valueLabel}</strong>
                             </div>
-                          )}
-                        {next.level > 21 &&
-                          next.attackBonus !== progress.attackBonus && (
-                            <div>
-                              <span>Élan de la Sylve</span>
-                              <strong>+{next.attackBonus} ATQ</strong>
-                            </div>
-                          )}
+                          ) : null,
+                        )}
                         {unlocks.map((power) => (
                           <p key={power.id} className="guardian-new-power">
                             <Sparkles size={14} aria-hidden="true" />
@@ -234,7 +257,10 @@ export function GuardianHouse({
                   <header className="guardian-panel-heading">
                     <h2 id="guardian-powers-title">Pouvoirs du Gardien</h2>
                   </header>
-                  <HeroPowerList level={progress.level} />
+                  <HeroPowerList
+                    level={progress.level}
+                    heroId={progress.heroId}
+                  />
                 </section>
               </>
             ) : (

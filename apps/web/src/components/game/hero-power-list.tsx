@@ -1,19 +1,21 @@
-import { heroAbilities } from "@sylve/game";
+import { heroAbilities, type HeroId } from "@sylve/game";
 import { Check, Clock3, LockKeyhole } from "lucide-react";
 import { AbilityIcon } from "./ability-icons";
 
 export function HeroPowerList({
   level,
+  heroId,
   uses = 0,
   turn = 1,
   inBattle = false,
 }: {
   level: number;
+  heroId?: HeroId;
   uses?: number;
   turn?: number;
   inBattle?: boolean;
 }) {
-  const abilities = heroAbilities(level, uses, turn).filter(
+  const abilities = heroAbilities(level, uses, turn, heroId).filter(
     (ability) => !inBattle || ability.unlockLevel <= level,
   );
   return (
@@ -28,15 +30,7 @@ export function HeroPowerList({
           data-locked={ability.state === "level"}
           data-state={ability.state}
         >
-          <AbilityIcon
-            kind={
-              ability.id === "call_to_arms"
-                ? "reinforcement"
-                : ability.id === "heavenly_power"
-                  ? "temporary"
-                  : "power"
-            }
-          />
+          <AbilityIcon kind={ability.icon} />
           <div className="hero-power-copy">
             <div className="hero-power-title">
               <strong>

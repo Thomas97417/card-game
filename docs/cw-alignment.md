@@ -77,6 +77,8 @@ Les règles générales de plateau, coffres, invocations et ligues restent celle
 
 ## Héros et puissance du deck
 
+Le [catalogue des onze gardiens](guardians.md) ajoute les trois autres familles et les sept variantes du wiki : sélection, déblocage en émeraudes, paliers de ligue, caractéristiques et pouvoirs propres. La section ci-dessous décrit le héros de départ ; les particularités des autres héros et les adaptations de Sylve figurent dans ce document dédié.
+
 Le Gardien de la Sylve reprend le barème d’[Adam](https://cwars.miraheze.org/wiki/Adam?oldid=23782), consulté le 25 octobre 2026 : **91 niveaux, de 45 à 1 475 PV**, avec les valeurs de Tempête, des archers et du bonus d’attaque à chaque niveau. Il s’agit du wiki historique, révisé en mai 2021. Le [relevé des 91 lignes](references/cunt-wars/adam.json) conserve la provenance ; `python3 scripts/import-cwars-hero.py` reconstruit `packages/game/src/data/hero-levels.json` sans réseau. La ligne N indique la puissance nécessaire pour passer de N à N+1, pas pour atteindre N.
 
 La puissance du deck additionne celle des variantes équipées dans les emplacements débloqués, à leur niveau réel et avec leurs liens d’âme. Les exemplaires en réserve et le reste de la collection ne comptent pas. La puissance d’escouade ajoute la contribution du héros, qui augmente de 10 par promotion selon le wiki. **Sylve fixe cette contribution à zéro au niveau 1**, car la source ne précise pas sa valeur initiale : `puissance = somme des puissances des cartes du deck + 10 × (niveau du héros − 1)`.

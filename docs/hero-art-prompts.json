@@ -1,0 +1,25 @@
+{
+  "tool": "Built-in image_gen",
+  "assets": [
+    {
+      "path": "apps/web/public/art/abilities/freeze.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for Sylve, a hand-painted woodland fantasy tactical card game. Subject: one large faceted pale cyan ice crystal shaped like a bold six-point snowflake with a small antique gold central jewel, soft turquoise frozen glow. Style: polished hand-painted 2D game UI item, bold dark brown outline, sculpted painted shading, rich jewel colors, matching gold and emerald woodland fantasy icons. Composition: single compact icon, centered square, symbol fills 80% with transparent margin, thick readable shapes at 24px. Constraints: transparent background, no tile, border, text, letters, watermark, environment or floor."
+    },
+    {
+      "path": "apps/web/public/art/abilities/execution.webp",
+      "prompt": "Use case: stylized-concept. Asset type: one transparent ability icon for Sylve, a hand-painted woodland fantasy tactical card game. Subject: one broad antique gold and obsidian executioner's axe cutting through a cracked violet magical crystal, compact diagonal silhouette, represents executing weakened enemies, no blood. Style: polished hand-painted 2D game UI item, bold dark brown outline, softly sculpted shading, antique gold highlights and rich jewel colors. Composition: single compact icon centered square, fills 80% with transparent margins, thick clear shapes readable at 24px. Constraints: transparent background, no tile, border, text, letters, watermark, environment or floor."
+    },
+    {
+      "path": "apps/web/public/art/heroes/hero-thorn.webp",
+      "prompt": "Use case: stylized-concept. Asset type: transparent full-body hero portrait for Sylve, a polished hand-painted 2D woodland fantasy tactical card game. One original mature adult male forest guardian, powerful broad-shouldered bear-like druid age 45, warm brown skin, emerald eyes, long copper beard woven with leaves, antler and oak crown, layered moss green robes and heavy carved wooden shoulder armor, thorn-covered staff in his right hand. Proud protective stance in three-quarter view, complete head-to-toe figure including boots and staff, generous margin. Elegant illustrative shading, crisp dark brown outlines, muted jade forest greens, burnished gold details, subtle magical glow, detailed dignified expressive face. Match a high-quality anime fantasy game character illustration. Transparent background, no ground, no environment, no card border, no text, no logo. Fully clothed."
+    },
+    {
+      "path": "apps/web/public/art/heroes/hero-weaver.webp",
+      "prompt": "Use case: stylized-concept. Asset type: transparent full-body hero portrait for Sylve, a polished hand-painted 2D woodland fantasy tactical card game. One original mature adult woman shadow guardian age 35, elegant confident sorceress with violet eyes, pale skin, long dark plum hair in an ornate updo, gold spider-shaped tiara with emerald gems. Fully clothed in a structured dark plum velvet gown with gold web embroidery and opaque long sleeves, gold and amethyst shoulder pieces. She holds a short ornate jade scepter, a few large violet magical threads curve around her left hand. Three-quarter standing pose, complete head-to-toe figure and costume, generous margin. Beautiful detailed expressive face, elegant illustrative shading, crisp dark brown outlines, jewel colors, burnished gold. Match a high-quality anime fantasy adventure game character illustration. Transparent background, no ground, environment, card border, text, logo."
+    },
+    {
+      "path": "apps/web/public/art/heroes/hero-void.webp",
+      "prompt": "Use case: stylized-concept. Asset type: transparent full-body hero portrait for Sylve, a polished hand-painted 2D woodland fantasy tactical card game. One original mature adult male guardian of the void age 40, tall mysterious calm elven mage with silver blue skin, long midnight teal hair, glowing icy cyan eyes. Layered deep navy and dark teal robes with gold leaf filigree, high crescent collar, ornate gold belt, boots visible. One hand holds a gold staff crowned with a hovering pale cyan crystal; other open hand channels a compact ring of frozen blue mist. Dignified three-quarter standing pose, complete head-to-toe figure including staff with transparent margin. Detailed expressive mature face, elegant illustrative shading, crisp dark brown outlines, rich jade and cyan jewel colors, antique gold highlights. High-quality anime fantasy adventure game illustration. Transparent background, no floor, environment, card border, text, logo. Fully clothed."
+    }
+  ]
+}

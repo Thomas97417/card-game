@@ -1,5 +1,7 @@
 import {
   maxCardLevel,
+  heroDefinition,
+  heroProgress,
   resolveCard,
   upgradeCost,
   upgradeGoldCost,
@@ -34,6 +36,7 @@ import {
 } from "./lib/heroes";
 import { mineAmount, type MineBoard } from "@sylve/game/mines";
 import { syncMineLevel } from "./lib/mines";
+import { heroIdValidator } from "./lib/validators";
 
 export const hero = query({
   args: {},
@@ -41,12 +44,17 @@ export const hero = query({
     readHeroProgress(ctx, (await requirePlayer(ctx)).userId),
 });
 export const upgradeHero = mutation({
-  args: { expectedLevel: v.number() },
-  handler: async (ctx, { expectedLevel }) => {
+  args: {
+    expectedLevel: v.number(),
+    expectedHeroId: v.optional(heroIdValidator),
+  },
+  handler: async (ctx, { expectedLevel, expectedHeroId }) => {
     const { userId } = await requirePlayer(ctx);
     await migratePlayerCatalogue(ctx, userId);
     const cards = await heroDeckCards(ctx, userId);
     const progress = await observeHero(ctx, userId, cards);
+    if (expectedHeroId && progress.heroId !== expectedHeroId)
+      throw new ConvexError("Le héros actif a changé.");
     if (progress.level !== expectedLevel)
       throw new ConvexError("Le niveau du héros a changé.");
     if (!progress.canUpgrade)
@@ -55,9 +63,54 @@ export const upgradeHero = mutation({
       );
     const record = (await heroRecord(ctx, userId))!;
     const wallet = await playerWallet(ctx, userId);
-    if (wallet) await syncMineLevel(ctx, wallet, record.level + 1);
+    if (wallet) await syncMineLevel(ctx, wallet, progress.level + 1);
     await ctx.db.patch(record._id, { level: record.level + 1 });
     return observeHero(ctx, userId, cards);
+  },
+});
+
+/** Ownership and debit commit in one transaction; repeated unlocks never charge again. */
+export const unlockHero = mutation({
+  args: { heroId: heroIdValidator },
+  handler: async (ctx, { heroId }) => {
+    const { userId } = await requirePlayer(ctx);
+    const definition = rules(() => heroDefinition(heroId));
+    await observeHero(ctx, userId);
+    const record = (await heroRecord(ctx, userId))!;
+    const owned = record.unlockedHeroIds ?? ["sylve"];
+    if (heroId === "sylve" || owned.includes(heroId)) return;
+    const league = await playerLeague(ctx, userId);
+    if (league.peakTrophies < definition.requiredTrophies)
+      throw new ConvexError(
+        `Atteins ${definition.requiredTrophies} trophées pour débloquer ce héros.`,
+      );
+    const wallet = await ensureEmeraldWallet(ctx, userId);
+    if ((wallet.diamonds ?? 0) < definition.emeraldCost)
+      throw new ConvexError(
+        "Tu n’as pas assez d’émeraudes pour débloquer ce héros.",
+      );
+    await ctx.db.patch(wallet._id, {
+      diamonds: wallet.diamonds! - definition.emeraldCost,
+    });
+    await ctx.db.patch(record._id, {
+      unlockedHeroIds: [...new Set(["sylve" as const, ...owned, heroId])],
+    });
+  },
+});
+
+export const selectHero = mutation({
+  args: { heroId: heroIdValidator },
+  handler: async (ctx, { heroId }) => {
+    const { userId } = await requirePlayer(ctx);
+    await observeHero(ctx, userId);
+    const record = (await heroRecord(ctx, userId))!;
+    if (heroId !== "sylve" && !record.unlockedHeroIds?.includes(heroId))
+      throw new ConvexError("Débloque ce héros avant de le sélectionner.");
+    const progress = heroProgress([], { ...record, heroId });
+    const wallet = await playerWallet(ctx, userId);
+    if (wallet) await syncMineLevel(ctx, wallet, progress.level);
+    await ctx.db.patch(record._id, { selectedHeroId: heroId });
+    return readHeroProgress(ctx, userId);
   },
 });
 
@@ -73,7 +126,10 @@ export const mineBoard = query({
     return {
       ownerId: userId,
       serverNow: Date.now(),
-      heroLevel: guardian?.level ?? 1,
+      heroLevel: guardian
+        ? heroProgress([], { ...guardian, heroId: guardian.selectedHeroId })
+            .level
+        : 1,
       mines: wallet?.mines ?? null,
     };
   },
@@ -86,7 +142,7 @@ export const ensureMines = mutation({
     const { userId } = await requirePlayer(ctx);
     await migratePlayerCatalogue(ctx, userId, true);
     const wallet = await ensureEmeraldWallet(ctx, userId);
-    const heroLevel = (await heroRecord(ctx, userId))?.level ?? 1;
+    const heroLevel = (await readHeroProgress(ctx, userId)).level;
     if (wallet.mines) {
       await syncMineLevel(ctx, wallet, heroLevel);
       return;

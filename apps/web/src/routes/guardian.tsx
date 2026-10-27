@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
+import { useEmeraldBalance } from "@/components/emerald-balance";
 import { GuardianHouse } from "@/components/guardian/guardian-house";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
@@ -25,6 +26,10 @@ export const Route = createFileRoute("/guardian")({
 
 function GuardianPage() {
   const hero = useQuery(api.collection.hero);
+  const league = useQuery(api.collection.league);
+  const emeralds = useEmeraldBalance();
+  const unlockHero = useMutation(api.collection.unlockHero);
+  const selectHero = useMutation(api.collection.selectHero);
   const upgradeHero = useMutation(api.collection.upgradeHero);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   useEffect(() => {
@@ -34,7 +39,14 @@ function GuardianPage() {
   return (
     <GuardianHouse
       progress={hero}
-      onUpgrade={(expectedLevel) => upgradeHero({ expectedLevel })}
+      onUpgrade={(expectedLevel) =>
+        upgradeHero({ expectedLevel, expectedHeroId: hero?.heroId })
+      }
+      onUnlock={(heroId) => unlockHero({ heroId })}
+      onSelect={(heroId) => selectHero({ heroId })}
+      unlockedHeroIds={hero?.unlockedHeroIds}
+      emeralds={emeralds}
+      peakTrophies={league?.peakTrophies ?? 0}
     />
   );
 }

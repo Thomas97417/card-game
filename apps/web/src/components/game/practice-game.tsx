@@ -9,6 +9,7 @@ import {
   useHeroAbility,
   type GameState,
   type Transition,
+  type HeroId,
 } from "@sylve/game";
 import {
   PRACTICE_COMPUTER_ID,
@@ -24,7 +25,15 @@ import { GameLoading } from "./shared";
 import { COMBAT_TIMING } from "./combat-timing";
 
 /** The session is local; no account, multiplayer lock or server mutation is needed. */
-export function PracticeGame({ deck }: { deck?: string }) {
+export function PracticeGame({
+  deck,
+  heroId,
+  heroLevel,
+}: {
+  deck?: string;
+  heroId?: HeroId;
+  heroLevel?: number;
+}) {
   const [initial, setInitial] = useState<GameState | null>(null);
   const [sessionId, setSessionId] = useState(0);
   const deckIds = useMemo(() => {
@@ -37,13 +46,23 @@ export function PracticeGame({ deck }: { deck?: string }) {
     }
   }, [deck]);
   function restart() {
-    setInitial(createPracticeGame(deckIds, Date.now(), Math.random));
+    setInitial(
+      createPracticeGame(deckIds, Date.now(), Math.random, {
+        heroId,
+        heroLevel,
+      }),
+    );
     setSessionId((id) => id + 1);
   }
   useEffect(() => {
-    setInitial(createPracticeGame(deckIds, Date.now(), Math.random));
+    setInitial(
+      createPracticeGame(deckIds, Date.now(), Math.random, {
+        heroId,
+        heroLevel,
+      }),
+    );
     setSessionId((id) => id + 1);
-  }, [deckIds]);
+  }, [deckIds, heroId, heroLevel]);
   if (!initial) return <GameLoading />;
   return (
     <PracticeMatch key={sessionId} initial={initial} onRestart={restart} />

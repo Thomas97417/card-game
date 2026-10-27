@@ -10,6 +10,8 @@ import {
 } from "@sylve/game";
 
 export type AbilityIconKind =
+  | "freeze"
+  | "execution"
   | "power"
   | "vitality"
   | "heal"
@@ -33,6 +35,11 @@ export type AbilityIconKind =
   | "counter-attack";
 
 const effectIcons: Record<AbilityEffect, AbilityIconKind> = {
+  freeze: "freeze",
+  execute: "execution",
+  sacrifice: "temporary",
+  set_health: "vitality",
+  block_rune: "block",
   attack: "power",
   health: "vitality",
   heal: "heal",
@@ -206,6 +213,12 @@ export function unitEffects(
   if (unit.hp <= 0) return [];
   const base = unitCard(unit, cards);
   const effects: UnitEffect[] = [];
+  if (unit.frozen)
+    effects.push({
+      kind: "freeze",
+      label: "Gel",
+      description: "Ne peut pas attaquer pendant son prochain tour.",
+    });
   if (unit.shield)
     effects.push({
       kind: "mental-shield",
@@ -407,6 +420,28 @@ export function UnitEffectIcons({
 }
 
 const eventIcons: Record<string, AbilityIconKind> = {
+  "Étreinte du Givre": "freeze",
+  "Toucher de givre": "freeze",
+  "Fin du gel": "freeze",
+  "Sentence du Crépuscule": "execution",
+  Éphémère: "temporary",
+  "Venin du Crépuscule": "poison",
+  "Armure de ronces": "spikes",
+  "Souffle purificateur": "silence",
+  "Fureur des Racines": "temporary",
+  "Voile d’Impuissance": "weaken",
+  "Accords protecteurs": "block",
+  "Rune de blocage": "block",
+  "Note de Rupture": "vitality",
+  "Second souffle": "vitality",
+  "Soif ancienne": "vampirism",
+  Reflet: "spikes",
+  "Riposte des Braises": "power",
+  "Puissance du Vide": "power",
+  "Fureur des Braises": "power",
+  Brasier: "power",
+  "Présent explosif": "power",
+  "Onde sonore": "power",
   "Tempête de feuilles": "power",
   "Appel des éclaireurs": "reinforcement",
   "Élan de la Sylve": "temporary",

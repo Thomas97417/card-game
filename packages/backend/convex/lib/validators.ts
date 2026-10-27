@@ -1,4 +1,9 @@
 import { v } from "convex/values";
+import { HERO_IDS, HERO_ABILITY_IDS } from "@sylve/game";
+export const heroIdValidator = v.union(...HERO_IDS.map((id) => v.literal(id)));
+export const heroAbilityIdValidator = v.union(
+  ...HERO_ABILITY_IDS.map((id) => v.literal(id)),
+);
 
 export const goldPackValidator = v.union(
   v.literal("gold-pouch"),
@@ -78,6 +83,9 @@ const abilityTargetValidator = v.union(
   v.literal("female_allies"),
   v.literal("allies_with_summon"),
   v.literal("column_enemies"),
+  v.literal("line_enemies"),
+  v.literal("enemy_creatures"),
+  v.literal("non_melee_enemies"),
 );
 
 const abilityValidator = v.object({
@@ -124,6 +132,11 @@ const abilityValidator = v.object({
     v.literal("attack_pentagram"),
     v.literal("health_pentagram"),
     v.literal("reflect_damage"),
+    v.literal("freeze"),
+    v.literal("execute"),
+    v.literal("sacrifice"),
+    v.literal("set_health"),
+    v.literal("block_rune"),
   ),
   trigger: v.union(
     v.literal("deploy"),
@@ -243,6 +256,7 @@ const unitValidator = v.object({
   attackLimit: v.optional(v.number()),
   formationAttack: v.optional(v.number()),
   temporaryAttack: v.optional(v.number()),
+  frozen: v.optional(v.boolean()),
   definition: v.optional(cardValidator),
   fieldObject: v.optional(
     v.union(
@@ -256,6 +270,7 @@ const runeValidator = v.object({
   row: v.number(),
   depth: v.number(),
   health: v.optional(v.number()),
+  block: v.optional(v.number()),
   attack: v.optional(v.number()),
   activated: v.optional(v.boolean()),
 });
@@ -273,6 +288,11 @@ export const stateValidator = v.object({
       heroHp: v.number(),
       heroMaxHp: v.optional(v.number()),
       heroLevel: v.optional(v.number()),
+      heroId: v.optional(heroIdValidator),
+      heroSpikes: v.optional(v.number()),
+      heroSpikesUntil: v.optional(v.number()),
+      heroPreemptiveDamage: v.optional(v.number()),
+      heroPreemptiveUntil: v.optional(v.number()),
       heroMight: v.optional(v.number()),
       heroAbilityUses: v.optional(v.number()),
       cards: v.array(cardValidator),
@@ -315,14 +335,7 @@ export const eventValidator = v.object({
   damage: v.optional(v.number()),
   hp: v.optional(v.number()),
   heroMaxHp: v.optional(v.number()),
-  heroAbility: v.optional(
-    v.union(
-      v.literal("storm"),
-      v.literal("call_to_arms"),
-      v.literal("heavenly_power"),
-      v.literal("sudden_death"),
-    ),
-  ),
+  heroAbility: v.optional(heroAbilityIdValidator),
   heroAbilityUses: v.optional(v.number()),
   ability: v.optional(v.string()),
   amount: v.optional(v.number()),
