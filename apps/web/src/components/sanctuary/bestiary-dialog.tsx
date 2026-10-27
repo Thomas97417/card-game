@@ -33,7 +33,8 @@ import {
   GENDER_LABELS,
 } from "@sylve/game";
 import { CardArtwork } from "@/components/decks/card-artwork";
-import { CardSoulbind } from "@/components/decks/card-soulbind";
+import { SoulbindExplorer } from "@/components/decks/card-upgrade-dialog";
+import { CardPortrait } from "@/components/game/card-portrait";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { FactionIcon } from "@/components/game/faction-artwork";
 import { GameIcon } from "@/components/game/game-icon";
@@ -66,18 +67,26 @@ const RARITY_ITEMS = RARITIES.map((value) => ({
   value,
   label: RARITY_LABELS[value],
 }));
-const RARITY_COLORS: Record<CardRarity, string> = {
-  common: "bg-[#b5c4a8]",
-  rare: "bg-[#9fcbef]",
-  epic: "bg-[#d3b3ea]",
-  legendary: "bg-[#e3c57e]",
-};
 const SELECT_TRIGGER =
   "min-h-11 rounded-[7px] border-[#c5b38347] bg-[#0d241b66] px-3 text-xs text-[#f4ecd6] hover:border-[#d4be8888] hover:bg-[#19372b] focus-visible:border-[#d4be88] focus-visible:ring-[#d4be88]/25 dark:bg-[#0d241b66] dark:hover:bg-[#19372b] [&_svg]:text-[#c6bd9e]";
 const SELECT_CONTENT =
   "max-h-[min(20rem,var(--available-height))] rounded-lg border border-[#c5b38366] bg-[#18372b] p-1 text-[#f4ecd6] shadow-xl ring-0 [font-family:'Avenir_Next',Avenir,'Segoe_UI',sans-serif] [color-scheme:dark] [&_[data-slot=select-scroll-up-button]]:bg-[#18372b] [&_[data-slot=select-scroll-down-button]]:bg-[#18372b]";
 const SELECT_ITEM =
   "min-h-10 cursor-pointer rounded-md px-3 text-xs text-[#f4ecd6] focus:bg-[#d4be881a] focus:text-[#f4ecd6] not-data-[variant=destructive]:focus:**:text-[#f4ecd6] data-highlighted:bg-[#d4be881a] data-highlighted:text-[#f4ecd6]";
+
+function RarityCardIcon({ rarity }: { rarity: CardRarity }) {
+  return (
+    <img
+      className="bestiary-rarity-icon"
+      src={`/art/ui/rarity-${rarity}.webp`}
+      width={20}
+      height={28}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+    />
+  );
+}
 
 function searchText(value: string) {
   return value
@@ -263,17 +272,13 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
                 aria-label="Rareté de la carte"
                 className={cn(SELECT_TRIGGER, "bestiary-rarity-select")}
               >
-                <span className="hidden text-[11px] text-[#c1c9b1] sm:inline">
-                  Rareté
+                <RarityCardIcon rarity={rarity} />
+                <span className="bestiary-rarity-value">
+                  <span className="bestiary-rarity-measure" aria-hidden="true">
+                    {RARITY_LABELS.legendary}
+                  </span>
+                  <SelectValue />
                 </span>
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "size-1.5 shrink-0 rounded-full",
-                    RARITY_COLORS[rarity],
-                  )}
-                />
-                <SelectValue />
               </SelectTrigger>
               <SelectContent
                 align="start"
@@ -282,13 +287,7 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
               >
                 {RARITIES.map((value) => (
                   <SelectItem key={value} value={value} className={SELECT_ITEM}>
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "size-1.5 shrink-0 rounded-full",
-                        RARITY_COLORS[value],
-                      )}
-                    />
+                    <RarityCardIcon rarity={value} />
                     {RARITY_LABELS[value]}
                   </SelectItem>
                 ))}
@@ -420,22 +419,7 @@ function BestiaryDetails({
     <>
       <div className="bestiary-detail">
         <div className="bestiary-showcase">
-          <div
-            className="workshop-card bestiary-hero-card"
-            data-rarity={card.rarity}
-            data-faction={card.faction}
-            style={{ "--creature-color": card.color } as CSSProperties}
-          >
-            <CardArtwork card={card} showCopies={false} />
-          </div>
-          <span className="rarity-label" data-rarity={card.rarity}>
-            {RARITY_LABELS[card.rarity!]}
-          </span>
-          <p>
-            Une forme à découvrir,
-            <br />
-            une alliance à imaginer.
-          </p>
+          <CardPortrait card={card} className="bestiary-hero-card" />
         </div>
         <div className="bestiary-profile">
           <header className="bestiary-profile-heading">
@@ -554,7 +538,7 @@ function BestiaryDetails({
           })}
         </div>
       </section>
-      <CardSoulbind key={card.id} card={card} />
+      <SoulbindExplorer key={card.id} card={card} readOnly />
     </>
   );
 }

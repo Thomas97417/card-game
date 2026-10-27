@@ -1,3 +1,4 @@
+import { AuthLayout, authPageLinks } from "@/components/auth/auth-layout";
 import { safeReturnTo } from "@/lib/game-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import ForgotPasswordForm from "@/components/forgot-password-form";
@@ -11,9 +12,10 @@ export const Route = createFileRoute("/(auth)/forgot-password")({
       { title: "Mot de passe oublié — Sylve" },
       {
         name: "description",
-        content: "Reset your Toma Stack account password.",
+        content: "Retrouve l’accès à ton compte Sylve grâce à un lien de réinitialisation envoyé par email.",
       },
     ],
+    links: authPageLinks("forgot-password"),
   }),
   beforeLoad: async ({ context, search }) => {
     if (context.isAuthenticated) {
@@ -25,8 +27,8 @@ export const Route = createFileRoute("/(auth)/forgot-password")({
 
 function RouteComponent() {
   return (
-    <div className="sylve-auth">
+    <AuthLayout scene="forgot-password">
       <ForgotPasswordForm />
-    </div>
+    </AuthLayout>
   );
 }

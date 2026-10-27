@@ -3,6 +3,7 @@ import { internal } from "./_generated/api";
 import { internalMutation, mutation } from "./_generated/server";
 import {
   deckSnapshot,
+  currentDeck,
   getActivity,
   requireIdle,
   requirePlayer,
@@ -10,6 +11,8 @@ import {
   startMatch,
 } from "./lib/game_service";
 import { readHeroProgress } from "./lib/heroes";
+import { playerLeague } from "./lib/progression";
+import type { Doc } from "./_generated/dataModel";
 
 const LEASE_MS = 45_000;
 export const enqueue = mutation({
@@ -18,7 +21,7 @@ export const enqueue = mutation({
     const user = await requirePlayer(ctx);
     await requireIdle(ctx, user.userId);
     const cards = await deckSnapshot(ctx, deckId, user.userId);
-    const opponent = await ctx.db
+    const candidates = await ctx.db
       .query("matchmakingQueue")
       .order("asc")
       .filter((q) =>
@@ -27,7 +30,27 @@ export const enqueue = mutation({
           q.neq(q.field("userId"), user.userId),
         ),
       )
-      .first();
+      .take(20);
+    let opponent: Doc<"matchmakingQueue"> | undefined;
+    for (const candidate of candidates) {
+      const league = await playerLeague(ctx, candidate.userId);
+      const deck = await currentDeck(ctx, candidate.userId);
+      const snapshot =
+        candidate.cards.length === 10
+          ? candidate.cards.slice(0, league.deckCapacity)
+          : candidate.cards;
+      if (
+        snapshot.length === league.deckCapacity &&
+        deck?.cardIds.length === league.deckCapacity
+      ) {
+        opponent = { ...candidate, cards: snapshot };
+        break;
+      }
+      await ctx.db.delete(candidate._id);
+      const activity = await getActivity(ctx, candidate.userId);
+      if (activity?.queueId === candidate._id)
+        await setActivity(ctx, candidate.userId, {});
+    }
     if (opponent) {
       const gameId = await ctx.db.insert("games", {
         mode: "public",
@@ -62,8 +85,21 @@ export const heartbeat = mutation({
     const activity = await getActivity(ctx, user.userId);
     if (!activity?.queueId) return;
     const entry = await ctx.db.get(activity.queueId);
-    if (entry && entry.expiresAt > Date.now())
+    if (entry && entry.expiresAt > Date.now()) {
+      const league = await playerLeague(ctx, user.userId);
+      const deck = await currentDeck(ctx, user.userId);
+      const size =
+        entry.cards.length === 10 ? league.deckCapacity : entry.cards.length;
+      if (
+        size !== league.deckCapacity ||
+        deck?.cardIds.length !== league.deckCapacity
+      ) {
+        await ctx.db.delete(entry._id);
+        await setActivity(ctx, user.userId, {});
+        return;
+      }
       await ctx.db.patch(entry._id, { expiresAt: Date.now() + LEASE_MS });
+    }
   },
 });
 export const cancel = mutation({

@@ -104,6 +104,21 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   const context = useRouteContext({ from: Route.id });
+  const isLanding = useRouterState({
+    select: (state) => state.location.pathname === "/",
+  });
+  const authRouteId = useRouterState({
+    select: (state) =>
+      state.matches.find((match) => match.routeId.startsWith("/(auth)/"))
+        ?.routeId,
+  });
+  const isAuthPage = authRouteId !== undefined;
+  const legalRouteId = useRouterState({
+    select: (state) =>
+      state.matches.find((match) => match.routeId.startsWith("/(legal)/"))
+        ?.routeId,
+  });
+  const isLegalPage = legalRouteId !== undefined;
   const requiresAuth = useRouterState({
     select: (state) =>
       state.matches.some(
@@ -129,6 +144,8 @@ function RootDocument() {
       );
     },
   });
+  const showHeader = !isImmersive && !isLanding && !isAuthPage && !isLegalPage;
+
   return (
     <ConvexBetterAuthProvider
       client={context.convexQueryClient.convexClient}
@@ -154,17 +171,24 @@ function RootDocument() {
                       <DuelTransitionProvider>
                         <div
                           className={
-                            isImmersive
-                              ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                              : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                            showHeader
+                              ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                              : "grid h-svh grid-rows-[minmax(0,1fr)]"
                           }
                         >
-                          {!isImmersive && <Header />}
+                          {showHeader && <Header />}
                           <div
+                            key={authRouteId ?? legalRouteId}
                             className={
                               isImmersive
                                 ? "min-h-0 overflow-hidden"
-                                : "min-h-0 overflow-y-auto"
+                                : isLanding
+                                  ? "landing-scroll-container min-h-0 overflow-y-auto"
+                                  : isAuthPage
+                                    ? "auth-scroll-container min-h-0 overflow-y-auto"
+                                    : isLegalPage
+                                      ? "legal-scroll-container min-h-0 overflow-y-auto"
+                                      : "min-h-0 overflow-y-auto"
                             }
                           >
                             <Outlet />

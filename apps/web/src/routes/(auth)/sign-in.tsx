@@ -1,3 +1,4 @@
+import { AuthLayout, authPageLinks } from "@/components/auth/auth-layout";
 import { safeReturnTo } from "@/lib/game-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import SignInForm from "@/components/sign-in-form";
@@ -11,9 +12,10 @@ export const Route = createFileRoute("/(auth)/sign-in")({
       { title: "Connexion — Sylve" },
       {
         name: "description",
-        content: "Sign in to your Toma Stack account.",
+        content: "Connecte-toi à Sylve pour retrouver ton refuge, tes compagnons et tes decks.",
       },
     ],
+    links: authPageLinks("sign-in"),
   }),
   beforeLoad: async ({ context, search }) => {
     if (context.isAuthenticated) {
@@ -25,8 +27,8 @@ export const Route = createFileRoute("/(auth)/sign-in")({
 
 function RouteComponent() {
   return (
-    <div className="sylve-auth">
+    <AuthLayout scene="sign-in">
       <SignInForm />
-    </div>
+    </AuthLayout>
   );
 }

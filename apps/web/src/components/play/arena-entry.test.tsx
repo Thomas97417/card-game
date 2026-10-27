@@ -23,9 +23,11 @@ const mocks = vi.hoisted(() => ({
   game: undefined as
     | { status: "active"; turn: number; sequence: number }
     | undefined,
+  deckSize: 4,
   query: vi.fn(),
   navigate: vi.fn(),
   createSolo: vi.fn(),
+  enqueue: vi.fn(),
   joinPrivate: vi.fn(),
   mutate: vi.fn(),
 }));
@@ -35,6 +37,7 @@ vi.mock("convex/react", () => ({
   useMutation: (mutation: Parameters<typeof getFunctionName>[0]) => {
     const name = getFunctionName(mutation);
     if (name === "games:createSolo") return mocks.createSolo;
+    if (name === "matchmaking:enqueue") return mocks.enqueue;
     if (name === "games:joinPrivate") return mocks.joinPrivate;
     return mocks.mutate;
   },
@@ -51,6 +54,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("./play-lobby", () => ({
+  DeckCompletionNotice: () => <p>Complète ton deck avant le combat.</p>,
   PlayLobby: ({
     ready,
     locked,
@@ -82,15 +86,25 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.activity = { status: null, gameId: null, queued: false };
   mocks.game = undefined;
+  mocks.deckSize = 4;
   mocks.mutate.mockResolvedValue(undefined);
   mocks.createSolo.mockResolvedValue("matched-game");
+  mocks.enqueue.mockResolvedValue(undefined);
   mocks.joinPrivate.mockResolvedValue("matched-game");
   mocks.navigate.mockResolvedValue(undefined);
   mocks.query.mockImplementation((query, args) => {
     if (args === "skip") return undefined;
     switch (getFunctionName(query)) {
       case "decks:list":
-        return [{ _id: "deck", cardIds: [] }];
+        return [
+          {
+            _id: "deck",
+            cardIds: Array.from(
+              { length: mocks.deckSize },
+              (_, index) => `card-${index}`,
+            ),
+          },
+        ];
       case "games:activity":
         return mocks.activity;
       case "games:get":
@@ -106,6 +120,47 @@ beforeEach(() => {
 });
 
 describe("ouverture directe du duel depuis l’arène", () => {
+  it.each([0, 3, 5])(
+    "does not start a battle or its presentation with a %i-card deck instead of four",
+    async (deckSize) => {
+      mocks.deckSize = deckSize;
+      render(
+        <DuelTransitionProvider>
+          <ArenaPage />
+        </DuelTransitionProvider>,
+      );
+      await waitFor(() =>
+        expect(
+          (
+            screen.getByRole("button", {
+              name: "Combat solo",
+            }) as HTMLButtonElement
+          ).disabled,
+        ).toBe(false),
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Combat solo" }));
+      fireEvent.click(screen.getByRole("button", { name: "Duel public" }));
+      fireEvent.click(screen.getByRole("button", { name: "Défi amical" }));
+      expect(
+        screen.getByText("Complète ton deck avant le combat."),
+      ).toBeTruthy();
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Créer une invitation",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(true);
+      const input = screen.getByRole("textbox", { name: "Code d’invitation" });
+      fireEvent.change(input, { target: { value: "ABCDEFGH" } });
+      fireEvent.submit(input.closest("form")!);
+      expect(mocks.createSolo).not.toHaveBeenCalled();
+      expect(mocks.enqueue).not.toHaveBeenCalled();
+      expect(mocks.joinPrivate).not.toHaveBeenCalled();
+      expect(screen.queryByRole("status")).toBeNull();
+    },
+  );
+
   it("starts the presentation on the click while the solo request is still pending", async () => {
     let reject!: (error: Error) => void;
     mocks.createSolo.mockReturnValue(

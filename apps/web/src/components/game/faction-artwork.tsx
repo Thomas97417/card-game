@@ -1,9 +1,4 @@
-import {
-  baseCardId,
-  FACTION_LABELS,
-  type CardDefinition,
-  type Faction,
-} from "@sylve/game";
+import { baseCardId, type CardDefinition, type Faction } from "@sylve/game";
 
 export function FactionIcon({
   faction,
@@ -36,21 +31,5 @@ export function FactionBackdrop({ card }: { card: CardDefinition }) {
       data-character={baseCardId(card)}
       aria-hidden="true"
     />
-  );
-}
-
-export function CardFactionBadge({ card }: { card: CardDefinition }) {
-  if (!card.faction) return null;
-  const label = FACTION_LABELS[card.faction];
-  return (
-    <span
-      className="card-faction-badge"
-      data-faction={card.faction}
-      role="img"
-      aria-label={`Famille ${label}`}
-      title={label}
-    >
-      <FactionIcon faction={card.faction} />
-    </span>
   );
 }

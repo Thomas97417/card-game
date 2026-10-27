@@ -1,198 +1,94 @@
-import { safeReturnTo } from "@/lib/game-auth";
-import { useForm } from "@tanstack/react-form";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useForm } from "@tanstack/react-form";
+import { Link, useSearch } from "@tanstack/react-router";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import z from "zod";
-
 import { authClient } from "@/lib/auth-client";
-
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-
-function PasswordInput({
-  id,
-  placeholder,
-  autoComplete,
-  value,
-  onBlur,
-  onChange,
-}: {
-  id: string;
-  placeholder: string;
-  autoComplete: string;
-  value: string;
-  onBlur: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  const [visible, setVisible] = useState(false);
-
-  return (
-    <div className="relative">
-      <Input
-        id={id}
-        type={visible ? "text" : "password"}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        value={value}
-        onBlur={onBlur}
-        onChange={onChange}
-        className="pr-9"
-      />
-      <button
-        type="button"
-        tabIndex={-1}
-        className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
-        onClick={() => setVisible((v) => !v)}
-      >
-        {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-      </button>
-    </div>
-  );
-}
+import { authErrorCode, authErrorMessage } from "@/lib/auth-feedback";
+import { safeReturnTo } from "@/lib/game-auth";
+import { AuthField, AuthHeading, AuthNotice, AuthStateArt, AuthSubmit, submitAuthForm } from "./auth/form-ui";
+import PasswordInput from "./ui/password-input";
 
 export default function ResetPasswordForm() {
-  const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as {
-    token?: string;
-    returnTo?: string;
-  };
-  const token = search?.token;
+  const search = useSearch({ strict: false });
+  const token = search.token;
   const returnTo = safeReturnTo(search.returnTo);
-
+  const [error, setError] = useState<string | null>(null);
+  const [invalidToken, setInvalidToken] = useState<string>();
+  const [done, setDone] = useState(false);
   const form = useForm({
-    defaultValues: {
-      newPassword: "",
-      confirmPassword: "",
+    defaultValues: { newPassword: "", confirmPassword: "" },
+    validators: {
+      onSubmit: z.object({
+        newPassword: z.string().min(8, "Utilise au moins 8 caractères."),
+        confirmPassword: z.string().min(1, "Confirme ton nouveau mot de passe."),
+      }).refine((value) => value.newPassword === value.confirmPassword, { message: "Les mots de passe ne correspondent pas.", path: ["confirmPassword"] }),
     },
     onSubmit: async ({ value }) => {
-      const { error } = await authClient.resetPassword({
-        newPassword: value.newPassword,
-        token: token!,
-      });
-      if (error) {
-        toast.error(
-          error.message || "Impossible de réinitialiser le mot de passe.",
-        );
-      } else {
-        toast.success("Mot de passe modifié.");
-        navigate({ to: "/sign-in", search: { returnTo } });
+      if (!token) return;
+      setError(null);
+      try {
+        const result = await authClient.resetPassword({ newPassword: value.newPassword, token });
+        if (result.error) {
+          const code = authErrorCode(result.error);
+          if (code === "INVALID_TOKEN" || code === "TOKEN_EXPIRED") setInvalidToken(token);
+          else setError(authErrorMessage(result.error, "Ton mot de passe n’a pas pu être modifié. Réessaie dans un instant."));
+          return;
+        }
+        form.reset();
+        setDone(true);
+      } catch {
+        setError("La modification n’a pas abouti. Vérifie ta connexion internet et réessaie.");
       }
-    },
-    validators: {
-      onSubmit: z
-        .object({
-          newPassword: z.string().min(8, "Utilise au moins 8 caractères."),
-          confirmPassword: z.string(),
-        })
-        .refine((data) => data.newPassword === data.confirmPassword, {
-          message: "Les mots de passe ne correspondent pas.",
-          path: ["confirmPassword"],
-        }),
     },
   });
 
-  if (!token) {
+  if (!token || invalidToken === token) {
     return (
-      <div className="mx-auto mt-10 w-full max-w-md p-6 text-center space-y-3">
-        <h1 className="text-3xl font-bold">Lien invalide</h1>
-        <p className="text-sm text-muted-foreground">
-          Ce lien de réinitialisation est invalide ou a expiré.
-        </p>
-        <Link
-          to="/forgot-password"
-          search={{ returnTo }}
-          className="inline-block text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
-          Demander un nouveau lien
-        </Link>
+      <div className="auth-success">
+        <AuthStateArt success={false} />
+        <AuthHeading title="Ce lien n’est plus valide.">Le lien est incomplet ou a expiré. Demande-en un nouveau pour retrouver l’accès à ton compte.</AuthHeading>
+        <Link to="/forgot-password" search={{ returnTo }} className="auth-primary-link">Demander un nouveau lien <ArrowRight size={17} aria-hidden="true" /></Link>
+        <Link to="/sign-in" search={{ returnTo }} className="auth-back-link"><ArrowLeft size={15} aria-hidden="true" /> Retour à la connexion</Link>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="auth-success">
+        <AuthStateArt />
+        <AuthHeading title="Ton refuge t’attend.">Ton mot de passe a bien été modifié. Connecte-toi avec ton nouveau mot de passe pour reprendre l’aventure.</AuthHeading>
+        <Link to="/sign-in" search={{ returnTo }} className="auth-primary-link">Se connecter <ArrowRight size={17} aria-hidden="true" /></Link>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-2 text-center text-3xl font-bold">
-        Modifier le mot de passe
-      </h1>
-      <p className="mb-6 text-center text-sm text-muted-foreground">
-        Enter your new password below.
-      </p>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
+    <>
+      <AuthHeading title="Choisis un nouveau mot de passe.">Protège ton compte, puis retrouve tes compagnons.</AuthHeading>
+      {error && <AuthNotice>{error}</AuthNotice>}
+      <form noValidate className="auth-form" onSubmit={(event) => { void submitAuthForm(event, () => form.handleSubmit()); }}>
         <form.Field name="newPassword">
           {(field) => (
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-              <PasswordInput
-                id="newPassword"
-                placeholder="Nouveau mot de passe"
-                autoComplete="new-password"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-              />
-              {field.state.meta.errors.map((error) => (
-                <p key={error?.message} className="text-sm text-destructive">
-                  {error?.message}
-                </p>
-              ))}
-            </div>
+            <AuthField id={field.name} label="Nouveau mot de passe" errors={field.state.meta.errors} descriptionId="new-password-hint">
+              {(accessibility) => <PasswordInput {...accessibility} name={field.name} placeholder="Ton nouveau mot de passe" autoComplete="new-password" value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
           )}
         </form.Field>
-
+        <p className="auth-password-hint" id="new-password-hint">8 caractères minimum.</p>
         <form.Field name="confirmPassword">
           {(field) => (
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm new password</Label>
-              <PasswordInput
-                id="confirmPassword"
-                placeholder="Confirm new password"
-                autoComplete="new-password"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-              />
-              {field.state.meta.errors.map((error) => (
-                <p key={error?.message} className="text-sm text-destructive">
-                  {error?.message}
-                </p>
-              ))}
-            </div>
+            <AuthField id={field.name} label="Confirmer le mot de passe" errors={field.state.meta.errors}>
+              {(accessibility) => <PasswordInput {...accessibility} name={field.name} placeholder="Saisis-le une seconde fois" autoComplete="new-password" visibilityLabel="la confirmation du mot de passe" value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
           )}
         </form.Field>
-
         <form.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Saving..." : "Modifier le mot de passe"}
-            </Button>
-          )}
+          {(state) => <AuthSubmit pending={state.isSubmitting} disabled={!state.canSubmit} pendingLabel="Modification en cours…">Enregistrer le mot de passe</AuthSubmit>}
         </form.Subscribe>
       </form>
-
-      <div className="mt-4 text-center">
-        <Link
-          to="/sign-in"
-          search={{ returnTo }}
-          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
-        >
-          Retour à la connexion
-        </Link>
-      </div>
-    </div>
+      <Link to="/sign-in" search={{ returnTo }} className="auth-back-link"><ArrowLeft size={15} aria-hidden="true" /> Retour à la connexion</Link>
+    </>
   );
 }

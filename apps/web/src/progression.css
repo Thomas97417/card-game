@@ -209,7 +209,7 @@
   color: #9a6c15;
 }
 .game-dialog.upgrade-dialog[data-slot="dialog-content"] {
-  width: min(1020px, calc(100vw - 48px));
+  width: min(1160px, calc(100vw - 48px));
   border-color: #c9b57c88;
   background:
     radial-gradient(ellipse at 40% 0, #59765122, transparent 65%),
@@ -220,22 +220,43 @@
 }
 .game-dialog.upgrade-dialog > [data-slot="dialog-body"] {
   padding: 20px;
+  overflow: hidden;
+}
+.upgrade-dialog > [data-slot="dialog-body"],
+.upgrade-main {
+  scrollbar-width: none;
+}
+.upgrade-dialog > [data-slot="dialog-body"]::-webkit-scrollbar,
+.upgrade-main::-webkit-scrollbar {
+  display: none;
 }
 .upgrade-showcase {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.45fr) 174px;
+  height: min(720px, calc(100svh - 80px));
   align-items: stretch;
-  gap: 24px;
+  gap: 22px;
 }
-@media (min-width: 901px) {
-  .upgrade-showcase[data-deck-actions="true"] {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr) 142px;
-  }
+.upgrade-companion {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+.upgrade-companion-details {
+  display: contents;
+}
+.upgrade-mobile-identity {
+  display: none;
 }
 .upgrade-portrait {
   position: relative;
   isolation: isolate;
-  min-height: 490px;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   border: 2px solid var(--rarity-color);
   border-radius: 12px;
@@ -270,12 +291,13 @@
 }
 .upgrade-portrait > .creature-portrait {
   position: absolute;
-  inset: 40px -3% 60px;
-  width: 106%;
+  inset: 46% auto auto 50%;
+  width: 124%;
   max-width: none;
-  height: calc(100% - 100px);
+  height: calc(100% - 120px);
+  transform: translate(-50%, -50%);
   object-fit: contain;
-  object-position: center 70%;
+  object-position: center;
   filter: drop-shadow(0 12px 12px #05160d80);
 }
 .upgrade-portrait-stats {
@@ -292,6 +314,18 @@
 }
 .upgrade-portrait-stats .stat-badge strong {
   font-size: 34px;
+}
+.upgrade-portrait-stats .stat-badge.attack .game-icon,
+.upgrade-stat .stat-badge.attack .game-icon {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+}
+.upgrade-portrait-stats .stat-badge.attack strong,
+.upgrade-stat .stat-badge.attack strong {
+  align-self: center;
+  margin-top: -2px;
 }
 .upgrade-card-level {
   position: absolute;
@@ -335,38 +369,62 @@
 }
 .upgrade-card-type {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 6px 8px;
+  width: 100%;
+  margin-top: 3px;
+  padding-top: 10px;
+  border-top: 1px solid #c5b38333;
   color: #d6c79e;
   font-size: 11px;
 }
+.upgrade-card-trait {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid #c5b38333;
+  border-radius: 5px;
+  background: #081e1755;
+  line-height: 1.3;
+  white-space: nowrap;
+}
 .upgrade-main {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 10px 6px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.upgrade-panel {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  gap: 20px;
-  padding-block: 6px 2px;
+  gap: 22px;
 }
-.upgrade-name-banner {
-  position: relative;
-  padding: 12px 16px;
-  border-block: 1px solid #cbb77b88;
-  background: linear-gradient(100deg, #4b6c4d, #31563d 80%, #294c37);
-  box-shadow:
-    0 4px 12px #071a1433,
-    inset 0 0 0 3px #d2c08b0a;
-  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+.upgrade-panel[hidden] {
+  display: none;
 }
-.upgrade-name-banner [data-slot="dialog-title"] {
-  padding-right: 0;
-  color: #fff2d6;
-  font-size: clamp(25px, 2.8vw, 34px);
-  text-wrap: balance;
+.upgrade-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  padding-block: 3px;
+  color: #e6cf96;
+  font-size: 11px;
+  cursor: pointer;
 }
-.upgrade-heading [data-slot="dialog-description"] {
-  margin-top: 9px;
-  padding-left: 1px;
-  font-style: italic;
+.upgrade-return:hover {
+  color: #fff0ce;
+}
+.upgrade-return:focus-visible {
+  outline: 2px solid #e6cc8e;
+  outline-offset: 4px;
+  border-radius: 3px;
 }
 .upgrade-section-heading {
   display: flex;
@@ -569,56 +627,115 @@
   width: 36px;
   height: 36px;
 }
-.upgrade-deck-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 52px 0 0 18px;
-  border-left: 1px solid #cbb78333;
-}
-.upgrade-deck-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #cbb78333;
-  color: #bcc6ad;
-  font-size: 10px;
-  line-height: 1.5;
-}
-.upgrade-deck-status > svg {
-  flex-shrink: 0;
-}
-.upgrade-deck-status[data-in-deck="true"] {
-  color: #c5dcad;
-}
 .upgrade-deck-actions {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-shrink: 0;
 }
 .game-dialog .upgrade-deck-actions .sylve-button.secondary {
-  flex-direction: column;
+  width: 100%;
   justify-content: center;
-  min-height: 88px;
-  gap: 9px;
-  padding: 13px 16px 13px 9px;
+  min-height: 46px;
+  gap: 8px;
+  padding: 10px;
   border-color: #c5b38366;
-  border-radius: 4px;
+  border-radius: 7px;
   background: linear-gradient(110deg, #35533d, #264431);
   color: #eee2c0;
   font-size: 11px;
   line-height: 1.4;
   text-align: center;
-  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+  white-space: normal;
 }
 .game-dialog
   .upgrade-deck-actions
   .sylve-button.secondary:hover:not(:disabled) {
   background: linear-gradient(110deg, #466848, #35583d);
 }
-.game-dialog .upgrade-deck-actions .sylve-button.secondary:focus-visible {
-  box-shadow: inset 0 0 0 2px #edd9a0;
+.upgrade-navigation {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+  padding: 48px 0 0 16px;
+  border-left: 1px solid #cbb78333;
+}
+.upgrade-navigation [role="tablist"] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.upgrade-nav-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 88px;
+  padding: 13px 10px;
+  border: 1px solid #bca36f33;
+  border-radius: 9px;
+  background: #0c241c4d;
+  color: #c2cdbb;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms,
+    background 160ms;
+}
+.upgrade-nav-tab:hover:not([data-disabled]) {
+  border-color: #d8c08388;
+  background: #d4be8810;
+}
+.upgrade-nav-tab[data-active] {
+  border-color: #ddc58e;
+  background: linear-gradient(110deg, #5d673b66, #d4be8814);
+  color: #ffedc6;
+  box-shadow: inset 3px 0 #ddc58e;
+}
+.upgrade-nav-tab > .game-icon {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.upgrade-nav-tab strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.upgrade-nav-tab small {
+  display: block;
+  margin-top: 5px;
+  color: #b9c7b0;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.upgrade-nav-tab[data-disabled] {
+  border-style: dashed;
+  color: #b4bdaa;
+  cursor: default;
+}
+.upgrade-nav-tab[data-disabled] > .game-icon {
+  opacity: 0.45;
+  filter: saturate(0.3);
+}
+.upgrade-nav-tab[data-disabled] small {
+  color: #d1bd8d;
+}
+.upgrade-nav-lock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #d1bd8d;
+}
+.upgrade-nav-ready {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #bee69b;
+  box-shadow: 0 0 8px #bee69b88;
 }
 .game-dialog.chest-reveal-dialog[data-slot="dialog-content"] {
   width: min(620px, calc(100vw - 32px));
@@ -749,57 +866,85 @@
 }
 @media (max-width: 900px) {
   .upgrade-showcase {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    gap: 20px;
+    grid-template-columns: minmax(180px, 0.85fr) minmax(0, 1.35fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 16px 18px;
   }
-  .upgrade-deck-panel {
+  .upgrade-navigation {
     grid-column: 1 / -1;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 16px;
-    padding: 14px 0 0;
+    grid-row: 1;
+    padding: 0 36px 12px 0;
     border-left: 0;
-    border-top: 1px solid #cbb78333;
+    border-bottom: 1px solid #cbb78333;
   }
-  .upgrade-deck-status {
-    margin-right: auto;
-    padding: 0;
-    border: 0;
-  }
-  .upgrade-deck-actions {
-    flex-direction: row;
+  .upgrade-navigation [role="tablist"] {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: 8px;
   }
-  .game-dialog .upgrade-deck-actions .sylve-button.secondary {
-    flex-direction: row;
-    min-height: 44px;
-    padding: 10px 14px;
-    clip-path: none;
-    border-radius: 6px;
+  .upgrade-nav-tab {
+    min-height: 68px;
+    padding: 9px;
+    gap: 8px;
   }
-  .upgrade-heading {
-    padding-right: 24px;
+  .upgrade-nav-tab strong {
+    font-size: 11px;
+  }
+  .upgrade-companion {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .upgrade-main {
+    grid-column: 2;
+    grid-row: 2;
   }
 }
 @media (max-width: 600px) {
   .game-dialog.upgrade-dialog[data-slot="dialog-content"] {
+    --upgrade-top-inset: 46px;
     width: calc(100vw - 24px);
   }
   .game-dialog.upgrade-dialog > [data-slot="dialog-body"] {
-    padding: 46px 16px 16px;
+    padding: var(--upgrade-top-inset) 14px 16px;
+    overflow-y: auto;
   }
   .upgrade-showcase {
-    grid-template-columns: 118px minmax(0, 1fr);
-    gap: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: auto;
   }
-  .upgrade-main {
-    display: contents;
+  .upgrade-companion {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+  }
+  .upgrade-companion-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .upgrade-mobile-identity {
+    display: grid;
+    gap: 8px;
+  }
+  .upgrade-mobile-identity strong {
+    color: #fff0cf;
+    font:
+      400 22px/1.15 Georgia,
+      serif;
+    text-wrap: balance;
+  }
+  .upgrade-mobile-identity > span {
+    color: #d2c39f;
+    font-size: 11px;
   }
   .upgrade-portrait {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    min-height: 238px;
+    min-height: 200px;
+    height: 200px;
     border-radius: 9px;
   }
   .upgrade-portrait::after {
@@ -807,9 +952,10 @@
     border-radius: 5px;
   }
   .upgrade-portrait > .creature-portrait {
-    inset: 34px 0 35px;
+    inset: 34px 0 30px;
     width: 100%;
-    height: calc(100% - 69px);
+    height: calc(100% - 64px);
+    transform: none;
   }
   .upgrade-portrait-stats {
     inset: 4px 2px auto;
@@ -828,7 +974,7 @@
   }
   .upgrade-portrait-caption {
     gap: 5px;
-    padding: 30px 5px 12px;
+    padding: 30px 5px 10px;
   }
   .upgrade-portrait-caption .rarity-label {
     font-size: 8px;
@@ -838,68 +984,56 @@
     display: none;
   }
   .upgrade-card-type {
-    gap: 3px;
+    gap: 3px 5px;
+    margin-top: 0;
+    padding-top: 4px;
     font-size: 8px;
   }
-  .upgrade-card-type > .game-icon {
-    width: 14px;
-    height: 14px;
+  .upgrade-card-trait {
+    gap: 3px;
+    padding: 0 3px;
   }
-  .upgrade-heading {
-    grid-column: 2;
-    align-self: start;
+  .upgrade-card-trait > :is(.game-icon, .faction-icon) {
+    width: 12px;
+    height: 12px;
+  }
+  .upgrade-navigation {
+    position: sticky;
+    top: calc(-1 * var(--upgrade-top-inset) - 1px);
+    z-index: 8;
+    padding: 10px 0 12px;
+    margin-top: -8px;
+    background: #1d372b;
+  }
+  .upgrade-nav-tab {
+    flex-direction: column;
+    justify-content: center;
+    min-height: 78px;
+    padding: 9px 5px;
+    gap: 6px;
+    text-align: center;
+  }
+  .upgrade-nav-tab > .game-icon {
+    flex-basis: 26px;
+    width: 26px;
+    height: 26px;
+  }
+  .upgrade-nav-tab small {
+    display: none;
+  }
+  .upgrade-nav-tab[data-disabled] small {
+    display: block;
+    font-size: 9px;
+  }
+  .upgrade-main {
+    overflow: visible;
     padding: 0;
   }
-  .upgrade-name-banner {
-    padding: 10px;
-  }
-  .upgrade-name-banner [data-slot="dialog-title"] {
-    font-size: 24px;
-  }
-  .upgrade-heading [data-slot="dialog-description"] {
-    font-size: 11px;
-    line-height: 1.5;
-  }
-  .upgrade-progression {
-    grid-column: 2;
-    align-self: end;
-  }
   .upgrade-section-heading > h3 {
-    font-size: 14px;
+    font-size: 15px;
   }
   .upgrade-section-heading > span {
-    font-size: 9px;
-  }
-  .upgrade-progression .upgrade-section-heading {
-    gap: 4px;
-  }
-  .upgrade-progression .upgrade-section-heading > span {
-    width: 100%;
-  }
-  .upgrade-progress {
-    height: 30px;
-  }
-  .upgrade-copies {
-    gap: 4px;
     font-size: 10px;
-  }
-  .upgrade-copies-icon {
-    width: 15px;
-    height: 20px;
-  }
-  .upgrade-next-level {
-    right: -16px;
-    width: 36px;
-    height: 36px;
-    font-size: 23px;
-  }
-  .upgrade-progress-note {
-    font-size: 9px;
-    line-height: 1.5;
-  }
-  .upgrade-statistics,
-  .upgrade-evolution-action {
-    grid-column: 1 / -1;
   }
   .upgrade-stats {
     gap: 8px;
@@ -907,37 +1041,15 @@
   .upgrade-stat {
     padding: 9px 10px 6px;
   }
-  .upgrade-stat-next {
-    font-size: 27px;
-  }
-  .upgrade-evolution-action {
-    padding-top: 0;
-  }
-  .game-dialog .upgrade-action {
-    min-height: 74px;
-  }
-  .upgrade-deck-panel {
-    gap: 9px;
-  }
-  .upgrade-deck-panel > .eyebrow {
-    width: 100%;
-  }
-  .upgrade-deck-status {
-    display: none;
-  }
-  .upgrade-deck-actions {
-    width: 100%;
-  }
   .game-dialog .upgrade-deck-actions .sylve-button.secondary {
-    flex: 1;
-    min-height: 46px;
-    gap: 6px;
-    padding: 9px;
     font-size: 10px;
+    padding: 9px 6px;
   }
-  .upgrade-deck-actions svg {
-    width: 18px;
-    flex-shrink: 0;
+  .upgrade-portrait .upgrade-portrait-abilities {
+    left: 8px;
+    top: 56px;
+    gap: 4px;
+    --ability-size: 18px;
   }
 }
 @media (max-width: 600px) {
@@ -967,7 +1079,11 @@
   position: absolute;
   z-index: 4;
   left: 14px;
-  top: 62px;
+  top: 86px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
   --ability-size: 30px;
 }
 .game-dialog .card-abilities li {
@@ -994,9 +1110,4 @@
 .game-dialog .card-abilities .ability-next {
   color: #cce9a6;
   border-color: #9bb97b44;
-}
-@media (max-width: 600px) {
-  .upgrade-main > .card-abilities {
-    grid-column: 1 / -1;
-  }
 }

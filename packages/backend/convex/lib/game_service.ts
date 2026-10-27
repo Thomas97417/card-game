@@ -1,7 +1,6 @@
 import { ConvexError } from "convex/values";
 import {
   createGame,
-  DECK_SIZE,
   GameError,
   validateDeck,
   type Transition,
@@ -80,6 +79,16 @@ export async function requireIdle(ctx: MutationCtx, userId: string) {
   }
   return activity;
 }
+export function requireCompleteDeck(
+  size: number,
+  capacity: number,
+  message = "Complète ton deck avant de combattre.",
+) {
+  if (size !== capacity)
+    throw new ConvexError(
+      `${message} Tous les emplacements débloqués doivent être remplis (${size}/${capacity} cartes).`,
+    );
+}
 export async function deckSnapshot(
   ctx: MutationCtx,
   deckId: Id<"decks">,
@@ -89,6 +98,8 @@ export async function deckSnapshot(
   const deck = await currentDeck(ctx, userId);
   if (!deck || deck._id !== deckId)
     throw new ConvexError("Ce deck ne t’appartient pas.");
+  const league = await playerLeague(ctx, userId);
+  requireCompleteDeck(deck.cardIds.length, league.deckCapacity);
   rules(() => validateDeck(deck.cardIds));
   const cards = await ownedDeck(ctx, userId, deck.cardIds);
   await observeHero(ctx, userId, cards);
@@ -103,6 +114,24 @@ export async function startMatch(
   const game = await ctx.db.get(gameId);
   if (!game || game.status !== "waiting")
     throw new ConvexError("Cette invitation n’est plus disponible.");
+  const hostLeague = await playerLeague(ctx, game.hostId);
+  const guestLeague = await playerLeague(ctx, guest.userId);
+  const hostDeck = await currentDeck(ctx, game.hostId);
+  requireCompleteDeck(
+    hostDeck?.cardIds.length ?? 0,
+    hostLeague.deckCapacity,
+    "Ton adversaire doit compléter son deck avant de combattre.",
+  );
+  const hostCards =
+    game.hostCards.length === 10
+      ? game.hostCards.slice(0, hostLeague.deckCapacity)
+      : game.hostCards;
+  requireCompleteDeck(
+    hostCards.length,
+    hostLeague.deckCapacity,
+    "Ton adversaire doit compléter son deck avant de combattre.",
+  );
+  requireCompleteDeck(guestCards.length, guestLeague.deckCapacity);
   const state = createGame(
     [
       {
@@ -110,11 +139,8 @@ export async function startMatch(
         name: game.hostName,
         heroLevel:
           game.hostHeroLevel ??
-          (await readHeroProgress(ctx, game.hostId, game.hostCards)).level,
-        cards:
-          game.hostCards.length === 10
-            ? game.hostCards.slice(0, DECK_SIZE)
-            : game.hostCards,
+          (await readHeroProgress(ctx, game.hostId, hostCards)).level,
+        cards: hostCards,
       },
       {
         ...guest,

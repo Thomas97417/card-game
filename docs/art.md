@@ -16,13 +16,16 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `results/` | Emblèmes de victoire et de défaite, générés avec ImageGen intégré |
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
-| `ui/` | Navigation, monnaies, statistiques, raretés, missions et chaînes |
+| `ui/` | Navigation, monnaies, statistiques, raretés, missions, chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
 | `duel-arena-overhead.webp` | Terrain de combat |
 | `forest-arena.png` | Fond de la page d’accueil |
+| `screenshots/duel-in-progress.jpg` | Capture d’une vraie partie au tour 13, présentée sur l’accueil public |
 | `deck-workshop.webp`, `guardian-house.webp`, `play-lobby.webp`, `sanctuary.webp` | Décors des pages du jeu |
 
 Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par faction et un accent par lignée. Les personnages conservent une identité commune entre les raretés, avec des poses, silhouettes et équipements progressifs. Les sprites restent transparents ; les statistiques et commandes sont rendues par l’interface.
+
+La capture du duel provient de l’interface réelle du terrain d’entraînement, après plusieurs tours joués. Sa provenance figure dans la section `captures` du manifeste.
 
 ## Maintenance
 

@@ -6,7 +6,12 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CARD_VARIANTS, resolveCard, type OwnedCard } from "@sylve/game";
+import {
+  CARD_VARIANTS,
+  resolveCard,
+  soulbindDefinitions,
+  type OwnedCard,
+} from "@sylve/game";
 import { CardSoulbind, CardEvolutionResources } from "./card-soulbind";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { GoldContext } from "@/components/gold-balance";
@@ -26,6 +31,38 @@ function expand(container: HTMLElement) {
 }
 
 describe("Soulbind card controls", () => {
+  it("previews required companions at their required level in the selected link", () => {
+    const card = resolveCard("guardian:legendary");
+    render(
+      <CardSoulbind
+        card={card}
+        collection={[]}
+        soulProgress={progress}
+        presentation="page"
+      />,
+    );
+    expect(screen.queryByText(/\/ 4 actifs/)).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Afficher le lien d’âme IV" }),
+    );
+    const fourth = within(
+      screen.getByRole("region", { name: "Lien d’âme IV" }),
+    );
+    expect(fourth.queryByText("Lien d’âme IV")).toBeNull();
+    for (const requirement of soulbindDefinitions(card.id)[3]!.requirements) {
+      const companion = resolveCard(requirement.variantId);
+      const preview = fourth.getByRole("img", {
+        name: new RegExp(
+          `^${companion.name}, .*niveau ${requirement.level} requis$`,
+        ),
+      });
+      expect(
+        within(preview).getByText(`Niv. ${requirement.level}`),
+      ).toBeTruthy();
+    }
+    expect(fourth.getByText("Aucune carte consommée")).toBeTruthy();
+  });
+
   it("shows the four links, their actual bonuses and the available activation action", async () => {
     const onSoulbind = vi.fn().mockResolvedValue(undefined);
     const { container } = render(
@@ -67,7 +104,7 @@ describe("Soulbind card controls", () => {
         .getAllByRole("button")
         .every((b) => (b as HTMLButtonElement).disabled),
     ).toBe(true);
-    expect(screen.getByText("0 / niv. 6")).toBeTruthy();
+    expect(screen.getByText("Niv. 0 / 6")).toBeTruthy();
   });
   it("explains prerequisites in the bestiary without offering an owned-card mutation", () => {
     const { container } = render(

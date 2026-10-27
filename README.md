@@ -49,6 +49,8 @@ Générer le secret une seule fois et le conserver aux démarrages suivants. Uti
 
 Ajouter également `RESEND_API_KEY` et `EMAIL_FROM` dans les variables du déploiement Convex. `EMAIL_FROM` doit être un expéditeur autorisé par Resend. La vérification d’email est activée ; cette configuration est nécessaire pour terminer une inscription par email.
 
+Les emails d’authentification utilisent les illustrations JPEG de `apps/web/public/art/emails/`, exportées depuis les décors du jeu. Leurs URL absolues sont construites à partir de `SITE_URL`, qui doit donc être l’origine publique du frontend en production. Pour générer des aperçus HTML et texte sans envoyer d’email : `bun run --cwd packages/backend preview:emails /tmp/sylve-auth-emails http://localhost:3001`.
+
 ```bash
 bun run dev
 ```

@@ -51,7 +51,7 @@ function setup(overrides: Partial<Parameters<typeof PlayLobby>[0]> = {}) {
     onOpenChest: vi.fn(),
     onOpenVictoryChest: vi.fn(),
   };
-  render(
+  const view = (next: typeof overrides = {}) => (
     <PlayLobby
       deckSize={4}
       chests={[]}
@@ -62,11 +62,91 @@ function setup(overrides: Partial<Parameters<typeof PlayLobby>[0]> = {}) {
       queued={false}
       {...actions}
       {...overrides}
-    />,
+      {...next}
+    />
   );
-  return actions;
+  return { ...render(view()), ...actions, view };
 }
 describe("le salon de combat", () => {
+  it.each([0, 200, 800, 1600, 2400])(
+    "requires all unlocked deck slots at %i trophies and re-enables battles after completion",
+    (trophies) => {
+      const league = leagueProgress(trophies);
+      const capacity = league.deckCapacity;
+      const { rerender, view, onSolo, onPublic, onPrivate } = setup({
+        league,
+        deckSize: capacity - 1,
+      });
+      const deckLink = screen.getByRole("link", { name: "Compléter mon deck" });
+      expect(deckLink.textContent).toContain(`${capacity - 1}/${capacity}`);
+      expect(within(deckLink).getByRole("status").textContent).toContain(
+        "Ajoute 1 carte pour combattre.",
+      );
+      expect(
+        within(
+          screen.getByRole("region", { name: "Choisir un combat" }),
+        ).queryByRole("status"),
+      ).toBeNull();
+      expect(deckLink.getAttribute("href")).toBe("/decks");
+      for (const name of [/Combat solo/, /Duel public/, /Défi amical/]) {
+        const button = screen.getByRole("button", {
+          name,
+        }) as HTMLButtonElement;
+        expect(button.disabled).toBe(true);
+        fireEvent.click(button);
+      }
+      expect(onSolo).not.toHaveBeenCalled();
+      expect(onPublic).not.toHaveBeenCalled();
+      expect(onPrivate).not.toHaveBeenCalled();
+      rerender(view({ deckSize: capacity }));
+      expect(
+        screen.queryByRole("link", { name: "Compléter mon deck" }),
+      ).toBeNull();
+      expect(screen.getByText("Renforcer mes compagnons")).toBeTruthy();
+      for (const name of [/Combat solo/, /Duel public/, /Défi amical/]) {
+        const button = screen.getByRole("button", {
+          name,
+        }) as HTMLButtonElement;
+        expect(button.disabled).toBe(false);
+        fireEvent.click(button);
+      }
+      expect(onSolo).toHaveBeenCalledOnce();
+      expect(onPublic).toHaveBeenCalledOnce();
+      expect(onPrivate).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("immediately blocks a previously complete deck when a new slot unlocks", () => {
+    const { rerender, view, onSolo } = setup();
+    expect(
+      (screen.getByRole("button", { name: /Combat solo/ }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false);
+    rerender(view({ league: leagueProgress(200) }));
+    fireEvent.click(screen.getByRole("button", { name: /Combat solo/ }));
+    expect(onSolo).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Compléter mon deck" })).toBeTruthy();
+  });
+
+  it("requires peak-league slots after demotion and does not flash the notice during loading", () => {
+    const { rerender, view } = setup({
+      ready: false,
+      deckSize: 4,
+      league: leagueProgress(0, 2400),
+    });
+    expect(
+      screen.queryByRole("link", { name: "Compléter mon deck" }),
+    ).toBeNull();
+    rerender(view({ ready: true }));
+    expect(screen.getByRole("status").textContent).toContain(
+      "Ajoute 4 cartes pour combattre.",
+    );
+    expect(
+      (screen.getByRole("button", { name: /Combat solo/ }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
   it("launches each existing combat type and links the hero to the deck", () => {
     const actions = setup();
     fireEvent.click(screen.getByRole("button", { name: /Combat solo/ }));
@@ -182,7 +262,11 @@ describe("le salon de combat", () => {
     );
   });
   it("locks competing actions while matchmaking and preserves cancellation", () => {
-    const actions = setup({ queued: true, locked: true });
+    const actions = setup({
+      queued: true,
+      locked: true,
+      league: leagueProgress(200),
+    });
     expect(screen.queryByRole("button", { name: /Duel public/ })).toBeNull();
     expect(
       (screen.getByRole("button", { name: /Combat solo/ }) as HTMLButtonElement)
@@ -246,9 +330,9 @@ describe("le salon de combat", () => {
       expect(screen.getByText("+150")).toBeTruthy();
       expect(screen.getByText("24")).toBeTruthy();
       expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
-      expect(screen.getByAltText("Archère de la garde").getAttribute("src")).toBe(
-        "/art/characters/evolutions/fox-rare.webp",
-      );
+      expect(
+        screen.getByAltText("Archère de la garde").getAttribute("src"),
+      ).toBe("/art/characters/evolutions/fox-rare.webp");
       expect(
         screen
           .getByRole("button", {
@@ -267,38 +351,37 @@ describe("le salon de combat", () => {
     { variantId: "fox:rare", isNew: false, legendary: false },
     { variantId: "fox:legendary", isNew: true, legendary: true },
     { variantId: "fox:legendary", isNew: false, legendary: true },
-  ])("uses only the appropriate reveal effect for $variantId (new: $isNew)", ({
-    variantId,
-    isNew,
-    legendary,
-  }) => {
-    vi.useFakeTimers();
-    try {
-      render(
-        <ChestRevealDialog
-          reward={{
-            rarity: legendary ? "legendary" : "rare",
-            gold: 150,
-            reveals: [{ variantId, isNew, count: 1, level: 1, copies: 0 }],
-          }}
-          collection={undefined}
-          onUpgrade={vi.fn()}
-          onClose={vi.fn()}
-        />,
-      );
-      expect(document.querySelector(".summon-legendary-effects")).toBeNull();
-      act(() => vi.advanceTimersByTime(1_300));
-      expect(!!document.querySelector(".summon-legendary-effects")).toBe(
-        legendary,
-      );
-      expect(document.querySelector(".card-discovery-effects")).toBeNull();
-      expect(document.querySelector(".is-new-revealing")).toBeNull();
-      act(() => vi.advanceTimersByTime(2_400));
-      expect(document.querySelector(".summon-legendary-effects")).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
+  ])(
+    "uses only the appropriate reveal effect for $variantId (new: $isNew)",
+    ({ variantId, isNew, legendary }) => {
+      vi.useFakeTimers();
+      try {
+        render(
+          <ChestRevealDialog
+            reward={{
+              rarity: legendary ? "legendary" : "rare",
+              gold: 150,
+              reveals: [{ variantId, isNew, count: 1, level: 1, copies: 0 }],
+            }}
+            collection={undefined}
+            onUpgrade={vi.fn()}
+            onClose={vi.fn()}
+          />,
+        );
+        expect(document.querySelector(".summon-legendary-effects")).toBeNull();
+        act(() => vi.advanceTimersByTime(1_300));
+        expect(!!document.querySelector(".summon-legendary-effects")).toBe(
+          legendary,
+        );
+        expect(document.querySelector(".card-discovery-effects")).toBeNull();
+        expect(document.querySelector(".is-new-revealing")).toBeNull();
+        act(() => vi.advanceTimersByTime(2_400));
+        expect(document.querySelector(".summon-legendary-effects")).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
 
   it("opens the creature menu with the current collection and returns to the chest on Escape", async () => {
     const onClose = vi.fn();
@@ -339,7 +422,7 @@ describe("le salon de combat", () => {
     fireEvent.click(trigger);
     const details = await screen.findByRole("dialog", { name: card.name });
     expect(within(details).getByText("Caractéristiques")).toBeTruthy();
-    expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
+    expect(within(details).getByText("50/50")).toBeTruthy();
     fireEvent.click(
       within(details).getByRole("button", { name: "Améliorer au niveau 3" }),
     );
@@ -371,7 +454,11 @@ describe("le salon de combat", () => {
         },
       ],
     };
-    const props = { collection: undefined, onUpgrade: vi.fn(), onClose: vi.fn() };
+    const props = {
+      collection: undefined,
+      onUpgrade: vi.fn(),
+      onClose: vi.fn(),
+    };
     vi.useFakeTimers();
     try {
       const { rerender } = render(
