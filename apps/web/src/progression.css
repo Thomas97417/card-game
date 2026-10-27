@@ -107,6 +107,70 @@
   gap: 5px;
   padding-bottom: 9px;
 }
+.workshop-card.reward-card .workshop-card-art {
+  bottom: 3px;
+}
+.workshop-card.reward-card .workshop-card-caption {
+  inset: auto 3px 3px;
+  padding-bottom: clamp(26px, 20cqw, 36px);
+  border-radius: 0 0 3px 3px;
+}
+.reward-card-footer {
+  position: absolute;
+  z-index: 4;
+  right: 7px;
+  left: 7px;
+  bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px;
+  pointer-events: none;
+}
+.reward-card-rarity {
+  color: var(--rarity-color);
+  font-size: clamp(6px, 5.5cqw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px #071b14;
+}
+.reward-card-quantity {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  color: #fff0ce;
+  font-size: clamp(18px, 13cqw, 24px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 1px 4px #071b14;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.reward-card-quantity strong {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.reward-card-quantity > span {
+  font-size: 0.6em;
+  opacity: 0.55;
+}
+@media (max-width: 560px) {
+  .reward-card-footer {
+    right: 5px;
+    left: 5px;
+    bottom: 5px;
+    gap: 4px;
+  }
+  .reward-card-quantity {
+    font-size: clamp(16px, 13cqw, 20px);
+    gap: 2px;
+  }
+  .reward-card-rarity {
+    letter-spacing: 0.3px;
+  }
+}
 .workshop-empty-slot {
   width: 100%;
   cursor: pointer;
@@ -633,39 +697,6 @@
 .chest-reveal-card .workshop-card:focus-visible {
   outline: 2px solid #f5d68a;
   outline-offset: 5px;
-}
-.chest-reveal-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  min-height: 60px;
-}
-.chest-reveal-meta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.chest-reveal-dialog .chest-reveal-item .rarity-label {
-  margin-top: 0;
-}
-.chest-reveal-caption > small {
-  font-size: 9px;
-  color: var(--quiet);
-  line-height: 1.6;
-}
-.chest-loot-quantity {
-  padding: 3px 8px;
-  border-radius: 5px;
-  border: 1px solid rgba(var(--rarity-rgb), 0.6);
-  background: #1c392d;
-  color: #fff2cd;
-  font-size: 14px;
-  font-weight: 800;
-  box-shadow: 0 2px 4px #0003;
 }
 @keyframes reveal-card {
   from {

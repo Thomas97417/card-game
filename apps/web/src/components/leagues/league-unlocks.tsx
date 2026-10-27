@@ -83,7 +83,7 @@ export function LeagueUnlocks({ reward }: { reward: Partial<TrophyChange> }) {
   return (
     <section className="result-unlocks" aria-label="Nouveautés débloquées">
       <h2>Débloqué</h2>
-      <ul>
+      <ul data-count={unlocks.length}>
         {unlocks.map((unlock) => (
           <li key={unlock.id}>
             <img

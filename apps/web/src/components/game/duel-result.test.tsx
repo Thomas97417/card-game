@@ -60,10 +60,11 @@ describe("résultat du combat", () => {
     const unlocks = within(
       dialog.getByRole("region", { name: "Nouveautés débloquées" }),
     );
-    expect(unlocks.getAllByRole("listitem")).toHaveLength(3);
+    expect(unlocks.getAllByRole("listitem")).toHaveLength(4);
     expect(unlocks.getByText("Deck de 6 cartes")).toBeTruthy();
     expect(unlocks.getByText("+1 place de coffre")).toBeTruthy();
     expect(unlocks.getByText("Liens d’âme")).toBeTruthy();
+    expect(unlocks.getByText("Grand coffre rare")).toBeTruthy();
     expect(
       dialog.queryByText(
         /Tes compagnons|LE CERCLE A TRANCHÉ|Il se déverrouille/,
@@ -73,10 +74,11 @@ describe("résultat du combat", () => {
 
   it.each([
     [200, "Deck de 5 cartes"],
+    [1000, "Coffre rare"],
     [1600, "Deck de 7 cartes"],
     [2000, "Coffre épique"],
-    [2200, "Coffre légendaire"],
     [2400, "Évolutions"],
+    [4000, "Coffre légendaire"],
   ])(
     "presents the real novelty when first reaching %i trophies",
     (total, title) => {
@@ -92,7 +94,7 @@ describe("résultat du combat", () => {
     },
   );
 
-  it.each([200, 800, 1600, 2000, 2200, 2400])(
+  it.each([200, 800, 1000, 1600, 2000, 2400, 4000])(
     "does not repeat any unlock on recovering the league at %i trophies, even after a remount",
     (total) => {
       const data = result(total - 15, total + 10, total + 100);
@@ -108,6 +110,14 @@ describe("résultat du combat", () => {
       ).toBeNull();
     },
   );
+
+  it("does not announce legendary chests before their new Emerald IV threshold", () => {
+    render(<DuelResult data={result(2175, 2200)} practice={false} />);
+    expect(screen.getByRole("heading", { name: "Argent I" })).toBeTruthy();
+    expect(
+      screen.queryByRole("region", { name: "Nouveautés débloquées" }),
+    ).toBeNull();
+  });
 
   it("does not invent unlocks for a legacy result with no historical record", () => {
     const data = result();
