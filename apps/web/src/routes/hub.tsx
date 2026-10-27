@@ -174,9 +174,6 @@ function HubContent() {
         const currency = result.emeralds > 0 ? "emeralds" : "gold";
         const amount = result.emeralds || result.gold;
         showCurrencyGain(currency, amount);
-        toast.success(
-          `Cadeau du jour ${day} : +${amount.toLocaleString("fr-FR")} ${currency === "gold" ? "pièces d’or" : "émeraudes"} !`,
-        );
       }
     } catch (error) {
       showGameError(error);

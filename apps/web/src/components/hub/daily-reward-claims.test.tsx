@@ -81,7 +81,7 @@ beforeEach(() => {
 });
 
 describe("récupération des cadeaux depuis le hub", () => {
-  it("guards rapid clicks and celebrates only the server-confirmed currency", async () => {
+  it("guards rapid clicks and animates confirmed currency without a toast", async () => {
     let resolve!: (
       result: DailyRewardReceipt & { alreadyClaimed: boolean },
     ) => void;
@@ -100,7 +100,7 @@ describe("récupération des cadeaux depuis le hub", () => {
     expect(mocks.gain).not.toHaveBeenCalled();
     await act(async () => resolve({ ...receipt, alreadyClaimed: false }));
     expect(mocks.gain).toHaveBeenCalledExactlyOnceWith("gold", 5000);
-    expect(mocks.success).toHaveBeenCalledOnce();
+    expect(mocks.success).not.toHaveBeenCalled();
   });
 
   it("shows the server's chest contents in the existing reveal dialog", async () => {
@@ -129,6 +129,7 @@ describe("récupération des cadeaux depuis le hub", () => {
       screen.getByRole("dialog", { name: "Coffre du cadeau" }).textContent,
     ).toBe("epic · 123 pièces · 1 cartes");
     expect(mocks.gain).not.toHaveBeenCalled();
+    expect(mocks.success).not.toHaveBeenCalled();
   });
 
   it.each(["replayed", "failed"] as const)(

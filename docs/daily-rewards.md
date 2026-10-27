@@ -1,6 +1,6 @@
 # Cadeaux quotidiens du refuge
 
-L’icône cadeau flotte sur le bord gauche du hub, à 75 % de sa hauteur, et ouvre les sept récompenses. Une coche signale qu’un cadeau peut être récupéré. Le menu affiche les jours, les cadeaux et le compte à rebours du prochain déblocage. Les états verrouillés et récupérés sont indiqués par des icônes.
+L’icône cadeau flotte sur le bord gauche du hub, à 25 % de sa hauteur depuis le haut, et ouvre les sept récompenses. Une coche signale qu’un cadeau peut être récupéré ; elle suit le cadeau au survol. Le menu affiche les jours, les cadeaux et le compte à rebours du prochain déblocage. Les coffres sont représentés par leur illustration. Les états verrouillés et récupérés sont indiqués par des icônes. La récupération des monnaies affiche le gain près du solde, sans toast.
 
 | Jour | Cadeau |
 | --- | --- |

@@ -104,11 +104,11 @@ export function DailyRewardsPanel({
                       alt=""
                       draggable={false}
                     />
-                    <strong className="daily-reward-name">
-                      {gift.kind === "chest"
-                        ? label
-                        : gift.amount.toLocaleString("fr-FR")}
-                    </strong>
+                    {gift.kind !== "chest" && (
+                      <strong className="daily-reward-name">
+                        {gift.amount.toLocaleString("fr-FR")}
+                      </strong>
+                    )}
                     <span className="daily-reward-status">
                       {claiming ? (
                         <span

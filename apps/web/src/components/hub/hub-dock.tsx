@@ -81,16 +81,18 @@ export function HubDock({
         data-ready={rewardReady || undefined}
         onClick={() => setActivePanel(rewardsOpen ? null : "rewards")}
       >
-        <GameIcon kind="rewards" size={80} />
-        {rewardReady && (
-          <span
-            className="hub-rewards-ready"
-            role="img"
-            aria-label="Cadeau quotidien à récupérer"
-          >
-            <MissionCheck />
-          </span>
-        )}
+        <span className="hub-rewards-art">
+          <GameIcon kind="rewards" size={80} />
+          {rewardReady && (
+            <span
+              className="hub-rewards-ready"
+              role="img"
+              aria-label="Cadeau quotidien à récupérer"
+            >
+              <MissionCheck />
+            </span>
+          )}
+        </span>
       </button>
       <div className="hub-footer">
         {children}
