@@ -9,7 +9,7 @@ export function FieldMark({
   activated = false,
 }: {
   kind: FieldMarkKind;
-  stat: "health" | "attack";
+  stat: "health" | "attack" | "block";
   amount: number;
   activated?: boolean;
 }) {
@@ -20,14 +20,22 @@ export function FieldMark({
     >
       <img
         className="field-mark-art"
-        src={`/art/field/${kind}-${stat}.webp`}
+        src={`/art/field/${kind}-${stat === "block" ? "health" : stat}.webp`}
         alt=""
         width={512}
         height={341}
         draggable={false}
       />
       <span className="field-mark-bonus">
-        <AbilityIcon kind={stat === "health" ? "vitality" : "power"} />
+        <AbilityIcon
+          kind={
+            stat === "block"
+              ? "block"
+              : stat === "health"
+                ? "vitality"
+                : "power"
+          }
+        />
         <strong>+{amount}</strong>
         {kind === "pentagram" && <small>/tour</small>}
       </span>

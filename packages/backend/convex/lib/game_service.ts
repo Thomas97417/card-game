@@ -3,6 +3,7 @@ import {
   createGame,
   GameError,
   validateDeck,
+  maxHeroLevel,
   type Transition,
 } from "@sylve/game";
 import { authComponent } from "../auth";
@@ -133,21 +134,28 @@ export async function startMatch(
     "Ton adversaire doit compléter son deck avant de combattre.",
   );
   requireCompleteDeck(guestCards.length, guestLeague.deckCapacity);
+  const hostHeroId = game.hostHeroId ?? "sylve";
+  const hostHeroLevel =
+    game.hostHeroLevel ??
+    Math.min(
+      (await readHeroProgress(ctx, game.hostId, hostCards)).progressionLevel,
+      maxHeroLevel(hostHeroId),
+    );
+  const guestHero = await readHeroProgress(ctx, guest.userId, guestCards);
   const state = createGame(
     [
       {
         userId: game.hostId,
         name: game.hostName,
-        heroLevel:
-          game.hostHeroLevel ??
-          (await readHeroProgress(ctx, game.hostId, hostCards)).level,
+        heroLevel: hostHeroLevel,
+        heroId: hostHeroId,
         cards: hostCards,
       },
       {
         ...guest,
+        heroId: guestHero.heroId,
         cards: guestCards,
-        heroLevel: (await readHeroProgress(ctx, guest.userId, guestCards))
-          .level,
+        heroLevel: guestHero.level,
       },
     ],
     Date.now(),

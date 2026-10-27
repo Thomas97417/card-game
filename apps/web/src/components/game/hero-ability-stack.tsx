@@ -17,7 +17,7 @@ export function HeroAbilityStack({
 }) {
   if (player.heroLevel === undefined) return null;
   const uses = player.heroAbilityUses ?? 0;
-  const abilities = heroAbilities(player.heroLevel, uses, turn);
+  const abilities = heroAbilities(player.heroLevel, uses, turn, player.heroId);
   const ability = abilities[Math.min(3, uses)]!;
   const unlocked = abilities
     .slice(0, 3)
@@ -35,12 +35,7 @@ export function HeroAbilityStack({
       : ability.state === "turn"
         ? `Ton tour ${ability.readyTurn}`
         : "Prêt";
-  const icon =
-    ability.id === "call_to_arms"
-      ? "reinforcement"
-      : ability.id === "heavenly_power"
-        ? "temporary"
-        : "power";
+  const icon = ability.icon;
   return (
     <aside className="hero-power-pile" aria-label="Pouvoirs du héros">
       <div className="hero-power-heading">
@@ -76,13 +71,7 @@ export function HeroAbilityStack({
           </span>
           <AbilityIcon kind={icon} />
           <strong>{ability.name}</strong>
-          <span className="hero-power-value">
-            {ability.id === "call_to_arms"
-              ? "2 renforts"
-              : ability.id === "heavenly_power"
-                ? `+${ability.value} ATQ`
-                : `${ability.value} dégâts`}
-          </span>
+          <span className="hero-power-value">{ability.valueLabel}</span>
           <span className="hero-power-status">
             {!ready && <LockKeyhole size={10} />}
             {label}

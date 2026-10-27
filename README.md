@@ -9,7 +9,7 @@ Jeu de cartes tactique en français, avec combats solo et multijoueurs, collecti
 | `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, chat et missions |
 | `/arena` | Combats solo, matchmaking public, invitations amicales et coffres |
 | `/decks` | Deck, collection, améliorations, évolutions et liens d’âme |
-| `/guardian` | Progression et pouvoirs du Gardien |
+| `/guardian` | Onze héros, déblocage en émeraudes, sélection, progression et pouvoirs |
 | `/sanctuary` | Invocations, bestiaire, packs de monnaies et clés de coffres |
 | `/settings` | Profil, email, mot de passe, sessions et suppression du compte |
 | `/practice` | Entraînement local accessible sans compte |

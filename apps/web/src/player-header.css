@@ -128,12 +128,13 @@
   box-shadow: 0 -2px 9px #dfc17140;
 }
 .player-header-actions .league-panel.is-compact {
-  width: 280px;
-  min-width: 0;
+  width: 200px;
+  min-width: 180px;
+  height: 44px;
   min-height: 44px;
   max-width: 340px;
-  gap: 12px;
-  padding: 3px 18px 3px 8px;
+  gap: 16px;
+  padding: 3px 16px 3px 12px;
   margin: 0;
 }
 .player-header-actions .league-badge {
@@ -146,21 +147,17 @@
 .player-header-actions .league-panel.is-compact .league-panel-heading {
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
 }
-.player-header-actions .league-panel.is-compact .league-panel-heading > strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 16px;
-}
 .player-header-actions .league-panel .trophy-amount {
-  gap: 3px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
 }
 .player-header-actions .league-panel .trophy-icon {
-  width: 19px;
-  height: 19px;
+  width: 22px;
+  height: 22px;
 }
 .sylve-settings-trigger {
   display: grid;
@@ -367,6 +364,7 @@
   .player-header-actions .league-panel.is-compact,
   .player-league-loading {
     width: 100%;
+    min-width: 0;
     max-width: none;
     height: 64px;
     padding: 5px 9px 5px 5px;
@@ -383,13 +381,6 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 3px;
-  }
-  .player-header-actions
-    .league-panel.is-compact
-    .league-panel-heading
-    > strong {
-    max-width: 100%;
-    font-size: 13px;
   }
   .player-header-actions .league-panel > svg {
     display: none;

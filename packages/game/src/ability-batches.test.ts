@@ -37,6 +37,27 @@ describe("ability animation batches", () => {
     expect(state).toEqual(before);
   });
 
+  it("batches health caps while reporting the actual loss for each target", () => {
+    const state = fresh();
+    const caster = state.players[0]!.cards.find((card) => card.id === "wisp:common")!;
+    caster.abilities = [{
+      id: "health-cap", name: "Verdict", description: "Limite les PV.",
+      unlockLevel: 1, active: true, effect: "set_health", trigger: "deploy",
+      target: "all_enemies", value: 4,
+    }];
+    state.players[1]!.board = [
+      { cardId: DEFAULT_DECK[0]!, row: 0, depth: 0, hp: 10, immune: true },
+      { cardId: DEFAULT_DECK[0]!, row: 1, depth: 0, hp: 10 },
+      { cardId: DEFAULT_DECK[0]!, row: 2, depth: 0, hp: 2 },
+    ];
+    const result = summon(state, 0, caster.id, 3, 2, 1, 1, () => 0.25);
+    const effects = result.events.filter((event) => event.type === "ability");
+    expect(effects.map((event) => event.amount)).toEqual([0, -6, 0]);
+    expect(effects[0]!.abilityBatch).toBeDefined();
+    expect(new Set(effects.map((event) => event.abilityBatch)).size).toBe(1);
+    expect(result.state.players[1]!.board.map((unit) => unit.hp)).toEqual([10, 4, 2]);
+  });
+
   it("identifies distinct activations even when their caster and display name are the same", () => {
     const state = fresh();
     const caster = state.players[0]!.cards.find((card) => card.id === "wisp:common")!;

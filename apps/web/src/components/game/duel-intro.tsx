@@ -6,14 +6,14 @@ import {
   type CSSProperties,
 } from "react";
 import { Swords } from "lucide-react";
-import type { GameView } from "@sylve/game";
+import { heroPortrait, type HeroId, type GameView } from "@sylve/game";
 import type { DuelData } from "./duel-screen";
 import { showGameError } from "./shared";
 
 export const DUEL_INTRO_DURATION = 2000;
 export const DUEL_INTRO_EXIT_DURATION = 360;
 export type DuelIntroData = Pick<DuelData, "players" | "me" | "mode">;
-export type IntroPlayer = { name: string; heroLevel?: number };
+export type IntroPlayer = { name: string; heroLevel?: number; heroId?: HeroId };
 
 export function shouldShowDuelIntro(
   gameId: string,
@@ -130,7 +130,7 @@ export function DuelIntro({
           <div className="duel-intro-fighter">
             <img
               className="duel-intro-portrait"
-              src={`/art/heroes/${index === 0 ? "hero-sylve" : "hero-amber"}.webp`}
+              src={heroPortrait(player.heroId, index !== 0)}
               alt=""
               fetchPriority="high"
               draggable={false}

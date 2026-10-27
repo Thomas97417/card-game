@@ -58,6 +58,7 @@ export const enqueue = mutation({
         hostName: opponent.name,
         hostCards: opponent.cards,
         hostHeroLevel: opponent.heroLevel,
+        hostHeroId: opponent.heroId,
         status: "waiting",
       });
       await ctx.db.delete(opponent._id);
@@ -65,10 +66,12 @@ export const enqueue = mutation({
       return { gameId };
     }
     const expiresAt = Date.now() + LEASE_MS;
+    const hero = await readHeroProgress(ctx, user.userId, cards);
     const queueId = await ctx.db.insert("matchmakingQueue", {
       ...user,
       cards,
-      heroLevel: (await readHeroProgress(ctx, user.userId, cards)).level,
+      heroLevel: hero.level,
+      heroId: hero.heroId,
       expiresAt,
     });
     await setActivity(ctx, user.userId, { queueId });

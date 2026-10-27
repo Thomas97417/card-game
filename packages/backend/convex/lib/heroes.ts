@@ -51,7 +51,13 @@ export async function readHeroProgress(
     heroRecord(ctx, ownerId),
     cards ?? heroDeckCards(ctx, ownerId),
   ]);
-  return heroProgress(deck, record ?? undefined);
+  return {
+    ...heroProgress(
+      deck,
+      record ? { ...record, heroId: record.selectedHeroId } : undefined,
+    ),
+    unlockedHeroIds: record?.unlockedHeroIds ?? ["sylve" as const],
+  };
 }
 /** Record actual equipped decks at every change, including before replacing one. */
 export async function observeHero(
@@ -62,7 +68,7 @@ export async function observeHero(
   const record = await heroRecord(ctx, ownerId);
   const progress = heroProgress(
     cards ?? (await heroDeckCards(ctx, ownerId)),
-    record ?? undefined,
+    record ? { ...record, heroId: record.selectedHeroId } : undefined,
   );
   if (!record)
     await ctx.db.insert("heroes", {

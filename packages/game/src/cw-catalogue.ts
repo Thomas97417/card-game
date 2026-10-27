@@ -2,11 +2,7 @@ import data from "./data/cunt-wars.json";
 import evolutionNames from "./data/evolution-names.json";
 import legendaryNames from "./data/legendary-names.json";
 import { GameError } from "./errors";
-import type {
-  CardAbility,
-  CardDefinition,
-  CardRarity,
-} from "./cards";
+import type { CardAbility, CardDefinition, CardRarity } from "./cards";
 
 export interface SoulbindRequirement {
   variantId: string;
@@ -116,6 +112,11 @@ export function cardSource(id: string): CwProfile {
   return card;
 }
 export const effectNames: Record<CardAbility["effect"], string> = {
+  freeze: "Gel",
+  execute: "Exécution",
+  sacrifice: "Éphémère",
+  set_health: "Fragilité",
+  block_rune: "Rune de blocage",
   attack: "Puissance",
   health: "Vitalité",
   heal: "Soin",

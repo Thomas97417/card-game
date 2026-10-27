@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as chests from "../chests.js";
 import type * as collection from "../collection.js";
 import type * as combatCleanup from "../combatCleanup.js";
+import type * as crons from "../crons.js";
 import type * as dailyRewards from "../dailyRewards.js";
 import type * as decks from "../decks.js";
 import type * as env from "../env.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   chests: typeof chests;
   collection: typeof collection;
   combatCleanup: typeof combatCleanup;
+  crons: typeof crons;
   dailyRewards: typeof dailyRewards;
   decks: typeof decks;
   env: typeof env;

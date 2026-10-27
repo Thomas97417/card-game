@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { HERO_LEVELS, heroAbilities, heroMight, heroStats } from "@sylve/game";
+import { maxHeroLevel, heroAbilities, heroMight, heroStats } from "@sylve/game";
 import {
   ArrowUpRight,
   ChevronLeft,
@@ -17,20 +17,23 @@ import { GameIcon } from "@/components/game/game-icon";
 import type { HeroProgress } from "./guardian-house";
 
 const number = (value: number) => value.toLocaleString("fr-FR");
-const maxLevel = HERO_LEVELS.length;
 
 export function GuardianLevelExplorer({
   progress,
 }: {
   progress: HeroProgress;
 }) {
+  const maxLevel = maxHeroLevel(progress.heroId);
   const [open, setOpen] = useState(false);
   const [level, setLevel] = useState(progress.next?.level ?? progress.level);
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const selected = heroStats(level);
-  const requiredMight = HERO_LEVELS[level - 2]?.nextMight ?? 0;
+  const selected = heroStats(level, progress.heroId);
+  const requiredMight =
+    level > 1 ? (heroStats(level - 1, progress.heroId).nextMight ?? 0) : 0;
   const healthGain = selected.health - progress.health;
-  const mightGain = heroMight(level) - heroMight(progress.level);
+  const mightGain =
+    heroMight(level, progress.heroId) -
+    heroMight(progress.level, progress.heroId);
   const status =
     level === progress.level
       ? "Ton niveau"
@@ -39,10 +42,23 @@ export function GuardianLevelExplorer({
         : level === progress.level + 1
           ? "Prochain niveau"
           : "À venir";
+  const powers = heroAbilities(progress.level, 0, 1, progress.heroId);
   const shortcuts = [
     { level: progress.level, label: "Ton niveau" },
-    { level: 11, label: "Éclaireurs · 11" },
-    { level: 21, label: "Élan · 21" },
+    {
+      level: powers[1]!.unlockLevel,
+      label:
+        progress.heroId === "sylve"
+          ? "Éclaireurs · 11"
+          : `${powers[1]!.name} · ${powers[1]!.unlockLevel}`,
+    },
+    {
+      level: powers[2]!.unlockLevel,
+      label:
+        progress.heroId === "sylve"
+          ? "Élan · 21"
+          : `${powers[2]!.name} · ${powers[2]!.unlockLevel}`,
+    },
     { level: maxLevel, label: `Maximum · ${maxLevel}` },
   ];
 
@@ -54,8 +70,11 @@ export function GuardianLevelExplorer({
         setOpen(value);
       }}
     >
-      <DialogTrigger className="guardian-explore-levels">
-        Explorer les niveaux
+      <DialogTrigger
+        className="guardian-level-trigger"
+        aria-label="Explorer les niveaux"
+        title="Explorer les niveaux"
+      >
         <ArrowUpRight size={15} aria-hidden="true" />
       </DialogTrigger>
       <DialogContent
@@ -146,7 +165,7 @@ export function GuardianLevelExplorer({
             <div>
               <dt>Bonus de puissance</dt>
               <dd>
-                +{number(heroMight(level))}
+                +{number(heroMight(level, progress.heroId))}
                 {mightGain !== 0 && (
                   <small>
                     {mightGain > 0 ? "+" : ""}
@@ -179,27 +198,21 @@ export function GuardianLevelExplorer({
             className="guardian-level-powers"
             aria-label={`Pouvoirs au niveau ${level}`}
           >
-            {heroAbilities(level, 0, 1).map((power) => {
+            {heroAbilities(level, 0, 1, progress.heroId).map((power) => {
               const locked = level < power.unlockLevel;
               const detail =
-                power.id === "storm"
-                  ? `${power.value} dégâts à toutes les unités ennemies`
-                  : power.id === "call_to_arms"
-                    ? `2 éclaireuses · ${selected.archerAttack} ATQ / ${selected.archerHealth} PV`
-                    : power.id === "heavenly_power"
-                      ? `+${power.value} ATQ aux alliés pour un tour`
-                      : `${power.value} dégâts au héros, puis +${power.value} par carte`;
+                progress.heroId !== "sylve"
+                  ? power.description
+                  : power.id === "storm"
+                    ? `${power.value} dégâts à toutes les unités ennemies`
+                    : power.id === "call_to_arms"
+                      ? `2 éclaireuses · ${selected.archerAttack} ATQ / ${selected.archerHealth} PV`
+                      : power.id === "heavenly_power"
+                        ? `+${power.value} ATQ aux alliés pour un tour`
+                        : `${power.value} dégâts au héros, puis +${power.value} par carte`;
               return (
                 <li key={power.id} data-locked={locked}>
-                  <AbilityIcon
-                    kind={
-                      power.id === "call_to_arms"
-                        ? "reinforcement"
-                        : power.id === "heavenly_power"
-                          ? "temporary"
-                          : "power"
-                    }
-                  />
+                  <AbilityIcon kind={power.icon} />
                   <div>
                     <strong>{power.name}</strong>
                     <p>

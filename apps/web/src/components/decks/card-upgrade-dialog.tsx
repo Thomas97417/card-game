@@ -3,7 +3,6 @@ import { Tabs } from "@base-ui/react/tabs";
 import {
   ArrowRight,
   ArrowLeft,
-  ArrowUp,
   ArrowRightLeft,
   Crown,
   LockKeyhole,
@@ -27,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CardPortrait } from "@/components/game/card-portrait";
+import { LevelUpgradeButton } from "@/components/game/level-upgrade-button";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
@@ -412,20 +412,17 @@ export function CardUpgradeDialog({
                         </span>
                       )}
                     </div>
-                    <button
-                      className="sylve-button upgrade-action"
+                    <LevelUpgradeButton
+                      label={actionLabel}
+                      maxLevel={max}
                       disabled={
                         busy || max || entry.copies < cost || !enoughGold
                       }
                       aria-label={actionLabel}
                       onClick={() => void upgrade()}
                     >
-                      <span className="upgrade-action-label">
-                        {max ? <Crown size={19} /> : <ArrowUp size={17} />}
-                        {actionLabel}
-                      </span>
                       {!max && <GoldAmount amount={goldCost} />}
-                    </button>
+                    </LevelUpgradeButton>
                   </div>
                 )}
               </Tabs.Panel>

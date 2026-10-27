@@ -77,7 +77,12 @@ export type AbilityEffect =
   | "splash"
   | "attack_pentagram"
   | "health_pentagram"
-  | "reflect_damage";
+  | "reflect_damage"
+  | "freeze"
+  | "execute"
+  | "sacrifice"
+  | "set_health"
+  | "block_rune";
 export type AbilityTrigger =
   | "deploy"
   | "turn_start"
@@ -153,7 +158,10 @@ export type AbilityTarget =
   | "random_enemy_unit"
   | "female_allies"
   | "allies_with_summon"
-  | "column_enemies";
+  | "column_enemies"
+  | "line_enemies"
+  | "enemy_creatures"
+  | "non_melee_enemies";
 export interface CardAbility {
   id: string;
   name: string;

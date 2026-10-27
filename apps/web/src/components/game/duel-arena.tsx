@@ -15,6 +15,8 @@ import {
   getCombatType,
   fieldBonus,
   fieldMarkName,
+  heroPortrait,
+  heroDefinition,
   isDeploymentDepth,
   isMeleeBlocked,
   unitCard,
@@ -46,6 +48,7 @@ import {
 type Player = GameView["players"][number];
 
 const sealActivations = {
+  "Rune de blocage": { kind: "rune", stat: "block" },
   "Rune de vie": { kind: "rune", stat: "health" },
   "Rune de puissance": { kind: "rune", stat: "attack" },
   "Pentagramme de vie": { kind: "pentagram", stat: "health" },
@@ -114,16 +117,22 @@ function abilityOrigins(events: readonly GameEvent[]) {
 type StatLoss = { stat: "health" | "attack"; amount: number };
 type CombatHit = { event: GameEvent; loss?: StatLoss };
 
-function appliedStatLoss(event: GameEvent, player: Player): StatLoss | undefined {
+function appliedStatLoss(
+  event: GameEvent,
+  player: Player,
+): StatLoss | undefined {
   if (event.type !== "ability" || (event.amount ?? 0) >= 0 || !event.unit)
     return undefined;
-  const before = player.board.find((unit) =>
-    unit.cardId === event.targetCardId &&
-    unit.row === event.targetRow && unit.depth === event.targetDepth,
+  const before = player.board.find(
+    (unit) =>
+      unit.cardId === event.targetCardId &&
+      unit.row === event.targetRow &&
+      unit.depth === event.targetDepth,
   );
   if (!before) return undefined;
   const base = unitCard(before, player.deck);
-  const attack = (before.attack ?? base.attack) - (event.unit.attack ?? base.attack);
+  const attack =
+    (before.attack ?? base.attack) - (event.unit.attack ?? base.attack);
   if (attack > 0) return { stat: "attack", amount: attack };
   const health = Math.max(
     before.hp - event.unit.hp,
@@ -131,7 +140,8 @@ function appliedStatLoss(event: GameEvent, player: Player): StatLoss | undefined
   );
   if (health > 0) return { stat: "health", amount: health };
   const icon = eventIconKind(event);
-  if (icon === "weaken" || icon === "power") return { stat: "attack", amount: 0 };
+  if (icon === "weaken" || icon === "power")
+    return { stat: "attack", amount: 0 };
   if (icon === "vitality") return { stat: "health", amount: 0 };
   return undefined;
 }
@@ -202,8 +212,14 @@ export function DuelArena({
           )}
           <img
             key={casting ? current!.seq : "idle"}
-            src={`/art/heroes/${own ? "hero-sylve" : "hero-amber"}.webp`}
-            alt={own ? "Gardien de la Sylve" : "Gardien mécanique d’ambre"}
+            src={heroPortrait(player.heroId, !own)}
+            alt={
+              player.heroId
+                ? heroDefinition(player.heroId).name
+                : own
+                  ? "Gardien de la Sylve"
+                  : "Gardien mécanique d’ambre"
+            }
             width={320}
             height={400}
             draggable={false}
@@ -241,9 +257,10 @@ export function DuelArena({
           const mark = rune ? "rune" : pentagram ? "pentagram" : null;
           const seal = rune ?? pentagram;
           const bonus = seal ? fieldBonus(seal) : null;
-          const markLabel = mark && seal && bonus
-            ? `${fieldMarkName(mark, seal)} : +${bonus.value} ${bonus.stat === "health" ? "PV actuels et maximum" : "attaque"}, ${mark === "pentagram" ? "à chaque début de tour du porteur, sans bonus à la pose" : rune?.activated ? "bonus déjà accordé" : "immédiatement à l’arrivée"}`
-            : "";
+          const markLabel =
+            mark && seal && bonus
+              ? `${fieldMarkName(mark, seal)} : +${bonus.value} ${bonus.stat === "block" ? "blocage" : bonus.stat === "health" ? "PV actuels et maximum" : "attaque"}, ${mark === "pentagram" ? "à chaque début de tour du porteur, sans bonus à la pose" : rune?.activated ? "bonus déjà accordé" : "immédiatement à l’arrivée"}`
+              : "";
           const column = own ? index % DEPTHS : DEPTHS + (index % DEPTHS);
           const cell = groundCell(row, column);
           const legal =
@@ -513,7 +530,9 @@ function CombatEffects({
             ? groundCell(row, own ? DEPTHS - 1 - depth : DEPTHS + depth)
             : undefined;
         const position = cell
-          ? seal || loss ? cell.aboveUnit : cell.impact
+          ? seal || loss
+            ? cell.aboveUnit
+            : cell.impact
           : { left: own ? "8%" : "92%", top: "66%", marginTop: "-10vw" };
         return (
           <Fragment key={hit.seq}>
@@ -630,11 +649,13 @@ function DamageNumber({
   onComplete: (sequence: number) => void;
 }) {
   const icon = loss
-    ? loss.stat === "attack" ? "weaken" : "vitality"
-    : eventIconKind(hit) ??
-    (hit.type === "attack" && hit.damage === 0 && hit.unit?.block
-      ? "block"
-      : undefined);
+    ? loss.stat === "attack"
+      ? "weaken"
+      : "vitality"
+    : (eventIconKind(hit) ??
+      (hit.type === "attack" && hit.damage === 0 && hit.unit?.block
+        ? "block"
+        : undefined));
   const seal = sealActivation(hit);
   const stat = loss?.stat ?? seal?.stat;
   const amount = loss ? -loss.amount : hit.amount;
@@ -651,14 +672,17 @@ function DamageNumber({
       style={position}
       aria-label={
         hit.type === "ability" || hit.type === "summon"
-          ? `${targetName} : ${hit.ability}${amount === undefined ? "" : ` ${amount > 0 ? "+" : ""}${amount}`}${stat ? stat === "health" ? " PV" : " puissance" : ""}`
+          ? `${targetName} : ${hit.ability}${amount === undefined ? "" : ` ${amount > 0 ? "+" : ""}${amount}`}${stat ? (stat === "health" ? " PV" : " puissance") : ""}`
           : `${targetName} subit ${hit.damage} dégâts`
       }
     >
       {icon && <AbilityIcon kind={icon} size={30} />}
       {stat ? (
         <span className="stat-change-value">
-          <strong>{loss ? "−" : "+"}{Math.abs(amount ?? 0)}</strong>
+          <strong>
+            {loss ? "−" : "+"}
+            {Math.abs(amount ?? 0)}
+          </strong>
           <small>{stat === "health" ? "PV" : "puissance"}</small>
         </span>
       ) : hit.type === "summon" ? (

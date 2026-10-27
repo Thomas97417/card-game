@@ -18,6 +18,7 @@ import {
   type GameState,
   type GameView,
   type PlayerState,
+  type HeroId,
 } from "./index";
 import { leagueAt } from "./leagues";
 
@@ -117,12 +118,13 @@ export function createPracticeGame(
   deckIds: readonly string[] = DEFAULT_DECK,
   now: number,
   random: () => number,
+  hero: { heroId?: HeroId; heroLevel?: number } = {},
 ): GameState {
   const humanCards = validateDeck(deckIds);
   const computerDeck = computerDeckForLeague(0, humanCards, random);
   const state = createGame(
     [
-      { userId: PRACTICE_PLAYER_ID, name: "Toi", cards: humanCards },
+      { userId: PRACTICE_PLAYER_ID, name: "Toi", cards: humanCards, ...hero },
       {
         userId: PRACTICE_COMPUTER_ID,
         name: "Gardien mécanique",
@@ -159,6 +161,11 @@ function visibleState(view: GameView): GameState {
       heroHp: player.heroHp,
       heroMaxHp: player.heroMaxHp,
       heroLevel: player.heroLevel,
+      heroId: player.heroId,
+      heroSpikes: player.heroSpikes,
+      heroSpikesUntil: player.heroSpikesUntil,
+      heroPreemptiveDamage: player.heroPreemptiveDamage,
+      heroPreemptiveUntil: player.heroPreemptiveUntil,
       heroMight: player.heroMight,
       heroAbilityUses: player.heroAbilityUses,
       cards: player.deck.map((card) => ({ ...card })),
@@ -209,6 +216,7 @@ export function chooseComputerHeroAbility(view: GameView) {
     own.heroLevel,
     own.heroAbilityUses ?? 0,
     view.turn,
+    own.heroId,
   );
   if (ability.state !== "ready") return null;
   const enemy = view.players[1 - view.me]!;
@@ -224,6 +232,7 @@ export function chooseComputerHeroAbility(view: GameView) {
     own.heroLevel,
     (own.heroAbilityUses ?? 0) + 1,
     view.turn,
+    own.heroId,
   );
   return useful || next.state === "ready" ? ability : null;
 }

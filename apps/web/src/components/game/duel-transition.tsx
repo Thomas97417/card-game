@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { heroPortrait } from "@sylve/game";
 import {
   DuelIntro,
   rememberDuelIntro,
@@ -92,14 +93,22 @@ export function DuelTransitionProvider({ children }: { children: ReactNode }) {
     // A match may have been found while the cancellation was in flight.
     setDuel((current) => (current?.gameId ? current : null));
   }, [duel?.onCancel]);
+  const ownPortrait = heroPortrait(
+    duel?.data?.players[duel.data.me]?.heroId ?? duel?.player.heroId,
+  );
+  const enemyPortrait = heroPortrait(
+    duel?.data?.players[1 - duel.data.me]?.heroId,
+    true,
+  );
 
   useEffect(() => {
     if (!duel?.id) return;
     let mounted = true;
+    setAssetsReady(false);
     const images = [
       "/art/duel-arena-overhead.webp",
-      "/art/heroes/hero-sylve.webp",
-      "/art/heroes/hero-amber.webp",
+      ownPortrait,
+      enemyPortrait,
     ].map((src) => {
       const image = new Image();
       const promise = new Promise<void>((resolve) => {
@@ -118,7 +127,7 @@ export function DuelTransitionProvider({ children }: { children: ReactNode }) {
         image.onload = image.onerror = null;
       });
     };
-  }, [duel?.id]);
+  }, [duel?.id, ownPortrait, enemyPortrait]);
   useEffect(() => {
     if (
       pathname !== "/arena" &&

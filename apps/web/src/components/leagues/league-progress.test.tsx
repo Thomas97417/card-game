@@ -10,6 +10,87 @@ import { leagueProgress } from "@sylve/game/leagues";
 import { LeaguePanel, LeagueResult } from "./league-progress";
 
 describe("le parcours des ligues", () => {
+  it("places every guardian at its exact recruitment milestone and preserves emerald prices", async () => {
+    render(<LeaguePanel progress={leagueProgress(0)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const milestones = [
+      { league: "Fer IV", heroes: ["Gardien de la Sylve", "Gardien du Givre"] },
+      { league: "Bronze IV", heroes: ["Chamane des Racines"] },
+      { league: "Bronze III", heroes: ["Gardien des Ronces"] },
+      { league: "Bronze I", heroes: ["Tisseuse du Crépuscule"] },
+      { league: "Argent III", heroes: ["Gardien du Vide"] },
+      {
+        league: "Or I",
+        heroes: ["Maestra des Clairières", "Émissaire des Braises"],
+      },
+      { league: "Platine III", heroes: ["Artificier des Neiges"] },
+      { league: "Platine I", heroes: ["Héraut des Ombres"] },
+      { league: "Émeraude III", heroes: ["Souveraine Carmin"] },
+    ];
+    for (const milestone of milestones) {
+      const heroButton = dialog.getByRole("button", {
+        name: `Voir ${milestone.heroes[0]} au palier ${milestone.league}`,
+      });
+      fireEvent.click(heroButton);
+      const node = dialog.getByRole("button", {
+        name: new RegExp(`^${milestone.league},`),
+      });
+      expect(node.getAttribute("aria-pressed")).toBe("true");
+      expect(document.activeElement).toBe(node);
+      const section = within(
+        dialog.getByRole("region", { name: "Héros de ce palier" }),
+      );
+      expect(section.getAllByRole("listitem")).toHaveLength(
+        milestone.heroes.length,
+      );
+      for (const hero of milestone.heroes) {
+        expect(section.getByText(hero)).toBeTruthy();
+        expect(
+          section.getByRole("img", { name: hero }).getAttribute("src"),
+        ).toMatch(/^\/art\/heroes\/hero-/);
+      }
+      expect(
+        section.getByText(/Le palier ouvre l’accès à l’achat/),
+      ).toBeTruthy();
+    }
+    fireEvent.click(dialog.getByRole("button", { name: /^Or I,/ }));
+    const orHeroes = within(
+      dialog.getByRole("region", { name: "Héros de ce palier" }),
+    );
+    expect(orHeroes.getByText(/^7\s500$/)).toBeTruthy();
+    expect(orHeroes.getByText(/^5\s500$/)).toBeTruthy();
+    expect(orHeroes.getByText(/Atteins 3\s000 trophées/)).toBeTruthy();
+    expect(
+      dialog.getByRole("region", { name: "Ta progression" }).textContent,
+    ).toContain("Fer IV");
+  });
+
+  it("keeps recruitment available through demotion and shows the next hero milestone", async () => {
+    render(<LeaguePanel progress={leagueProgress(100, 3000)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(
+      dialog.getByRole("heading", { name: "Artificier des Neiges" }),
+    ).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: /^Or I,/ }));
+    const heroes = within(
+      dialog.getByRole("region", { name: "Héros de ce palier" }),
+    );
+    expect(
+      heroes.getByText("Recrutement accessible à la Maison des gardiens."),
+    ).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: /^Fer IV,/ }));
+    const starting = within(
+      dialog.getByRole("region", { name: "Héros de ce palier" }),
+    );
+    expect(starting.getByText("Héros de départ · Gratuit")).toBeTruthy();
+    expect(starting.getByText(/^4\s500$/)).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: /^Fer III,/ }));
+    expect(
+      dialog.queryByRole("region", { name: "Héros de ce palier" }),
+    ).toBeNull();
+  });
   it("fills the compact header background within the current division and resets on promotion", () => {
     const { rerender } = render(
       <LeaguePanel progress={leagueProgress(375)} compact />,
@@ -248,9 +329,11 @@ describe("le parcours des ligues", () => {
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
     const dialog = within(await screen.findByRole("dialog"));
     expect(
-      dialog.getByRole("heading", { name: "Un deck de 7 cartes" }),
+      dialog.getByRole("heading", { name: "Gardien des Ronces" }),
     ).toBeTruthy();
-    expect(dialog.getByText("Et un 4ᵉ emplacement de coffre.")).toBeTruthy();
+    expect(
+      dialog.getByRole("button", { name: /^Bronze III 1\s000$/ }),
+    ).toBeTruthy();
     expect(
       dialog.getByRole("region", { name: "Ta progression" }).textContent,
     ).toContain("Deck : 6 cartes max.");

@@ -54,6 +54,7 @@ function ArenaPage() {
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
   const user = useQuery(api.auth.getCurrentUser);
+  const hero = useQuery(api.collection.hero);
   const openingGameId = activity?.status === "active" ? activity.gameId : null;
   // The presentation already covers the arena while the live duel loads.
   const openingGame = useQuery(
@@ -116,7 +117,11 @@ function ArenaPage() {
       ) {
         transition.start({
           mode: openingGame.mode ?? "private",
-          player: { name: user?.name ?? "Toi" },
+          player: {
+            name: user?.name ?? "Toi",
+            heroId: hero?.heroId,
+            heroLevel: hero?.level,
+          },
         });
       }
       transition.match(openingGameId, openingGame);
@@ -129,16 +134,35 @@ function ArenaPage() {
       transition?.cancel();
       showGameError(error);
     });
-  }, [openingGameId, openingGame, navigate, transition, user?.name]);
+  }, [
+    openingGameId,
+    openingGame,
+    navigate,
+    transition,
+    user?.name,
+    hero?.heroId,
+    hero?.level,
+  ]);
   useEffect(() => {
     if (activity?.queued && transition && !transition.active) {
       transition.start({
         mode: "public",
-        player: { name: user?.name ?? "Toi" },
+        player: {
+          name: user?.name ?? "Toi",
+          heroId: hero?.heroId,
+          heroLevel: hero?.level,
+        },
       });
     }
     transition?.setCancellation(activity?.queued ? cancelSearch : undefined);
-  }, [activity?.queued, transition, user?.name, cancelSearch]);
+  }, [
+    activity?.queued,
+    transition,
+    user?.name,
+    cancelSearch,
+    hero?.heroId,
+    hero?.level,
+  ]);
   useEffect(() => {
     if (!activity?.queued) return;
     const ping = () => {
@@ -181,7 +205,14 @@ function ArenaPage() {
   ) {
     if (actionLock.current) return;
     setPrivateOpen(false);
-    transition?.start({ mode, player: { name: user?.name ?? "Toi" } });
+    transition?.start({
+      mode,
+      player: {
+        name: user?.name ?? "Toi",
+        heroId: hero?.heroId,
+        heroLevel: hero?.level,
+      },
+    });
     void action(async () => {
       try {
         await fn();

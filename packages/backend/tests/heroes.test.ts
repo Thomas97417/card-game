@@ -396,3 +396,216 @@ describe("niveaux et pouvoirs persistants du héros", () => {
     expect((await alice.query(api.games.get, { gameId })).turn).toBe(5);
   });
 });
+
+describe("déblocage et sélection des autres héros", () => {
+  it("keeps levels beyond 91 when switching away from and back to the Maestra", async () => {
+    const { t, alice, ownerId } = await fixture();
+    await t.run(async (ctx) => {
+      const record = (await ctx.db
+        .query("heroes")
+        .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+        .unique())!;
+      await ctx.db.patch(record._id, {
+        level: 91,
+        peakMight: 1e9,
+        selectedHeroId: "maestro",
+        unlockedHeroIds: ["sylve", "maestro"],
+      });
+    });
+    await alice.mutation(api.collection.upgradeHero, {
+      expectedLevel: 91,
+      expectedHeroId: "maestro",
+    });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      level: 92,
+      progressionLevel: 92,
+    });
+    await alice.mutation(api.collection.selectHero, { heroId: "sylve" });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      level: 91,
+      progressionLevel: 92,
+      health: 1475,
+      canUpgrade: false,
+    });
+    await alice.mutation(api.collection.selectHero, { heroId: "maestro" });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      heroId: "maestro",
+      level: 92,
+      progressionLevel: 92,
+    });
+  });
+  it("authenticates purchases and selection and never equips an unowned hero", async () => {
+    const { t, alice } = await fixture();
+    await expect(
+      t.mutation(api.collection.unlockHero, { heroId: "north" }),
+    ).rejects.toThrow("Connecte-toi");
+    await expect(
+      t.mutation(api.collection.selectHero, { heroId: "north" }),
+    ).rejects.toThrow("Connecte-toi");
+    await expect(
+      alice.mutation(api.collection.selectHero, { heroId: "north" }),
+    ).rejects.toThrow("Débloque");
+    expect((await alice.query(api.collection.hero, {})).heroId).toBe("sylve");
+  });
+
+  it("rejects an insufficient balance without granting ownership, then charges a concurrent unlock once", async () => {
+    const { t, alice, ownerId } = await fixture();
+    const walletId = await t.run((ctx) =>
+      ctx.db.insert("wallets", {
+        ownerId,
+        gold: 90,
+        diamonds: 4499,
+        catalogueVersion: 2,
+      }),
+    );
+    await expect(
+      alice.mutation(api.collection.unlockHero, { heroId: "north" }),
+    ).rejects.toThrow("émeraudes");
+    expect(await t.run((ctx) => ctx.db.get(walletId))).toMatchObject({
+      gold: 90,
+      diamonds: 4499,
+    });
+    await t.run((ctx) => ctx.db.patch(walletId, { diamonds: 10000 }));
+    await Promise.all([
+      alice.mutation(api.collection.unlockHero, { heroId: "north" }),
+      alice.mutation(api.collection.unlockHero, { heroId: "north" }),
+    ]);
+    expect(await alice.query(api.collection.diamonds, {})).toBe(5500);
+    expect(
+      (await alice.query(api.collection.hero, {})).unlockedHeroIds,
+    ).toEqual(["sylve", "north"]);
+    expect((await alice.query(api.collection.hero, {})).heroId).toBe("sylve");
+    await alice.mutation(api.collection.selectHero, { heroId: "north" });
+    await alice.mutation(api.collection.selectHero, { heroId: "sylve" });
+    expect(await alice.query(api.collection.diamonds, {})).toBe(5500);
+  });
+
+  it("enforces league eligibility using the best league, including after demotion", async () => {
+    const { t, alice, ownerId } = await fixture();
+    await t.run((ctx) =>
+      ctx.db.insert("wallets", {
+        ownerId,
+        gold: 0,
+        diamonds: 10000,
+        catalogueVersion: 2,
+      }),
+    );
+    await expect(
+      alice.mutation(api.collection.unlockHero, { heroId: "thorn" }),
+    ).rejects.toThrow("trophées");
+    expect(await alice.query(api.collection.diamonds, {})).toBe(10000);
+    await t.run((ctx) =>
+      ctx.db.insert("leagueProgress", {
+        ownerId,
+        trophies: 0,
+        peakTrophies: 1000,
+      }),
+    );
+    await alice.mutation(api.collection.unlockHero, { heroId: "thorn" });
+    await alice.mutation(api.collection.selectHero, { heroId: "thorn" });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      heroId: "thorn",
+      health: 50,
+      unlockedHeroIds: ["sylve", "thorn"],
+    });
+  });
+
+  it("preserves levels, rejects a promotion submitted for another hero, and freezes the hero in a waiting invitation", async () => {
+    const { t, alice, bob, ownerId, deckId, bobDeck } = await fixture();
+    await t.run(async (ctx) => {
+      const hero = (await ctx.db
+        .query("heroes")
+        .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+        .unique())!;
+      await ctx.db.patch(hero._id, {
+        level: 21,
+        peakMight: 10000,
+        unlockedHeroIds: ["sylve", "north"],
+      });
+    });
+    await alice.mutation(api.collection.selectHero, { heroId: "north" });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      heroId: "north",
+      level: 21,
+      health: 150,
+    });
+    await expect(
+      alice.mutation(api.collection.upgradeHero, {
+        expectedLevel: 21,
+        expectedHeroId: "sylve",
+      }),
+    ).rejects.toThrow("actif a changé");
+    const invite = await alice.mutation(api.games.createPrivate, { deckId });
+    await alice.mutation(api.collection.selectHero, { heroId: "sylve" });
+    const gameId = await bob.mutation(api.games.joinPrivate, {
+      code: invite.code,
+      deckId: bobDeck,
+    });
+    const game = await alice.query(api.games.get, { gameId });
+    expect(game.players[game.me]).toMatchObject({
+      heroId: "north",
+      heroLevel: 21,
+      heroHp: 150,
+    });
+    expect(await alice.query(api.collection.hero, {})).toMatchObject({
+      heroId: "sylve",
+      level: 21,
+      health: 120,
+    });
+  });
+
+  it("snapshots and executes a different hero power in solo and public games", async () => {
+    for (const mode of ["solo", "public"] as const) {
+      const { t, alice, bob, ownerId, deckId, bobDeck } = await fixture();
+      await t.run(async (ctx) => {
+        const hero = (await ctx.db
+          .query("heroes")
+          .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+          .unique())!;
+        await ctx.db.patch(hero._id, {
+          level: 21,
+          peakMight: 10000,
+          selectedHeroId: "void",
+          unlockedHeroIds: ["sylve", "void"],
+        });
+      });
+      let gameId;
+      if (mode === "solo")
+        gameId = await alice.mutation(api.games.createSolo, { deckId });
+      else {
+        await alice.mutation(api.matchmaking.enqueue, { deckId });
+        gameId = (
+          await bob.mutation(api.matchmaking.enqueue, { deckId: bobDeck })
+        ).gameId!;
+      }
+      const saved = (await t.run((ctx) => ctx.db.get(gameId)))!.state!;
+      saved.activePlayer = 0;
+      saved.players[1]!.board = [
+        { cardId: saved.players[1]!.cards[0]!.id, row: 0, depth: 0, hp: 5 },
+      ];
+      await t.run((ctx) => ctx.db.patch(gameId, { state: saved }));
+      await alice.mutation(api.games.playHeroAbility, {
+        gameId,
+        abilityId: "cold_snap",
+        expectedUses: 0,
+        expectedTurn: 1,
+      });
+      const view = await alice.query(api.games.get, { gameId });
+      expect(view.players[0]).toMatchObject({
+        heroId: "void",
+        heroHp: 150,
+        heroAbilityUses: 1,
+      });
+      expect(view.players[1]!.board[0]!.frozen).toBe(true);
+      expect(view.hasSummoned).toBe(false);
+      await expect(
+        alice.mutation(api.games.playHeroAbility, {
+          gameId,
+          abilityId: "storm",
+          expectedUses: 1,
+          expectedTurn: 1,
+        }),
+      ).rejects.toThrow("premier pouvoir");
+    }
+  });
+});

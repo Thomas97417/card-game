@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 import {
   missionPeriod,
   type MissionPeriodKind,
@@ -126,10 +125,7 @@ function HubContent() {
             periodKey: mission.periodKey,
             amount: result.amount,
           });
-        } else
-          toast.success(
-            `+${result.amount} émeraudes · Palier suivant débloqué !`,
-          );
+        } else showCurrencyGain("emeralds", result.amount);
       }
     } catch (error) {
       showGameError(error);

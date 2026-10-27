@@ -11,6 +11,7 @@ const mineState = v.object({
 
 import {
   cardValidator,
+  heroIdValidator,
   eventValidator,
   stateValidator,
   chestTypeValidator,
@@ -26,6 +27,8 @@ export default defineSchema({
     ownerId: v.string(),
     level: v.number(),
     peakMight: v.number(),
+    selectedHeroId: v.optional(heroIdValidator),
+    unlockedHeroIds: v.optional(v.array(heroIdValidator)),
   }).index("by_owner", ["ownerId"]),
   missionProgress: defineTable({
     ownerId: v.string(),
@@ -244,6 +247,7 @@ export default defineSchema({
     hostName: v.string(),
     hostCards: v.array(cardValidator),
     hostHeroLevel: v.optional(v.number()),
+    hostHeroId: v.optional(heroIdValidator),
     guestId: v.optional(v.string()),
     inviteCode: v.optional(v.string()),
     waitingExpiresAt: v.optional(v.number()),
@@ -263,6 +267,7 @@ export default defineSchema({
     name: v.string(),
     cards: v.array(cardValidator),
     heroLevel: v.optional(v.number()),
+    heroId: v.optional(heroIdValidator),
     expiresAt: v.number(),
   }).index("by_user", ["userId"]),
 });
