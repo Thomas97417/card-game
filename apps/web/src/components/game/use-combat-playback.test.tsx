@@ -218,6 +218,43 @@ describe("réactivité du placement", () => {
 });
 
 describe("animations des créatures répétées", () => {
+  it("commits all targets together while preserving an interleaved reaction's snapshots", () => {
+    vi.useFakeTimers();
+    const cards = validateDeck(DEFAULT_DECK);
+    const state = createGame([
+      { userId: "alice", name: "Alice", cards },
+      { userId: "bob", name: "Bob", cards },
+    ], 0, () => 0.25, { field: false });
+    state.activePlayer = 0;
+    const caster = state.players[0]!.cards.find((card) => card.id === "wisp:common")!;
+    caster.abilities = [{
+      id: "rally", name: "Ralliement", description: "Accorde de l’attaque.",
+      unlockLevel: 1, active: true, effect: "attack", trigger: "deploy", target: "all_allies", value: 2,
+    }];
+    state.players[0]!.board = [0, 1].map((row) => ({
+      cardId: DEFAULT_DECK[0]!, row, depth: 0, hp: 10, attackCurse: 1,
+    }));
+    const initial = { ...playerView(state, "alice"), events: [] as GameEvent[] };
+    const transition = summon(state, 0, caster.id, 3, 2, 1, 1, () => 0.25);
+    const confirmed = { ...playerView(transition.state, "alice"), events: transition.events };
+    const { result, rerender } = renderHook(({ view }) => useCombatPlayback(view), {
+      initialProps: { view: initial },
+    });
+    rerender({ view: confirmed });
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
+    expect(result.current.events.map((event) => event.ability)).toEqual([
+      "Ralliement", "Malédiction", "Ralliement",
+    ]);
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
+    expect(result.current.display!.players[0]!.board.slice(0, 2).map((unit) => unit.card.attack)).toEqual([3, 3]);
+    act(() => vi.advanceTimersByTime(1));
+    expect(result.current.display!.players[0]!.board.slice(0, 2).map((unit) => unit.card.attack)).toEqual([5, 5]);
+    expect(result.current.display!.players[0]!.board.slice(0, 2).map((unit) => unit.hp)).toEqual([9, 10]);
+    act(() => vi.runAllTimers());
+    expect(result.current.display).toEqual(confirmed);
+    expect(result.current.events).toEqual([]);
+  });
+
   it("animates a summoned token from its event without inserting it into the deck", () => {
     vi.useFakeTimers();
     const cards = validateDeck([

@@ -2303,7 +2303,7 @@ button:disabled {
 }
 .taking-hit,
 .hero-hit {
-  animation: take-hit 0.4s 0.26s ease-out;
+  animation: take-hit 0.4s var(--hit-delay, 260ms) ease-out;
 }
 .spawning {
   animation: spawn 0.42s ease-out;
