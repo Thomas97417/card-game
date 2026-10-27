@@ -90,6 +90,12 @@
   grid-column: 1 / -1;
   gap: 6px;
 }
+.bestiary-rarity-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 28px;
+  object-fit: contain;
+}
 .bestiary-filters button {
   min-height: 38px;
   padding: 8px 18px;
@@ -116,9 +122,11 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-color: #8a9a7280 transparent;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   padding: 26px 32px 24px;
+}
+.bestiary-scroll::-webkit-scrollbar {
+  display: none;
 }
 .bestiary-grid {
   display: grid;
@@ -232,35 +240,23 @@
 }
 .bestiary-detail {
   display: grid;
-  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+  grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
   align-items: start;
-  gap: 48px;
+  gap: 32px;
   padding: 12px 8px 30px;
 }
 .bestiary-showcase {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-top: 8px;
+  min-width: 0;
   text-align: center;
 }
-.bestiary-dialog .bestiary-hero-card {
+.bestiary-dialog .bestiary-hero-card.upgrade-portrait {
   width: 100%;
-  max-width: 250px;
-  pointer-events: none;
-}
-.bestiary-hero-card .workshop-card-name {
-  font-size: 19px;
-}
-.bestiary-hero-card .workshop-card-type {
-  font-size: 10px;
-}
-.bestiary-showcase > p {
-  color: #aab9a2;
-  font:
-    italic 13px/1.6 Georgia,
-    serif;
+  min-height: 480px;
+  height: min(640px, calc(100svh - 250px));
+  flex: none;
 }
 .bestiary-profile {
   min-width: 0;
@@ -672,31 +668,9 @@
     gap: 3px;
     padding-top: 6px;
   }
-  .bestiary-dialog .bestiary-hero-card {
-    max-width: 110px;
-  }
-  .bestiary-hero-card .workshop-card-caption {
-    gap: 5px;
-    padding: 15px 4px 8px;
-  }
-  .bestiary-hero-card .workshop-card-name {
-    font-size: 10px;
-  }
-  .bestiary-hero-card .workshop-card-type {
-    font-size: 7px;
-  }
-  .bestiary-dialog .bestiary-hero-card .card-stats .stat-badge {
-    width: 27px;
-    height: 27px;
-  }
-  .bestiary-dialog .bestiary-hero-card .card-stats .stat-badge strong {
-    font-size: 15px;
-  }
-  .bestiary-showcase > .rarity-label {
-    font-size: 9px;
-  }
-  .bestiary-showcase > p {
-    display: none;
+  .bestiary-dialog .bestiary-hero-card.upgrade-portrait {
+    min-height: 200px;
+    height: 200px;
   }
   .bestiary-profile-heading [data-slot="dialog-title"] {
     font-size: 24px;

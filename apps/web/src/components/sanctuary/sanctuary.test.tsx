@@ -1505,12 +1505,15 @@ describe("le sanctuaire", () => {
       within(dialog).getByRole("heading", { name: CATALOG[1]!.name }),
     ).toBeTruthy();
     expect(within(dialog).getByRole("slider").getAttribute("max")).toBe("26");
-    expect(within(dialog).getByText("Niv. 6")).toBeTruthy();
+    const abilities = within(
+      within(dialog).getByRole("region", { name: "Capacités de la carte" }),
+    );
+    expect(abilities.getByText("Niv. 6")).toBeTruthy();
     await selectOption("Niveau de la carte", "Niveau 6");
-    expect(within(dialog).getByText("Active · niv. 6")).toBeTruthy();
-    expect(within(dialog).getByText("Niv. 11")).toBeTruthy();
+    expect(abilities.getByText("Active · niv. 6")).toBeTruthy();
+    expect(abilities.getByText("Niv. 11")).toBeTruthy();
     await selectOption("Niveau de la carte", "Niveau 26");
-    expect(within(dialog).getByText("Active · niv. 11")).toBeTruthy();
+    expect(abilities.getByText("Active · niv. 11")).toBeTruthy();
   });
   it("explores Rare and Epic profiles through level 26 and clamps the level on returning to Common", async () => {
     setup();
