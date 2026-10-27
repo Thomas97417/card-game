@@ -707,7 +707,7 @@ export function LeaguePanel({
         <LeagueBadge league={current} size={compact ? 58 : 80} />
         <span className="league-panel-content">
           <span className="league-panel-heading">
-            <strong>{current.label}</strong>
+            {!compact && <strong>{current.label}</strong>}
             <span className="trophy-amount">
               <TrophyIcon />
               {trophies.toLocaleString("fr-FR")}
@@ -734,7 +734,7 @@ export function LeaguePanel({
             </>
           )}
         </span>
-        <ChevronRight size={17} aria-hidden="true" />
+        {!compact && <ChevronRight size={17} aria-hidden="true" />}
       </button>
       {!compact && showNextUnlock && (
         <p className="league-next-unlock">

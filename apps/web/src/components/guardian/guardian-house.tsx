@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   heroDefinition,
-  maxHeroLevel,
   type HeroId,
   heroAbilities,
   heroMight,
@@ -121,7 +120,6 @@ export function GuardianHouse({
                   <dt>Niveau</dt>
                   <dd>
                     {progress.level}
-                    <small>/ {maxHeroLevel(progress.heroId)}</small>
                     <GuardianLevelExplorer
                       key={progress.heroId}
                       progress={progress}

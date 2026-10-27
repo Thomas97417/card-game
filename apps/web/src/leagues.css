@@ -119,18 +119,15 @@
   font-size: 11px;
 }
 .league-panel.is-compact {
-  width: 280px;
+  width: fit-content;
   max-width: 100%;
   gap: 12px;
-  padding: 4px 18px 4px 8px;
+  padding: 4px 12px 4px 8px;
 }
 .league-panel.is-compact .league-panel-heading {
   flex-direction: column;
   align-items: flex-start;
   gap: 1px;
-}
-.league-panel.is-compact .league-panel-heading > strong {
-  font-size: 18px;
 }
 .league-panel.is-compact .trophy-amount {
   font-size: 12px;
