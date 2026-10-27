@@ -8,11 +8,7 @@ import {
 } from "@sylve/game";
 import { cn } from "@/lib/utils";
 import { CreaturePortrait } from "./creature-portrait";
-import {
-  CardFactionBadge,
-  FactionBackdrop,
-  FactionIcon,
-} from "./faction-artwork";
+import { FactionBackdrop } from "./faction-artwork";
 import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
 import { CardAbilityIcons } from "./ability-icons";
@@ -41,7 +37,6 @@ export function CardPortrait({
       </div>
       <span className="upgrade-card-level">Niv. {card.level ?? 1}</span>
       <CreaturePortrait card={card} />
-      <CardFactionBadge card={card} />
       <CardAbilityIcons card={card} className="upgrade-portrait-abilities" />
       <div className="upgrade-portrait-caption">
         <span className="rarity-label" data-rarity={card.rarity ?? "common"}>
@@ -50,17 +45,22 @@ export function CardPortrait({
         <span className="upgrade-portrait-name" aria-hidden="true">
           {card.name}
         </span>
-        <span className="upgrade-card-type">
-          <GameIcon kind={getCombatType(card)} size={18} />
-          {combatTypeLabel(card)}
+        <div className="upgrade-card-type">
+          <span className="upgrade-card-trait">
+            <GameIcon kind={getCombatType(card)} size={16} />
+            {combatTypeLabel(card)}
+          </span>
           {card.faction && (
-            <>
-              <FactionIcon faction={card.faction} size={18} />
+            <span className="upgrade-card-trait">
               {FACTION_LABELS[card.faction]}
-            </>
+            </span>
           )}
-          {card.gender && ` · ${GENDER_LABELS[card.gender]}`}
-        </span>
+          {card.gender && (
+            <span className="upgrade-card-trait">
+              {GENDER_LABELS[card.gender]}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

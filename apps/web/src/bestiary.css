@@ -96,6 +96,17 @@
   height: 28px;
   object-fit: contain;
 }
+.bestiary-rarity-value {
+  display: grid;
+  min-width: max-content;
+}
+.bestiary-rarity-value > * {
+  grid-area: 1 / 1;
+}
+.bestiary-rarity-measure {
+  visibility: hidden;
+  pointer-events: none;
+}
 .bestiary-filters button {
   min-height: 38px;
   padding: 8px 18px;

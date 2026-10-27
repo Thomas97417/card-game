@@ -10,10 +10,7 @@ import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { CardAbilityIcons } from "@/components/game/ability-icons";
 import { StatBadge } from "@/components/game/stat-badge";
 import { GameIcon } from "@/components/game/game-icon";
-import {
-  CardFactionBadge,
-  FactionBackdrop,
-} from "@/components/game/faction-artwork";
+import { FactionBackdrop } from "@/components/game/faction-artwork";
 
 export function CardArtwork({
   card,
@@ -52,7 +49,6 @@ export function CardArtwork({
           </span>
         )}
       </span>
-      <CardFactionBadge card={card} />
       <CardAbilityIcons card={card} className="workshop-card-abilities" />
       <span className="card-stats">
         <StatBadge kind="attack" value={card.attack} combatType={type} />

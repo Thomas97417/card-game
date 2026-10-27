@@ -374,12 +374,6 @@
 .deck-workshop .workshop-card-abilities {
   --ability-size: clamp(14px, 11cqw, 18px);
 }
-.deck-workshop .card-faction-badge {
-  top: 32px;
-  right: 5px;
-  width: 20px;
-  height: 20px;
-}
 .workshop-card-name {
   font:
     600 clamp(11px, 1vw, 14px)/1.15 Georgia,

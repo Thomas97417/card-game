@@ -10,7 +10,7 @@ import { Check } from "lucide-react";
 import { CreaturePortrait } from "./creature-portrait";
 import { StatBadge } from "./stat-badge";
 import { CardAbilityIcons } from "./ability-icons";
-import { CardFactionBadge, FactionBackdrop } from "./faction-artwork";
+import { FactionBackdrop } from "./faction-artwork";
 
 export function CreatureCard({
   card,
@@ -59,7 +59,6 @@ export function CreatureCard({
         <StatBadge kind="health" value={card.health} />
       </div>
       <span className="card-level">Niv. {card.level ?? 1}</span>
-      <CardFactionBadge card={card} />
       <CardAbilityIcons card={card} />
       {selected && (
         <span className="card-check">

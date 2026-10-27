@@ -273,7 +273,12 @@ function BestiaryContent({ onNavigate }: { onNavigate: () => void }) {
                 className={cn(SELECT_TRIGGER, "bestiary-rarity-select")}
               >
                 <RarityCardIcon rarity={rarity} />
-                <SelectValue />
+                <span className="bestiary-rarity-value">
+                  <span className="bestiary-rarity-measure" aria-hidden="true">
+                    {RARITY_LABELS.legendary}
+                  </span>
+                  <SelectValue />
+                </span>
               </SelectTrigger>
               <SelectContent
                 align="start"

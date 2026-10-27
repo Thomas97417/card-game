@@ -305,10 +305,27 @@
 }
 .upgrade-card-type {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 6px 8px;
+  width: 100%;
+  margin-top: 3px;
+  padding-top: 10px;
+  border-top: 1px solid #c5b38333;
   color: #d6c79e;
   font-size: 11px;
+}
+.upgrade-card-trait {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid #c5b38333;
+  border-radius: 5px;
+  background: #081e1755;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 .upgrade-main {
   grid-column: 2;
@@ -966,12 +983,18 @@
     display: none;
   }
   .upgrade-card-type {
-    gap: 3px;
+    gap: 3px 5px;
+    margin-top: 0;
+    padding-top: 4px;
     font-size: 8px;
   }
-  .upgrade-card-type > .game-icon {
-    width: 14px;
-    height: 14px;
+  .upgrade-card-trait {
+    gap: 3px;
+    padding: 0 3px;
+  }
+  .upgrade-card-trait > .game-icon {
+    width: 12px;
+    height: 12px;
   }
   .upgrade-navigation {
     position: sticky;
