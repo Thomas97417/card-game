@@ -280,7 +280,7 @@
 .landing-hero-showcase {
   position: relative;
   min-width: 0;
-  height: 450px;
+  height: 500px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -359,141 +359,53 @@
 .landing-card-fan {
   --fan-card-width: clamp(155px, 15.6vw, 218px);
   position: relative;
-  height: 335px;
+  height: 385px;
   width: 100%;
 }
 
-.landing-card {
-  --card-accent: #d7b269;
-  --card-tone: #526448;
+.landing-game-card {
   position: relative;
   min-width: 0;
   margin: 0;
-  border: 1px solid var(--card-accent);
-  border-radius: 10px;
-  background: #12271f;
-  box-shadow: 0 18px 35px #0a181b24, inset 0 0 0 3px #f0d49b13;
-  overflow: hidden;
 }
 
-.landing-card[data-faction="order"] { --card-tone: #667891; }
-.landing-card[data-faction="chaos"] { --card-tone: #7c3f60; }
-.landing-card[data-rarity="rare"] { --card-accent: #8eb4c9; }
-.landing-card[data-rarity="epic"] { --card-accent: #c2a1d2; }
-
-.landing-card-portrait {
-  position: relative;
-  aspect-ratio: 1 / 1.08;
-  margin: 5px 5px 0;
-  border: 1px solid #e9d4a326;
-  border-radius: 5px 5px 0 0;
-  background:
-    radial-gradient(ellipse at 50% 45%, var(--card-tone), #192b2370 72%),
-    linear-gradient(135deg, #b4a9762e, #0b1c17);
-  isolation: isolate;
-}
-
-.landing-card-portrait::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 16% 9% 8%;
-  border: 1px solid #f5e7c81c;
-  border-radius: 50% 50% 0 0;
-  box-shadow: 0 0 0 7px #f5e7c807;
-}
-
-.landing-card-sigil {
-  position: absolute;
-  z-index: 2;
-  top: 9px;
-  left: 9px;
-  width: 28px;
-  height: 28px;
-  filter: drop-shadow(0 2px 4px #0009);
-}
-
-.landing-card-creature {
+.landing-game-card > .workshop-card-slot {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 8px 1px 20px;
-  filter: drop-shadow(0 8px 6px #06100b77);
 }
 
-.landing-card-stats {
-  position: absolute;
-  right: 9px;
-  bottom: 8px;
-  left: 9px;
-  display: flex;
-  justify-content: space-between;
+.sylve-landing .workshop-card:not(:disabled) {
+  cursor: pointer;
+  touch-action: pan-y;
 }
 
-.landing-card-stats > span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-width: 43px;
-  height: 28px;
-  border: 1px solid #e1caa548;
-  border-radius: 4px;
-  background: #132019e8;
-  font: 600 14px Georgia, serif;
-  color: #fff7e3;
-}
-
-.landing-card-stats img {
-  width: 23px;
-  height: 23px;
-  object-fit: contain;
-}
-
-.landing-card figcaption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 76px;
-  padding: 10px;
+.landing-game-card > figcaption {
+  display: block;
+  margin-top: 12px;
   text-align: center;
-  color: #f5efde;
+  font-size: 8px;
 }
 
-.landing-card-rarity {
-  color: var(--card-accent);
-  font-size: 7px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+.landing-collection .landing-game-card > figcaption {
+  color: #606b5c;
 }
 
-.landing-card-name {
-  max-width: 180px;
-  font: 15px/1.25 Georgia, serif;
-}
-
-.landing-card-fan > .landing-card {
+.landing-card-fan > .landing-game-card {
   position: absolute;
   width: var(--fan-card-width);
   top: 38px;
   left: 2%;
   transform: rotate(-13deg);
-  box-shadow: 0 20px 45px #07140dc9;
 }
 
-.landing-card-fan > .landing-card:nth-child(2) {
+.landing-card-fan > .landing-game-card:nth-child(2) {
   z-index: 2;
   top: 0;
   left: 50%;
   width: calc(var(--fan-card-width) * 1.1);
   transform: translateX(-50%) rotate(-2deg);
-  box-shadow: 0 20px 45px #07140daa, 0 0 35px #edbd5c1f;
 }
 
-.landing-card-fan > .landing-card:nth-child(3) {
+.landing-card-fan > .landing-game-card:nth-child(3) {
   right: 1%;
   left: auto;
   transform: rotate(13deg);
@@ -693,19 +605,19 @@
   gap: 22px;
 }
 
-.landing-collection-cards > .landing-card {
+.landing-collection-cards > .landing-game-card {
   transition: transform 200ms;
 }
 
-.landing-collection-cards > .landing-card:nth-child(2) {
+.landing-collection-cards > .landing-game-card:nth-child(2) {
   transform: translateY(-16px);
 }
 
-.landing-collection-cards > .landing-card:hover {
+.landing-collection-cards > .landing-game-card:hover {
   transform: translateY(-8px);
 }
 
-.landing-collection-cards > .landing-card:nth-child(2):hover {
+.landing-collection-cards > .landing-game-card:nth-child(2):hover {
   transform: translateY(-24px);
 }
 
@@ -724,6 +636,131 @@
 
 .landing-collection-footnote svg {
   flex-shrink: 0;
+}
+
+.landing-alliances {
+  padding-block: 90px;
+  border-bottom: 1px solid #d0b77b24;
+  background: #193027;
+}
+
+.landing-alliance-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 48px;
+}
+
+.landing-alliance-picker button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 57px;
+  padding: 11px 16px;
+  border: 1px solid #d0b77b44;
+  border-radius: 4px;
+  color: #c5d0bf;
+  background: #10261e55;
+  font-size: 12px;
+  transition: background 160ms, border-color 160ms, color 160ms;
+}
+
+.landing-alliance-picker button:hover,
+.landing-alliance-picker button[aria-pressed="true"] {
+  border-color: #d3b777;
+  background: #d3b77714;
+  color: #f6e6bb;
+}
+
+.landing-alliance-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 90px;
+}
+
+.landing-alliance-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 465px;
+  margin-inline: auto;
+  padding: 12px 8px 0;
+}
+
+.landing-alliance-cards > .landing-game-card:nth-child(2) {
+  margin-top: 35px;
+}
+
+.landing-alliance-cards > p {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  color: #cfbf95;
+  font: italic 15px/1.7 Georgia, serif;
+  text-align: center;
+}
+
+.landing-alliance-effects h3 {
+  margin-bottom: 15px;
+  font-size: 31px;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+}
+
+.landing-alliance-effects > p {
+  max-width: 450px;
+  color: #bdcbb7;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.landing-alliance-effects ul {
+  display: grid;
+  margin-top: 24px;
+  list-style: none;
+}
+
+.landing-alliance-effects li {
+  display: flex;
+  align-items: start;
+  gap: 15px;
+  padding-block: 16px;
+  border-top: 1px solid #cfbd8a2e;
+}
+
+.landing-alliance-effects li > .ability-icon {
+  margin-top: 3px;
+}
+
+.landing-alliance-effects li strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #f2dfb5;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.landing-alliance-effects li p {
+  color: #c1cdbb;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.landing-alliance-effects li div > span {
+  display: block;
+  margin-top: 6px;
+  color: #a4b59e;
+  font-size: 9px;
+}
+
+.landing-alliance-level {
+  display: block;
+  margin-top: 14px;
+  color: #b0bda7;
+  font-size: 9px;
+  line-height: 1.8;
 }
 
 .landing-strategy {
@@ -1167,15 +1204,16 @@
   .landing-hero-actions { gap: 16px; }
   .landing-card-fan { height: 300px; }
   .landing-card-orbit { width: 340px; height: 340px; }
-  .landing-card-fan > .landing-card { left: 0; }
-  .landing-card-fan > .landing-card:nth-child(3) { left: auto; right: 0; }
+  .landing-card-fan > .landing-game-card { left: 0; }
+  .landing-card-fan > .landing-game-card:nth-child(3) { left: auto; right: 0; }
   .landing-promise { gap: 11px; padding-inline: 8px; }
   .landing-promise strong { font-size: 15px; }
   .landing-promise > img { width: 42px; height: 42px; }
   .landing-collection-layout { grid-template-columns: 215px minmax(0, 1fr); gap: 35px; }
   .landing-collection-cards { gap: 14px; }
-  .landing-card-name { font-size: 13px; }
   .landing-strategy { gap: 50px; }
+  .landing-alliance-layout { gap: 40px; }
+  .landing-alliance-picker button { font-size: 11px; gap: 8px; }
   .landing-feature h3 { font-size: 25px; }
   .landing-feature-refuge h3 { font-size: 40px; }
   .landing-invitation-content { gap: 30px; }
@@ -1186,8 +1224,6 @@
   .landing-hero-content { grid-template-columns: 1.1fr 1fr; gap: 12px; }
   .landing-hero .landing-eyebrow { font-size: 8px; letter-spacing: 1.2px; }
   .landing-card-fan { --fan-card-width: 140px; height: 265px; }
-  .landing-card-fan .landing-card-name { font-size: 11px; }
-  .landing-card-fan .landing-card figcaption { min-height: 65px; }
   .landing-showcase-kicker, .landing-showcase-caption { font-size: 6px; }
   .landing-collection-layout { grid-template-columns: 1fr; gap: 35px; }
   .landing-faction-story { display: grid; grid-template-columns: 230px 1fr; column-gap: 35px; }
@@ -1230,11 +1266,8 @@
   .landing-hero-reassurance > span + span::before { margin-right: 12px; }
   .landing-hero-showcase { height: 310px; width: min(440px, 100%); margin: 24px auto 0; }
   .landing-card-fan { --fan-card-width: clamp(132px, 31vw, 170px); height: 260px; }
-  .landing-card-fan > .landing-card { top: 28px; left: 3%; }
-  .landing-card-fan > .landing-card:nth-child(3) { right: 3%; left: auto; }
-  .landing-card-fan .landing-card-name { font-size: 11px; }
-  .landing-card-fan .landing-card figcaption { min-height: 60px; padding: 8px; gap: 5px; }
-  .landing-card-fan .landing-card-rarity { font-size: 6px; letter-spacing: 1.3px; }
+  .landing-card-fan > .landing-game-card { top: 28px; left: 3%; }
+  .landing-card-fan > .landing-game-card:nth-child(3) { right: 3%; left: auto; }
   .landing-card-orbit { width: 280px; height: 280px; }
   .landing-showcase-kicker { margin-bottom: 22px; font-size: 7px; }
   .landing-showcase-caption { margin-top: 13px; font-size: 7px; letter-spacing: 1.2px; }
@@ -1260,18 +1293,18 @@
   .landing-faction-description p { max-width: 450px; font-size: 12px; }
   .landing-collection-note { display: none; }
   .landing-collection-cards { gap: 10px; padding-top: 9px; }
-  .landing-collection-cards > .landing-card:nth-child(2) { transform: translateY(-8px); }
-  .landing-card { border-radius: 6px; }
-  .landing-card-portrait { margin: 3px 3px 0; border-radius: 3px 3px 0 0; }
-  .landing-card-sigil { width: 22px; height: 22px; top: 5px; left: 5px; }
-  .landing-card-stats { left: 5px; right: 5px; bottom: 5px; }
-  .landing-card-stats > span { min-width: 32px; height: 22px; gap: 1px; font-size: 11px; }
-  .landing-card-stats img { width: 17px; height: 17px; }
-  .landing-card figcaption { min-height: 65px; gap: 5px; padding: 8px 5px; }
-  .landing-card-rarity { font-size: 6px; letter-spacing: 1px; }
-  .landing-card-name { font-size: 11px; }
+  .landing-collection-cards > .landing-game-card:nth-child(2) { transform: translateY(-8px); }
   .landing-collection-footnote { align-items: start; justify-content: start; padding-top: 20px; font-size: 9px; text-align: left; }
   .landing-collection-footnote svg { margin-top: 2px; }
+  .landing-game-card > figcaption { font-size: 7px; margin-top: 9px; }
+  .landing-alliances { padding-block: 58px; }
+  .landing-alliance-picker { grid-template-columns: 1fr; gap: 9px; margin-bottom: 30px; }
+  .landing-alliance-picker button { min-height: 48px; padding: 8px 14px; font-size: 11px; }
+  .landing-alliance-layout { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .landing-alliance-cards { max-width: 380px; gap: 20px; }
+  .landing-alliance-cards > .landing-game-card:nth-child(2) { margin-top: 22px; }
+  .landing-alliance-cards > p { font-size: 13px; }
+  .landing-alliance-effects h3 { font-size: 28px; }
   .landing-strategy { grid-template-columns: minmax(0, 1fr); gap: 45px; padding-block: 65px 62px; }
   .landing-duel-preview { margin: 12px 12px 0; }
   .landing-duel-board { aspect-ratio: 1.4; }
@@ -1318,9 +1351,6 @@
   .landing-hero-actions { flex-direction: column; gap: 8px; }
   .landing-card-fan { --fan-card-width: 123px; }
   .landing-collection-cards { gap: 6px; }
-  .landing-card-name { font-size: 10px; }
-  .landing-card-stats > span { min-width: 27px; }
-  .landing-card-stats img { width: 15px; height: 15px; }
   .landing-invitation-content { grid-template-columns: 1fr; min-height: 350px; }
   .landing-guardian-art { display: none; }
   .landing-invitation-copy { text-align: center; }

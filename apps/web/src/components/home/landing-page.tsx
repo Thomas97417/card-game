@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowRight, ArrowUpRight, Leaf, Play } from "lucide-react";
 import {
   CARD_VARIANTS,
+  DECK_SIZE,
   FACTION_LABELS,
   RARITY_LABELS,
-  getCombatType,
   variantCard,
+  type AbilityEffect,
   type CardDefinition,
   type Faction,
 } from "@sylve/game";
+import { CardArtwork } from "@/components/decks/card-artwork";
+import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
+import {
+  AbilityIcon,
+  abilityIconKind,
+  type AbilityIconKind,
+} from "@/components/game/ability-icons";
 
 const heroCards = [
   variantCard("fox", "epic"),
@@ -76,73 +84,41 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function CardShowcase({
+function GameCardPreview({
   card,
-  eager = false,
+  onInspect,
 }: {
   card: CardDefinition;
-  eager?: boolean;
+  onInspect: (card: CardDefinition) => void;
 }) {
   return (
-    <figure
-      className="landing-card"
-      data-faction={card.faction}
-      data-rarity={card.rarity}
-    >
-      <div className="landing-card-portrait">
-        <span className="landing-card-sigil" aria-hidden="true">
-          <img
-            src={`/art/factions/${card.faction}-icon.webp`}
-            alt=""
-            width={48}
-            height={48}
-            loading={eager ? "eager" : "lazy"}
-          />
-        </span>
-        <img
-          className="landing-card-creature"
-          src={`/art/characters/${card.artId ?? card.baseId}.webp`}
-          alt={card.name}
-          width={512}
-          height={512}
-          loading={eager ? "eager" : "lazy"}
-          decoding="async"
-          draggable={false}
-        />
-        <div className="landing-card-stats">
-          <span>
-            <img
-              src={`/art/ui/${getCombatType(card) === "ranged" ? "ranged-bow" : "melee-sword"}.webp`}
-              alt="Attaque :"
-              width={25}
-              height={25}
-              loading={eager ? "eager" : "lazy"}
-            />
-            {card.attack}
-          </span>
-          <span>
-            <img
-              src="/art/ui/health-heart.webp"
-              alt="Vie :"
-              width={25}
-              height={25}
-              loading={eager ? "eager" : "lazy"}
-            />
-            {card.health}
-          </span>
-        </div>
+    <figure className="landing-game-card">
+      <div className="workshop-card-slot">
+        <button
+          type="button"
+          className="workshop-card"
+          data-faction={card.faction}
+          data-rarity={card.rarity}
+          style={{ "--creature-color": card.color } as CSSProperties}
+          aria-label={`Découvrir ${card.name}, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}`}
+          aria-haspopup="dialog"
+          onClick={() => onInspect(card)}
+        >
+          <CardArtwork card={card} showCopies={false} />
+        </button>
       </div>
-      <figcaption>
-        <span className="landing-card-rarity">
-          {RARITY_LABELS[card.rarity ?? "common"]}
-        </span>
-        <span className="landing-card-name">{card.name}</span>
+      <figcaption className="rarity-label" data-rarity={card.rarity}>
+        {RARITY_LABELS[card.rarity ?? "common"]}
       </figcaption>
     </figure>
   );
 }
 
-function CollectionPreview() {
+function CollectionPreview({
+  onInspect,
+}: {
+  onInspect: (card: CardDefinition) => void;
+}) {
   const [selectedFaction, setSelectedFaction] = useState<Faction>("nature");
   const faction = factions.find((entry) => entry.id === selectedFaction)!;
 
@@ -163,8 +139,9 @@ function CollectionPreview() {
             </h2>
           </div>
           <p>
-            Des premières rencontres aux créatures légendaires, collectionne les
-            cartes, améliore-les et découvre les alliances qui te ressemblent.
+            {CARD_VARIANTS.length} cartes, trois factions et des milliards de
+            compositions possibles. Collectionne tes compagnons, améliore-les
+            et trouve les synergies qui feront la force de ton deck.
           </p>
         </div>
 
@@ -217,14 +194,151 @@ function CollectionPreview() {
             aria-label={`Créatures de la faction ${FACTION_LABELS[selectedFaction]}`}
           >
             {faction.cards.map((card) => (
-              <CardShowcase key={card.id} card={card} />
+              <GameCardPreview key={card.id} card={card} onInspect={onInspect} />
             ))}
           </div>
         </div>
         <p className="landing-collection-footnote">
           <Leaf size={14} aria-hidden="true" />
-          Nature, Ordre ou Chaos : mélange les factions et invente ta propre alliance.
+          Clique sur une carte pour découvrir ses capacités. Mélange les factions
+          pour inventer ta propre alliance.
         </p>
+      </div>
+    </section>
+  );
+}
+
+const alliancePreviews: {
+  id: string;
+  label: string;
+  icon: AbilityIconKind;
+  title: string;
+  description: string;
+  cards: [CardDefinition, CardDefinition];
+  effects: { cardIndex: 0 | 1; effect: AbilityEffect }[];
+}[] = [
+  {
+    id: "thorns",
+    label: "Poison & épines",
+    icon: "poison",
+    title: "Une défense qui mord.",
+    description:
+      "La tortue renvoie les coups avec ses épines. La Souveraine empoisonne l’adversaire et transforme les épines alliées en points de vie pour toute ton équipe.",
+    cards: [
+      variantCard("turtle", "legendary"),
+      variantCard("mushroom", "legendary"),
+    ],
+    effects: [
+      { cardIndex: 0, effect: "spikes" },
+      { cardIndex: 1, effect: "poison_enemy" },
+      { cardIndex: 1, effect: "health" },
+    ],
+  },
+  {
+    id: "vampirism",
+    label: "Vampirisme & boucliers",
+    icon: "vampirism",
+    title: "Leurs attaques nourrissent ton alliance.",
+    description:
+      "Le Monarque se soigne en drainant la vie ennemie. À ses côtés, la Vipère protège les nouveaux alliés dotés de vampirisme et renforce ta mêlée à chaque déclenchement.",
+    cards: [
+      variantCard("vampire", "legendary"),
+      variantCard("serpent", "legendary"),
+    ],
+    effects: [
+      { cardIndex: 0, effect: "vampirism" },
+      { cardIndex: 1, effect: "shield" },
+      { cardIndex: 1, effect: "attack" },
+    ],
+  },
+  {
+    id: "support",
+    label: "Soutien & double attaque",
+    icon: "double-strike",
+    title: "Renforce tes alliés. Frappe encore.",
+    description:
+      "Le dragon offre régénération et puissance à ton équipe. L’Impératrice accorde une attaque supplémentaire à deux alliés : le bon soutien peut faire basculer un assaut.",
+    cards: [
+      variantCard("dragon", "legendary"),
+      variantCard("witch", "legendary"),
+    ],
+    effects: [
+      { cardIndex: 0, effect: "regeneration" },
+      { cardIndex: 0, effect: "attack" },
+      { cardIndex: 1, effect: "extra_attack" },
+    ],
+  },
+];
+
+function AlliancePreview({
+  onInspect,
+}: {
+  onInspect: (card: CardDefinition) => void;
+}) {
+  const [selectedId, setSelectedId] = useState(alliancePreviews[0]!.id);
+  const alliance = alliancePreviews.find(({ id }) => id === selectedId)!;
+
+  return (
+    <section className="landing-alliances" aria-labelledby="alliances-title">
+      <div className="landing-container">
+        <div className="landing-section-heading">
+          <div>
+            <span className="landing-eyebrow">Les bonnes cartes. Les bonnes synergies.</span>
+            <h2 id="alliances-title">
+              Des milliards de decks.<br />Un style qui t’appartient.
+            </h2>
+          </div>
+          <p>
+            Jusqu’à {DECK_SIZE} cartes dans ton deck. Des factions à mélanger,
+            des pouvoirs à combiner, des effets qui se répondent. Une seule
+            carte changée, et une nouvelle stratégie prend vie.
+          </p>
+        </div>
+
+        <div className="landing-alliance-picker" role="group" aria-label="Explorer les synergies">
+          {alliancePreviews.map((preview) => (
+            <button
+              key={preview.id}
+              type="button"
+              aria-pressed={selectedId === preview.id}
+              aria-controls="landing-alliance-details"
+              onClick={() => setSelectedId(preview.id)}
+            >
+              <AbilityIcon kind={preview.icon} size={30} />
+              {preview.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="landing-alliance-layout" id="landing-alliance-details">
+          <div className="landing-alliance-cards">
+            {alliance.cards.map((card) => (
+              <GameCardPreview key={card.id} card={card} onInspect={onInspect} />
+            ))}
+            <p>Deux compagnons. Le début d’une composition.</p>
+          </div>
+          <div className="landing-alliance-effects" aria-live="polite" aria-atomic="true">
+            <h3>{alliance.title}</h3>
+            <p>{alliance.description}</p>
+            <ul>
+              {alliance.effects.map(({ cardIndex, effect }) => {
+                const card = alliance.cards[cardIndex];
+                const ability = card.abilities!.find((entry) => entry.effect === effect)!;
+                return (
+                  <li key={`${card.id}-${ability.id}`}>
+                    <AbilityIcon kind={abilityIconKind(ability)} size={38} />
+                    <div>
+                      <strong>{ability.name}</strong>
+                      <p>{ability.description}</p>
+                      <span>{card.name}</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <span className="landing-alliance-level">Effets présentés au niveau 1. Leur puissance évolue avec tes cartes.</span>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -297,6 +411,8 @@ function DuelPreview() {
 }
 
 export function LandingPage() {
+  const [inspectedCard, setInspectedCard] = useState<CardDefinition>();
+
   return (
     <main className="sylve-landing" id="top">
       <a className="landing-skip" href="#decouvrir">
@@ -334,9 +450,9 @@ export function LandingPage() {
               Ta légende<br /><em>prend racine.</em>
             </h1>
             <p>
-              Un monde à explorer. Des créatures à rallier.
-              <br className="landing-desktop-break" /> Entre dans le cercle des
-              gardiens et fais de chaque carte le début d’une grande histoire.
+              {CARD_VARIANTS.length} cartes. Des milliards de compositions possibles.
+              <br className="landing-desktop-break" /> Rallie tes monstres, combine
+              leurs pouvoirs et forge la stratégie qui fera ta légende.
             </p>
             <div className="landing-hero-actions">
               <Link
@@ -371,7 +487,7 @@ export function LandingPage() {
             </span>
             <div className="landing-card-fan">
               {heroCards.map((card) => (
-                <CardShowcase key={card.id} card={card} eager />
+                <GameCardPreview key={card.id} card={card} onInspect={setInspectedCard} />
               ))}
             </div>
             <span className="landing-showcase-caption">
@@ -425,7 +541,8 @@ export function LandingPage() {
         </div>
       </div>
 
-      <CollectionPreview />
+      <CollectionPreview onInspect={setInspectedCard} />
+      <AlliancePreview onInspect={setInspectedCard} />
 
       <section
         className="landing-strategy landing-container"
@@ -602,6 +719,11 @@ export function LandingPage() {
         <p>Un cercle. Deux gardiens. Ton histoire.</p>
         <span>Fait pour l’aventure.</span>
       </footer>
+      <CardUpgradeDialog
+        entry={inspectedCard ? { card: inspectedCard, copies: 0 } : undefined}
+        readOnly
+        onClose={() => setInspectedCard(undefined)}
+      />
     </main>
   );
 }
