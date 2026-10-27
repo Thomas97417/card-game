@@ -1,172 +1,79 @@
-import { safeReturnTo } from "@/lib/game-auth";
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useSearch } from "@tanstack/react-router";
-import { toast } from "sonner";
 import z from "zod";
-
 import { authClient } from "@/lib/auth-client";
-
-import { GitHubLoginButton, GoogleLoginButton } from "./social-login-buttons";
-import { Button } from "./ui/button";
+import { authErrorCode, authErrorMessage, redirectAfterAuth } from "@/lib/auth-feedback";
+import { safeReturnTo } from "@/lib/game-auth";
+import { AuthField, AuthHeading, AuthNotice, AuthSubmit, submitAuthForm } from "./auth/form-ui";
+import { SocialLoginButtons } from "./social-login-buttons";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import PasswordInput from "./ui/password-input";
 
 export default function SignInForm() {
   const search = useSearch({ strict: false });
   const returnTo = safeReturnTo(search.returnTo);
-
+  const [error, setError] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [socialPending, setSocialPending] = useState(false);
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    onSubmit: async ({ value }) => {
-      await authClient.signIn.email(
-        {
-          email: value.email,
-          password: value.password,
-        },
-        {
-          onSuccess: () => {
-            window.location.assign(returnTo);
-            toast.success("Connexion réussie");
-          },
-          onError: (error) => {
-            if (error.error.status === 403) {
-              toast.error("Vérifie ton adresse email avant de te connecter.");
-            } else {
-              toast.error(error.error.message || error.error.statusText);
-            }
-          },
-        },
-      );
-    },
+    defaultValues: { email: "", password: "" },
     validators: {
       onSubmit: z.object({
-        email: z.email("Adresse email invalide"),
-        password: z.string().min(8, "Password must be at least 8 characters"),
+        email: z.string().trim().pipe(z.email("Saisis une adresse email valide.")),
+        password: z.string().min(1, "Saisis ton mot de passe."),
       }),
+    },
+    onSubmit: async ({ value }) => {
+      setError(null);
+      setNeedsVerification(false);
+      try {
+        const result = await authClient.signIn.email({ email: value.email.trim(), password: value.password });
+        if (result.error) {
+          setError(authErrorMessage(result.error, "La connexion est indisponible pour le moment. Réessaie dans un instant."));
+          setNeedsVerification(authErrorCode(result.error) === "EMAIL_NOT_VERIFIED");
+          return;
+        }
+        redirectAfterAuth(returnTo);
+      } catch {
+        setError("La connexion n’a pas abouti. Vérifie ta connexion internet et réessaie.");
+      }
     },
   });
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">
-        Heureux de te retrouver.
-      </h1>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  placeholder="john.doe@example.com"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-xs">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor={field.name}>Mot de passe</Label>
-                  <Link
-                    to="/forgot-password"
-                    search={{ returnTo }}
-                    className="text-xs text-muted-foreground hover:underline cursor-pointer"
-                  >
-                    Mot de passe oublié ?
-                  </Link>
-                </div>
-                <PasswordInput
-                  id={field.name}
-                  placeholder="********"
-                  autoComplete="current-password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-xs">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Un instant…" : "Se connecter"}
-            </Button>
+    <>
+      <AuthHeading title="Ton aventure continue.">
+        Connecte-toi pour retrouver ton refuge et tes compagnons.
+      </AuthHeading>
+      <form.Subscribe selector={(state) => state.isSubmitting}>
+        {(submitting) => <SocialLoginButtons returnTo={returnTo} disabled={submitting} onPendingChange={setSocialPending} />}
+      </form.Subscribe>
+      <div className="auth-divider">ou avec ton email</div>
+      {error && <AuthNotice>{error}{needsVerification && <><br /><Link to="/verify-email" search={{ returnTo, email: form.state.values.email.trim() }}>Recevoir un lien de vérification</Link></>}</AuthNotice>}
+      <form noValidate className="auth-form" onSubmit={(event) => { void submitAuthForm(event, () => form.handleSubmit()); }}>
+        <form.Field name="email">
+          {(field) => (
+            <AuthField id={field.name} label="Adresse email" errors={field.state.meta.errors}>
+              {(accessibility) => <Input {...accessibility} name={field.name} type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="toi@exemple.fr" required value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
           )}
+        </form.Field>
+        <form.Field name="password">
+          {(field) => (
+            <AuthField id={field.name} label="Mot de passe" errors={field.state.meta.errors} action={<Link to="/forgot-password" search={{ returnTo }}>Mot de passe oublié ?</Link>}>
+              {(accessibility) => <PasswordInput {...accessibility} name={field.name} placeholder="Ton mot de passe" autoComplete="current-password" value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
+          )}
+        </form.Field>
+        <form.Subscribe>
+          {(state) => <AuthSubmit pending={state.isSubmitting} disabled={!state.canSubmit || socialPending} pendingLabel="Connexion en cours…">Se connecter</AuthSubmit>}
         </form.Subscribe>
       </form>
-
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Ou continuer avec
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <GitHubLoginButton returnTo={returnTo} />
-        <GoogleLoginButton returnTo={returnTo} />
-      </div>
-
-      <div className="mt-4 text-center text-sm text-muted-foreground">
-        <span>Pas encore de compte ? </span>
-        <Link
-          to="/sign-up"
-          search={{ returnTo }}
-          className="hover:underline hover:text-foreground cursor-pointer font-bold"
-        >
-          Créer un compte
-        </Link>
-        <span className="mx-2">·</span>
-        <Link
-          to="/verify-email"
-          search={{ returnTo }}
-          className="hover:underline hover:text-foreground cursor-pointer"
-        >
-          Vérifier mon email
-        </Link>
-      </div>
-    </div>
+      <p className="auth-switch">
+        Pas encore de compte ? <Link to="/sign-up" search={{ returnTo }}>Créer un compte</Link>
+        {!needsVerification && <Link to="/verify-email" search={{ returnTo }} className="auth-help-link">Email de vérification non reçu ?</Link>}
+      </p>
+    </>
   );
 }

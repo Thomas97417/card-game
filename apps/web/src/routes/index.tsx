@@ -1,7 +1,6 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { ArrowRight, Heart, Leaf, Swords, Users } from "lucide-react";
-import { CATALOG, DEPTHS, ROWS } from "@sylve/game";
-import { CreatureCard } from "@/components/game/creature-card";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { LandingPage } from "@/components/home/landing-page";
+import homeCss from "@/home.css?url";
 
 export const Route = createFileRoute("/")({
   beforeLoad: ({ context }) => {
@@ -9,131 +8,18 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "Sylve — Le cercle des gardiens" },
+      { title: "Sylve — Ta légende prend racine" },
       {
         name: "description",
         content:
-          "Un jeu de cartes tactique à deux. Compose ton deck, invoque tes compagnons et défends ton héros dans un univers fantasy.",
+          "Entre dans Sylve, le jeu de cartes tactique en ligne. Collectionne des créatures, crée tes alliances et défie d’autres gardiens. Essaie un duel sans compte.",
       },
+      { name: "theme-color", content: "#12251e" },
+    ],
+    links: [
+      { rel: "stylesheet", href: homeCss },
+      { rel: "preload", as: "image", href: "/art/forest-arena.png" },
     ],
   }),
-  component: HomePage,
+  component: LandingPage,
 });
-function HomePage() {
-  return (
-    <main className="sylve-home">
-      <section className="home-hero">
-        <div className="home-hero-art" />
-        <div className="home-hero-copy">
-          <span className="eyebrow">
-            <Leaf size={14} />
-            UN DUEL AU CŒUR DE LA FORÊT
-          </span>
-          <h1>
-            Petites créatures.
-            <br />
-            Grandes stratégies.
-          </h1>
-          <p>
-            Entre dans le cercle. Rassemble huit compagnons, défends ton
-            territoire et fais basculer le destin d’un duel.
-          </p>
-          <div className="home-actions">
-            <Link to="/arena" className="sylve-button">
-              Entrer dans le cercle <ArrowRight size={17} />
-            </Link>
-            <Link to="/practice" className="text-link">
-              S’entraîner contre l’ordinateur <ArrowRight size={15} />
-            </Link>
-          </div>
-          <div className="home-proof">
-            <span>
-              <Users size={15} />2 joueurs
-            </span>
-            <span>
-              <Swords size={15} />
-              Au tour par tour
-            </span>
-            <span>
-              <Heart size={15} />
-              Toutes les cartes offertes
-            </span>
-          </div>
-        </div>
-        <span className="art-caption">QUELQUE PART, DANS LA SYLVE.</span>
-      </section>
-      <section className="home-intro" id="how-to-play">
-        <div>
-          <span className="eyebrow">FACILE À APPRENDRE. RICHE À EXPLORER.</span>
-          <h2>
-            Chaque case raconte
-            <br />
-            une autre histoire.
-          </h2>
-        </div>
-        <div className="how-steps">
-          <div>
-            <span>01</span>
-            <h3>Compose ton alliance</h3>
-            <p>
-              Choisis 8 cartes uniques dans le bestiaire. Chaque créature a son
-              attaque, ses points de vie et sa place dans ta stratégie.
-            </p>
-          </div>
-          <div>
-            <span>02</span>
-            <h3>Trouve ta place</h3>
-            <p>
-              {ROWS} lignes, {DEPTHS} colonnes : le corps à corps vers l’ennemi,
-              les unités à distance vers ton héros, et la colonne centrale pour
-              les deux. Une unité de mêlée derrière
-              une autre unité de mêlée sur sa ligne ne peut pas agir.
-            </p>
-          </div>
-          <div>
-            <span>03</span>
-            <h3>Fais parler le terrain</h3>
-            <p>
-              Pose ta carte : tes monstres attaquent le premier ennemi en face,
-              ou son héros si la voie est libre, puis le tour passe à l’adversaire.
-              À 0 PV, le duel est joué.
-            </p>
-          </div>
-        </div>
-      </section>
-      <section className="home-bestiary">
-        <div>
-          <span className="eyebrow">ILS N’ATTENDENT QUE TOI</span>
-          <h2>Rencontre tes futurs compagnons.</h2>
-          <p className="muted">
-            Des personnalités bien trempées. Des alliances inattendues.
-          </p>
-        </div>
-        <div className="home-cards">
-          {[CATALOG[1]!, CATALOG[3]!, CATALOG[4]!, CATALOG[7]!].map((card) => (
-            <CreatureCard
-              key={card.id}
-              card={card}
-              onClick={() => {
-                window.location.href = "/decks";
-              }}
-            />
-          ))}
-        </div>
-        <Link to="/decks" className="text-link">
-          Explorer le bestiaire <ArrowRight size={15} />
-        </Link>
-      </section>
-      <footer className="sylve-footer">
-        <span className="sylve-logo">
-          <Leaf size={18} />
-          Sylve.
-        </span>
-        <span>Un cercle. Deux gardiens. Une nouvelle histoire.</span>
-        <Link to="/arena">
-          À toi de jouer <ArrowRight size={14} />
-        </Link>
-      </footer>
-    </main>
-  );
-}

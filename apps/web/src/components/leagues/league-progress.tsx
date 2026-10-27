@@ -54,16 +54,18 @@ export function TrophyIcon() {
 export function LeagueBadge({
   league,
   size = 72,
+  showDivision = true,
 }: {
   league: League;
   size?: number;
+  showDivision?: boolean;
 }) {
   return (
     <span
       className="league-badge"
       style={{ width: size, height: size }}
       role="img"
-      aria-label={league.label}
+      aria-label={showDivision ? league.label : league.name}
     >
       <img
         src={`/art/leagues/${league.tier}.webp`}
@@ -72,7 +74,7 @@ export function LeagueBadge({
         height={size}
         draggable={false}
       />
-      {league.division && (
+      {showDivision && league.division && (
         <span className="league-division" aria-hidden="true">
           {league.division}
         </span>

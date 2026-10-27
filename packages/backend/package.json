@@ -9,6 +9,7 @@
     "dev:setup": "convex dev --configure --until-success",
     "check-types": "tsc --project convex/tsconfig.json --noEmit",
     "test": "vitest run",
+    "preview:emails": "bun scripts/preview-auth-emails.tsx",
     "test:live": "bun scripts/verify-live.mjs"
   },
   "dependencies": {

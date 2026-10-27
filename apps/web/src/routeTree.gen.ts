@@ -20,6 +20,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameGameIdRouteImport } from './routes/game.$gameId'
+import { Route as legalMentionsLegalesRouteImport } from './routes/(legal)/mentions-legales'
+import { Route as legalCguRouteImport } from './routes/(legal)/cgu'
 import { Route as authVerifyEmailRouteImport } from './routes/(auth)/verify-email'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
@@ -82,6 +84,16 @@ const GameGameIdRoute = GameGameIdRouteImport.update({
   path: '/game/$gameId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const legalMentionsLegalesRoute = legalMentionsLegalesRouteImport.update({
+  id: '/(legal)/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const legalCguRoute = legalCguRouteImport.update({
+  id: '/(legal)/cgu',
+  path: '/cgu',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authVerifyEmailRoute = authVerifyEmailRouteImport.update({
   id: '/(auth)/verify-email',
   path: '/verify-email',
@@ -129,6 +141,8 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof authSignInRoute
   '/sign-up': typeof authSignUpRoute
   '/verify-email': typeof authVerifyEmailRoute
+  '/cgu': typeof legalCguRoute
+  '/mentions-legales': typeof legalMentionsLegalesRoute
   '/game/$gameId': typeof GameGameIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -148,6 +162,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof authSignInRoute
   '/sign-up': typeof authSignUpRoute
   '/verify-email': typeof authVerifyEmailRoute
+  '/cgu': typeof legalCguRoute
+  '/mentions-legales': typeof legalMentionsLegalesRoute
   '/game/$gameId': typeof GameGameIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -168,6 +184,8 @@ export interface FileRoutesById {
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/sign-up': typeof authSignUpRoute
   '/(auth)/verify-email': typeof authVerifyEmailRoute
+  '/(legal)/cgu': typeof legalCguRoute
+  '/(legal)/mentions-legales': typeof legalMentionsLegalesRoute
   '/game/$gameId': typeof GameGameIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -189,6 +207,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/verify-email'
+    | '/cgu'
+    | '/mentions-legales'
     | '/game/$gameId'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +228,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/verify-email'
+    | '/cgu'
+    | '/mentions-legales'
     | '/game/$gameId'
     | '/api/auth/$'
   id:
@@ -227,6 +249,8 @@ export interface FileRouteTypes {
     | '/(auth)/sign-in'
     | '/(auth)/sign-up'
     | '/(auth)/verify-email'
+    | '/(legal)/cgu'
+    | '/(legal)/mentions-legales'
     | '/game/$gameId'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -247,6 +271,8 @@ export interface RootRouteChildren {
   authSignInRoute: typeof authSignInRoute
   authSignUpRoute: typeof authSignUpRoute
   authVerifyEmailRoute: typeof authVerifyEmailRoute
+  legalCguRoute: typeof legalCguRoute
+  legalMentionsLegalesRoute: typeof legalMentionsLegalesRoute
   GameGameIdRoute: typeof GameGameIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -330,6 +356,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GameGameIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(legal)/mentions-legales': {
+      id: '/(legal)/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof legalMentionsLegalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(legal)/cgu': {
+      id: '/(legal)/cgu'
+      path: '/cgu'
+      fullPath: '/cgu'
+      preLoaderRoute: typeof legalCguRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/verify-email': {
       id: '/(auth)/verify-email'
       path: '/verify-email'
@@ -391,6 +431,8 @@ const rootRouteChildren: RootRouteChildren = {
   authSignInRoute: authSignInRoute,
   authSignUpRoute: authSignUpRoute,
   authVerifyEmailRoute: authVerifyEmailRoute,
+  legalCguRoute: legalCguRoute,
+  legalMentionsLegalesRoute: legalMentionsLegalesRoute,
   GameGameIdRoute: GameGameIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

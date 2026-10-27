@@ -782,5 +782,14 @@
       "path": "apps/web/public/art/ui/world-chat-globe.webp",
       "prompt": "Use case: stylized-concept.\nAsset type: production illustrated world chat navigation icon for the bottom hub toolbar of Sylve, a woodland fantasy card game.\nPrimary request: a single compact speech bubble shaped medallion with a clearly visible lower-left speech tail, enclosing a small emerald globe with simple aged golden-brass meridians. It must instantly communicate world chat.\nStyle/medium: premium hand-painted 2D storybook fantasy inventory art, matching the game's broad gold trophy and cream parchment mission scroll icons. Thick aged golden-brass bevels, deep emerald enamel, rich honey highlights from the upper left, painterly material textures, fine dark contour and soft dimensional shading. Restrained tiny botanical detail on the rim. Bold readable silhouette.\nComposition/framing: square canvas, one centered compact isolated symbol, occupying 88 percent of the image with all extremities visible and a small margin. Immediately readable at 32 to 52 pixels. Nearly front-on view.\nScene/backdrop: genuinely alpha-transparent background including holes, no backplate behind the icon.\nConstraints: no text, no lettering, no numbers, no watermark, no UI, no ground plane, no painted checkerboard, no floating particles or glow cloud."
     }
+  ],
+  "captures": [
+    {
+      "path": "apps/web/public/art/screenshots/duel-in-progress.jpg",
+      "source": "Capture directe de l’interface réelle pendant une partie d’entraînement jouée dans le navigateur.",
+      "turn": 13,
+      "width": 1280,
+      "height": 720
+    }
   ]
 }
