@@ -189,8 +189,8 @@
 }
 .hub-dock-shortcuts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(280px, 100%);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(400px, 100%);
   margin-inline: auto;
   padding-bottom: 2px;
 }
@@ -215,6 +215,14 @@
   height: 52px;
   object-fit: contain;
   filter: drop-shadow(0 4px 3px #05170da6);
+}
+.game-icon-gift {
+  color: #f1cf83;
+  fill: #ba81332e;
+}
+.hub-dock-shortcut > .game-icon-gift {
+  padding: 6px;
+  filter: drop-shadow(0 3px 2px #05170da6) drop-shadow(0 0 9px #e9bd4c33);
 }
 .hub-dock-shortcut > :is(.game-icon, .hub-missions-ready) {
   transition: transform 160ms;
@@ -1243,7 +1251,7 @@
     max-width: 524px;
   }
   .hub-dock-shortcuts {
-    width: min(252px, 100%);
+    width: min(360px, 100%);
     padding-bottom: 0;
   }
   .hub-dock-shortcut {
@@ -1255,7 +1263,7 @@
     height: 44px;
   }
   .hub-dock-shortcut > span {
-    font-size: 12px;
+    font-size: clamp(9px, 2.6vw, 12px);
   }
   .hub-chat-toggle {
     gap: 7px;

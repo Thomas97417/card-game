@@ -8,6 +8,7 @@ import { GameHeader } from "@/components/game-header";
 import { HubDock } from "./hub-dock";
 import { MineBuildings, type HubMinesProps } from "./mine-building";
 import type { HubMissionsProps } from "./missions-dialog";
+import type { HubDailyRewardsProps } from "./daily-rewards-panel";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
@@ -73,6 +74,7 @@ const hotspotStyle = cn(
 );
 
 interface VillageHubProps {
+  dailyRewards?: HubDailyRewardsProps;
   missions?: HubMissionsProps;
   mines?: HubMinesProps;
   activity?: {
@@ -82,7 +84,12 @@ interface VillageHubProps {
   };
 }
 
-export function VillageHub({ activity, missions, mines }: VillageHubProps) {
+export function VillageHub({
+  activity,
+  missions,
+  mines,
+  dailyRewards,
+}: VillageHubProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
   const mapScroll = useRef<HTMLDivElement>(null);
@@ -159,7 +166,9 @@ export function VillageHub({ activity, missions, mines }: VillageHubProps) {
           />
 
           <nav aria-label="Bâtiments du refuge">
-            <MineBuildings {...(mines ?? { pending: [], onCollect: () => {} })} />
+            <MineBuildings
+              {...(mines ?? { pending: [], onCollect: () => {} })}
+            />
             {PLACES.map((place) => {
               const content = (
                 <BuildingLabel
@@ -209,7 +218,7 @@ export function VillageHub({ activity, missions, mines }: VillageHubProps) {
             <ChevronLeft size={20} />
           </button>
         )}
-        <HubDock missions={missions} />
+        <HubDock missions={missions} dailyRewards={dailyRewards} />
         {isPannable && (
           <button
             type="button"

@@ -7,10 +7,22 @@ import { FriendsPanel } from "./friends-panel";
 import type { SocialPlayer } from "./player-menu";
 import { MissionsPanel, type HubMissionsProps } from "./missions-dialog";
 import { MissionCheck } from "./mission-icons";
+import {
+  DailyRewardsPanel,
+  type HubDailyRewardsProps,
+} from "./daily-rewards-panel";
+import { canClaimDailyReward } from "@sylve/game/daily-rewards";
+import { useDailyRewardClock } from "@/hooks/use-daily-reward-clock";
 
-export function HubDock({ missions }: { missions?: HubMissionsProps }) {
+export function HubDock({
+  missions,
+  dailyRewards,
+}: {
+  missions?: HubMissionsProps;
+  dailyRewards?: HubDailyRewardsProps;
+}) {
   const [activePanel, setActivePanel] = useState<
-    "ranking" | "missions" | "chat" | "friends" | null
+    "ranking" | "missions" | "rewards" | "chat" | "friends" | null
   >(null);
   const [conversation, setConversation] = useState<SocialPlayer | null>(null);
   const friendsOpen = activePanel === "friends";
@@ -26,6 +38,12 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
   const chatId = useId();
   const chatTitleId = useId();
   const chatTrigger = useRef<HTMLButtonElement>(null);
+  const rewardsOpen = activePanel === "rewards";
+  const rewardsId = useId();
+  const rewardsTrigger = useRef<HTMLButtonElement>(null);
+  const rewardNow = useDailyRewardClock(dailyRewards?.board);
+  const rewardReady =
+    dailyRewards?.board && canClaimDailyReward(dailyRewards.board, rewardNow);
 
   function closePanel() {
     setActivePanel(null);
@@ -36,7 +54,9 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
           ? friendsTrigger
           : activePanel === "missions"
             ? missionsTrigger
-            : rankingTrigger;
+            : activePanel === "rewards"
+              ? rewardsTrigger
+              : rankingTrigger;
     trigger.current?.focus({ preventScroll: true });
   }
 
@@ -56,6 +76,14 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
         />
       )}
       {rankingOpen && <HubRanking id={rankingId} onClose={closePanel} />}
+      {rewardsOpen && (
+        <DailyRewardsPanel
+          {...dailyRewards}
+          id={rewardsId}
+          now={rewardNow}
+          onClose={closePanel}
+        />
+      )}
       {missionsOpen && (
         <MissionsPanel
           {...missions}
@@ -74,6 +102,26 @@ export function HubDock({ missions }: { missions?: HubMissionsProps }) {
       />
 
       <nav className="hub-dock-shortcuts" aria-label="Communauté du refuge">
+        <button
+          ref={rewardsTrigger}
+          type="button"
+          className="hub-dock-shortcut"
+          aria-expanded={rewardsOpen}
+          aria-controls={rewardsOpen ? rewardsId : undefined}
+          onClick={() => setActivePanel(rewardsOpen ? null : "rewards")}
+        >
+          <GameIcon kind="rewards" size={52} />
+          {rewardReady && (
+            <span
+              className="hub-missions-ready"
+              role="img"
+              aria-label="Cadeau quotidien à récupérer"
+            >
+              <MissionCheck />
+            </span>
+          )}
+          <span>Récompenses</span>
+        </button>
         <button
           ref={rankingTrigger}
           type="button"

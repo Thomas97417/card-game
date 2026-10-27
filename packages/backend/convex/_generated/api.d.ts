@@ -8,9 +8,15 @@
  * @module
  */
 
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 import type * as auth from "../auth.js";
 import type * as chests from "../chests.js";
 import type * as collection from "../collection.js";
+import type * as dailyRewards from "../dailyRewards.js";
 import type * as decks from "../decks.js";
 import type * as env from "../env.js";
 import type * as friendChat from "../friendChat.js";
@@ -38,16 +44,19 @@ import type * as sendEmails from "../sendEmails.js";
 import type * as social from "../social.js";
 import type * as worldChat from "../worldChat.js";
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
-
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   chests: typeof chests;
   collection: typeof collection;
+  dailyRewards: typeof dailyRewards;
   decks: typeof decks;
   env: typeof env;
   friendChat: typeof friendChat;
@@ -75,28 +84,10 @@ declare const fullApi: ApiFromModules<{
   social: typeof social;
   worldChat: typeof worldChat;
 }>;
-
-/**
- * A utility for referencing Convex functions in your app's public API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 export declare const api: FilterApi<
   typeof fullApi,
   FunctionReference<any, "public">
 >;
-
-/**
- * A utility for referencing Convex functions in your app's internal API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = internal.myModule.myFunction;
- * ```
- */
 export declare const internal: FilterApi<
   typeof fullApi,
   FunctionReference<any, "internal">
