@@ -213,22 +213,14 @@ describe("icônes des capacités et états", () => {
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact - 1));
     expect(container.querySelector(".damage-float")).toBeNull();
     act(() => vi.advanceTimersByTime(1));
-    expect(
-      container.querySelector(
-        '.damage-float img[src="/art/abilities/vitality.webp"]',
-      ),
-    ).toBeTruthy();
+    expect(container.querySelector(".damage-float .ability-icon")).toBeNull();
     expect(container.querySelector(".damage-float")?.textContent).toBe("+1");
     act(() =>
       vi.advanceTimersByTime(
         COMBAT_TIMING.ability - COMBAT_TIMING.abilityImpact,
       ),
     );
-    expect(
-      container.querySelector(
-        '.damage-float img[src="/art/abilities/vitality.webp"]',
-      ),
-    ).toBeTruthy();
+    expect(container.querySelector(".damage-float")?.textContent).toBe("+1");
     act(() => vi.runAllTimers());
   });
 });

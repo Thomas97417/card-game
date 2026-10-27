@@ -255,7 +255,7 @@ describe("visible ability casters", () => {
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.summon));
     expect(container.querySelector(".ability-origin")!.getAttribute("data-card-id")).toBe("captain:common");
     const casting = container.querySelector(".board-unit.ability-casting")!;
-    expect(casting.querySelector(".unit-name")!.textContent).toBe(cards[0]!.name);
+    expect(casting.closest(".board-unit-control")!.getAttribute("aria-label")).toContain(cards[0]!.name);
     expect(container.querySelectorAll(".board-unit")).toHaveLength(2);
     expect(container.querySelector(".ability-trail")).toBeNull();
     act(() => vi.runAllTimers());

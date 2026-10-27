@@ -8,6 +8,7 @@ import {
 } from "@sylve/game";
 import { COMBAT_TIMING } from "./combat-timing";
 import { combatFrames } from "./combat-frames";
+import { combatFrameTiming } from "./combat-visuals";
 
 type View = GameView & { events: GameEvent[] };
 
@@ -36,32 +37,9 @@ export function useCombatPlayback(latest: View | undefined) {
     let delay = 0;
     let effectsEnd = 0;
     for (const frame of combatFrames(pending)) {
-      const entry = frame[0]!;
       timers.push(window.setTimeout(() => setEvents(frame), delay));
-      const duration = Math.max(...frame.map((entry) =>
-        entry.type === "attack"
-          ? COMBAT_TIMING.attack
-          : entry.type === "death"
-            ? COMBAT_TIMING.death
-            : entry.type === "summon"
-              ? COMBAT_TIMING.summon
-              : entry.type === "hero_ability"
-                ? COMBAT_TIMING.heroAbility
-                : entry.type === "ability"
-                  ? COMBAT_TIMING.ability
-                  : entry.type === "withdraw"
-                    ? COMBAT_TIMING.withdraw
-                    : 0,
-      ));
-      const commitAt =
-        delay +
-        (entry.type === "summon"
-          ? 0
-          : entry.type === "attack"
-            ? COMBAT_TIMING.impact
-            : entry.type === "ability"
-              ? COMBAT_TIMING.abilityImpact
-              : duration);
+      const { duration, impact } = combatFrameTiming(frame);
+      const commitAt = delay + impact;
       if (frame.some((entry) => entry.type === "attack" || entry.type === "ability"))
         effectsEnd = Math.max(effectsEnd, commitAt + COMBAT_TIMING.damage);
       timers.push(
