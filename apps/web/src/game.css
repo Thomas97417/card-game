@@ -1812,6 +1812,12 @@ button:disabled {
   width: min(600px, calc(100vw - 32px));
   border-color: #e0bd7a99;
 }
+.game-dialog.result-card.is-defeat[data-slot="dialog-content"] {
+  border-color: #b79c7966;
+  background:
+    radial-gradient(ellipse at 50% 0, #9964491f, transparent 65%),
+    linear-gradient(155deg, #203a30, #102a22 80%);
+}
 .game-dialog.result-card > [data-slot="dialog-body"] {
   padding: 0;
 }
@@ -1819,7 +1825,7 @@ button:disabled {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: 30px 24px 18px;
+  padding: 26px 24px 20px;
 }
 .result-kicker {
   display: block;
@@ -1835,17 +1841,25 @@ button:disabled {
   position: relative;
   display: grid;
   place-items: center;
-  width: 140px;
-  height: 120px;
+  width: 180px;
+  height: 154px;
   margin: 0 auto;
   color: #c8d4b8;
 }
-.result-emblem > .trophy-icon {
+.result-outcome-art {
   position: relative;
-  width: 96px;
-  height: 96px;
-  filter: drop-shadow(0 8px 18px #e6b64d40);
+  z-index: 1;
+  width: 148px;
+  height: 148px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 16px #050f0c80) drop-shadow(0 0 22px #e6b64d26);
   animation: result-emblem-arrive 750ms cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+.is-defeat .result-outcome-art {
+  filter: drop-shadow(0 10px 16px #050f0c80) drop-shadow(0 0 22px #b87a5426);
+}
+.is-defeat .result-emblem-rays {
+  background: radial-gradient(ellipse, #bd8d5a26, transparent 65%);
 }
 .is-promotion .result-emblem {
   width: 230px;
@@ -2203,6 +2217,13 @@ button:disabled {
 @media (max-height: 740px) {
   .result-hero {
     padding-top: 20px;
+  }
+  .result-emblem {
+    height: 124px;
+  }
+  .result-outcome-art {
+    width: 120px;
+    height: 120px;
   }
   .is-promotion .result-emblem {
     height: 144px;

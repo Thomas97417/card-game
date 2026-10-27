@@ -731,7 +731,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 .result-trophy-delta {
   display: inline-flex;
@@ -759,20 +759,49 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-.result-league-labels {
-  display: flex;
+.result-league-progression {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 7px;
-  color: #c1c9b5;
-  font-size: 10px;
+  gap: 14px;
 }
-.result-league-labels > span:first-child {
-  color: #ecddb5;
+.result-league-progression[data-max="true"] {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+.result-league-rank {
+  display: grid;
+  place-items: center;
+}
+.result-league-rank.is-next {
+  opacity: 0.65;
+}
+.result-league-rank .league-division {
+  bottom: 4%;
+  font-size: 12px;
+}
+.result-league-progress {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  text-align: center;
+}
+.result-league-fraction {
+  color: #aab9a9;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.result-league-fraction strong {
+  color: #f1e5c8;
+  font-weight: 600;
+}
+.result-league-demotion {
+  color: #d9ad91;
+  font-size: 9px;
+  letter-spacing: 0.04em;
 }
 .result-league-bar {
-  height: 5px;
+  height: 6px;
   overflow: hidden;
   border-radius: 8px;
   background: #d4be881a;
@@ -790,6 +819,9 @@
 @media (max-width: 480px) {
   .duel-league-reward {
     margin-inline: 20px;
+  }
+  .result-league-progression {
+    gap: 10px;
   }
 }
 .workshop-locked-slot {

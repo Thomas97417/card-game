@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { ArrowRight, Check, Copy, Plus } from "lucide-react";
@@ -23,6 +23,8 @@ import {
 } from "@/components/play/chest-reveal-dialog";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import { useDuelTransition } from "@/components/game/duel-transition";
+import { shouldShowDuelIntro } from "@/components/game/duel-intro";
 
 export const Route = createFileRoute("/arena")({
   validateSearch: (search: Record<string, unknown>): { invite?: string } => ({
@@ -35,7 +37,11 @@ export const Route = createFileRoute("/arena")({
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
     meta: [{ title: "L’arène des gardiens — Sylve" }],
-    links: [{ rel: "preload", as: "image", href: "/art/play-lobby.webp" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/play-lobby.webp" },
+      { rel: "prefetch", as: "image", href: "/art/heroes/hero-amber.webp" },
+      { rel: "prefetch", as: "image", href: "/art/duel-arena-overhead.webp" },
+    ],
   }),
   component: ArenaPage,
 });
@@ -43,9 +49,17 @@ export const Route = createFileRoute("/arena")({
 function ArenaPage() {
   const emeralds = useEmeraldBalance();
   const navigate = useNavigate();
+  const transition = useDuelTransition();
   const { invite } = Route.useSearch();
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
+  const user = useQuery(api.auth.getCurrentUser);
+  const openingGameId = activity?.status === "active" ? activity.gameId : null;
+  // The presentation already covers the arena while the live duel loads.
+  const openingGame = useQuery(
+    api.games.get,
+    openingGameId ? { gameId: openingGameId } : "skip",
+  );
   const treasures = useQuery(api.chests.list);
   const league = useQuery(api.collection.league);
   const ensureStarter = useMutation(api.decks.ensureStarter);
@@ -68,6 +82,8 @@ function ArenaPage() {
   const upgrade = useMutation(api.collection.upgrade);
   const [selectedChest, setSelectedChest] = useState<LobbyChest | null>(null);
   const actionLock = useRef(false);
+  const opening = useRef<string | null>(null);
+  const cancelSearch = useCallback(() => cancelQueue(), [cancelQueue]);
   const [now, setNow] = useState(0);
   useEffect(() => {
     let mounted = true;
@@ -90,12 +106,39 @@ function ArenaPage() {
     if (activity?.status === "waiting") setPrivateOpen(true);
   }, [activity?.status]);
   useEffect(() => {
-    if (activity?.status === "active" && activity.gameId)
-      void navigate({
-        to: "/game/$gameId",
-        params: { gameId: activity.gameId },
+    if (!openingGameId || !openingGame || opening.current === openingGameId)
+      return;
+    opening.current = openingGameId;
+    if (transition) {
+      if (
+        !transition.active &&
+        shouldShowDuelIntro(openingGameId, openingGame)
+      ) {
+        transition.start({
+          mode: openingGame.mode ?? "private",
+          player: { name: user?.name ?? "Toi" },
+        });
+      }
+      transition.match(openingGameId, openingGame);
+    }
+    setPrivateOpen(false);
+    void navigate({
+      to: "/game/$gameId",
+      params: { gameId: openingGameId },
+    }).catch((error) => {
+      transition?.cancel();
+      showGameError(error);
+    });
+  }, [openingGameId, openingGame, navigate, transition, user?.name]);
+  useEffect(() => {
+    if (activity?.queued && transition && !transition.active) {
+      transition.start({
+        mode: "public",
+        player: { name: user?.name ?? "Toi" },
       });
-  }, [activity, navigate]);
+    }
+    transition?.setCancellation(activity?.queued ? cancelSearch : undefined);
+  }, [activity?.queued, transition, user?.name, cancelSearch]);
   useEffect(() => {
     if (!activity?.queued) return;
     const ping = () => {
@@ -132,6 +175,22 @@ function ArenaPage() {
       setBusy(false);
     }
   }
+  function beginCombat(
+    mode: "solo" | "public" | "private",
+    fn: () => Promise<unknown>,
+  ) {
+    if (actionLock.current) return;
+    setPrivateOpen(false);
+    transition?.start({ mode, player: { name: user?.name ?? "Toi" } });
+    void action(async () => {
+      try {
+        await fn();
+      } catch (error) {
+        transition?.cancel();
+        throw error;
+      }
+    });
+  }
   async function copyInvite() {
     try {
       await navigator.clipboard.writeText(
@@ -166,14 +225,11 @@ function ArenaPage() {
       queued={activity?.queued ?? false}
       onSolo={() => {
         if (deck && deckComplete)
-          void action(async () => {
-            const gameId = await createSolo({ deckId: deck._id });
-            await navigate({ to: "/game/$gameId", params: { gameId } });
-          });
+          beginCombat("solo", () => createSolo({ deckId: deck._id }));
       }}
       onPublic={() => {
         if (deck && deckComplete)
-          void action(() => enqueue({ deckId: deck._id }));
+          beginCombat("public", () => enqueue({ deckId: deck._id }));
       }}
       onPrivate={() => setPrivateOpen(true)}
       onCancelQueue={() => {
@@ -245,16 +301,9 @@ function ArenaPage() {
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (deck && deckComplete)
-                    void action(async () => {
-                      const gameId = await joinPrivate({
-                        code,
-                        deckId: deck._id,
-                      });
-                      await navigate({
-                        to: "/game/$gameId",
-                        params: { gameId },
-                      });
-                    });
+                    beginCombat("private", () =>
+                      joinPrivate({ code, deckId: deck._id }),
+                    );
                 }}
               >
                 <label className="sr-only" htmlFor="invite-code">

@@ -111,30 +111,51 @@ describe("le parcours des ligues", () => {
     render(<LeaguePanel progress={leagueProgress(0)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
     const dialog = within(await screen.findByRole("dialog"));
-    const details = within(dialog.getByRole("region", { name: "Détails du palier sélectionné" }));
-    expect(details.getByText("Commune : 10–11 exemplaires (95 %)")).toBeTruthy();
+    const details = within(
+      dialog.getByRole("region", { name: "Détails du palier sélectionné" }),
+    );
+    expect(
+      details.getByText("Commune : 10–11 exemplaires (95 %)"),
+    ).toBeTruthy();
     expect(details.getByText("28–47 pièces d’or")).toBeTruthy();
     expect(details.getByText("3 min d’attente")).toBeTruthy();
     expect(details.getByText("Ouverture immédiate : 1 émeraude")).toBeTruthy();
-    for (const league of ["Bronze IV", "Bronze III", "Argent II", "Émeraude IV"])
+    for (const league of [
+      "Bronze IV",
+      "Bronze III",
+      "Argent II",
+      "Émeraude IV",
+    ])
       expect(details.getByText(`Disponible dès ${league}`)).toBeTruthy();
 
     fireEvent.click(dialog.getByRole("button", { name: /^Bronze III,/ }));
     expect(details.getByText("Rare : 23–24 exemplaires (99,5 %)")).toBeTruthy();
     expect(details.getByText("57–82 pièces d’or")).toBeTruthy();
     expect(details.getByText("1 h d’attente")).toBeTruthy();
-    expect(details.getByText("Ouverture immédiate : 20 émeraudes")).toBeTruthy();
+    expect(
+      details.getByText("Ouverture immédiate : 20 émeraudes"),
+    ).toBeTruthy();
     expect(details.getByText("3 h d’attente")).toBeTruthy();
-    expect(details.getByText("Ouverture immédiate : 33 émeraudes")).toBeTruthy();
+    expect(
+      details.getByText("Ouverture immédiate : 33 émeraudes"),
+    ).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: /^Émeraude IV,/ }));
-    expect(details.getByText("Légendaire : 3 exemplaires (100 %)")).toBeTruthy();
+    expect(
+      details.getByText("Légendaire : 3 exemplaires (100 %)"),
+    ).toBeTruthy();
     expect(details.getByText("248–321 pièces d’or")).toBeTruthy();
     expect(details.getByText("6 h d’attente")).toBeTruthy();
-    expect(details.getByText("Ouverture immédiate : 66 émeraudes")).toBeTruthy();
+    expect(
+      details.getByText("Ouverture immédiate : 66 émeraudes"),
+    ).toBeTruthy();
     expect(details.getByText("24 h d’attente")).toBeTruthy();
-    expect(details.getByText("Ouverture immédiate : 180 émeraudes")).toBeTruthy();
+    expect(
+      details.getByText("Ouverture immédiate : 180 émeraudes"),
+    ).toBeTruthy();
     expect(details.getByText("36 h d’attente")).toBeTruthy();
-    expect(details.getByText("Ouverture immédiate : 270 émeraudes")).toBeTruthy();
+    expect(
+      details.getByText("Ouverture immédiate : 270 émeraudes"),
+    ).toBeTruthy();
     expect(details.queryByText(/Disponible dès/)).toBeNull();
   });
 
@@ -251,7 +272,8 @@ describe("le parcours des ligues", () => {
       />,
     );
     expect(screen.getByLabelText("+25 trophées")).toBeTruthy();
-    expect(screen.getByText("Fer III")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Fer III" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Fer II" })).toBeTruthy();
     const progress = screen.getByRole("progressbar", {
       name: "Progression vers Fer II",
     });
@@ -273,7 +295,8 @@ describe("le parcours des ligues", () => {
         }}
       />,
     );
-    expect(screen.getByText("Rétrogradation · Fer IV")).toBeTruthy();
+    expect(screen.getByText("Rétrogradation")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Fer IV" })).toBeTruthy();
     expect(screen.getByLabelText("−15 trophées")).toBeTruthy();
     expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe(
       "185 trophées, 15 avant Fer III",

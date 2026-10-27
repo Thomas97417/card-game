@@ -42,6 +42,16 @@ function summonViews() {
 }
 
 describe("réactivité du placement", () => {
+  it("renders an already loaded duel on its first render without a loading frame", () => {
+    const { initial } = summonViews();
+    const frames: unknown[] = [];
+    renderHook(() => {
+      const playback = useCombatPlayback(initial);
+      frames.push(playback.display);
+    });
+    expect(frames[0]).toBe(initial);
+  });
+
   it("keeps a pentagram visible and applies its bonus at the start-of-turn ability impact", () => {
     vi.useFakeTimers();
     const state = createGame(

@@ -53,7 +53,7 @@ describe("résultat du combat", () => {
     expect(dialog.getByText("Nouvelle ligue")).toBeTruthy();
     expect(
       dialog
-        .getByRole("img", { name: "Bronze IV" })
+        .getAllByRole("img", { name: "Bronze IV" })[0]!
         .querySelector("img")
         ?.getAttribute("src"),
     ).toBe("/art/leagues/bronze.webp");
@@ -132,6 +132,11 @@ describe("résultat du combat", () => {
   it("keeps an ordinary victory compact and shows the two distinct chests", () => {
     render(<DuelResult data={result(50, 75)} practice={false} />);
     const dialog = within(screen.getByRole("dialog", { name: "Victoire !" }));
+    expect(
+      dialog
+        .getByRole("img", { name: "Épée couronnée de la victoire" })
+        .getAttribute("src"),
+    ).toBe("/art/results/victory.webp");
     expect(dialog.getByText("Coffre commun")).toBeTruthy();
     expect(
       dialog.getByLabelText("Coffre de victoires : 3/3, prêt à ouvrir"),
@@ -144,6 +149,33 @@ describe("résultat du combat", () => {
         .getByRole("link", { name: "Retour au salon" })
         .getAttribute("href"),
     ).toBe("/arena");
+  });
+
+  it("presents defeat with its broken shield and replaces rank labels with division badges", () => {
+    const data = result(825, 810);
+    data.winner = 1;
+    data.reward = null;
+    render(<DuelResult data={data} practice={false} />);
+    const dialog = within(screen.getByRole("dialog", { name: "Défaite" }));
+    expect(
+      dialog
+        .getByRole("img", { name: "Bouclier brisé de la défaite" })
+        .getAttribute("src"),
+    ).toBe("/art/results/defeat.webp");
+    for (const division of ["IV", "III"]) {
+      const badge = dialog.getByRole("img", { name: `Bronze ${division}` });
+      expect(badge.querySelector("img")?.getAttribute("src")).toBe(
+        "/art/leagues/bronze.webp",
+      );
+      expect(badge.textContent).toBe(division);
+    }
+    expect(dialog.getByLabelText("−15 trophées")).toBeTruthy();
+    expect(dialog.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "10",
+    );
+    expect(
+      dialog.queryByRole("img", { name: "Épée couronnée de la victoire" }),
+    ).toBeNull();
   });
 
   it("keeps earned trophies and victory chest progress visible when combat chest slots are full", () => {

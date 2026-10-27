@@ -21,6 +21,7 @@ import ErrorBoundary from "../components/error-boundary";
 import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import gameCss from "../game.css?url";
+import duelIntroCss from "../duel-intro.css?url";
 import workshopCss from "../deck-workshop.css?url";
 import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
@@ -33,6 +34,7 @@ import { EmeraldProvider } from "@/components/emerald-balance";
 import { FriendshipProvider } from "@/components/friendship-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
 import { GameAuthGate } from "@/components/game-auth-gate";
+import { DuelTransitionProvider } from "@/components/game/duel-transition";
 import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
@@ -69,6 +71,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         href: appCss,
       },
       { rel: "stylesheet", href: gameCss },
+      { rel: "stylesheet", href: duelIntroCss },
       { rel: "stylesheet", href: workshopCss },
       { rel: "stylesheet", href: progressionCss },
       { rel: "stylesheet", href: lobbyCss },
@@ -105,11 +108,15 @@ function RootDocument() {
     select: (state) => state.location.pathname === "/",
   });
   const authRouteId = useRouterState({
-    select: (state) => state.matches.find((match) => match.routeId.startsWith("/(auth)/"))?.routeId,
+    select: (state) =>
+      state.matches.find((match) => match.routeId.startsWith("/(auth)/"))
+        ?.routeId,
   });
   const isAuthPage = authRouteId !== undefined;
   const legalRouteId = useRouterState({
-    select: (state) => state.matches.find((match) => match.routeId.startsWith("/(legal)/"))?.routeId,
+    select: (state) =>
+      state.matches.find((match) => match.routeId.startsWith("/(legal)/"))
+        ?.routeId,
   });
   const isLegalPage = legalRouteId !== undefined;
   const requiresAuth = useRouterState({
@@ -161,31 +168,33 @@ function RootDocument() {
                 <EmeraldProvider>
                   <FriendshipProvider>
                     <PlayerHeaderProvider>
-                      <div
-                        className={
-                          showHeader
-                            ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                            : "grid h-svh grid-rows-[minmax(0,1fr)]"
-                        }
-                      >
-                        {showHeader && <Header />}
+                      <DuelTransitionProvider>
                         <div
-                          key={authRouteId ?? legalRouteId}
                           className={
-                            isImmersive
-                              ? "min-h-0 overflow-hidden"
-                              : isLanding
-                                ? "landing-scroll-container min-h-0 overflow-y-auto"
-                                : isAuthPage
-                                  ? "auth-scroll-container min-h-0 overflow-y-auto"
-                                  : isLegalPage
-                                    ? "legal-scroll-container min-h-0 overflow-y-auto"
-                                    : "min-h-0 overflow-y-auto"
+                            showHeader
+                              ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                              : "grid h-svh grid-rows-[minmax(0,1fr)]"
                           }
                         >
-                          <Outlet />
+                          {showHeader && <Header />}
+                          <div
+                            key={authRouteId ?? legalRouteId}
+                            className={
+                              isImmersive
+                                ? "min-h-0 overflow-hidden"
+                                : isLanding
+                                  ? "landing-scroll-container min-h-0 overflow-y-auto"
+                                  : isAuthPage
+                                    ? "auth-scroll-container min-h-0 overflow-y-auto"
+                                    : isLegalPage
+                                      ? "legal-scroll-container min-h-0 overflow-y-auto"
+                                      : "min-h-0 overflow-y-auto"
+                            }
+                          >
+                            <Outlet />
+                          </div>
                         </div>
-                      </div>
+                      </DuelTransitionProvider>
                       <Toaster richColors />
                     </PlayerHeaderProvider>
                   </FriendshipProvider>

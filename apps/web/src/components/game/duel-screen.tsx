@@ -98,6 +98,14 @@ export function DuelScreen({
   const surrenderDialog = useRef<HTMLDialogElement>(null);
   const rulesDialog = useRef<HTMLDialogElement>(null);
   const historyDialog = useRef<HTMLDialogElement>(null);
+  const surrendering = useRef(false);
+  useEffect(() => {
+    if (data.status !== "finished") return;
+    for (const ref of [surrenderDialog, rulesDialog, historyDialog]) {
+      if (ref.current?.open) ref.current.close();
+    }
+    setInspection(null);
+  }, [data.status]);
   useEffect(() => {
     if (practice) return;
     const timer = window.setInterval(() => setNow(Date.now()), 200);
@@ -491,13 +499,21 @@ export function DuelScreen({
         <form method="dialog">
           <button className="sylve-button secondary">Continuer le duel</button>
           <button
+            type="button"
             className="sylve-button"
             disabled={pending}
             onClick={() => {
+              if (surrendering.current) return;
+              surrendering.current = true;
+              // Native dialogs live above the result's portal. Close explicitly.
+              surrenderDialog.current?.close();
               setPending(true);
               void onSurrender()
                 .catch(showGameError)
-                .finally(() => setPending(false));
+                .finally(() => {
+                  surrendering.current = false;
+                  setPending(false);
+                });
             }}
           >
             Abandonner

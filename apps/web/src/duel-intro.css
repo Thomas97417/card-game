@@ -1,0 +1,477 @@
+.duel-entry,
+.duel-entry-board {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.duel-entry {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #10251d;
+}
+.duel-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff4d8;
+  font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  background: #10251d;
+}
+.duel-intro-panel {
+  --intro-accent: #8eddb8;
+  --intro-exit: -110%;
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 58%;
+  overflow: hidden;
+  background: #112f28;
+  clip-path: polygon(0 0, 100% 0, 72.414% 100%, 0 100%);
+  animation: duel-intro-panel 340ms cubic-bezier(0.22, 0.8, 0.25, 1) both;
+}
+.duel-intro-panel.enemy {
+  --intro-accent: #ffc579;
+  --intro-exit: 110%;
+  inset: 0 0 0 auto;
+  background: #3f251a;
+  clip-path: polygon(27.586% 0, 100% 0, 100% 100%, 0 100%);
+}
+.duel-intro-scenery,
+.duel-intro-aura,
+.duel-intro-fighter {
+  position: absolute;
+  inset: 0;
+}
+.duel-intro-scenery {
+  background:
+    linear-gradient(135deg, #163d35b3, #061d1ade),
+    url("/art/play-lobby.webp") center / cover;
+  transform: scale(1.08);
+}
+.enemy .duel-intro-scenery {
+  background:
+    linear-gradient(225deg, #644024b3, #25120cde),
+    url("/art/play-lobby.webp") 65% center / cover;
+}
+.duel-intro-aura {
+  background:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 100px,
+      #c5f8dd06 101px 102px
+    ),
+    radial-gradient(ellipse at 48% 46%, #9bffe14d, transparent 61%);
+}
+.enemy .duel-intro-aura {
+  background:
+    repeating-linear-gradient(
+      115deg,
+      transparent 0 100px,
+      #ffdd9c09 101px 102px
+    ),
+    radial-gradient(ellipse at 52% 46%, #ffb84e50, transparent 61%);
+}
+.duel-intro-fighter {
+  inset: 10% 10% -21% -5%;
+  animation: duel-intro-fighter var(--duel-intro-duration) ease-out both;
+}
+.enemy .duel-intro-fighter {
+  inset: 13% -6% -15% 11%;
+}
+.duel-intro-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  filter: drop-shadow(0 0 40px #a1ffe52e) drop-shadow(0 16px 25px #0007);
+}
+.enemy .duel-intro-portrait {
+  filter: drop-shadow(0 0 40px #ffd28d33) drop-shadow(0 16px 25px #0007);
+}
+.duel-intro-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, #071713 0%, #071713d9 13%, transparent 65%);
+}
+.enemy.duel-intro-panel::after {
+  background: linear-gradient(0deg, #1c100b 0%, #1c100bd9 13%, transparent 65%);
+}
+.duel-intro-identity {
+  position: absolute;
+  z-index: 1;
+  bottom: 18%;
+  left: 10%;
+  width: 64%;
+  text-align: center;
+  text-shadow: 0 3px 18px #000b;
+  animation: duel-intro-identity var(--duel-intro-duration) ease-out both;
+}
+.enemy .duel-intro-identity {
+  left: auto;
+  right: 10%;
+}
+.duel-intro-player-label {
+  display: block;
+  color: var(--intro-accent);
+  font-size: clamp(9px, 1vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+.duel-intro-identity h2 {
+  margin: 10px 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(25px, 4.2vw, 66px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.duel-intro-level {
+  color: #e6dfc4b3;
+  font-size: clamp(10px, 1vw, 13px);
+  letter-spacing: 0.06em;
+}
+.duel-intro-seam {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #ffe8b5;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px #ffe3a3a6) drop-shadow(0 0 20px #ffe3a380);
+  animation: duel-intro-emblem var(--duel-intro-duration) ease-out both;
+}
+.duel-intro-heading {
+  position: absolute;
+  top: max(7%, env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 2px 15px #000a;
+  animation: duel-intro-identity var(--duel-intro-duration) ease-out both;
+}
+.duel-intro-heading > span {
+  color: #f5e8c28c;
+  font-size: 9px;
+  letter-spacing: 0.35em;
+}
+.duel-intro-heading > strong {
+  font-size: clamp(11px, 1.3vw, 16px);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+}
+.duel-intro-versus {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: clamp(94px, 14vw, 190px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% -50%;
+  animation: duel-intro-impact var(--duel-intro-duration)
+    cubic-bezier(0.16, 0.85, 0.3, 1) both;
+}
+.duel-intro-versus::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, #ffd58c45, transparent 65%);
+}
+.duel-intro-ring {
+  position: absolute;
+  inset: 5%;
+  border: 1px solid #e8cc8d80;
+  outline: 1px solid #e8cc8d26;
+  outline-offset: 7px;
+  background: #13231ee8;
+  box-shadow:
+    0 0 50px #e8cc8d26,
+    inset 0 0 30px #e8cc8d0d;
+  transform: rotate(45deg);
+}
+.duel-intro-swords {
+  position: absolute;
+  top: 15%;
+  width: 19%;
+  height: 19%;
+  color: #d3b879;
+}
+.duel-intro-versus > strong {
+  position: relative;
+  padding-top: 10%;
+  color: #ffe5a8;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 6.5vw, 86px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.1em;
+  text-shadow:
+    0 2px 1px #67421d,
+    0 0 25px #ffbf5b55;
+}
+.duel-intro-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.duel-intro-sparks i {
+  --angle: calc(var(--spark) * 30deg);
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffe3a3;
+  box-shadow: 0 0 8px #ffc56d;
+  animation: duel-intro-spark var(--duel-intro-duration) ease-out both;
+}
+.duel-intro-caption {
+  position: absolute;
+  bottom: max(7%, env(safe-area-inset-bottom));
+  left: 20%;
+  right: 20%;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  color: #f6e7c7b3;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-align: center;
+  text-transform: uppercase;
+  animation: duel-intro-emblem var(--duel-intro-duration) ease-out both;
+}
+.duel-intro-progress {
+  width: min(180px, 100%);
+  height: 2px;
+  background: #ffe3a34d;
+  overflow: hidden;
+}
+.duel-intro-progress::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ffe3a3;
+  transform-origin: left;
+  animation: duel-intro-progress
+    calc(var(--duel-intro-duration) - var(--duel-intro-exit-duration)) linear
+    both;
+}
+.duel-intro[data-waiting="true"] .duel-intro-progress::after {
+  animation: duel-intro-loading 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+.duel-intro-cancel {
+  border: 1px solid #ffe3a34d;
+  border-radius: 5px;
+  padding: 9px 15px;
+  color: #f6e7c7;
+  background: #10251d99;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.duel-intro-cancel:focus-visible {
+  outline: 2px solid #ffe3a3;
+  outline-offset: 4px;
+}
+.duel-intro-cancel:disabled {
+  opacity: 0.6;
+}
+.duel-intro[data-exiting="true"] {
+  animation: duel-intro-reveal var(--duel-intro-exit-duration) linear both;
+}
+.duel-intro[data-exiting="true"] .duel-intro-panel {
+  animation: duel-intro-panel-exit var(--duel-intro-exit-duration) ease-in both;
+}
+.duel-intro[data-exiting="true"]
+  :is(
+    .duel-intro-heading,
+    .duel-intro-versus,
+    .duel-intro-seam,
+    .duel-intro-caption
+  ) {
+  animation: duel-intro-fade var(--duel-intro-exit-duration) ease-out both;
+}
+.duel-intro[data-exiting="true"] .duel-intro-progress::after {
+  animation: none;
+  transform: scaleX(1);
+}
+@keyframes duel-intro-panel {
+  0% {
+    transform: translateX(var(--intro-exit));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes duel-intro-panel-exit {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--intro-exit));
+  }
+}
+@keyframes duel-intro-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes duel-intro-fighter {
+  0% {
+    opacity: 0;
+    transform: scale(1.16);
+  }
+  23% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes duel-intro-identity {
+  0%,
+  14% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  30%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes duel-intro-impact {
+  0%,
+  13% {
+    opacity: 0;
+    transform: scale(1.8) rotate(-12deg);
+  }
+  28% {
+    opacity: 1;
+    transform: scale(0.95) rotate(0);
+  }
+  34%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes duel-intro-emblem {
+  0%,
+  17% {
+    opacity: 0;
+  }
+  30%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes duel-intro-spark {
+  0%,
+  22% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(35px);
+  }
+  28% {
+    opacity: 1;
+  }
+  65%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(clamp(130px, 25vw, 370px));
+  }
+}
+@keyframes duel-intro-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(0.85);
+  }
+}
+@keyframes duel-intro-loading {
+  0%,
+  100% {
+    transform: translateX(-45%) scaleX(0.35);
+  }
+  50% {
+    transform: translateX(45%) scaleX(0.35);
+  }
+}
+@keyframes duel-intro-reveal {
+  0% {
+    background-color: #10251d;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@media (max-width: 600px) {
+  .duel-intro-fighter {
+    inset: 15% -27% 8% -30%;
+  }
+  .enemy .duel-intro-fighter {
+    inset: 20% -40% 10% -15%;
+  }
+  .duel-intro-portrait {
+    object-fit: cover;
+    object-position: 48% top;
+  }
+  .duel-intro-identity {
+    left: 7%;
+    bottom: 21%;
+    width: 69%;
+  }
+  .enemy .duel-intro-identity {
+    right: 7%;
+  }
+  .duel-intro-identity h2 {
+    margin: 10px 0;
+    font-size: clamp(23px, 6.3vw, 38px);
+  }
+  .duel-intro-caption {
+    left: 10%;
+    right: 10%;
+    font-size: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .duel-intro,
+  .duel-intro *,
+  .duel-intro *::after {
+    animation: none !important;
+  }
+  .duel-intro {
+    background: #10251d;
+  }
+  .duel-intro-sparks {
+    display: none;
+  }
+}
+.duel-transition-content {
+  display: contents;
+}
+.duel-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}

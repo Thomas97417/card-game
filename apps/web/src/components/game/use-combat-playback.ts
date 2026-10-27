@@ -12,10 +12,10 @@ type View = GameView & { events: GameEvent[] };
 
 /** Animate committed engine events; mounting starts at the current snapshot. */
 export function useCombatPlayback(latest: View | undefined) {
-  const [display, setDisplay] = useState<View>();
+  const [display, setDisplay] = useState<View | undefined>(latest);
   const [event, setEvent] = useState<GameEvent | null>(null);
   const [playing, setPlaying] = useState(false);
-  const last = useRef<number | null>(null);
+  const last = useRef<number | null>(latest?.sequence ?? null);
   useEffect(() => {
     if (!latest) return;
     if (last.current === null) {

@@ -13,6 +13,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `field/` | Bâtiments neutres, runes et pentagrammes |
 | `chests/` | Cinq types de coffres, fermés et ouverts |
 | `leagues/` | Écussons des dix ligues |
+| `results/` | Emblèmes de victoire et de défaite, générés avec ImageGen intégré |
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, chaînes, liens d’âme et poussière d’âme |
