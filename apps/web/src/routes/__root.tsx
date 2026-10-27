@@ -21,6 +21,7 @@ import ErrorBoundary from "../components/error-boundary";
 import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import gameCss from "../game.css?url";
+import duelIntroCss from "../duel-intro.css?url";
 import workshopCss from "../deck-workshop.css?url";
 import progressionCss from "../progression.css?url";
 import lobbyCss from "../play-lobby.css?url";
@@ -69,6 +70,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         href: appCss,
       },
       { rel: "stylesheet", href: gameCss },
+      { rel: "stylesheet", href: duelIntroCss },
       { rel: "stylesheet", href: workshopCss },
       { rel: "stylesheet", href: progressionCss },
       { rel: "stylesheet", href: lobbyCss },

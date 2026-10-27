@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { DuelScreen } from "@/components/game/duel-screen";
+import { DuelScreen, type DuelData } from "@/components/game/duel-screen";
+import { DuelIntro, useDuelIntro } from "@/components/game/duel-intro";
 import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
@@ -17,6 +18,8 @@ export const Route = createFileRoute("/game/$gameId")({
     meta: [{ title: "Le duel — Sylve" }],
     links: [
       { rel: "preload", as: "image", href: "/art/duel-arena-overhead.webp" },
+      { rel: "preload", as: "image", href: "/art/heroes/hero-sylve.webp" },
+      { rel: "preload", as: "image", href: "/art/heroes/hero-amber.webp" },
     ],
   }),
   component: GamePage,
@@ -36,6 +39,12 @@ function GamePage() {
   const { gameId: rawId } = Route.useParams();
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
+  if (!data) return <GameLoading />;
+  return <GameMatch key={gameId} gameId={gameId} data={data} />;
+}
+
+function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
+  const { showIntro, completeIntro } = useDuelIntro(gameId, data);
   const playCard = useMutation(api.games.playCard).withOptimisticUpdate(
     optimisticallyPlayCard,
   );
@@ -46,7 +55,8 @@ function GamePage() {
   const [settledSequence, setSettledSequence] = useState(-1);
   useEffect(() => {
     if (
-      data?.mode !== "solo" ||
+      showIntro ||
+      data.mode !== "solo" ||
       data.status !== "active" ||
       data.activePlayer !== 1 ||
       data.sequence !== settledSequence
@@ -61,30 +71,38 @@ function GamePage() {
     }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
   }, [
-    data?.mode,
-    data?.status,
-    data?.activePlayer,
-    data?.sequence,
-    data?.turn,
+    data.mode,
+    data.status,
+    data.activePlayer,
+    data.sequence,
+    data.turn,
     settledSequence,
+    showIntro,
     soloTurn,
     gameId,
   ]);
-  if (!data) return <GameLoading />;
   return (
-    <DuelScreen
-      key={gameId}
-      data={data}
-      practice={data.mode === "solo"}
-      onPlaybackSettled={setSettledSequence}
-      onHeroAbility={(abilityId, expectedUses, expectedTurn) =>
-        playHeroAbility({ gameId, abilityId, expectedUses, expectedTurn })
-      }
-      onPlayCard={(cardId, row, depth, expectedTurn) =>
-        playCard({ gameId, cardId, row, depth, expectedTurn })
-      }
-      onEndTurn={(expectedTurn) => endTurn({ gameId, expectedTurn })}
-      onSurrender={() => surrender({ gameId })}
-    />
+    <div className="duel-entry">
+      <div
+        className="duel-entry-board"
+        inert={showIntro}
+        aria-hidden={showIntro || undefined}
+      >
+        <DuelScreen
+          data={data}
+          practice={data.mode === "solo"}
+          onPlaybackSettled={setSettledSequence}
+          onHeroAbility={(abilityId, expectedUses, expectedTurn) =>
+            playHeroAbility({ gameId, abilityId, expectedUses, expectedTurn })
+          }
+          onPlayCard={(cardId, row, depth, expectedTurn) =>
+            playCard({ gameId, cardId, row, depth, expectedTurn })
+          }
+          onEndTurn={(expectedTurn) => endTurn({ gameId, expectedTurn })}
+          onSurrender={() => surrender({ gameId })}
+        />
+      </div>
+      {showIntro && <DuelIntro data={data} onComplete={completeIntro} />}
+    </div>
   );
 }

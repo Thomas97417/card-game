@@ -31,7 +31,11 @@ export const Route = createFileRoute("/arena")({
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
     meta: [{ title: "L’arène des gardiens — Sylve" }],
-    links: [{ rel: "preload", as: "image", href: "/art/play-lobby.webp" }],
+    links: [
+      { rel: "preload", as: "image", href: "/art/play-lobby.webp" },
+      { rel: "prefetch", as: "image", href: "/art/heroes/hero-amber.webp" },
+      { rel: "prefetch", as: "image", href: "/art/duel-arena-overhead.webp" },
+    ],
   }),
   component: ArenaPage,
 });
