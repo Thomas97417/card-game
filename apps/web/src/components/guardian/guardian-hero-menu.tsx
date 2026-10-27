@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { GameIcon } from "@/components/game/game-icon";
+import { FactionIcon } from "@/components/game/faction-artwork";
 import { HeroPowerList } from "@/components/game/hero-power-list";
 import { showGameError } from "@/components/game/shared";
 import type { HeroProgress } from "./guardian-house";
@@ -142,13 +143,18 @@ export function GuardianHeroMenu({
                   </span>
                   <span className="guardian-roster-entry-copy">
                     <strong>{entry.name}</strong>
-                    <small>
-                      {FACTION_LABELS[entry.faction]} ·{" "}
-                      {entry.id === progress.heroId
-                        ? "Actif"
-                        : isOwned
-                          ? "Débloqué"
-                          : `${entry.emeraldCost.toLocaleString("fr-FR")} émeraudes`}
+                    <small className="guardian-roster-meta">
+                      <span className="guardian-roster-faction">
+                        <FactionIcon faction={entry.faction} size={16} />
+                        {FACTION_LABELS[entry.faction]}
+                      </span>
+                      {isOwned ? (
+                        <span>
+                          {entry.id === progress.heroId ? "Actif" : "Débloqué"}
+                        </span>
+                      ) : (
+                        <EmeraldAmount amount={entry.emeraldCost} />
+                      )}
                     </small>
                   </span>
                   {isOwned ? (
@@ -176,7 +182,8 @@ export function GuardianHeroMenu({
             </div>
             <header className="guardian-roster-identity">
               <div>
-                <span className="guardian-eyebrow">
+                <span className="guardian-eyebrow guardian-roster-faction">
+                  <FactionIcon faction={hero.faction} size={22} />
                   {FACTION_LABELS[hero.faction]}
                 </span>
                 <h3>{hero.name}</h3>
@@ -189,20 +196,13 @@ export function GuardianHeroMenu({
             </header>
             <HeroPowerList level={level} heroId={previewId} />
             <div className="guardian-roster-action">
-              {!owned && (
-                <p className="guardian-roster-requirement">
-                  Achat permanent ·{" "}
-                  <EmeraldAmount amount={hero.emeraldCost} />
-                  {hero.requiredTrophies > 0 && (
-                    <span
-                      className="guardian-roster-league"
-                      data-locked={leagueLocked}
-                    >
-                      Ligue requise : {leagueAt(hero.requiredTrophies).label}{" "}
-                      · {hero.requiredTrophies.toLocaleString("fr-FR")}{" "}
-                      trophées
-                    </span>
-                  )}
+              {!owned && hero.requiredTrophies > 0 && (
+                <p
+                  className="guardian-roster-requirement"
+                  data-locked={leagueLocked}
+                >
+                  Ligue requise : {leagueAt(hero.requiredTrophies).label}{" "}
+                  · {hero.requiredTrophies.toLocaleString("fr-FR")} trophées
                 </p>
               )}
               <button

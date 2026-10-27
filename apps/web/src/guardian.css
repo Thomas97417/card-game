@@ -142,6 +142,7 @@
   flex: 1;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 .guardian-roster-entry-copy strong {
   font:
@@ -151,6 +152,27 @@
 .guardian-roster-entry-copy small {
   color: #b6c7ae;
   font-size: 10px;
+}
+.guardian-roster-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 9px;
+}
+.guardian-roster-faction {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.guardian-roster-meta .emerald-amount {
+  position: relative;
+  gap: 3px;
+  white-space: nowrap;
+}
+.guardian-roster-meta .emerald-icon {
+  width: 16px;
+  height: 16px;
 }
 .guardian-roster-preview {
   display: grid;
@@ -220,18 +242,12 @@
   padding-top: 14px;
 }
 .guardian-roster-requirement {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 7px;
+  margin: 0 0 10px;
   color: #c6ceb9;
   font-size: 11px;
   line-height: 1.5;
 }
-.guardian-roster-league {
-  flex-basis: 100%;
-}
-.guardian-roster-requirement [data-locked="true"] {
+.guardian-roster-requirement[data-locked="true"] {
   color: #e4bd87;
 }
 .guardian-roster-action .sylve-button {
