@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { Tabs } from "@base-ui/react/tabs";
 import {
   ArrowRight,
+  ArrowLeft,
   ArrowUp,
   ArrowRightLeft,
   Crown,
   LockKeyhole,
-  Plus,
 } from "lucide-react";
 import {
   maxCardLevel,
@@ -20,6 +20,7 @@ import {
   GENDER_LABELS,
   soulbindDefinitions,
   soulbindStatus,
+  type CardDefinition,
   type OwnedCard,
 } from "@sylve/game";
 import {
@@ -50,13 +51,11 @@ type DeckActions =
   | {
       inDeck: boolean;
       hasSpace: boolean;
-      onAdd: () => void;
       onMove: () => void;
     }
   | {
       inDeck?: never;
       hasSpace?: never;
-      onAdd?: never;
       onMove?: never;
     };
 
@@ -76,7 +75,6 @@ export function CardUpgradeDialog({
   hasSpace,
   onClose,
   onUpgrade,
-  onAdd,
   onMove,
   collection,
   soulProgress,
@@ -85,10 +83,12 @@ export function CardUpgradeDialog({
   onEvolve,
   readOnly = false,
   finalFocus,
+  returnToSoulbind = false,
 }: {
   entry: OwnedCard | undefined;
   onClose: () => void;
   finalFocus?: ComponentProps<typeof DialogContent>["finalFocus"];
+  returnToSoulbind?: boolean;
 } & UpgradeActions &
   DeckActions &
   CardProgressionActions) {
@@ -240,23 +240,15 @@ export function CardUpgradeDialog({
                     {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
                   </span>
                 </div>
-                {!readOnly && onMove && (
+                {!readOnly && onMove && (inDeck || !hasSpace) && (
                   <div className="upgrade-deck-actions">
                     <button
                       type="button"
                       className="sylve-button secondary"
-                      onClick={inDeck ? onMove : hasSpace ? onAdd : onMove}
+                      onClick={onMove}
                     >
-                      {!inDeck && hasSpace ? (
-                        <Plus size={18} aria-hidden="true" />
-                      ) : (
-                        <ArrowRightLeft size={18} aria-hidden="true" />
-                      )}
-                      {inDeck
-                        ? "Déplacer dans le deck"
-                        : hasSpace
-                          ? "Ajouter au deck"
-                          : "Remplacer une carte"}
+                      <ArrowRightLeft size={18} aria-hidden="true" />
+                      {inDeck ? "Déplacer dans le deck" : "Remplacer une carte"}
                     </button>
                   </div>
                 )}
@@ -331,6 +323,16 @@ export function CardUpgradeDialog({
               </Tabs.List>
             </aside>
             <div className="upgrade-main" ref={panels}>
+              {returnToSoulbind && (
+                <button
+                  type="button"
+                  className="upgrade-return"
+                  onClick={onClose}
+                >
+                  <ArrowLeft size={15} aria-hidden="true" />
+                  Retour aux liens d’âme
+                </button>
+              )}
               <Tabs.Panel
                 value="overview"
                 className="upgrade-panel"
@@ -338,11 +340,6 @@ export function CardUpgradeDialog({
               >
                 <header className="upgrade-view-heading">
                   <h2>{readOnly ? "Caractéristiques" : "Amélioration"}</h2>
-                  <p>
-                    {readOnly
-                      ? "Les caractéristiques et capacités de ce compagnon."
-                      : "Renforce ton compagnon et découvre ses prochains bonus."}
-                  </p>
                 </header>
                 {!readOnly && (
                   <section
@@ -489,12 +486,15 @@ export function CardUpgradeDialog({
                 className="upgrade-panel"
                 keepMounted
               >
-                <CardSoulbind
+                <SoulbindExplorer
                   card={card}
-                  collection={readOnly ? undefined : collection}
-                  soulProgress={readOnly ? undefined : soulProgress}
-                  onSoulbind={readOnly ? undefined : onSoulbind}
-                  presentation="page"
+                  readOnly={readOnly}
+                  onUpgrade={onUpgrade}
+                  collection={collection}
+                  soulProgress={soulProgress}
+                  onSoulbind={onSoulbind}
+                  onSacrifice={onSacrifice}
+                  onEvolve={onEvolve}
                 />
               </Tabs.Panel>
               {hasResources && (
@@ -518,5 +518,57 @@ export function CardUpgradeDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SoulbindExplorer({
+  card,
+  readOnly,
+  onUpgrade,
+  collection,
+  soulProgress,
+  onSoulbind,
+  onSacrifice,
+  onEvolve,
+}: {
+  card: CardDefinition;
+  readOnly: boolean;
+  onUpgrade?: (variantId: string) => Promise<unknown>;
+} & CardProgressionActions) {
+  const [inspected, setInspected] = useState<string | null>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const owned = collection?.find((entry) => entry.card.id === inspected);
+  const entry = inspected
+    ? (owned ?? { card: resolveCard(inspected), copies: 0 })
+    : undefined;
+
+  return (
+    <>
+      <CardSoulbind
+        card={card}
+        collection={readOnly ? undefined : collection}
+        soulProgress={readOnly ? undefined : soulProgress}
+        onSoulbind={readOnly ? undefined : onSoulbind}
+        presentation="page"
+        onInspect={(variantId, element) => {
+          trigger.current = element;
+          setInspected(variantId);
+        }}
+      />
+      <CardUpgradeDialog
+        entry={entry}
+        onClose={() => setInspected(null)}
+        finalFocus={trigger}
+        returnToSoulbind
+        collection={collection}
+        soulProgress={soulProgress}
+        onSoulbind={onSoulbind}
+        onSacrifice={onSacrifice}
+        onEvolve={onEvolve}
+        {...(!readOnly && owned && onUpgrade
+          ? { onUpgrade }
+          : { readOnly: true })}
+      />
+    </>
   );
 }

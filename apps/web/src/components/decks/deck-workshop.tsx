@@ -725,10 +725,6 @@ export function DeckWorkshop({
         onSoulbind={onSoulbind}
         onSacrifice={onSacrifice}
         onEvolve={onEvolve}
-        onAdd={() => {
-          if (inspected) replaceCard(inspected, cards.length);
-          setInspected(null);
-        }}
         onMove={() => {
           setPicked(inspected);
           setInspected(null);

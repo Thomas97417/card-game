@@ -314,11 +314,23 @@
 .upgrade-panel[hidden] {
   display: none;
 }
-.upgrade-view-heading p {
-  margin-top: 8px;
-  color: var(--quiet);
-  font-size: 12px;
-  line-height: 1.6;
+.upgrade-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 16px;
+  padding-block: 3px;
+  color: #e6cf96;
+  font-size: 11px;
+  cursor: pointer;
+}
+.upgrade-return:hover {
+  color: #fff0ce;
+}
+.upgrade-return:focus-visible {
+  outline: 2px solid #e6cc8e;
+  outline-offset: 4px;
+  border-radius: 3px;
 }
 .upgrade-section-heading {
   display: flex;

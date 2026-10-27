@@ -95,9 +95,11 @@ export function CardSoulbind({
   soulProgress,
   onSoulbind,
   presentation = "disclosure",
+  onInspect,
 }: {
   card: CardDefinition;
   presentation?: Presentation;
+  onInspect?: (variantId: string, trigger: HTMLButtonElement) => void;
 } & CardProgressionActions) {
   const [busy, setBusy] = useState<number | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
@@ -323,27 +325,50 @@ export function CardSoulbind({
                     (r) => r.variantId === requirement.variantId,
                   );
                   const ready = isActive || own?.ready;
+                  const artwork = (
+                    <div
+                      className="soulbind-required-card workshop-card"
+                      data-rarity={companion.rarity ?? "common"}
+                      data-faction={companion.faction}
+                      style={
+                        { "--creature-color": companion.color } as CSSProperties
+                      }
+                      role="img"
+                      aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, niveau ${requirement.level} requis`}
+                    >
+                      <CardArtwork
+                        card={companion}
+                        showCopies={false}
+                        appearance="deck"
+                      />
+                    </div>
+                  );
                   return (
                     <li key={requirement.variantId} data-ready={ready}>
                       {presentation === "page" ? (
-                        <div
-                          className="soulbind-required-card workshop-card"
-                          data-rarity={companion.rarity ?? "common"}
-                          data-faction={companion.faction}
-                          style={
-                            {
-                              "--creature-color": companion.color,
-                            } as CSSProperties
-                          }
-                          role="img"
-                          aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, niveau ${requirement.level} requis`}
-                        >
-                          <CardArtwork
-                            card={companion}
-                            showCopies={false}
-                            appearance="deck"
-                          />
-                        </div>
+                        onInspect ? (
+                          <button
+                            type="button"
+                            className="soulbind-open-card"
+                            aria-label={`Ouvrir la fiche de ${companion.name}`}
+                            onClick={(event) =>
+                              onInspect(
+                                requirement.variantId,
+                                event.currentTarget,
+                              )
+                            }
+                          >
+                            {artwork}
+                            <span
+                              className="soulbind-card-hint"
+                              aria-hidden="true"
+                            >
+                              Voir la fiche <ArrowRight size={13} />
+                            </span>
+                          </button>
+                        ) : (
+                          artwork
+                        )
                       ) : (
                         <div
                           className="soulbind-companion-art"

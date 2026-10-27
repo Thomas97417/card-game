@@ -559,8 +559,15 @@ describe("l’atelier et la collection", () => {
     await waitFor(() =>
       expect(onUpgrade).toHaveBeenCalledWith("guardian:rare"),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Ajouter au deck" }));
+    expect(
+      screen.queryByRole("button", { name: "Ajouter au deck" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    dragCard(
+      rareButton,
+      deckRow().getByRole("button", { name: "Emplacement 5 libre" }),
+    );
     expect(
       deckRow().getAllByRole("button", { name: /^Gardien du rempart,/ }),
     ).toHaveLength(1);

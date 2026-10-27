@@ -7,7 +7,12 @@ import {
   within,
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { CARD_VARIANTS, resolveCard, type OwnedCard } from "@sylve/game";
+import {
+  CARD_VARIANTS,
+  resolveCard,
+  upgradeCost,
+  type OwnedCard,
+} from "@sylve/game";
 import { GoldContext } from "@/components/gold-balance";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import type { SoulProgressView } from "./card-soulbind";
@@ -50,6 +55,7 @@ function setup(
     current: OwnedCard | undefined = entry,
     readOnly = false,
     progress = soulProgress,
+    entries = collection,
   ) => (
     <GoldContext.Provider value={10000}>
       {readOnly ? (
@@ -58,7 +64,7 @@ function setup(
         <CardUpgradeDialog
           entry={current}
           onClose={vi.fn()}
-          collection={collection}
+          collection={entries}
           soulProgress={progress}
           {...actions}
         />
@@ -74,6 +80,110 @@ const chooseDust = () =>
   fireEvent.click(screen.getByRole("button", { name: "Poussière d’âme" }));
 
 describe("card dialog navigation", () => {
+  it("opens a required companion at its owned level, upgrades it and returns to the selected link with refreshed prerequisites", async () => {
+    const entry = { card: resolveCard("guardian:legendary"), copies: 34 };
+    const companion = { card: resolveCard("knight:legendary", 2), copies: 50 };
+    const collection = owned.map((item) =>
+      item.card.id === companion.card.id ? companion : item,
+    );
+    const { rerender, view, onUpgrade } = setup({ entry, collection });
+    openTab(/^Liens d’âme/);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Afficher le lien d’âme II" }),
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /Activer le lien II/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    const trigger = screen.getByRole("button", {
+      name: `Ouvrir la fiche de ${companion.card.name}`,
+    });
+    fireEvent.click(trigger);
+    const child = within(
+      await screen.findByRole("dialog", { name: companion.card.name }),
+    );
+    expect(
+      child.getByRole("tab", { name: /^Amélioration Niveau 2/ }),
+    ).toBeTruthy();
+    const upgrade = child.getByRole("button", {
+      name: "Améliorer au niveau 3",
+    });
+    expect((upgrade as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(upgrade);
+    await waitFor(() =>
+      expect(onUpgrade).toHaveBeenCalledExactlyOnceWith(companion.card.id),
+    );
+
+    rerender(
+      view(
+        entry,
+        false,
+        readyProgress,
+        collection.map((item) =>
+          item.card.id === companion.card.id
+            ? {
+                card: resolveCard(companion.card.id, 3),
+                copies: companion.copies - upgradeCost(2, "legendary"),
+              }
+            : item,
+        ),
+      ),
+    );
+    expect(
+      child.getByRole("tab", { name: /^Amélioration Niveau 3/ }),
+    ).toBeTruthy();
+    fireEvent.click(
+      child.getByRole("button", { name: "Retour aux liens d’âme" }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: companion.card.name }),
+      ).toBeNull(),
+    );
+    expect(
+      screen
+        .getByRole("button", { name: "Afficher le lien d’âme II" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      (
+        screen.getByRole("button", {
+          name: /Activer le lien II/,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it("keeps an undiscovered required companion read-only and closes only its sheet on Escape", async () => {
+    const entry = { card: resolveCard("guardian:legendary"), copies: 34 };
+    const { onUpgrade } = setup({ entry, collection: [entry] });
+    openTab(/^Liens d’âme/);
+    const companion = resolveCard("owl:legendary");
+    const trigger = screen.getByRole("button", {
+      name: `Ouvrir la fiche de ${companion.name}`,
+    });
+    fireEvent.click(trigger);
+    const child = await screen.findByRole("dialog", { name: companion.name });
+    expect(
+      within(child).queryByRole("button", { name: /Améliorer/ }),
+    ).toBeNull();
+    expect(
+      within(child).getByRole("tab", { name: /^Caractéristiques/ }),
+    ).toBeTruthy();
+    await waitFor(() => expect(document.activeElement).toBe(child));
+    fireEvent.keyDown(child, { key: "Escape", code: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: companion.name })).toBeNull(),
+    );
+    expect(screen.getByRole("dialog", { name: entry.card.name })).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Lien d’âme I" })).toBeTruthy();
+    expect(onUpgrade).not.toHaveBeenCalled();
+  });
+
   it.each([
     {
       soulProgress: { ...readyProgress, unlocked: false },

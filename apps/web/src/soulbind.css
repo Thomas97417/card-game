@@ -388,6 +388,39 @@ li[data-ready="true"] .soulbind-companion-level {
 .soulbind-required-card .workshop-card-name {
   font-size: 16px;
 }
+.soulbind-open-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 190px);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: pan-y pinch-zoom;
+}
+.soulbind-open-card .soulbind-required-card.workshop-card,
+.soulbind-open-card .soulbind-required-card.workshop-card:hover:not(:disabled) {
+  width: 100%;
+  cursor: pointer;
+}
+.soulbind-open-card:hover .soulbind-required-card.workshop-card:not(:disabled) {
+  border-color: #ffe6a3;
+  box-shadow:
+    0 6px 22px #071b1699,
+    0 0 0 2px #ffe6a333;
+  transform: translateY(-3px);
+}
+.soulbind-open-card:focus-visible {
+  outline: 2px solid #ffe6a3;
+  outline-offset: 5px;
+}
+.soulbind-card-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #e6cf96;
+  font-size: 11px;
+}
 .is-page .soulbind-companion-info {
   text-align: center;
 }
