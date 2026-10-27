@@ -244,7 +244,7 @@ describe("le salon de combat", () => {
       expect(document.querySelector(".summon-legendary-effects")).toBeNull();
       expect(screen.queryByText("Débloquée !")).toBeNull();
       expect(screen.getByText("+150")).toBeTruthy();
-      expect(screen.getByText("×24")).toBeTruthy();
+      expect(screen.getByText("24")).toBeTruthy();
       expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
       expect(screen.getByAltText("Archère de la garde").getAttribute("src")).toBe(
         "/art/characters/evolutions/fox-rare.webp",
@@ -412,12 +412,12 @@ describe("ouverture avec des émeraudes", () => {
     rarity: "bigRare",
     awardedAt: now,
     unlockAt: now + 21_600_000,
-    instantCost: 59,
+    instantCost: 66,
   };
   it("shows the new chest artwork and lets the player inspect its live price", () => {
     const actions = setup({ chests: [chest], now: now + 10_800_000 });
     const button = screen.getByRole("button", {
-      name: /Grand coffre rare,.*30 émeraudes/,
+      name: /Grand coffre rare,.*33 émeraudes/,
     });
     expect(button.querySelector("img")?.getAttribute("src")).toBe(
       "/art/chests/bigRare.webp",
@@ -438,16 +438,16 @@ describe("ouverture avec des émeraudes", () => {
     const { rerender } = render(<ChestUnlockDialog {...props} />);
     expect(
       screen.getByRole("button", {
-        name: "Ouvrir maintenant pour 59 émeraudes",
+        name: "Ouvrir maintenant pour 66 émeraudes",
       }),
     ).toBeTruthy();
     rerender(<ChestUnlockDialog {...props} now={now + 10_800_000} />);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Ouvrir maintenant pour 30 émeraudes",
+        name: "Ouvrir maintenant pour 33 émeraudes",
       }),
     );
-    expect(onOpen).toHaveBeenLastCalledWith(30);
+    expect(onOpen).toHaveBeenLastCalledWith(33);
     rerender(
       <ChestUnlockDialog {...props} now={chest.unlockAt} emeralds={0} />,
     );
@@ -459,7 +459,7 @@ describe("ouverture avec des émeraudes", () => {
   it("blocks purchases without enough emeralds or during a request and permits waiting", () => {
     const onOpen = vi.fn();
     const onClose = vi.fn();
-    const props = { chest, now, emeralds: 58, busy: false, onOpen, onClose };
+    const props = { chest, now, emeralds: 65, busy: false, onOpen, onClose };
     const { rerender } = render(<ChestUnlockDialog {...props} />);
     const button = screen.getByRole("button", {
       name: /Ouvrir maintenant/,

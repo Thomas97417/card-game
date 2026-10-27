@@ -968,30 +968,6 @@
 .summon-gold-card > span:last-child {
   font-size: clamp(7px, 8cqw, 12px);
 }
-.summon-reward-caption {
-  position: absolute;
-  z-index: 2;
-  top: calc(100% + 5px);
-  width: 140%;
-  left: -20%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px 6px;
-  color: #e2d2a8;
-  font-size: 10px;
-  text-align: center;
-}
-.summon-reward-caption .rarity-label {
-  margin: 0;
-  font-size: clamp(8px, 6cqw, 10px);
-  letter-spacing: 0.6px;
-}
-.summon-reward-caption small {
-  font-size: clamp(9px, 6cqw, 11px);
-  white-space: nowrap;
-}
 .card-discovery-effects {
   position: absolute;
   z-index: 2;
@@ -1203,9 +1179,6 @@
 .is-legendary-revealing .summon-card-front .workshop-card {
   animation: summon-legendary-glow 2000ms 250ms ease-out both;
 }
-.is-legendary-revealing .summon-reward-caption {
-  animation: summon-legendary-caption 1900ms 400ms ease-out both;
-}
 @keyframes summon-legendary-lift {
   0%,
   100% {
@@ -1310,22 +1283,6 @@
       0 0 20px #ffe3a4cc,
       0 0 55px #e9ad3b80,
       inset 0 0 0 1px #fff2c8;
-  }
-}
-@keyframes summon-legendary-caption {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  25%,
-  55% {
-    opacity: 1;
-    text-shadow: 0 0 10px #ffc85b;
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    text-shadow: none;
   }
 }
 .summon-circle-center {
@@ -1509,13 +1466,6 @@
   .summon-repeat-hint {
     font-size: 8px;
   }
-  .summon-reward-caption {
-    gap: 0 4px;
-  }
-  .summon-reward-caption small,
-  .summon-reward-caption .rarity-label {
-    font-size: 7px;
-  }
 }
 @media (max-width: 380px) {
   .currency-balances .gold-balance,
@@ -1561,8 +1511,7 @@
 @media (prefers-reduced-motion: reduce) {
   .summon-circle-slot.is-legendary-revealing,
   .is-new-revealing .summon-card-front .workshop-card,
-  .is-legendary-revealing .summon-card-front .workshop-card,
-  .is-legendary-revealing .summon-reward-caption {
+  .is-legendary-revealing .summon-card-front .workshop-card {
     animation: none;
   }
   .summon-legendary-effects,

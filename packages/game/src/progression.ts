@@ -1,9 +1,12 @@
 import { cardsOfRarity, type CardRarity } from "./index";
 import { leagueAt } from "./leagues";
 import { CHEST_TYPES, chestPoolForLeague, type ChestType } from "./chest-types";
-import { rewardRow, rollReward } from "./reward-tables";
+import { rewardLeague, rollReward } from "./reward-tables";
+import chestReference from "./data/chest-rewards.json";
 
-export { CHEST_TYPES, type ChestType } from "./chest-types";
+export { CHEST_TYPES, CHEST_POOL_VERSION, type ChestType } from "./chest-types";
+
+export const CHEST_REWARD_VERSION = 3;
 
 /** Two starting combat slots, three league unlocks and three purchased slots. */
 export const CHEST_SLOTS = 2;
@@ -88,14 +91,28 @@ export interface ChestCardReward {
   max: number;
 }
 
-/** Common arena chests share the documented Wins Chest rewards. */
+type ChestRewardRow = Partial<Record<CardRarity, readonly number[]>> & {
+  gold: readonly number[];
+};
+
+/** CW PC-browser rewards; the three-win chest shares our common chest table. */
 export function chestRules(type: ChestType, trophies = 0) {
   const index = leagueAt(trophies).index;
   const early = index < 10;
-  const row = rewardRow(type === "common" ? "wins" : type, trophies);
+  const tableId = type === "common" && index < 5 ? "wooden" : type;
+  const table: Record<string, ChestRewardRow> = chestReference.tables[tableId];
+  const league = rewardLeague(trophies);
+  // Keep inherited chests openable even below their new drop threshold.
+  const firstLeague = Math.max(
+    ...Object.keys(table).filter((key) => key !== "GM").map(Number),
+  );
+  const row =
+    table[
+      league === "GM" ? league : String(Math.min(Number(league), firstLeague))
+    ]!;
   const cards: ChestCardReward[] = [];
-  function add(rarity: CardRarity, chance: number, column: number) {
-    const range = row[column];
+  function add(rarity: CardRarity, chance: number) {
+    const range = row[rarity];
     if (range && chance > 0)
       cards.push({
         rarity,
@@ -105,51 +122,20 @@ export function chestRules(type: ChestType, trophies = 0) {
       });
   }
   if (type === "common") {
-    add("common", early ? 80 : 0, 0);
-    add("rare", early ? 20 : 100, 1);
+    add("common", 95);
+    add("rare", 4.75);
+    add("epic", 0.25);
   } else if (type === "rare" || type === "bigRare") {
-    const epicChance = early ? (type === "rare" ? 0.5 : 1) : 0;
-    add("rare", 100 - epicChance, 0);
-    add("epic", epicChance, 1);
-  } else add(type, 100, 0);
-  const gold =
-    row[type === "common" || type === "rare" || type === "bigRare" ? 2 : 1]!;
-  const minutes =
-    type === "common"
-      ? index <= 5
-        ? 30
-        : index === 6
-          ? 45
-          : 60
-      : type === "rare"
-        ? early
-          ? 180
-          : 120
-        : type === "bigRare"
-          ? early
-            ? 360
-            : 240
-          : type === "epic"
-            ? 360
-            : 720;
-  // The wiki omits 30/45-minute prices; prorate its documented 19/hour common price.
-  const instantCost =
-    type === "common"
-      ? Math.ceil((19 * minutes) / 60)
-      : type === "rare"
-        ? early
-          ? 30
-          : 39
-        : type === "bigRare"
-          ? early
-            ? 59
-            : 78
-          : type === "epic"
-            ? 117
-            : 179;
+    const epicChance = early ? (type === "rare" ? 0.5 : 1) : 5;
+    add("rare", 100 - epicChance);
+    add("epic", epicChance);
+  } else if (type === "epic") {
+    add("epic", 99.75);
+    add("legendary", 0.25);
+  } else add("legendary", 100);
+  const gold = row.gold;
   return {
-    durationMs: minutes * 60_000,
-    instantCost,
+    ...chestReference.opening[tableId],
     cards,
     min: cards[0]!.min,
     max: cards[0]!.max,
@@ -171,9 +157,13 @@ export function rollChest(
   trophies = 0,
   remaining = chestPool(trophies),
 ): ChestType {
-  const pool = Object.values(remaining).some((count) => count > 0)
-    ? remaining
-    : chestPool(trophies);
+  const initial = chestPool(trophies);
+  const eligible = Object.fromEntries(
+    CHEST_TYPES.map((type) => [type, initial[type] > 0 ? remaining[type] : 0]),
+  ) as Record<ChestType, number>;
+  const pool = Object.values(eligible).some((count) => count > 0)
+    ? eligible
+    : initial;
   let roll =
     random() * Object.values(pool).reduce((sum, count) => sum + count, 0);
   for (const type of CHEST_TYPES) {

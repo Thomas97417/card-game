@@ -14,6 +14,8 @@ import {
   upgradeGoldCost,
 } from "@sylve/game";
 import {
+  CHEST_POOL_VERSION,
+  CHEST_REWARD_VERSION,
   CHEST_RULES,
   CHEST_SLOTS,
   CHEST_TYPES,
@@ -387,8 +389,8 @@ describe("ligues et trophées autoritaires", () => {
     );
     expect(chest).toMatchObject({
       rarity: "common",
-      contents: [{ variantId: "guardian:common", count: 48 }],
-      gold: 56,
+      contents: [{ variantId: "guardian:common", count: 20 }],
+      gold: 32,
     });
     await setTrophies(t, deckId, 2400);
     await winSolo(t, alice, deckId);
@@ -397,16 +399,16 @@ describe("ligues et trophées autoritaires", () => {
       cycle: 0,
     });
     expect(recurring).toMatchObject({
-      gold: 76,
-      reveals: [{ variantId: "guardian:rare", count: 86 }],
+      gold: 43,
+      reveals: [{ variantId: "guardian:common", count: 30 }],
     });
     vi.setSystemTime(chest.unlockAt);
     const opened = await alice.mutation(api.chests.open, {
       chestId: chest._id,
     });
     expect(opened).toMatchObject({
-      gold: 56,
-      reveals: [{ variantId: "guardian:common", count: 48 }],
+      gold: 32,
+      reveals: [{ variantId: "guardian:common", count: 20 }],
     });
     expect(
       await alice.mutation(api.chests.open, { chestId: chest._id }),
@@ -1228,12 +1230,14 @@ describe("victoires, coffres et améliorations", () => {
 describe("ouverture anticipée et réserves de coffres", () => {
   it("awards a big rare chest and recalculates a stale quote, charging and granting only once", async () => {
     const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, 775);
     await t.run(async (ctx) => {
       const { ownerId } = (await ctx.db.get(deckId))!;
       await ctx.db.insert("wallets", { ownerId, gold: 725, diamonds: 100 });
       await ctx.db.insert("chestPools", {
         ownerId,
-        leagueIndex: 0,
+        leagueIndex: 4,
+        version: CHEST_POOL_VERSION,
         remaining: { common: 0, rare: 0, bigRare: 1, epic: 0, legendary: 0 },
       });
     });
@@ -1242,12 +1246,12 @@ describe("ouverture anticipée et réserves de coffres", () => {
     const chest = (await alice.query(api.chests.list, {})).chests[0]!;
     expect(chest).toMatchObject({
       rarity: "bigRare",
-      instantCost: 59,
-      leagueTrophies: 25,
+      instantCost: 66,
+      leagueTrophies: 800,
     });
     expect(chest.unlockAt - chest.awardedAt).toBe(6 * 3_600_000);
     const quote = chestRushCost(chest, Date.now());
-    expect(quote).toBe(59);
+    expect(quote).toBe(66);
     vi.setSystemTime(chest.awardedAt + 3 * 3_600_000);
     await setTrophies(t, deckId, 6000);
     const results = await Promise.all([
@@ -1263,15 +1267,42 @@ describe("ouverture anticipée et réserves de coffres", () => {
     expect(results[0]).toEqual(results[1]);
     expect(results[0]).toMatchObject({
       rarity: "bigRare",
-      gold: 219,
-      reveals: [{ variantId: "guardian:rare", count: 116 }],
+      gold: 78,
+      reveals: [{ variantId: "guardian:rare", count: 44 }],
     });
-    expect(await alice.query(api.collection.diamonds, {})).toBe(70);
-    expect(await alice.query(api.collection.gold, {})).toBe(944);
+    expect(await alice.query(api.collection.diamonds, {})).toBe(67);
+    expect(await alice.query(api.collection.gold, {})).toBe(803);
     expect((await alice.query(api.chests.list, {})).chests).toHaveLength(0);
     expect(await t.run((ctx) => ctx.db.get(chest._id))).toMatchObject({
-      emeraldsSpent: 30,
-      rewardVersion: 2,
+      emeraldsSpent: 33,
+      rewardVersion: CHEST_REWARD_VERSION,
+    });
+  });
+
+  it("keeps a previously awarded chest's saved timer and price when opening rules change", async () => {
+    const { t, alice, deckId } = await fixture();
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    await winSolo(t, alice, deckId);
+    const chest = (await alice.query(api.chests.list, {})).chests[0]!;
+    expect(chest.unlockAt - chest.awardedAt).toBe(180_000);
+    expect(chest.instantCost).toBe(1);
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("wallets", { ownerId, gold: 0, diamonds: 10 });
+      await ctx.db.patch(chest._id, {
+        unlockAt: chest.awardedAt + 1_800_000,
+        instantCost: 10,
+      });
+    });
+    vi.setSystemTime(chest.awardedAt + 900_000);
+    const saved = (await alice.query(api.chests.list, {})).chests[0]!;
+    expect(saved.unlockAt).toBe(chest.awardedAt + 1_800_000);
+    expect(chestRushCost(saved, Date.now())).toBe(5);
+    await alice.mutation(api.chests.open, { chestId: chest._id, maxEmeralds: 5 });
+    expect(await alice.query(api.collection.diamonds, {})).toBe(5);
+    expect(await t.run((ctx) => ctx.db.get(chest._id))).toMatchObject({
+      emeraldsSpent: 5,
+      status: "opened",
     });
   });
 
@@ -1339,14 +1370,14 @@ describe("ouverture anticipée et réserves de coffres", () => {
     await winSolo(t, alice, deckId);
     await t.run(async (ctx) => {
       const { ownerId } = (await ctx.db.get(deckId))!;
-      await ctx.db.insert("wallets", { ownerId, gold: 0, diamonds: 10 });
+      await ctx.db.insert("wallets", { ownerId, gold: 0, diamonds: 1 });
     });
     const inventory = await alice.query(api.chests.list, {});
     const attempts = await Promise.allSettled(
       inventory.chests.map((chest) =>
         alice.mutation(api.chests.open, {
           chestId: chest._id,
-          maxEmeralds: 10,
+          maxEmeralds: 1,
         }),
       ),
     );
@@ -1364,7 +1395,8 @@ describe("ouverture anticipée et réserves de coffres", () => {
       await ctx.db.insert("chestPools", {
         ownerId,
         leagueIndex: 0,
-        remaining: { common: 0, rare: 0, bigRare: 1, epic: 0, legendary: 0 },
+        version: CHEST_POOL_VERSION,
+        remaining: { common: 1, rare: 0, bigRare: 0, epic: 0, legendary: 0 },
       });
     });
     vi.spyOn(Math, "random").mockReturnValue(0);
@@ -1377,9 +1409,9 @@ describe("ouverture anticipée et réserves de coffres", () => {
       ctx.db.query("chestPools").unique(),
     ))!.remaining;
     expect(refilled).toEqual({
-      common: 108,
-      rare: 28,
-      bigRare: 9,
+      common: 999,
+      rare: 0,
+      bigRare: 0,
       epic: 0,
       legendary: 0,
     });
@@ -1409,12 +1441,31 @@ describe("ouverture anticipée et réserves de coffres", () => {
     expect(
       pools.map((pool) => [pool.leagueIndex, pool.remaining.common]),
     ).toEqual([
-      [0, 107],
-      [4, 108],
+      [0, 998],
+      [4, 961],
     ]);
   });
 
-  it("migrates old sealed rewards with gold using the earned league and preserves opened rewards", async () => {
+  it.each([0, 2200])("replaces an old pool at %i trophies before it can award a locked chest", async (trophies) => {
+    const { t, alice, deckId } = await fixture();
+    await setTrophies(t, deckId, trophies);
+    await t.run(async (ctx) => {
+      const { ownerId } = (await ctx.db.get(deckId))!;
+      await ctx.db.insert("chestPools", {
+        ownerId,
+        leagueIndex: Math.floor(trophies / 200),
+        remaining: { common: 0, rare: 0, bigRare: 0, epic: 0, legendary: 1 },
+      });
+    });
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    await winSolo(t, alice, deckId);
+    const pool = await t.run((ctx) => ctx.db.query("chestPools").unique());
+    expect(pool).toMatchObject({ version: CHEST_POOL_VERSION });
+    expect(pool!.remaining.legendary).toBe(0);
+    expect((await alice.query(api.chests.list, {})).chests[0]!.rarity).toBe("common");
+  });
+
+  it.each([undefined, 2] as const)("migrates sealed reward version %s using the earned league and preserves opened rewards", async (rewardVersion) => {
     const { t, alice, deckId } = await fixture();
     vi.spyOn(Math, "random").mockReturnValue(0);
     await setTrophies(t, deckId, 1975);
@@ -1424,7 +1475,7 @@ describe("ouverture anticipée et réserves de coffres", () => {
         (entry) => entry.gameId === gameId,
       )!;
       await ctx.db.patch(chest._id, {
-        rewardVersion: undefined,
+        rewardVersion,
         leagueTrophies: undefined,
         rarity: "rare",
         contents: [{ variantId: "guardian:rare", count: 1 }],
@@ -1436,10 +1487,13 @@ describe("ouverture anticipée et réserves de coffres", () => {
     await setTrophies(t, deckId, 6000);
     const reward = await alice.mutation(api.chests.open, { chestId });
     expect(reward).toMatchObject({
-      gold: 184,
-      reveals: [{ variantId: "guardian:rare", count: 76 }],
+      gold: 68,
+      reveals: [{ variantId: "guardian:rare", count: 28 }],
     });
+    // Even opened rewards from the previous version must replay without a credit.
+    await t.run((ctx) => ctx.db.patch(chestId, { rewardVersion: 2 }));
     expect(await alice.mutation(api.chests.open, { chestId })).toEqual(reward);
+    expect(await alice.query(api.collection.gold, {})).toBe(68);
   });
 });
 
@@ -1486,7 +1540,7 @@ describe("anciens coffres", () => {
       expect(await alice.query(api.collection.gold, {})).toBe(reward.gold);
     },
   );
-  it("converts a ready legacy victory chest and leaves previously claimed rewards untouched", async () => {
+  it.each([undefined, 2] as const)("converts a ready victory chest version %s and leaves previously claimed rewards untouched", async (rewardVersion) => {
     const { t, alice, deckId } = await fixture();
     await t.run(async (ctx) => {
       const deck = (await ctx.db.get(deckId))!;
@@ -1494,6 +1548,8 @@ describe("anciens coffres", () => {
         ownerId: deck.ownerId,
         wins: 3,
         cycle: 1,
+        rewardVersion,
+        leagueTrophies: 2000,
         contents: [{ variantId: "fox:rare", count: 2 }],
         lastClaim: { cycle: 0, reveals: [] },
       });
@@ -1504,7 +1560,10 @@ describe("anciens coffres", () => {
     expect(await alice.query(api.collection.gold, {})).toBe(0);
     vi.spyOn(Math, "random").mockReturnValue(0);
     const reward = await alice.mutation(api.chests.openVictory, { cycle: 1 });
-    expect(reward.reveals).toHaveLength(1);
+    expect(reward).toMatchObject({
+      gold: 39,
+      reveals: [{ variantId: "guardian:common", count: 28 }],
+    });
     expect(resolveCard(reward.reveals[0]!.variantId).rarity).toBe("common");
     expect(reward.gold).toBeGreaterThanOrEqual(CHEST_RULES.common.minGold);
     expect(await alice.mutation(api.chests.openVictory, { cycle: 1 })).toEqual(
@@ -1621,7 +1680,7 @@ describe("coffre commun de trois victoires", () => {
     const frozenContents = row.contents;
     const frozenGold = row.gold;
     expect(frozenContents).toHaveLength(1);
-    expect(["common", "rare"]).toContain(
+    expect(["common", "rare", "epic"]).toContain(
       resolveCard(frozenContents[0]!.variantId).rarity,
     );
     await winSolo(t, alice, deckId);

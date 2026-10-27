@@ -52,7 +52,7 @@ describe("le parcours des ligues", () => {
     expect(dialog.getByText("4 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByText("5 emplacements de coffre")).toBeTruthy();
     expect(dialog.getByRole("button", { name: /^Challenger,/ })).toBeTruthy();
-    expect(dialog.getByText("6,16 %")).toBeTruthy();
+    expect(dialog.getByText("100 %")).toBeTruthy();
     expect(
       dialog
         .getByRole("list", { name: "Parcours des ligues" })
@@ -71,7 +71,8 @@ describe("le parcours des ligues", () => {
     );
     fireEvent.click(dialog.getByRole("button", { name: /^Or IV,/ }));
     expect(details.getByRole("heading", { name: "Or IV" })).toBeTruthy();
-    expect(details.getByText("1,43 %")).toBeTruthy();
+    expect(details.getByText("1,19 %")).toBeTruthy();
+    expect(details.getByText("Disponible dès Émeraude IV")).toBeTruthy();
     expect(details.getByText("Deck de 8 cartes")).toBeTruthy();
     expect(
       details.getByText(
@@ -84,7 +85,7 @@ describe("le parcours des ligues", () => {
 
     fireEvent.click(dialog.getByRole("button", { name: "Ma position" }));
     expect(details.getByRole("heading", { name: "Fer IV" })).toBeTruthy();
-    expect(details.getByText("6,16 %")).toBeTruthy();
+    expect(details.getByText("100 %")).toBeTruthy();
     fireEvent.click(dialog.getByRole("button", { name: "Fer III 200" }));
     expect(details.getByRole("heading", { name: "Fer III" })).toBeTruthy();
 
@@ -104,6 +105,37 @@ describe("le parcours des ligues", () => {
         }),
       ).getByRole("heading", { name: "Fer IV" }),
     ).toBeTruthy();
+  });
+
+  it("previews CW card quantities, gold and chest unlock leagues", async () => {
+    render(<LeaguePanel progress={leagueProgress(0)} compact />);
+    fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
+    const dialog = within(await screen.findByRole("dialog"));
+    const details = within(dialog.getByRole("region", { name: "Détails du palier sélectionné" }));
+    expect(details.getByText("Commune : 10–11 exemplaires (95 %)")).toBeTruthy();
+    expect(details.getByText("28–47 pièces d’or")).toBeTruthy();
+    expect(details.getByText("3 min d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 1 émeraude")).toBeTruthy();
+    for (const league of ["Bronze IV", "Bronze III", "Argent II", "Émeraude IV"])
+      expect(details.getByText(`Disponible dès ${league}`)).toBeTruthy();
+
+    fireEvent.click(dialog.getByRole("button", { name: /^Bronze III,/ }));
+    expect(details.getByText("Rare : 23–24 exemplaires (99,5 %)")).toBeTruthy();
+    expect(details.getByText("57–82 pièces d’or")).toBeTruthy();
+    expect(details.getByText("1 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 20 émeraudes")).toBeTruthy();
+    expect(details.getByText("3 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 33 émeraudes")).toBeTruthy();
+    fireEvent.click(dialog.getByRole("button", { name: /^Émeraude IV,/ }));
+    expect(details.getByText("Légendaire : 3 exemplaires (100 %)")).toBeTruthy();
+    expect(details.getByText("248–321 pièces d’or")).toBeTruthy();
+    expect(details.getByText("6 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 66 émeraudes")).toBeTruthy();
+    expect(details.getByText("24 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 180 émeraudes")).toBeTruthy();
+    expect(details.getByText("36 h d’attente")).toBeTruthy();
+    expect(details.getByText("Ouverture immédiate : 270 émeraudes")).toBeTruthy();
+    expect(details.queryByText(/Disponible dès/)).toBeNull();
   });
 
   it("keeps division progress on the current timeline node and resets its ring on promotion", async () => {

@@ -13,6 +13,8 @@ import {
   type TrophyChange,
 } from "@sylve/game/leagues";
 import {
+  CHEST_POOL_VERSION,
+  CHEST_REWARD_VERSION,
   chestRules,
   chestPool,
   unlockedChestSlots,
@@ -204,7 +206,7 @@ async function advanceVictoryChest(
       contents,
       gold,
       leagueTrophies: trophies,
-      rewardVersion: 2,
+      rewardVersion: CHEST_REWARD_VERSION,
     });
   else
     await ctx.db.insert("victoryChests", {
@@ -214,7 +216,7 @@ async function advanceVictoryChest(
       contents,
       gold,
       leagueTrophies: trophies,
-      rewardVersion: 2,
+      rewardVersion: CHEST_REWARD_VERSION,
     });
   return wins;
 }
@@ -297,13 +299,15 @@ export async function awardMatchRewards(
     )
     .unique();
   const remaining =
-    savedPool && Object.values(savedPool.remaining).some((count) => count > 0)
+    savedPool?.version === CHEST_POOL_VERSION &&
+    Object.values(savedPool.remaining).some((count) => count > 0)
       ? { ...savedPool.remaining }
       : chestPool(trophiesTotal);
   const rarity = rollChest(Math.random, trophiesTotal, remaining);
   remaining[rarity]--;
-  if (savedPool) await ctx.db.patch(savedPool._id, { remaining });
-  else await ctx.db.insert("chestPools", { ownerId, leagueIndex, remaining });
+  const poolFields = { remaining, version: CHEST_POOL_VERSION } as const;
+  if (savedPool) await ctx.db.patch(savedPool._id, poolFields);
+  else await ctx.db.insert("chestPools", { ownerId, leagueIndex, ...poolFields });
   const rule = chestRules(rarity, trophiesTotal);
   const now = Date.now();
   const slot = unlockedSlots.find(
@@ -319,7 +323,7 @@ export async function awardMatchRewards(
     unlockAt: now + rule.durationMs,
     instantCost: rule.instantCost,
     leagueTrophies: trophiesTotal,
-    rewardVersion: 2,
+    rewardVersion: CHEST_REWARD_VERSION,
     contents: chestLoot(rarity, Math.random, trophiesTotal),
     gold: chestGold(rarity, Math.random, trophiesTotal),
   });
