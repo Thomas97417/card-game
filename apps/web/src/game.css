@@ -1254,26 +1254,6 @@ button:disabled {
 .board-unit.blocked > .creature-portrait {
   opacity: 0.6;
 }
-.unit-name {
-  position: absolute;
-  bottom: -10px;
-  z-index: 3;
-  max-width: 140%;
-  white-space: nowrap;
-  font:
-    9px/1.3 Georgia,
-    serif;
-  color: #fff7d6;
-  padding: 2px 5px;
-  border-radius: 3px;
-  background: #263e31c9;
-  opacity: 0;
-}
-.board-unit-control:hover .unit-name,
-.board-unit-control:focus-visible .unit-name,
-.unit-selected .unit-name {
-  opacity: 1;
-}
 .unit-stats {
   position: absolute;
   display: flex;
@@ -2946,10 +2926,6 @@ button:disabled {
   font-size: 0.62em;
   padding-left: 1px;
 }
-.occupied .field-mark-bonus {
-  top: calc(100% + 8px);
-  bottom: auto;
-}
 .marked-cell .placement-hint {
   position: absolute;
   right: 9%;
@@ -2966,16 +2942,9 @@ button:disabled {
   top: 5%;
   right: 7%;
 }
-.neutral-building .unit-name {
-  background: #554b36ed;
-}
 .neutral-building[data-field-object="spikes"] .unit-stats,
 .neutral-building[data-field-object="mossy-rock"] .unit-stats {
   top: 38%;
-}
-.neutral-building[data-field-object="spikes"] .unit-statuses,
-.neutral-building[data-field-object="mossy-rock"] .unit-statuses {
-  top: 60%;
 }
 .field-mark-preview {
   position: relative;
@@ -3114,13 +3083,21 @@ button:disabled {
 .unit-ability-icons {
   position: absolute;
   left: 0;
-  bottom: -7px;
-  gap: 3px;
-  flex-wrap: nowrap;
-  --ability-size: clamp(16px, 1.7vw, 23px);
+  bottom: 0;
+  width: max-content;
+  max-width: 100%;
+  justify-content: flex-start;
+  flex-direction: row;
+  flex-wrap: wrap-reverse;
+  gap: 4px;
+  --ability-size: clamp(28px, 3.2vw, 44px);
 }
-.unit-name {
-  bottom: calc(100% + 3px);
+.unit-ability-icons .effect-badge {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
 }
 .ability-title > :is(span, .ability-next-trigger) {
   display: inline-flex;

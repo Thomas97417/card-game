@@ -34,7 +34,6 @@ import { abilityOrigins, abilitySource, combatActorKey, combatFrameTiming, sealA
 import {
   AbilityIcon,
   CardAbilityIcons,
-  UnitEffectIcons,
   eventIconKind,
 } from "./ability-icons";
 import {
@@ -285,6 +284,7 @@ export function DuelArena({
                   stat={bonus.stat}
                   amount={bonus.value}
                   activated={rune?.activated}
+                  showBonus={!unit}
                 />
               )}
               {unit && (
@@ -322,17 +322,10 @@ export function DuelArena({
                         wounded={unit.hp < unit.card.health}
                       />
                     </div>
-                    <span className="unit-name">{unit.card.name}</span>
                     <CardAbilityIcons
                       card={unit.card}
                       className="unit-ability-icons"
                       showLocked={false}
-                      onBoard
-                    />
-                    <UnitEffectIcons
-                      unit={unit}
-                      cards={player.deck}
-                      blocked={blocked}
                     />
                   </div>
                 </button>
@@ -582,13 +575,15 @@ function AbilityOrigin({ event, targets, mine, enemy, me }: {
         aria-label={`${caster} utilise ${event.ability}`}
       >
         <span className="ability-origin-ring" aria-hidden="true" />
-        <span className="ability-origin-label">
-          <AbilityIcon kind={icon} size={20} />
-          <span>
-            <strong>{caster}</strong>
-            <small>{event.ability}</small>
+        {source.cardId === "hero" && (
+          <span className="ability-origin-label">
+            <AbilityIcon kind={icon} size={20} />
+            <span>
+              <strong>{caster}</strong>
+              <small>{event.ability}</small>
+            </span>
           </span>
-        </span>
+        )}
       </div>
     </>
   );

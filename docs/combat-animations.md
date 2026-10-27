@@ -1,6 +1,6 @@
 # Animations des batailles
 
-L’arène conserve ses personnages, ses zones de placement et ses informations accessibles en React. GSAP anime les personnages et PixiJS dessine les effets sur un canvas transparent, sous les nombres de dégâts et les étiquettes de compétences. Le moteur de règles et les mutations Convex restent responsables du résultat du combat.
+L’arène conserve ses personnages, ses zones de placement et ses informations accessibles en React. GSAP anime les personnages et PixiJS dessine les effets sur un canvas transparent, sous les nombres de dégâts et les étiquettes des pouvoirs du Gardien. Les unités affichent uniquement leurs PV, leur puissance et les icônes de leurs compétences, agrandies et disposées à partir de leur coin inférieur gauche ; leur nom et leurs états détaillés restent dans leur fiche au clic. Le moteur de règles et les mutations Convex restent responsables du résultat du combat.
 
 ## Mise en scène
 

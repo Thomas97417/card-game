@@ -7,11 +7,13 @@ export function FieldMark({
   stat,
   amount,
   activated = false,
+  showBonus = true,
 }: {
   kind: FieldMarkKind;
   stat: "health" | "attack" | "block";
   amount: number;
   activated?: boolean;
+  showBonus?: boolean;
 }) {
   return (
     <span
@@ -26,19 +28,21 @@ export function FieldMark({
         height={341}
         draggable={false}
       />
-      <span className="field-mark-bonus">
-        <AbilityIcon
-          kind={
-            stat === "block"
-              ? "block"
-              : stat === "health"
-                ? "vitality"
-                : "power"
-          }
-        />
-        <strong>+{amount}</strong>
-        {kind === "pentagram" && <small>/tour</small>}
-      </span>
+      {showBonus && (
+        <span className="field-mark-bonus">
+          <AbilityIcon
+            kind={
+              stat === "block"
+                ? "block"
+                : stat === "health"
+                  ? "vitality"
+                  : "power"
+            }
+          />
+          <strong>+{amount}</strong>
+          {kind === "pentagram" && <small>/tour</small>}
+        </span>
+      )}
     </span>
   );
 }
