@@ -38,12 +38,11 @@ import {
 } from "./ability-icons";
 import {
   ARENA_CELLS,
-  ARENA_CORNERS,
+  ARENA_CAMPS,
+  ARENA_GAP_POINTS,
   ARENA_WIDTH,
   ARENA_HEIGHT,
   groundCell,
-  groundPoints,
-  projectGround,
 } from "./arena-layout";
 
 type Player = GameView["players"][number];
@@ -364,12 +363,37 @@ export function DuelArena({
               <stop offset="0.5" stopColor="#c8b37d" stopOpacity="0.4" />
               <stop offset="1" stopColor="#685b3d" stopOpacity="0.26" />
             </linearGradient>
+            <linearGradient id="arena-gap" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#d8c396" />
+              <stop offset="1" stopColor="#e2cca2" />
+            </linearGradient>
+            {ARENA_CAMPS.map((camp) => (
+              <clipPath key={camp.camp} id={`arena-camp-${camp.camp}`}>
+                <polygon points={camp.polygon} />
+              </clipPath>
+            ))}
           </defs>
           <image
+            className="arena-background"
             href="/art/duel-arena-overhead.webp"
             width={ARENA_WIDTH}
             height={ARENA_HEIGHT}
           />
+          <polygon className="ground-gap" points={ARENA_GAP_POINTS} />
+          {ARENA_CAMPS.map((camp) => (
+            <g key={camp.camp} className="ground-camp" data-camp={camp.camp}>
+              <g clipPath={`url(#arena-camp-${camp.camp})`}>
+                <image
+                  className="ground-camp-texture"
+                  href="/art/duel-arena-overhead.webp"
+                  width={ARENA_WIDTH}
+                  height={ARENA_HEIGHT}
+                  transform={camp.textureTransform}
+                />
+              </g>
+              <polygon className="ground-outline" points={camp.polygon} />
+            </g>
+          ))}
           {ARENA_CELLS.map((cell) => (
             <polygon
               key={`${cell.row}-${cell.column}`}
@@ -377,17 +401,6 @@ export function DuelArena({
               points={cell.polygon}
             />
           ))}
-          <polygon
-            className="ground-outline"
-            points={groundPoints(ARENA_CORNERS)}
-          />
-          <polyline
-            className="ground-frontier"
-            points={groundPoints([
-              projectGround(0.5, 0),
-              projectGround(0.5, 1),
-            ])}
-          />
         </svg>
         <div className="battlefield">
           {half(mine, me, true)}

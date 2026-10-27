@@ -22,25 +22,26 @@ export function FieldMark({
     >
       <img
         className="field-mark-art"
-        src={`/art/field/${kind}-${stat === "block" ? "health" : stat}.webp`}
+        src={`/art/field/${kind}-${stat === "block" ? "health" : stat}-${kind === "rune" ? "orb" : "glyph"}-v2.webp`}
         alt=""
-        width={512}
-        height={341}
+        width={256}
+        height={256}
         draggable={false}
       />
       {showBonus && (
         <span className="field-mark-bonus">
-          <AbilityIcon
-            kind={
-              stat === "block"
-                ? "block"
-                : stat === "health"
-                  ? "vitality"
-                  : "power"
-            }
-          />
+          {kind === "rune" && (
+            <AbilityIcon
+              kind={
+                stat === "block"
+                  ? "block"
+                  : stat === "health"
+                    ? "vitality"
+                    : "power"
+              }
+            />
+          )}
           <strong>+{amount}</strong>
-          {kind === "pentagram" && <small>/tour</small>}
         </span>
       )}
     </span>

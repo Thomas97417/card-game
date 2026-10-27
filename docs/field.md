@@ -1,5 +1,7 @@
 # Terrain initial de Sylve
 
+L’arène représente deux damiers de **3 × 4 cases**, distingués par une séparation de quelques pixels dans les tons beiges du dallage, sans bordure contrastée. Les textures du dallage, les cases de placement, les unités, les sceaux et les effets utilisent la même projection ; l’espace central ne reçoit aucun placement. Les règles et les coordonnées logiques des deux camps restent identiques.
+
 Les nouvelles parties solo, les duels publics, les défis amicaux et l’entraînement commencent avec des terrains tirés à leur création. Chaque camp reçoit **0 à 1 bâtiment neutre**, **0 à 1 rune** et **0 à 1 pentagramme**, pour un total de **1 à 3 éléments**. Chaque sceau tire indépendamment son type, avec les mêmes chances de donner de la **vie (+3 PV)** ou de la **puissance (+2 attaque)**. Une catégorie peut être absente. Les trois bâtiments disponibles sont les pieux de ronces, l’arbre sombre et le rocher moussu.
 
 Les profils de quantités sont tirés ensemble parmi les paires autorisées : l’écart est d’au plus **un bâtiment**, **une rune** et **un pentagramme**, d’au plus **un sceau au total** et d’au plus **un élément au total**. La sélection uniforme des paires ordonnées donne les mêmes chances aux deux camps. Les quantités peuvent donc différer, et un côté peut recevoir un petit avantage. Le choix du premier joueur n’intervient pas dans ces limites.
@@ -27,6 +29,8 @@ Les deux sceaux disparaissent quand leur porteur meurt, avant une éventuelle in
 Les positions des bâtiments et sceaux sont publiques. Leurs activations, disparitions et changements de statistiques suivent les événements de combat pour être animés au moment de l’impact, puis restaurés après reconnexion. L’ordinateur reçoit les mêmes informations visibles et évalue ses placements avec ces éléments.
 
 Autour des unités, seuls les PV, la puissance et les icônes des compétences actives au niveau courant sont affichés. Les icônes, y compris celles des compétences passives, mesurent de 28 à 44 pixels selon l’écran, sans compteur ni encadré. La première est ancrée en bas à gauche de l’unité ou du bâtiment ; les suivantes se rangent vers la droite, puis vers le haut si nécessaire. Les états et bonus détaillés sont consultables dans la fiche au clic. Le nom ne s’affiche pas au survol. Le bonus d’un sceau reste indiqué sur une case libre et dans sa fiche ; son étiquette disparaît quand la case est occupée.
+
+Les runes sont représentées par de petites orbes lumineuses, vertes pour la vie et violettes pour la puissance. Les pentagrammes prennent la forme de glyphes plats et légers, verts pour la vie et ambrés pour la puissance. Le bonus « +N » est placé directement au centre du marqueur, sans cartouche ni mention « /tour » sur le terrain. Le rythme d’activation reste expliqué dans la fiche. Les sprites v2 transparents et leurs prompts sont conservés dans le [manifeste des illustrations](art-prompts.json).
 
 Les compteurs de vie et de puissance restent à l’intérieur de leur case, même lorsque les portraits agrandis débordent. Leur largeur, leur texte et leur contour s’adaptent à la place disponible sur les petits écrans pour séparer les statistiques de deux voisins.
 

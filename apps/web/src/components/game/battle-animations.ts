@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
-import { DEPTHS, ROWS, type GameEvent } from "@sylve/game";
-import { ARENA_HEIGHT, ARENA_WIDTH, projectGround } from "./arena-layout";
+import { DEPTHS, type GameEvent } from "@sylve/game";
+import { ARENA_HEIGHT, ARENA_WIDTH, projectCellPoint } from "./arena-layout";
 import { eventIconKind } from "./ability-icons";
 import {
   abilityOrigins, abilitySource, combatActorKey, combatFrameTiming,
@@ -69,7 +69,7 @@ export function createBattleFrame(
       actor.row < 0 || actor.depth < 0)
       return { x: ARENA_WIDTH * (actor.player === viewer ? 0.08 : 0.92), y: ARENA_HEIGHT * 0.48 };
     const column = actor.player === viewer ? DEPTHS - 1 - actor.depth : DEPTHS + actor.depth;
-    return projectGround((column + 0.5) / (DEPTHS * 2), (actor.row + 0.6) / ROWS);
+    return projectCellPoint(actor.row, column, 0.5, 0.6);
   }
   function restore(sprite: HTMLElement, when: number) {
     timeline.set(sprite, { clearProps: motionProperties }, when);

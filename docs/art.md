@@ -10,7 +10,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `heroes/` | Gardien de la Sylve et Gardien mécanique |
 | `factions/*-icon.webp` | Emblèmes Ordre, Nature et Chaos |
 | `abilities/` | Capacités, états et événements de combat |
-| `field/` | Bâtiments neutres, runes et pentagrammes |
+| `field/` | Bâtiments neutres, petites orbes de rune v2 et glyphes plats de pentagramme v2 |
 | `chests/` | Cinq types de coffres, fermés et ouverts |
 | `leagues/` | Écussons des dix ligues |
 | `results/` | Emblèmes de victoire et de défaite, générés avec ImageGen intégré |
@@ -24,6 +24,8 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `deck-workshop.webp`, `guardian-house.webp`, `play-lobby.webp`, `sanctuary.webp` | Décors des pages du jeu |
 
 Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par faction et un accent par lignée. Les personnages conservent une identité commune entre les raretés, avec des poses, silhouettes et équipements progressifs. Les sprites restent transparents ; les statistiques et commandes sont rendues par l’interface.
+
+Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 
 La capture du duel provient de l’interface réelle du terrain d’entraînement, après plusieurs tours joués. Sa provenance figure dans la section `captures` du manifeste.
 
