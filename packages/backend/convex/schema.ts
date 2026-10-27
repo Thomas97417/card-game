@@ -113,6 +113,29 @@ export default defineSchema({
     .index("by_checkout", ["checkoutId"])
     .index("by_order", ["orderId"])
     .index("by_owner", ["ownerId"]),
+  legendaryPurchases: defineTable({
+    ownerId: v.string(),
+    checkoutId: v.string(),
+    customerId: v.string(),
+    productId: v.string(),
+    offerId: v.union(v.literal("solar-oath"), v.literal("abyssal-pact")),
+    emeralds: v.number(),
+    gold: v.number(),
+    cards: v.array(lootValidator),
+    priceAmount: v.number(),
+    priceCurrency: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("paid"),
+      v.literal("refunded"),
+    ),
+    orderId: v.optional(v.string()),
+    fulfilled: v.boolean(),
+    refundedFraction: v.number(),
+  })
+    .index("by_checkout", ["checkoutId"])
+    .index("by_order", ["orderId"])
+    .index("by_owner", ["ownerId"]),
   goldPurchases: defineTable({
     ownerId: v.string(),
     requestId: v.string(),

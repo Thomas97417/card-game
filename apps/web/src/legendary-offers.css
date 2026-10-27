@@ -1,0 +1,742 @@
+.hub-offers-trigger {
+  position: absolute;
+  z-index: 30;
+  top: calc(25% + 48px);
+  left: max(10px, env(safe-area-inset-left));
+  width: 110px;
+  height: 108px;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  cursor: pointer;
+  isolation: isolate;
+  transition: transform 180ms;
+}
+.hub-offers-trigger > img {
+  position: absolute;
+  inset: -3px 5px auto;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 4px #071e17) drop-shadow(0 0 8px #ffd45366);
+}
+.hub-offers-aura {
+  position: absolute;
+  inset: 0 6px 10px;
+  z-index: -1;
+  border: 2px solid #f8dc8d99;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #ffe2a777,
+    #e8a54833 50%,
+    transparent 72%
+  );
+  box-shadow:
+    0 0 18px #eac05a55,
+    inset 0 0 12px #eac05a55;
+  animation: offer-crest-glow 3s ease-in-out infinite alternate;
+}
+.hub-offers-new {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 36px;
+  color: #fff1a5;
+  background: #e34225;
+  clip-path: polygon(
+    50% 0,
+    61% 12%,
+    79% 3%,
+    81% 24%,
+    100% 28%,
+    90% 47%,
+    100% 67%,
+    78% 73%,
+    77% 96%,
+    57% 88%,
+    42% 100%,
+    32% 85%,
+    12% 94%,
+    15% 71%,
+    0 63%,
+    9% 46%,
+    0 29%,
+    23% 24%,
+    24% 6%,
+    41% 14%
+  );
+  font:
+    900 12px/1 "Avenir Next",
+    sans-serif;
+  text-shadow: 1px 2px #7e230e;
+  transform: rotate(13deg);
+}
+.hub-offers-ribbon {
+  position: absolute;
+  right: 1px;
+  bottom: 3px;
+  left: 1px;
+  padding: 5px 7px;
+  border: 2px solid #fff2b4;
+  border-radius: 3px 3px 40% 40%;
+  color: #fffbe1;
+  background: linear-gradient(#68ae2e, #26751f 60%, #194a15);
+  box-shadow:
+    0 3px 0 #123711,
+    0 4px 5px #071c15;
+  font:
+    900 15px/1 "Avenir Next",
+    sans-serif;
+  letter-spacing: 0.06em;
+  text-shadow: 0 2px #174c13;
+}
+.hub-offers-trigger:hover,
+.hub-offers-trigger[aria-expanded="true"] {
+  transform: translateY(-3px) scale(1.05);
+}
+.hub-offers-trigger:focus-visible {
+  outline: 2px solid #fff1b2;
+  outline-offset: 5px;
+}
+
+.legendary-offers-dialog[data-slot="dialog-content"] {
+  width: min(1000px, calc(100% - 24px));
+  max-width: 1000px;
+  max-height: calc(100dvh - 24px);
+  border: 1px solid #bf9e59;
+  border-radius: 20px;
+  color: #fff2d3;
+  background:
+    radial-gradient(ellipse at 50% 0, #3c382d, transparent 60%), #101e1c;
+  box-shadow:
+    0 25px 100px #000b,
+    inset 0 0 0 4px #f1cd7a0c;
+}
+.legendary-offers-dialog > [data-slot="dialog-body"] {
+  max-height: calc(100dvh - 24px);
+  padding: 25px 28px 18px;
+  scrollbar-color: #ac8e50 #15231f;
+}
+.legendary-offers-dialog > [data-slot="dialog-close"] {
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #b6975a66;
+  color: #ecd8ad;
+  background: #192b27;
+}
+.legendary-offers-heading {
+  text-align: center;
+}
+.legendary-offers-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #cab183;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.legendary-offers-heading [data-slot="dialog-title"] {
+  margin: 8px 0 0;
+  padding: 0 12px;
+  color: #f8e0a3;
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1.15;
+  text-shadow: 0 2px 15px #e7af4e33;
+}
+.legendary-offers-heading [data-slot="dialog-description"] {
+  margin: 8px 0 13px;
+  color: #b7bcaf;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.legendary-offers-rank {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid #bd9e5266;
+  border-radius: 20px;
+  color: #eed39a;
+  background: #9273311a;
+  font-size: 10px;
+  font-weight: 650;
+}
+.legendary-offers-rank > span {
+  color: #b8b6a4;
+  font-weight: 400;
+}
+.legendary-offers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+.legendary-offer {
+  --offer-accent: #ffcf6a;
+  --offer-glow: #f3a52f;
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  padding: 17px 19px 10px;
+  overflow: hidden;
+  border: 1px solid #ac843b;
+  border-radius: 13px;
+  background:
+    radial-gradient(ellipse at 50% 36%, #80521c66, transparent 65%),
+    linear-gradient(150deg, #3c3020, #1f251e 72%);
+  box-shadow:
+    inset 0 0 0 3px #f7d18608,
+    0 8px 20px #0003;
+}
+.legendary-offer.is-abyssal {
+  --offer-accent: #ebbcff;
+  --offer-glow: #b16af4;
+  border-color: #8e6aaf;
+  background:
+    radial-gradient(ellipse at 50% 36%, #753e8c66, transparent 65%),
+    linear-gradient(150deg, #322039, #1d202b 72%);
+}
+.legendary-offer-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--offer-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.legendary-offer-topline > span:last-child {
+  color: #cbc1a6;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.legendary-offer h3 {
+  margin: 14px 0 3px;
+  color: #fff0ce;
+  font:
+    28px/1.1 Georgia,
+    serif;
+  text-align: center;
+}
+.legendary-offer-subtitle {
+  margin: 0;
+  color: var(--offer-accent);
+  font-size: 11px;
+  text-align: center;
+}
+.legendary-offer-showcase {
+  position: relative;
+  height: 248px;
+  margin: 8px -12px 0;
+}
+.legendary-offer-magic {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.offer-magic-rays {
+  position: absolute;
+  top: -45px;
+  left: calc(50% - 175px);
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 15deg,
+    transparent 0deg 13deg,
+    var(--offer-glow) 16deg,
+    transparent 19deg 30deg
+  );
+  opacity: 0.18;
+  mask-image: radial-gradient(circle, #000 5%, transparent 67%);
+  animation: offer-rays-turn 36s linear infinite;
+}
+.offer-magic-ring {
+  position: absolute;
+  top: 25px;
+  left: calc(50% - 95px);
+  width: 190px;
+  height: 190px;
+  border: 1px solid var(--offer-accent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 30px var(--offer-glow),
+    inset 0 0 25px var(--offer-glow);
+  opacity: 0.25;
+  animation: offer-crest-glow 3.5s ease-in-out infinite alternate;
+}
+.legendary-offer-magic > i {
+  position: absolute;
+  top: calc(15% + mod(var(--spark) * 17, 70) * 1%);
+  left: calc(8% + var(--spark) * 7.6%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff2d3;
+  box-shadow: 0 0 7px 2px var(--offer-glow);
+  animation: offer-spark-rise calc(2.4s + var(--spark) * 0.12s) ease-in-out
+    infinite;
+  animation-delay: calc(var(--spark) * -0.37s);
+}
+.legendary-offer-cards {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.legendary-offer-card-slot {
+  position: absolute;
+  top: 47px;
+  width: 114px;
+  text-align: center;
+}
+.legendary-offer-card-slot[data-rarity="rare"] {
+  left: calc(50% - 172px);
+  transform: rotate(-10deg);
+}
+.legendary-offer-card-slot[data-rarity="epic"] {
+  right: calc(50% - 172px);
+  transform: rotate(10deg);
+}
+.legendary-offer-card-slot[data-rarity="legendary"] {
+  z-index: 2;
+  top: 21px;
+  left: calc(50% - 70px);
+  width: 140px;
+  animation: offer-legend-float 4.5s ease-in-out infinite;
+}
+.is-abyssal .legendary-offer-card-slot[data-rarity="legendary"] {
+  animation-delay: -0.9s;
+}
+.legendary-offer-card {
+  --card-accent: #7dbaff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  aspect-ratio: 0.73;
+  overflow: hidden;
+  border: 2px solid var(--card-accent);
+  border-radius: 9px;
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    color-mix(in srgb, var(--creature-color), transparent 25%),
+    #121b26 78%
+  );
+  box-shadow:
+    0 6px 10px #0007,
+    inset 0 0 0 3px #ffffff13,
+    0 0 14px color-mix(in srgb, var(--card-accent), transparent 75%);
+}
+[data-rarity="epic"] > .legendary-offer-card {
+  --card-accent: #ce9bff;
+}
+[data-rarity="legendary"] > .legendary-offer-card {
+  --card-accent: #ffd476;
+  box-shadow:
+    0 8px 15px #0008,
+    0 0 24px color-mix(in srgb, var(--offer-glow), transparent 40%),
+    inset 0 0 0 3px #ffe5a02b;
+}
+.offer-card-rarity {
+  position: absolute;
+  z-index: 1;
+  top: 7px;
+  color: var(--card-accent);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.legendary-offer-card > .creature-portrait {
+  position: absolute;
+  inset: 18px 0 auto;
+  width: 100%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px #0008);
+}
+.offer-card-name {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 7px 5px;
+  color: #fff3d7;
+  background: linear-gradient(transparent, #0e171bed 25%);
+  font:
+    11px/1.15 Georgia,
+    serif;
+}
+[data-rarity="rare"] .offer-card-name {
+  padding-right: 18px;
+}
+[data-rarity="epic"] .offer-card-name {
+  padding-left: 18px;
+}
+[data-rarity="legendary"] .offer-card-name {
+  min-height: 49px;
+  padding-inline: 10px;
+  font-size: 14px;
+}
+.offer-card-shine {
+  position: absolute;
+  z-index: 2;
+  inset: -50%;
+  background: linear-gradient(
+    110deg,
+    transparent 40%,
+    #fff9 48%,
+    transparent 55%
+  );
+  transform: translateX(-80%);
+  animation: offer-card-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+[data-rarity="rare"] .offer-card-shine {
+  animation-delay: -1s;
+}
+[data-rarity="epic"] .offer-card-shine {
+  animation-delay: -2s;
+}
+.offer-card-count {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: -2px;
+  padding: 3px 14px;
+  border: 1px solid #d4b573;
+  border-radius: 4px;
+  color: #fff1c5;
+  background: linear-gradient(#435039, #233626);
+  box-shadow: 0 3px 7px #0005;
+  font-size: 17px;
+  font-weight: 850;
+}
+.offer-card-count > small {
+  font-size: 11px;
+  color: #d5c393;
+}
+[data-rarity="legendary"] .offer-card-count {
+  border-color: #ffe5a1;
+  background: linear-gradient(#b7812d, #754e20);
+  font-size: 22px;
+}
+.legendary-offer-description {
+  min-height: 34px;
+  margin: 0 auto 12px;
+  max-width: 330px;
+  color: #c8c4b2;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+.legendary-offer-currencies {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-block: 1px solid #ccb07626;
+}
+.legendary-offer-currencies > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.legendary-offer-currencies > span + span {
+  border-left: 1px solid #ccb07626;
+}
+.legendary-offer-currencies img {
+  width: 49px;
+  height: 43px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 4px #0008);
+}
+.legendary-offer-currencies strong {
+  display: block;
+  color: #fff1c6;
+  font-size: 20px;
+  line-height: 1.1;
+}
+.legendary-offer-currencies small {
+  display: block;
+  margin-top: 3px;
+  color: #b4b9a4;
+  font-size: 10px;
+}
+.legendary-offer-buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 0 17px;
+  border: 1px solid #ebd18c;
+  border-radius: 7px;
+  color: #2b2515;
+  background: linear-gradient(100deg, #f4cf79, #f9e5aa 50%, #d8b35e);
+  box-shadow:
+    0 3px 0 #6d5325,
+    inset 0 1px #fff3ca;
+  cursor: pointer;
+  transition:
+    filter 160ms,
+    transform 160ms;
+}
+.legendary-offer-buy > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.legendary-offer-buy > strong {
+  padding-left: 14px;
+  border-left: 1px solid #80632b4d;
+  font-size: 20px;
+  white-space: nowrap;
+}
+.legendary-offer-buy:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.legendary-offer-buy:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+.legendary-offer-buy:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+.legendary-offer-purchase-note {
+  margin: 10px 0 0;
+  color: #b8b8a6;
+  font-size: 9px;
+  text-align: center;
+}
+.legendary-offers-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 15px 0 0;
+  color: #a5b1a3;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+.legendary-offers-footer > svg {
+  flex-shrink: 0;
+}
+.legendary-offers-error {
+  margin: 14px 0 0;
+  padding: 10px;
+  border: 1px solid #e69e7a66;
+  border-radius: 8px;
+  color: #ffcfb5;
+  background: #663e2b44;
+  font-size: 12px;
+  text-align: center;
+}
+.legendary-payment-feedback {
+  position: fixed;
+  z-index: 45;
+  top: max(100px, env(safe-area-inset-top));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(600px, calc(100% - 32px));
+  padding: 15px 18px;
+  border: 1px solid #e3bd72;
+  border-radius: 12px;
+  color: #fff0cb;
+  background: #1b342bf5;
+  box-shadow: 0 8px 30px #001b18aa;
+  transform: translateX(-50%);
+  font-size: 13px;
+}
+.legendary-payment-feedback > svg {
+  flex-shrink: 0;
+  color: #f2ce81;
+}
+.legendary-payment-feedback > span {
+  flex: 1;
+}
+.legendary-payment-feedback > button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+@keyframes offer-crest-glow {
+  to {
+    opacity: 0.55;
+    filter: brightness(1.25);
+  }
+}
+@keyframes offer-rays-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes offer-legend-float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes offer-spark-rise {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.5);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-18px) scale(1);
+  }
+}
+@keyframes offer-card-shimmer {
+  0%,
+  45% {
+    transform: translateX(-80%);
+    opacity: 0;
+  }
+  55% {
+    opacity: 0.4;
+  }
+  70%,
+  100% {
+    transform: translateX(80%);
+    opacity: 0;
+  }
+}
+@media (max-width: 900px) {
+  .legendary-offers-dialog[data-slot="dialog-content"] {
+    width: min(470px, calc(100% - 18px));
+  }
+  .legendary-offers-dialog > [data-slot="dialog-body"] {
+    padding: 23px 14px 16px;
+  }
+  .legendary-offers-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-top: 18px;
+  }
+  .legendary-offer {
+    padding-inline: 15px;
+  }
+  .legendary-offer h3 {
+    font-size: 27px;
+  }
+}
+@media (max-width: 600px) {
+  .hub-offers-trigger {
+    top: calc(25% + 40px);
+    left: max(3px, env(safe-area-inset-left));
+    width: 92px;
+    height: 90px;
+  }
+  .hub-offers-trigger > img {
+    inset: -3px 4px auto;
+    width: 84px;
+    height: 84px;
+  }
+  .hub-offers-new {
+    width: 37px;
+    height: 32px;
+    font-size: 10px;
+  }
+  .hub-offers-ribbon {
+    padding-block: 4px;
+    font-size: 12px;
+  }
+  .legendary-offer-card-slot:not([data-rarity="legendary"]) {
+    width: 98px;
+    top: 56px;
+  }
+  .legendary-offer-card-slot[data-rarity="rare"] {
+    left: calc(50% - 146px);
+    transform: rotate(-7deg);
+  }
+  .legendary-offer-card-slot[data-rarity="epic"] {
+    right: calc(50% - 146px);
+    transform: rotate(7deg);
+  }
+  .legendary-offer-card-slot[data-rarity="legendary"] {
+    width: 130px;
+    left: calc(50% - 65px);
+  }
+  .legendary-offer-showcase {
+    height: 238px;
+  }
+}
+@media (max-width: 370px) {
+  .legendary-offer-card-slot[data-rarity="rare"] {
+    left: calc(50% - 124px);
+  }
+  .legendary-offer-card-slot[data-rarity="epic"] {
+    right: calc(50% - 124px);
+  }
+  .legendary-offer-card-slot:not([data-rarity="legendary"]) {
+    width: 78px;
+  }
+  .legendary-offer-card-slot[data-rarity="legendary"] {
+    width: 112px;
+    left: calc(50% - 56px);
+  }
+  .offer-card-name {
+    font-size: 10px;
+  }
+  [data-rarity="legendary"] .offer-card-name {
+    font-size: 12px;
+  }
+  .offer-card-rarity {
+    font-size: 7px;
+  }
+  .legendary-offer-showcase {
+    height: 216px;
+  }
+  .legendary-offer-currencies strong {
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-offers-aura,
+  .offer-magic-rays,
+  .offer-magic-ring,
+  .legendary-offer-magic > i,
+  .legendary-offer-card-slot[data-rarity="legendary"],
+  .offer-card-shine {
+    animation: none;
+  }
+  .offer-card-shine {
+    display: none;
+  }
+  .hub-offers-trigger,
+  .legendary-offer-buy {
+    transition: none;
+  }
+}

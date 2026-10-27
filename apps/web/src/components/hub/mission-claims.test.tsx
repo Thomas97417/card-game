@@ -29,6 +29,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: { component: ComponentType }) => ({
     options,
+    useSearch: () => ({}),
+    useNavigate: () => vi.fn(),
   }),
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>
@@ -38,6 +40,7 @@ vi.mock("@tanstack/react-router", () => ({
   redirect: vi.fn(),
 }));
 vi.mock("convex/react", () => ({
+  useAction: () => vi.fn(),
   useQuery: (query: Parameters<typeof getFunctionName>[0]) =>
     getFunctionName(query) === "missions:board" ? mocks.board : undefined,
   useMutation: (mutation: Parameters<typeof getFunctionName>[0]) =>

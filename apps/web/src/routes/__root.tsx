@@ -40,6 +40,7 @@ import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
 import missionsCss from "../missions.css?url";
 import dailyRewardsCss from "../daily-rewards.css?url";
+import legendaryOffersCss from "../legendary-offers.css?url";
 import guardianCss from "../guardian.css?url";
 import factionsCss from "../factions.css?url";
 
@@ -84,6 +85,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       { rel: "stylesheet", href: hubCss },
       { rel: "stylesheet", href: missionsCss },
       { rel: "stylesheet", href: dailyRewardsCss },
+      { rel: "stylesheet", href: legendaryOffersCss },
       { rel: "stylesheet", href: guardianCss },
       { rel: "stylesheet", href: factionsCss },
     ],
