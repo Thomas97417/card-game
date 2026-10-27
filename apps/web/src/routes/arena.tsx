@@ -46,6 +46,13 @@ function ArenaPage() {
   const { invite } = Route.useSearch();
   const decks = useQuery(api.decks.list);
   const activity = useQuery(api.games.activity);
+  const openingGameId = activity?.status === "active" ? activity.gameId : null;
+  // Keep the arena visible until the live query can immediately render the duel.
+  const openingGame = useQuery(
+    api.games.get,
+    openingGameId ? { gameId: openingGameId } : "skip",
+  );
+  const gameReady = !!openingGame;
   const treasures = useQuery(api.chests.list);
   const league = useQuery(api.collection.league);
   const ensureStarter = useMutation(api.decks.ensureStarter);
@@ -90,12 +97,12 @@ function ArenaPage() {
     if (activity?.status === "waiting") setPrivateOpen(true);
   }, [activity?.status]);
   useEffect(() => {
-    if (activity?.status === "active" && activity.gameId)
+    if (openingGameId && gameReady)
       void navigate({
         to: "/game/$gameId",
-        params: { gameId: activity.gameId },
+        params: { gameId: openingGameId },
       });
-  }, [activity, navigate]);
+  }, [openingGameId, gameReady, navigate]);
   useEffect(() => {
     if (!activity?.queued) return;
     const ping = () => {
@@ -163,11 +170,7 @@ function ArenaPage() {
       locked={locked}
       queued={activity?.queued ?? false}
       onSolo={() => {
-        if (deck)
-          void action(async () => {
-            const gameId = await createSolo({ deckId: deck._id });
-            await navigate({ to: "/game/$gameId", params: { gameId } });
-          });
+        if (deck) void action(() => createSolo({ deckId: deck._id }));
       }}
       onPublic={() => {
         if (deck) void action(() => enqueue({ deckId: deck._id }));
@@ -236,16 +239,7 @@ function ArenaPage() {
                 onSubmit={(event) => {
                   event.preventDefault();
                   if (deck)
-                    void action(async () => {
-                      const gameId = await joinPrivate({
-                        code,
-                        deckId: deck._id,
-                      });
-                      await navigate({
-                        to: "/game/$gameId",
-                        params: { gameId },
-                      });
-                    });
+                    void action(() => joinPrivate({ code, deckId: deck._id }));
                 }}
               >
                 <label className="sr-only" htmlFor="invite-code">
