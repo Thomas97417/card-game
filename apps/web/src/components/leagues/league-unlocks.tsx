@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import { EVOLUTION_LEAGUE_INDEX, SOULBIND_LEAGUE_INDEX } from "@sylve/game";
 import {
   DECK_SLOT_UNLOCKS,
@@ -83,9 +82,7 @@ export function LeagueUnlocks({ reward }: { reward: Partial<TrophyChange> }) {
   if (!unlocks.length) return null;
   return (
     <section className="result-unlocks" aria-label="Nouveautés débloquées">
-      <h2>
-        <Sparkles size={15} aria-hidden="true" /> Débloqué
-      </h2>
+      <h2>Débloqué</h2>
       <ul>
         {unlocks.map((unlock) => (
           <li key={unlock.id}>
