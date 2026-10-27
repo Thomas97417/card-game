@@ -129,11 +129,11 @@
 }
 .player-header-actions .league-panel.is-compact {
   width: fit-content;
-  min-width: 0;
-  min-height: 44px;
+  min-width: 144px;
+  min-height: 48px;
   max-width: 340px;
-  gap: 12px;
-  padding: 3px 12px 3px 8px;
+  gap: 16px;
+  padding: 5px 18px 5px 14px;
   margin: 0;
 }
 .player-header-actions .league-badge {
@@ -149,12 +149,13 @@
   gap: 12px;
 }
 .player-header-actions .league-panel .trophy-amount {
-  gap: 3px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
 }
 .player-header-actions .league-panel .trophy-icon {
-  width: 19px;
-  height: 19px;
+  width: 22px;
+  height: 22px;
 }
 .sylve-settings-trigger {
   display: grid;
@@ -361,6 +362,7 @@
   .player-header-actions .league-panel.is-compact,
   .player-league-loading {
     width: 100%;
+    min-width: 0;
     max-width: none;
     height: 64px;
     padding: 5px 9px 5px 5px;

@@ -42,7 +42,7 @@ Les combats solo, classés et amicaux enregistrent le héros au moment de la cr�
 
 Deux icônes ont été générées avec l’outil intégré image_gen : `apps/web/public/art/abilities/freeze.webp` et `apps/web/public/art/abilities/execution.webp`. Les pouvoirs correspondants réutilisent les autres icônes existantes. Les onze héros possèdent chacun un portrait dédié dans `apps/web/public/art/heroes/` ; aucun ne reprend une illustration de carte. Les sept variantes utilisent désormais `hero-north.webp`, `hero-maestro.webp`, `hero-shaman.webp`, `hero-winter.webp`, `hero-moon.webp`, `hero-shadow.webp` et `hero-flame.webp`, générés avec le même outil.
 
-Les prompts exacts des icônes et des dix nouveaux portraits sont conservés avec leurs chemins dans [hero-art-prompts.json](hero-art-prompts.json). Les fichiers WebP conservent leur transparence.
+Le portrait du Gardien de la Sylve a été repeint dans le même style que les nouveaux héros, en conservant ses traits, son équipement et sa pose. Les prompts exacts des icônes et des onze portraits sont conservés avec leurs chemins dans [hero-art-prompts.json](hero-art-prompts.json). Les fichiers WebP conservent leur transparence.
 
 ## Présentation et paliers de ligue
 
