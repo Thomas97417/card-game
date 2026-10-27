@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, type CSSProperties } from "react";
-import { ArrowRight, Check, Leaf, LockKeyhole, RotateCcw } from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, RotateCcw } from "lucide-react";
 import { leagueAt } from "@sylve/game/leagues";
 import { chestName, VICTORY_CHEST_WINS } from "@sylve/game/progression";
 import {
   LeagueBadge,
   LeagueResult,
-  TrophyIcon,
 } from "@/components/leagues/league-progress";
 import { LeagueUnlocks } from "@/components/leagues/league-unlocks";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -56,10 +55,19 @@ export function DuelResult({
             <span className="result-emblem-rays" aria-hidden="true" />
             {promoted ? (
               <LeagueBadge league={current} size={168} />
-            ) : won ? (
-              <TrophyIcon />
             ) : (
-              <Leaf size={60} strokeWidth={1.25} aria-hidden="true" />
+              <img
+                className="result-outcome-art"
+                src={`/art/results/${won ? "victory" : "defeat"}.webp`}
+                alt={
+                  won
+                    ? "Épée couronnée de la victoire"
+                    : "Bouclier brisé de la défaite"
+                }
+                width={160}
+                height={160}
+                draggable={false}
+              />
             )}
             {promoted && (
               <span className="result-sparks" aria-hidden="true">

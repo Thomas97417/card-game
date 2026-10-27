@@ -490,8 +490,8 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                       {rule.cards.map((card) => (
                         <small key={card.rarity}>
                           {RARITY_LABELS[card.rarity]} : {card.min}
-                          {card.max !== card.min ? `–${card.max}` : ""} exemplaires (
-                          {card.chance.toLocaleString("fr-FR")} %)
+                          {card.max !== card.min ? `–${card.max}` : ""}{" "}
+                          exemplaires ({card.chance.toLocaleString("fr-FR")} %)
                         </small>
                       ))}
                       <small>
@@ -512,8 +512,9 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
                     <small>
                       Disponible dès{" "}
                       {
-                        LEAGUES.find((league) => league.chestChances[rarity] > 0)!
-                          .label
+                        LEAGUES.find(
+                          (league) => league.chestChances[rarity] > 0,
+                        )!.label
                       }
                     </small>
                   )}
@@ -523,9 +524,9 @@ function LeagueJourney({ progress }: { progress: LeagueProgress }) {
           </dl>
           <small>
             Chaque coffre gagné est retiré de la réserve de sa ligue, renouvelée
-            une fois épuisée. Le butin est fixé à l’obtention du coffre. Le coffre
-            de trois victoires contient le même butin que le coffre commun de ce
-            palier.
+            une fois épuisée. Le butin est fixé à l’obtention du coffre. Le
+            coffre de trois victoires contient le même butin que le coffre
+            commun de ce palier.
           </small>
         </div>
       </section>
@@ -678,28 +679,50 @@ export function LeagueResult({ reward }: { reward: Partial<TrophyChange> }) {
           trophées
         </span>
       </div>
-      <div className="result-league-labels">
-        <span>
-          {demoted ? `Rétrogradation · ${current.label}` : current.label}
+      <div className="result-league-progression" data-max={!next}>
+        <span className="result-league-rank" title={current.label}>
+          <LeagueBadge league={current} size={64} />
         </span>
-        <span>{next?.label ?? "Ligue ultime"}</span>
-      </div>
-      <div
-        className="result-league-bar"
-        role="progressbar"
-        aria-label={
-          next ? `Progression vers ${next.label}` : "Ligue maximale atteinte"
-        }
-        aria-valuemin={0}
-        aria-valuemax={required}
-        aria-valuenow={earned}
-        aria-valuetext={
-          next
-            ? `${reward.trophiesTotal} trophées, ${next.minTrophies - reward.trophiesTotal} avant ${next.label}`
-            : `${reward.trophiesTotal} trophées, ligue maximale atteinte`
-        }
-      >
-        <span style={{ width: `${(earned / required) * 100}%` }} />
+        <div className="result-league-progress">
+          {demoted && (
+            <span className="result-league-demotion">
+              Rétrogradation<span className="sr-only"> · {current.label}</span>
+            </span>
+          )}
+          <span className="result-league-fraction" aria-hidden="true">
+            {next ? (
+              <>
+                <strong>{earned}</strong> / {required}
+              </>
+            ) : (
+              "Ligue ultime"
+            )}
+          </span>
+          <div
+            className="result-league-bar"
+            role="progressbar"
+            aria-label={
+              next
+                ? `Progression vers ${next.label}`
+                : "Ligue maximale atteinte"
+            }
+            aria-valuemin={0}
+            aria-valuemax={required}
+            aria-valuenow={earned}
+            aria-valuetext={
+              next
+                ? `${reward.trophiesTotal} trophées, ${next.minTrophies - reward.trophiesTotal} avant ${next.label}`
+                : `${reward.trophiesTotal} trophées, ligue maximale atteinte`
+            }
+          >
+            <span style={{ width: `${(earned / required) * 100}%` }} />
+          </div>
+        </div>
+        {next && (
+          <span className="result-league-rank is-next" title={next.label}>
+            <LeagueBadge league={next} size={64} />
+          </span>
+        )}
       </div>
     </div>
   );
