@@ -37,7 +37,7 @@ L’XP, les émeraudes de tous les rangs franchis et le nouveau rendement des mi
 
 `wallets.rankAcknowledgedThrough` conserve le dernier rang présenté puis fermé. Un panneau s’ouvre automatiquement après une montée, affiche le rang, le total d’émeraudes déjà créditées, les changements de niveaux de mines et de places d’amis, ainsi que les nouveaux prérequis de liens d’âme atteints. Plusieurs rangs sont regroupés. Fermer ce panneau ne crédite aucune récompense ; le serveur accuse réception seulement des rangs affichés, sans masquer une montée plus récente. Un rechargement ou changement d’appareil retrouve les montées encore non consultées. Le panneau attend la sortie d’un combat ou de l’entraînement pour s’afficher.
 
-L’en-tête présente un bouton de rang avec une barre d’XP. Il ouvre le détail de la progression, les bénéfices actuels, les émeraudes du prochain rang et la prochaine augmentation de capacité d’amis. Le panneau Amis présente aussi la capacité actuelle et le gain d’XP par aide.
+L’en-tête du refuge présente en haut à gauche un bouton avec le portrait du héros actif, le nom du joueur, le rang et une barre d’XP. Ce bouton apparaît uniquement dans le hub et suit les changements de héros. Il ouvre le détail de la progression, les bénéfices actuels, les émeraudes du prochain rang et la prochaine augmentation de capacité d’amis. Le panneau Amis présente aussi la capacité actuelle et le gain d’XP par aide.
 
 Les lectures sont privées. L’initialisation et l’accusé de réception vérifient le propriétaire attendu pour refuser une requête en attente après un changement de compte.
 

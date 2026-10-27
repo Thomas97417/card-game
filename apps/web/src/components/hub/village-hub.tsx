@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
+import { RankBadge } from "@/components/rank-progress";
 import { HubDock } from "./hub-dock";
 import { MineBuildings, type HubMinesProps } from "./mine-building";
 import type { HubMissionsProps } from "./missions-dialog";
@@ -125,7 +126,9 @@ export function VillageHub({
     <main className="relative isolate h-full overflow-hidden bg-[#182e25] font-sans text-[#f5f0dd]">
       <h1 className="sr-only">Le refuge des gardiens</h1>
 
-      <GameHeader className="hub-hud" showBack={false} />
+      <GameHeader className="hub-hud" showBack={false}>
+        <RankBadge />
+      </GameHeader>
 
       <div
         ref={mapScroll}

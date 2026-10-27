@@ -4,8 +4,10 @@ import type { FunctionReturnType } from "convex/server";
 import { useRouterState } from "@tanstack/react-router";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
-import { FRIEND_HELP_EXPERIENCE, FRIENDS_UNLOCK_RANK, rankBenefits, rankSoulbindUnlocks } from "@sylve/game/ranks";
+import { FRIENDS_UNLOCK_RANK, rankBenefits, rankSoulbindUnlocks } from "@sylve/game/ranks";
+import { heroDefinition } from "@sylve/game";
 import { useGameAuth } from "@/hooks/use-game-auth";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { EmeraldAmount } from "./emerald-balance";
 import { GameIcon, type GameIconKind } from "./game/game-icon";
 import { showGameError } from "./game/shared";
@@ -151,22 +153,51 @@ export function RankUpDialog({ fromRank, toRank, emeralds, onClose, busy = false
 
 export function RankBadge() {
   const progress = useContext(RankContext);
+  return progress ? <RankProfile key={progress.ownerId} progress={progress} /> : null;
+}
+
+function RankProfile({ progress }: { progress: RankProgress }) {
+  const user = useCurrentUser();
+  const guardian = useQuery(api.collection.hero);
   const [openOwner, setOpenOwner] = useState<string | null>(null);
-  if (!progress) return null;
+  const hero = guardian ? heroDefinition(guardian.heroId) : null;
+  const name = user?.name ?? "…";
   const percent = progress.required === 0 ? 100 : Math.min(100, progress.earned / progress.required * 100);
+  const experience = progress.required
+    ? `${progress.earned.toLocaleString("fr-FR")} / ${progress.required.toLocaleString("fr-FR")}`
+    : "MAX";
+
   return (
     <>
-      <button type="button" className="player-rank-badge" onClick={() => setOpenOwner(progress.ownerId)}
-        aria-label={`Rang ${progress.rank}, ${progress.required ? `${progress.earned} sur ${progress.required} XP` : "rang maximum"}. Voir la progression`}
-        title={`Rang ${progress.rank} · ${progress.required ? `${progress.earned} / ${progress.required} XP` : "MAX"}`}>
-        <span>Rang</span><strong>{progress.rank}</strong>
-        <span className="player-rank-track" aria-hidden="true"><span style={{ width: `${percent}%` }} /></span>
+      <button
+        type="button"
+        className="hub-rank-profile"
+        onClick={() => setOpenOwner(progress.ownerId)}
+        aria-label={`${name} · Rang ${progress.rank}, ${progress.required ? `${progress.earned} sur ${progress.required} XP` : "rang maximum"}. Voir la progression`}
+        title={`${hero?.name ?? "Héros actif"} · Rang ${progress.rank} · ${experience}${progress.required ? " XP" : ""}`}
+      >
+        <span className="hub-rank-portrait">
+          {hero ? (
+            <img src={hero.portrait} alt={hero.name} width={160} height={240} draggable={false} />
+          ) : (
+            <GameIcon kind="guardian" size={50} />
+          )}
+        </span>
+        <span className="hub-rank-body">
+          <strong className="hub-rank-name">{name}</strong>
+          <span className="hub-rank-meter" aria-hidden="true">
+            <span className="hub-rank-meter-fill" style={{ width: `${percent}%` }} />
+            <span className="hub-rank-experience">{experience}{progress.required > 0 && " XP"}</span>
+          </span>
+          <span className="hub-rank-caption">
+            <strong>Rang {progress.rank}</strong>
+            <span>{hero?.name ?? "…"}</span>
+          </span>
+        </span>
       </button>
       <Dialog open={openOwner === progress.ownerId} onOpenChange={(open) => setOpenOwner(open ? progress.ownerId : null)}>
-        <DialogContent appearance="game" className="rank-dialog rank-overview-dialog">
-          <p className="rank-eyebrow">Progression du compte</p>
+        <DialogContent appearance="game" className="rank-dialog rank-overview-dialog" aria-describedby={undefined}>
           <DialogTitle>Ton rang</DialogTitle>
-          <DialogDescription>Améliore tes cartes et aide tes amis pour gagner de l’expérience.</DialogDescription>
           <RankMedallion rank={progress.rank} />
           <div className="rank-xp">
             <span>{progress.required ? `Vers le rang ${progress.rank + 1}` : "Rang maximum"}</span>
@@ -176,7 +207,6 @@ export function RankBadge() {
           <RankBenefits rank={progress.rank} />
           {progress.required > 0 && <p className="rank-next-reward">Au prochain rang : <EmeraldAmount amount={rankBenefits(progress.rank + 1).emeralds} /></p>}
           {progress.nextFriends && <p className="rank-hint">{progress.nextFriends.friends} places d’amis au rang {progress.nextFriends.rank}.</p>}
-          <p className="rank-hint">Chaque aide quotidienne envoyée rapporte {FRIEND_HELP_EXPERIENCE} XP. Les liens d’âme utilisent aussi ton rang, dès Bronze IV.</p>
         </DialogContent>
       </Dialog>
     </>

@@ -2,11 +2,14 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { getFunctionName } from "convex/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RankBadge, RankProvider, RankUpDialog } from "./rank-progress";
+import { GameHeader } from "./game-header";
 
 const mocks = vi.hoisted(() => ({
   authenticated: true,
   pathname: "/decks",
   progress: undefined as Record<string, unknown> | undefined,
+  user: { name: "Aëlys" },
+  hero: { heroId: "sylve" },
   query: vi.fn(),
   ensure: vi.fn(),
   acknowledge: vi.fn(),
@@ -14,8 +17,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/hooks/use-game-auth", () => ({ useGameAuth: () => ({ isAuthenticated: mocks.authenticated }) }));
 vi.mock("convex/react", () => ({
   useQuery: (query: Parameters<typeof getFunctionName>[0], args: unknown) => {
-    mocks.query(getFunctionName(query), args);
-    return args === "skip" ? undefined : mocks.progress;
+    const name = getFunctionName(query);
+    mocks.query(name, args);
+    if (args === "skip") return undefined;
+    if (name === "auth:getCurrentUser") return mocks.user;
+    if (name === "collection:hero") return mocks.hero;
+    return mocks.progress;
   },
   useMutation: (mutation: Parameters<typeof getFunctionName>[0]) =>
     getFunctionName(mutation) === "collection:ensureRank" ? mocks.ensure : mocks.acknowledge,
@@ -35,6 +42,8 @@ beforeEach(() => {
   mocks.authenticated = true;
   mocks.pathname = "/decks";
   mocks.progress = progress();
+  mocks.user = { name: "Aëlys" };
+  mocks.hero = { heroId: "sylve" };
   mocks.ensure.mockResolvedValue(undefined);
   mocks.acknowledge.mockResolvedValue(undefined);
 });
@@ -100,10 +109,37 @@ describe("account rank panels", () => {
     expect(await screen.findByRole("dialog", { name: "Ton rang" })).toBeTruthy();
     expect(screen.getByRole("progressbar", { name: "Expérience de rang" }).getAttribute("max")).toBe("50");
     expect(screen.getByText("7 places d’amis au rang 10.")).toBeTruthy();
+    expect(screen.queryByText("Progression du compte")).toBeNull();
+    expect(screen.queryByText("Améliore tes cartes et aide tes amis pour gagner de l’expérience.")).toBeNull();
+    expect(screen.queryByText(/Chaque aide quotidienne envoyée rapporte/)).toBeNull();
     mocks.authenticated = false;
     rerender(<RankProvider><RankBadge /></RankProvider>);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(mocks.query).toHaveBeenLastCalledWith("collection:rank", "skip");
+  });
+
+  it("shows the profile on the left of the hub header and keeps other page headers free of the rank button", () => {
+    mocks.progress = { ...progress(), pending: null };
+    const { rerender } = render(<RankProvider><GameHeader /></RankProvider>);
+    expect(screen.queryByRole("button", { name: /Voir la progression/ })).toBeNull();
+    rerender(<RankProvider><GameHeader className="hub-hud" showBack={false}><RankBadge /></GameHeader></RankProvider>);
+    const profile = screen.getByRole("button", { name: /Aëlys · Rang 6, 0 sur 50 XP/ });
+    const header = profile.closest("header")!;
+    expect(header.classList.contains("hub-hud")).toBe(true);
+    expect(header.firstElementChild).toBe(profile);
+    expect(screen.getByRole("img", { name: "Gardien de la Sylve" }).getAttribute("src")).toBe("/art/heroes/hero-sylve.webp");
+  });
+
+  it("refreshes the portrait and player name without resetting XP when the active hero changes", () => {
+    mocks.progress = { ...progress(), earned: 10, pending: null };
+    const { rerender } = render(<RankProvider><RankBadge /></RankProvider>);
+    mocks.hero = { heroId: "moon" };
+    mocks.user = { name: "Léa" };
+    rerender(<RankProvider><RankBadge /></RankProvider>);
+    expect(screen.getByRole("button", { name: /Léa · Rang 6, 10 sur 50 XP/ })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Souveraine Carmin" }).getAttribute("src")).toBe("/art/heroes/hero-moon.webp");
+    expect(screen.queryByRole("img", { name: "Gardien de la Sylve" })).toBeNull();
+    expect(screen.getByText("10 / 50 XP")).toBeTruthy();
   });
 
   it("does not hide another account's promotion after the previous account dismissed the same rank", async () => {

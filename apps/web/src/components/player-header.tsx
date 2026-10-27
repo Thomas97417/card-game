@@ -6,7 +6,6 @@ import { CurrencyBalances } from "./currency-balances";
 import { LeaguePanel } from "./leagues/league-progress";
 import UserMenu from "./user-menu";
 import { useGameAuth } from "@/hooks/use-game-auth";
-import { RankBadge } from "./rank-progress";
 
 // null: signed out; undefined: loading; LeagueProgress: authoritative progress.
 const PlayerLeagueContext = createContext<LeagueProgress | null | undefined>(null);
@@ -28,7 +27,6 @@ export function PlayerHeader({ league }: { league?: LeagueProgress } = {}) {
 
   return (
     <div className="player-header-actions">
-      <RankBadge />
       {progress ? (
         <LeaguePanel progress={progress} compact />
       ) : playerLeague === undefined ? (
