@@ -564,12 +564,6 @@
   padding: 48px 0 0 16px;
   border-left: 1px solid #cbb78333;
 }
-.upgrade-navigation > .eyebrow {
-  display: block;
-  margin-bottom: 14px;
-  font-size: 8px;
-  letter-spacing: 1.4px;
-}
 .upgrade-navigation [role="tablist"] {
   display: flex;
   flex-direction: column;
@@ -851,9 +845,6 @@
     padding: 0 36px 12px 0;
     border-left: 0;
     border-bottom: 1px solid #cbb78333;
-  }
-  .upgrade-navigation > .eyebrow {
-    display: none;
   }
   .upgrade-navigation [role="tablist"] {
     display: grid;

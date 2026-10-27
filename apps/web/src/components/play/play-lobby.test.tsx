@@ -339,7 +339,7 @@ describe("le salon de combat", () => {
     fireEvent.click(trigger);
     const details = await screen.findByRole("dialog", { name: card.name });
     expect(within(details).getByText("Caractéristiques")).toBeTruthy();
-    expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
+    expect(within(details).getByText("50/50")).toBeTruthy();
     fireEvent.click(
       within(details).getByRole("button", { name: "Améliorer au niveau 3" }),
     );

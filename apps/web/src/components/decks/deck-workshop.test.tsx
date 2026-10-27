@@ -630,7 +630,7 @@ describe("l’atelier et la collection", () => {
         })) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(screen.getByText("0 / 25 exemplaires")).toBeTruthy();
+    expect(screen.getByText("0/25")).toBeTruthy();
   });
   it("disables an upgrade when copies are ready but gold is missing", async () => {
     const owned = fullCollection.map((entry) => ({ ...entry, copies: 25 }));

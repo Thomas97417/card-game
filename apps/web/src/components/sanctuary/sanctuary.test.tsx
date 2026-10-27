@@ -562,7 +562,7 @@ describe("le sanctuaire", () => {
       })[0]!,
     );
     const details = await screen.findByRole("dialog", { name: card.name });
-    expect(within(details).getByText("50 / 50 exemplaires")).toBeTruthy();
+    expect(within(details).getByText("50/50")).toBeTruthy();
     fireEvent.click(
       within(details).getByRole("button", { name: "Améliorer au niveau 3" }),
     );
@@ -583,7 +583,7 @@ describe("le sanctuaire", () => {
       })[0]!,
     );
     const details = await screen.findByRole("dialog", { name: card.name });
-    expect(within(details).getByText("49 / 25 exemplaires")).toBeTruthy();
+    expect(within(details).getByText("49/25")).toBeTruthy();
     fireEvent.keyDown(details, { key: "Escape" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog", { name: card.name })).toBeNull(),

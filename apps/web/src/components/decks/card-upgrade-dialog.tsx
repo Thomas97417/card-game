@@ -255,7 +255,6 @@ export function CardUpgradeDialog({
               </div>
             </div>
             <aside className="upgrade-navigation">
-              <span className="eyebrow">EXPLORER LA CARTE</span>
               <Tabs.List aria-label="Sections de la carte" activateOnFocus>
                 <Tabs.Tab value="overview" className="upgrade-nav-tab">
                   <GameIcon kind="archives" size={34} />
@@ -353,9 +352,6 @@ export function CardUpgradeDialog({
                           ? "Niveau maximal atteint"
                           : "Progression du niveau"}
                       </h3>
-                      <span>
-                        {max ? "Niveau maximal" : `Vers le niveau ${level + 1}`}
-                      </span>
                     </div>
                     <div className="upgrade-progress-track">
                       <progress
@@ -381,20 +377,20 @@ export function CardUpgradeDialog({
                         <span>
                           {max
                             ? `Niveau ${level} / ${maximum}`
-                            : `${entry.copies} / ${cost} exemplaires`}
+                            : `${entry.copies}/${cost}`}
                         </span>
                       </span>
                       <span className="upgrade-next-level" aria-hidden="true">
                         {max ? <Crown size={23} /> : level + 1}
                       </span>
                     </div>
-                    <p className="upgrade-progress-note">
-                      {max
-                        ? `${entry.copies} ${entry.copies === 1 ? "exemplaire" : "exemplaires"} en réserve`
-                        : entry.copies >= cost
-                          ? "Exemplaires réunis pour le prochain niveau"
+                    {(max || entry.copies < cost) && (
+                      <p className="upgrade-progress-note">
+                        {max
+                          ? `${entry.copies} ${entry.copies === 1 ? "exemplaire" : "exemplaires"} en réserve`
                           : `Encore ${cost - entry.copies} ${cost - entry.copies === 1 ? "exemplaire" : "exemplaires"} à collectionner`}
-                    </p>
+                      </p>
+                    )}
                   </section>
                 )}
 
