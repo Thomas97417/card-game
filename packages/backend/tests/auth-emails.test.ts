@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { internal } from "../convex/_generated/api";
-import { renderAuthEmail, type AuthEmailKind } from "../convex/lib/auth-email";
+import { renderAuthEmail, type AuthEmailKind } from "../convex/lib/authEmail";
 import schema from "../convex/schema";
 
 const { sendEmail } = vi.hoisted(() => ({ sendEmail: vi.fn() }));
