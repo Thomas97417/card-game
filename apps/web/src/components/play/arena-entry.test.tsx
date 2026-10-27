@@ -11,6 +11,8 @@ import { getFunctionName } from "convex/server";
 import { leagueProgress } from "@sylve/game/leagues";
 import type { PlayLobby } from "./play-lobby";
 import { Route } from "@/routes/arena";
+import { DuelTransitionProvider } from "@/components/game/duel-transition";
+import * as feedback from "@/components/game/shared";
 
 const mocks = vi.hoisted(() => ({
   activity: { status: null, gameId: null, queued: false } as {
@@ -44,6 +46,8 @@ vi.mock("@tanstack/react-router", () => ({
     useSearch: () => ({}),
   }),
   useNavigate: () => mocks.navigate,
+  useRouterState: ({ select }: { select: (state: unknown) => unknown }) =>
+    select({ location: { pathname: "/arena" } }),
 }));
 
 vi.mock("./play-lobby", () => ({
@@ -102,6 +106,45 @@ beforeEach(() => {
 });
 
 describe("ouverture directe du duel depuis l’arène", () => {
+  it("starts the presentation on the click while the solo request is still pending", async () => {
+    let reject!: (error: Error) => void;
+    mocks.createSolo.mockReturnValue(
+      new Promise((_resolve, fail) => {
+        reject = fail;
+      }),
+    );
+    const error = vi
+      .spyOn(feedback, "showGameError")
+      .mockImplementation(() => {});
+    render(
+      <DuelTransitionProvider>
+        <ArenaPage />
+      </DuelTransitionProvider>,
+    );
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Combat solo",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Combat solo" }));
+    expect(mocks.createSolo).toHaveBeenCalledOnce();
+    expect(screen.getByRole("status").textContent).toContain(
+      "Gardien mécanique",
+    );
+    expect(screen.getByText("Préparation du duel…")).toBeTruthy();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    const failure = new Error("Le serveur est indisponible");
+    await act(async () => reject(failure));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(error).toHaveBeenCalledWith(failure);
+    expect(screen.getByRole("main", { name: "Arène" })).toBeTruthy();
+    error.mockRestore();
+  });
+
   it.each([
     ["public", "queued"],
     ["private host", "waiting"],

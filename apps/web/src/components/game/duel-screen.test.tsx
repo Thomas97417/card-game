@@ -7,7 +7,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CATALOG,
   RARITY_LABELS,
@@ -19,6 +19,7 @@ import {
 } from "@sylve/game";
 import { DuelScreen, type DuelData } from "./duel-screen";
 import { COMBAT_TIMING } from "./combat-timing";
+import * as feedback from "./shared";
 
 const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
 
@@ -90,6 +91,117 @@ function fieldData(): DuelData {
   return { ...playerView(state, "alice"), events: [] };
 }
 
+describe("confirmation d’abandon", () => {
+  beforeEach(() => {
+    Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+      configurable: true,
+      value: vi.fn(function (this: HTMLDialogElement) {
+        this.open = true;
+      }),
+    });
+    Object.defineProperty(HTMLDialogElement.prototype, "close", {
+      configurable: true,
+      value: vi.fn(function (this: HTMLDialogElement) {
+        this.open = false;
+      }),
+    });
+  });
+  afterEach(() => {
+    Reflect.deleteProperty(HTMLDialogElement.prototype, "showModal");
+    Reflect.deleteProperty(HTMLDialogElement.prototype, "close");
+    vi.restoreAllMocks();
+  });
+
+  it("closes immediately on surrender and leaves only the defeat dialog", async () => {
+    const data = matchData();
+    let resolve!: () => void;
+    const onSurrender = vi.fn(
+      () =>
+        new Promise<void>((done) => {
+          resolve = done;
+        }),
+    );
+    const actions = { onPlayCard: vi.fn(), onEndTurn: vi.fn(), onSurrender };
+    const { rerender, container } = render(
+      <DuelScreen data={data} {...actions} practice />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abandonner la partie" }),
+    );
+    const confirmation = screen.getByRole("dialog", {
+      name: "Quitter le cercle ?",
+    });
+    const abandon = within(confirmation).getByRole("button", {
+      name: "Abandonner",
+    });
+    fireEvent.click(abandon);
+    fireEvent.click(abandon);
+    expect(onSurrender).toHaveBeenCalledOnce();
+    expect((confirmation as HTMLDialogElement).open).toBe(false);
+    expect(
+      screen.queryByRole("dialog", { name: "Quitter le cercle ?" }),
+    ).toBeNull();
+    rerender(
+      <DuelScreen
+        data={{ ...data, status: "finished", winner: 1 }}
+        {...actions}
+        practice
+      />,
+    );
+    await act(async () => resolve());
+    expect(await screen.findByRole("dialog", { name: "Défaite" })).toBeTruthy();
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    expect(container.querySelectorAll("dialog[open]")).toHaveLength(0);
+  });
+
+  it("also dismisses the confirmation when the opponent ends the duel", async () => {
+    const { data, actions, rerender } = setup();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abandonner la partie" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Quitter le cercle ?" }),
+    ).toBeTruthy();
+    rerender(
+      <DuelScreen
+        data={{ ...data, status: "finished", winner: 0 }}
+        {...actions}
+        practice
+      />,
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Quitter le cercle ?" }),
+    ).toBeNull();
+    expect(
+      await screen.findByRole("dialog", { name: "Victoire !" }),
+    ).toBeTruthy();
+    expect(actions.onSurrender).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed surrender and lets the player try again", async () => {
+    const error = vi
+      .spyOn(feedback, "showGameError")
+      .mockImplementation(() => {});
+    const { actions } = setup();
+    const failure = new Error("Connexion interrompue");
+    actions.onSurrender.mockRejectedValueOnce(failure);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abandonner la partie" }),
+    );
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: "Abandonner" })),
+    );
+    expect(error).toHaveBeenCalledWith(failure);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Abandonner la partie" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Quitter le cercle ?" }),
+    ).toBeTruthy();
+  });
+});
+
 describe("éléments du terrain", () => {
   it("renders original scenery art and inspects a neutral building without offering withdrawal", async () => {
     const data = fieldData();
@@ -142,9 +254,7 @@ describe("éléments du terrain", () => {
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByRole("heading", { name })).toBeTruthy();
     expect(dialog.getByText(bonus)).toBeTruthy();
-    expect(
-      dialog.getByText(/disparaît à sa mort/),
-    ).toBeTruthy();
+    expect(dialog.getByText(/disparaît à sa mort/)).toBeTruthy();
     if (name.startsWith("Rune")) {
       expect(dialog.getByText(/immédiatement, une seule fois/)).toBeTruthy();
     } else {
@@ -351,8 +461,12 @@ describe("inspection pendant un duel", () => {
     expect(dialog.getByLabelText("4 points de vie")).toBeTruthy();
     expect(dialog.getByText("/ 10")).toBeTruthy();
     expect(dialog.getByText("Ligne 2 · Milieu")).toBeTruthy();
-    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
-    expect(dialog.queryByRole("button", { name: "Choisir une case" })).toBeNull();
+    expect(
+      dialog.queryByRole("button", { name: "Retirer du terrain" }),
+    ).toBeNull();
+    expect(
+      dialog.queryByRole("button", { name: "Choisir une case" }),
+    ).toBeNull();
     expect(actions.onPlayCard).not.toHaveBeenCalled();
   });
 
@@ -372,8 +486,12 @@ describe("inspection pendant un duel", () => {
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByLabelText("7 points de vie")).toBeTruthy();
     expect(dialog.getByText("Ligne 4 · Avant")).toBeTruthy();
-    expect(dialog.queryByRole("button", { name: "Retirer du terrain" })).toBeNull();
-    expect(dialog.queryByRole("button", { name: "Choisir une case" })).toBeNull();
+    expect(
+      dialog.queryByRole("button", { name: "Retirer du terrain" }),
+    ).toBeNull();
+    expect(
+      dialog.queryByRole("button", { name: "Choisir une case" }),
+    ).toBeNull();
     expect(actions.onPlayCard).not.toHaveBeenCalled();
   });
 
@@ -425,7 +543,9 @@ describe("inspection pendant un duel", () => {
         dialog.getByRole("heading", { name: own ? "Alice" : "Bob" }),
       ).toBeTruthy();
       expect(
-        dialog.getByText(`${player.heroHp} / ${player.heroMaxHp ?? player.heroHp}`),
+        dialog.getByText(
+          `${player.heroHp} / ${player.heroMaxHp ?? player.heroHp}`,
+        ),
       ).toBeTruthy();
       expect(
         dialog.getByRole("heading", {

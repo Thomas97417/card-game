@@ -18,7 +18,7 @@
   overflow: hidden;
   color: #fff4d8;
   font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
-  animation: duel-intro-reveal var(--duel-intro-duration) linear both;
+  background: #10251d;
 }
 .duel-intro-panel {
   --intro-accent: #8eddb8;
@@ -29,8 +29,7 @@
   overflow: hidden;
   background: #112f28;
   clip-path: polygon(0 0, 100% 0, 72.414% 100%, 0 100%);
-  animation: duel-intro-panel var(--duel-intro-duration)
-    cubic-bezier(0.22, 0.8, 0.25, 1) both;
+  animation: duel-intro-panel 340ms cubic-bezier(0.22, 0.8, 0.25, 1) both;
 }
 .duel-intro-panel.enemy {
   --intro-accent: #ffc579;
@@ -255,7 +254,7 @@
 }
 .duel-intro-progress {
   width: min(180px, 100%);
-  height: 1px;
+  height: 2px;
   background: #ffe3a34d;
   overflow: hidden;
 }
@@ -266,18 +265,72 @@
   height: 100%;
   background: #ffe3a3;
   transform-origin: left;
-  animation: duel-intro-progress var(--duel-intro-duration) linear both;
+  animation: duel-intro-progress
+    calc(var(--duel-intro-duration) - var(--duel-intro-exit-duration)) linear
+    both;
+}
+.duel-intro[data-waiting="true"] .duel-intro-progress::after {
+  animation: duel-intro-loading 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+.duel-intro-cancel {
+  border: 1px solid #ffe3a34d;
+  border-radius: 5px;
+  padding: 9px 15px;
+  color: #f6e7c7;
+  background: #10251d99;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.duel-intro-cancel:focus-visible {
+  outline: 2px solid #ffe3a3;
+  outline-offset: 4px;
+}
+.duel-intro-cancel:disabled {
+  opacity: 0.6;
+}
+.duel-intro[data-exiting="true"] {
+  animation: duel-intro-reveal var(--duel-intro-exit-duration) linear both;
+}
+.duel-intro[data-exiting="true"] .duel-intro-panel {
+  animation: duel-intro-panel-exit var(--duel-intro-exit-duration) ease-in both;
+}
+.duel-intro[data-exiting="true"]
+  :is(
+    .duel-intro-heading,
+    .duel-intro-versus,
+    .duel-intro-seam,
+    .duel-intro-caption
+  ) {
+  animation: duel-intro-fade var(--duel-intro-exit-duration) ease-out both;
+}
+.duel-intro[data-exiting="true"] .duel-intro-progress::after {
+  animation: none;
+  transform: scaleX(1);
 }
 @keyframes duel-intro-panel {
   0% {
     transform: translateX(var(--intro-exit));
   }
-  17%,
-  79% {
+  100% {
     transform: translateX(0);
   }
-  100% {
+}
+@keyframes duel-intro-panel-exit {
+  from {
+    transform: translateX(0);
+  }
+  to {
     transform: translateX(var(--intro-exit));
+  }
+}
+@keyframes duel-intro-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 @keyframes duel-intro-fighter {
@@ -301,14 +354,9 @@
     transform: translateY(14px);
   }
   30%,
-  77% {
+  100% {
     opacity: 1;
     transform: translateY(0);
-  }
-  93%,
-  100% {
-    opacity: 0;
-    transform: translateY(-6px);
   }
 }
 @keyframes duel-intro-impact {
@@ -322,14 +370,9 @@
     transform: scale(0.95) rotate(0);
   }
   34%,
-  77% {
+  100% {
     opacity: 1;
     transform: scale(1);
-  }
-  93%,
-  100% {
-    opacity: 0;
-    transform: scale(1.12);
   }
 }
 @keyframes duel-intro-emblem {
@@ -338,12 +381,8 @@
     opacity: 0;
   }
   30%,
-  78% {
-    opacity: 1;
-  }
-  92%,
   100% {
-    opacity: 0;
+    opacity: 1;
   }
 }
 @keyframes duel-intro-spark {
@@ -366,12 +405,20 @@
     transform: scaleX(0);
   }
   to {
-    transform: scaleX(1);
+    transform: scaleX(0.85);
+  }
+}
+@keyframes duel-intro-loading {
+  0%,
+  100% {
+    transform: translateX(-45%) scaleX(0.35);
+  }
+  50% {
+    transform: translateX(45%) scaleX(0.35);
   }
 }
 @keyframes duel-intro-reveal {
-  0%,
-  82% {
+  0% {
     background-color: #10251d;
   }
   100% {
@@ -411,7 +458,7 @@
   .duel-intro,
   .duel-intro *,
   .duel-intro *::after {
-    animation: none;
+    animation: none !important;
   }
   .duel-intro {
     background: #10251d;
@@ -419,4 +466,12 @@
   .duel-intro-sparks {
     display: none;
   }
+}
+.duel-transition-content {
+  display: contents;
+}
+.duel-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
 }

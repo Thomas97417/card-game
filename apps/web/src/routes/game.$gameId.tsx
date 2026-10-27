@@ -4,6 +4,7 @@ import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DuelScreen, type DuelData } from "@/components/game/duel-screen";
 import { DuelIntro, useDuelIntro } from "@/components/game/duel-intro";
+import { useDuelTransition } from "@/components/game/duel-transition";
 import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
@@ -23,7 +24,13 @@ export const Route = createFileRoute("/game/$gameId")({
     ],
   }),
   component: GamePage,
-  errorComponent: () => (
+  errorComponent: GameError,
+});
+
+function GameError() {
+  const transition = useDuelTransition();
+  useEffect(() => transition?.cancel(), [transition?.cancel]);
+  return (
     <main className="sylve-page">
       <h1>Ce duel est inaccessible.</h1>
       <p className="muted">
@@ -33,18 +40,30 @@ export const Route = createFileRoute("/game/$gameId")({
         Retour au salon
       </Link>
     </main>
-  ),
-});
+  );
+}
 function GamePage() {
   const { gameId: rawId } = Route.useParams();
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
-  if (!data) return <GameLoading />;
+  const transition = useDuelTransition();
+  if (!data)
+    return transition?.active ? (
+      <div className="duel-entry" />
+    ) : (
+      <GameLoading />
+    );
   return <GameMatch key={gameId} gameId={gameId} data={data} />;
 }
 
 function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
-  const { showIntro, completeIntro } = useDuelIntro(gameId, data);
+  const transition = useDuelTransition();
+  const { showIntro, completeIntro } = useDuelIntro(
+    gameId,
+    data,
+    transition?.active,
+  );
+  const presenting = showIntro || !!transition?.active;
   const playCard = useMutation(api.games.playCard).withOptimisticUpdate(
     optimisticallyPlayCard,
   );
@@ -54,8 +73,11 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
   const soloTurn = useMutation(api.games.soloTurn);
   const [settledSequence, setSettledSequence] = useState(-1);
   useEffect(() => {
+    if (settledSequence === data.sequence) transition?.boardReady(gameId);
+  }, [settledSequence, data.sequence, gameId, transition?.boardReady]);
+  useEffect(() => {
     if (
-      showIntro ||
+      presenting ||
       data.mode !== "solo" ||
       data.status !== "active" ||
       data.activePlayer !== 1 ||
@@ -77,7 +99,7 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
     data.sequence,
     data.turn,
     settledSequence,
-    showIntro,
+    presenting,
     soloTurn,
     gameId,
   ]);
@@ -85,8 +107,8 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
     <div className="duel-entry">
       <div
         className="duel-entry-board"
-        inert={showIntro}
-        aria-hidden={showIntro || undefined}
+        inert={presenting}
+        aria-hidden={presenting || undefined}
       >
         <DuelScreen
           data={data}

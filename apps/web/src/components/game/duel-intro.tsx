@@ -1,32 +1,55 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Swords } from "lucide-react";
 import type { GameView } from "@sylve/game";
 import type { DuelData } from "./duel-screen";
+import { showGameError } from "./shared";
 
 export const DUEL_INTRO_DURATION = 2000;
+export const DUEL_INTRO_EXIT_DURATION = 360;
+export type DuelIntroData = Pick<DuelData, "players" | "me" | "mode">;
+export type IntroPlayer = { name: string; heroLevel?: number };
+
+export function shouldShowDuelIntro(
+  gameId: string,
+  data: Pick<GameView, "status" | "turn">,
+) {
+  if (data.status !== "active" || data.turn !== 1) return false;
+  try {
+    return (
+      window.sessionStorage.getItem(`sylve:duel-intro:${gameId}`) !== "seen"
+    );
+  } catch {
+    return true;
+  }
+}
+
+export function rememberDuelIntro(gameId: string) {
+  try {
+    window.sessionStorage.setItem(`sylve:duel-intro:${gameId}`, "seen");
+  } catch {
+    // The transition still works when browser storage is unavailable.
+  }
+}
 
 /** Reconnecting to a duel should take the player straight back to the board. */
 export function useDuelIntro(
   gameId: string,
   data: Pick<GameView, "status" | "turn">,
+  alreadyPresenting = false,
 ) {
-  const storageKey = `sylve:duel-intro:${gameId}`;
-  const [showIntro, setShowIntro] = useState(() => {
-    if (data.status !== "active" || data.turn !== 1) return false;
-    try {
-      return window.sessionStorage.getItem(storageKey) !== "seen";
-    } catch {
-      return true;
-    }
-  });
+  const [showIntro, setShowIntro] = useState(
+    () => !alreadyPresenting && shouldShowDuelIntro(gameId, data),
+  );
   const completeIntro = useCallback(() => {
-    try {
-      window.sessionStorage.setItem(storageKey, "seen");
-    } catch {
-      // The transition still works when browser storage is unavailable.
-    }
+    rememberDuelIntro(gameId);
     setShowIntro(false);
-  }, [storageKey]);
+  }, [gameId]);
   return { showIntro, completeIntro };
 }
 
@@ -38,26 +61,63 @@ const MODE_LABELS = {
 
 export function DuelIntro({
   data,
+  player = { name: "Toi" },
+  mode = data?.mode ?? "private",
+  ready = true,
+  message = "Que le duel commence",
+  onCancel,
   onComplete,
 }: {
-  data: Pick<DuelData, "players" | "me" | "mode">;
+  data?: DuelIntroData;
+  player?: IntroPlayer;
+  mode?: NonNullable<DuelData["mode"]>;
+  ready?: boolean;
+  message?: string;
+  onCancel?: () => Promise<unknown>;
   onComplete: () => void;
 }) {
-  const mine = data.players[data.me]!;
-  const enemy = data.players[1 - data.me]!;
+  const mine = data ? data.players[data.me]! : player;
+  const enemy: IntroPlayer = data
+    ? data.players[1 - data.me]!
+    : {
+        name: mode === "solo" ? "Gardien mécanique" : "Adversaire en approche",
+      };
+  const [presented, setPresented] = useState(false);
+  const started = useRef(Date.now());
+  const [cancelling, setCancelling] = useState(false);
+  const exiting = presented && ready;
 
   useEffect(() => {
-    const timer = window.setTimeout(onComplete, DUEL_INTRO_DURATION);
+    const timer = window.setTimeout(
+      () => setPresented(true),
+      DUEL_INTRO_DURATION - DUEL_INTRO_EXIT_DURATION,
+    );
     return () => window.clearTimeout(timer);
-  }, [onComplete]);
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
+    const timer = window.setTimeout(
+      onComplete,
+      Math.max(
+        DUEL_INTRO_EXIT_DURATION,
+        DUEL_INTRO_DURATION - (Date.now() - started.current),
+      ),
+    );
+    return () => window.clearTimeout(timer);
+  }, [ready, onComplete]);
 
   return (
     <section
       className="duel-intro"
+      data-exiting={exiting}
+      data-waiting={presented && !ready}
       role="status"
-      aria-label={`${mine.name} contre ${enemy.name}. Le duel commence.`}
+      aria-label={`${mine.name} contre ${enemy.name}. ${message}.`}
       style={
-        { "--duel-intro-duration": `${DUEL_INTRO_DURATION}ms` } as CSSProperties
+        {
+          "--duel-intro-duration": `${DUEL_INTRO_DURATION}ms`,
+          "--duel-intro-exit-duration": `${DUEL_INTRO_EXIT_DURATION}ms`,
+        } as CSSProperties
       }
     >
       {([mine, enemy] as const).map((player, index) => (
@@ -99,7 +159,7 @@ export function DuelIntro({
       </svg>
       <div className="duel-intro-heading" aria-hidden="true">
         <span>L’arène des gardiens</span>
-        <strong>{MODE_LABELS[data.mode ?? "private"]}</strong>
+        <strong>{MODE_LABELS[mode]}</strong>
       </div>
       <div className="duel-intro-versus" aria-hidden="true">
         <span className="duel-intro-ring" />
@@ -111,9 +171,30 @@ export function DuelIntro({
           <i key={index} style={{ "--spark": index } as CSSProperties} />
         ))}
       </div>
-      <div className="duel-intro-caption" aria-hidden="true">
-        <span>Que le duel commence</span>
-        <span className="duel-intro-progress" />
+      <div className="duel-intro-caption">
+        <span>{message}</span>
+        <span
+          className="duel-intro-progress"
+          role="progressbar"
+          aria-label="Préparation du duel"
+          aria-valuetext={ready ? "Plateau prêt" : message}
+        />
+        {onCancel && !exiting && (
+          <button
+            className="duel-intro-cancel"
+            type="button"
+            disabled={cancelling}
+            onClick={() => {
+              if (cancelling) return;
+              setCancelling(true);
+              void onCancel()
+                .catch(showGameError)
+                .finally(() => setCancelling(false));
+            }}
+          >
+            {cancelling ? "Annulation…" : "Annuler la recherche"}
+          </button>
+        )}
       </div>
     </section>
   );

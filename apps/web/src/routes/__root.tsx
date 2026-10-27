@@ -34,6 +34,7 @@ import { EmeraldProvider } from "@/components/emerald-balance";
 import { FriendshipProvider } from "@/components/friendship-balance";
 import { PlayerHeaderProvider } from "@/components/player-header";
 import { GameAuthGate } from "@/components/game-auth-gate";
+import { DuelTransitionProvider } from "@/components/game/duel-transition";
 import playerHeaderCss from "../player-header.css?url";
 import settingsCss from "../settings.css?url";
 import hubCss from "../hub.css?url";
@@ -150,24 +151,26 @@ function RootDocument() {
                 <EmeraldProvider>
                   <FriendshipProvider>
                     <PlayerHeaderProvider>
-                      <div
-                        className={
-                          isImmersive
-                            ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                            : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
-                        }
-                      >
-                        {!isImmersive && <Header />}
+                      <DuelTransitionProvider>
                         <div
                           className={
                             isImmersive
-                              ? "min-h-0 overflow-hidden"
-                              : "min-h-0 overflow-y-auto"
+                              ? "grid h-svh grid-rows-[minmax(0,1fr)]"
+                              : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
                           }
                         >
-                          <Outlet />
+                          {!isImmersive && <Header />}
+                          <div
+                            className={
+                              isImmersive
+                                ? "min-h-0 overflow-hidden"
+                                : "min-h-0 overflow-y-auto"
+                            }
+                          >
+                            <Outlet />
+                          </div>
                         </div>
-                      </div>
+                      </DuelTransitionProvider>
                       <Toaster richColors />
                     </PlayerHeaderProvider>
                   </FriendshipProvider>

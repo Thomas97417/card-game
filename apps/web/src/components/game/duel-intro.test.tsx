@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { act, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName } from "convex/server";
@@ -11,6 +11,7 @@ import {
 import type { DuelData } from "@/components/game/duel-screen";
 import { COMBAT_TIMING } from "@/components/game/combat-timing";
 import { Route } from "@/routes/game.$gameId";
+import { DuelTransitionProvider, useDuelTransition } from "./duel-transition";
 
 const mocks = vi.hoisted(() => ({
   gameId: "first-game",
@@ -33,6 +34,8 @@ vi.mock("@tanstack/react-router", () => ({
     useParams: () => ({ gameId: mocks.gameId }),
   }),
   Link: () => null,
+  useRouterState: ({ select }: { select: (state: unknown) => unknown }) =>
+    select({ location: { pathname: "/game/first-game" } }),
 }));
 
 // Keep the real route, intro and timing; stand in for the interactive board.
@@ -77,10 +80,61 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
 describe("entrée en duel depuis l’arène", () => {
+  it("keeps the presentation from the click until the real game is ready without replaying it", async () => {
+    vi.stubGlobal(
+      "Image",
+      class {
+        complete = true;
+        src = "";
+        onload = null;
+        onerror = null;
+      },
+    );
+    mocks.data = undefined;
+    let begin!: () => void;
+    let control!: NonNullable<ReturnType<typeof useDuelTransition>>;
+    function Boot() {
+      control = useDuelTransition()!;
+      const [open, setOpen] = useState(false);
+      begin = () => {
+        control.start({ mode: "public", player: { name: "Alice" } });
+        setOpen(true);
+      };
+      return open ? <GamePage /> : <div>Arène</div>;
+    }
+    function App() {
+      return (
+        <DuelTransitionProvider>
+          <Boot />
+        </DuelTransitionProvider>
+      );
+    }
+    const { rerender, container } = render(<App />);
+    await act(async () => begin());
+    expect(container.querySelectorAll(".duel-intro")).toHaveLength(1);
+    expect(screen.queryByText(/La forêt s’éveille/)).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
+    mocks.data = newGame();
+    await act(async () => {
+      control.match("first-game", mocks.data!);
+      rerender(<App />);
+    });
+    expect(container.querySelectorAll(".duel-intro")).toHaveLength(1);
+    expect(screen.getByRole("status").getAttribute("aria-label")).toContain(
+      "Alice contre Bob",
+    );
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Jouer une carte" }),
+    ).toBeTruthy();
+  });
+
   it.each([
     ["solo", "Duel solo"],
     ["public", "Duel classé"],
