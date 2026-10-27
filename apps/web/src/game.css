@@ -2317,6 +2317,100 @@ button:disabled {
   z-index: 15;
   pointer-events: none;
 }
+.board-unit.ability-casting,
+.hero-figure.ability-casting > img {
+  transform-origin: center bottom;
+  animation: ability-cast var(--cast-duration) ease-out both;
+}
+.hero-figure.ability-casting > img {
+  animation-name: hero-ability-cast;
+}
+.ability-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ability-trail line {
+  stroke: #fff0a6;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  filter: drop-shadow(0 0 5px #ffce62);
+  animation: ability-travel var(--cast-impact) ease-in both;
+}
+.ability-origin {
+  position: absolute;
+  color: #fff0b4;
+  z-index: 1;
+}
+.ability-origin-ring {
+  position: absolute;
+  width: clamp(45px, 6vw, 100px);
+  aspect-ratio: 1;
+  border: 2px solid #ffedb2;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe7a43d, transparent 65%);
+  box-shadow: 0 0 18px #ffde8d, inset 0 0 12px #ffde8d;
+  animation: ability-ring var(--cast-duration) ease-out both;
+}
+.ability-origin-label {
+  position: absolute;
+  bottom: clamp(26px, 3vw, 50px);
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: clamp(130px, 17vw, 230px);
+  padding: 6px 10px;
+  border: 1px solid #ffe9a5b3;
+  border-radius: 8px;
+  background: #203a32f2;
+  box-shadow: 0 3px 12px #102c2b66;
+  transform: translateX(-50%);
+  text-align: left;
+  line-height: 1.2;
+}
+.ability-origin-label strong,
+.ability-origin-label small {
+  display: block;
+  font-size: clamp(9px, 0.85vw, 13px);
+}
+.ability-origin-label small {
+  margin-top: 2px;
+  color: #f3ddb0;
+}
+.ability-origin[data-card-id="hero"] .ability-origin-label {
+  bottom: 0;
+  left: clamp(40px, 6vw, 100px);
+  transform: translateY(-50%);
+}
+.ability-origin[data-card-id="hero"][data-own="false"] .ability-origin-label {
+  left: auto;
+  right: clamp(40px, 6vw, 100px);
+}
+@keyframes ability-cast {
+  0%, 100% { transform: translateY(0) scale(1); filter: none; }
+  45% { transform: translateY(-7%) scale(1.09); filter: drop-shadow(0 0 10px #ffe49b); }
+}
+@keyframes hero-ability-cast {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  35% { transform: translateY(-6%) rotate(-4deg); filter: drop-shadow(0 0 15px #ffe49b); }
+  65% { transform: translateY(-3%) rotate(3deg); filter: drop-shadow(0 0 9px #ffe49b); }
+}
+@keyframes ability-ring {
+  0% { transform: translate(-50%, -50%) scale(0.55); opacity: 0; }
+  35% { opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0; }
+}
+@keyframes ability-travel {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  25% { opacity: 1; }
+  80% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
 .seal-activation {
   position: absolute;
   color: #b6ff8c;
@@ -2684,6 +2778,20 @@ button:disabled {
   .seal-glow-column,
   .seal-glow-spark {
     display: none;
+  }
+  .board-unit.ability-casting,
+  .hero-figure.ability-casting > img {
+    animation: none !important;
+    filter: drop-shadow(0 0 10px #ffe49b);
+  }
+  .ability-origin-ring {
+    animation: none !important;
+    transform: translate(-50%, -50%);
+    opacity: 0.6;
+  }
+  .ability-trail line {
+    animation: none !important;
+    opacity: 0.65;
   }
 }
 

@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as chests from "../chests.js";
 import type * as collection from "../collection.js";
+import type * as combatCleanup from "../combatCleanup.js";
 import type * as decks from "../decks.js";
 import type * as env from "../env.js";
 import type * as friendChat from "../friendChat.js";
@@ -19,6 +20,7 @@ import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
 import type * as lib_chat from "../lib/chat.js";
+import type * as lib_combat_retention from "../lib/combat_retention.js";
 import type * as lib_game_service from "../lib/game_service.js";
 import type * as lib_heroes from "../lib/heroes.js";
 import type * as lib_mines from "../lib/mines.js";
@@ -48,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   chests: typeof chests;
   collection: typeof collection;
+  combatCleanup: typeof combatCleanup;
   decks: typeof decks;
   env: typeof env;
   friendChat: typeof friendChat;
@@ -56,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   "lib/catalogue": typeof lib_catalogue;
   "lib/chat": typeof lib_chat;
+  "lib/combat_retention": typeof lib_combat_retention;
   "lib/game_service": typeof lib_game_service;
   "lib/heroes": typeof lib_heroes;
   "lib/mines": typeof lib_mines;

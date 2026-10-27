@@ -103,6 +103,7 @@ describe("activation illustrée des sceaux", () => {
     expect(container.querySelector(`.board-half.own .stat-badge.${stat}`)?.getAttribute("data-stat-change")).toBe("normal");
     act(() => vi.advanceTimersByTime(1));
     const glow = container.querySelector<HTMLElement>(".seal-activation")!;
+    expect(container.querySelector(".ability-origin")).toBeNull();
     expect(glow.dataset.sealKind).toBe(kind);
     expect(glow.classList.contains(`seal-activation-${stat}`)).toBe(true);
     expect(glow.style.left).toBe(groundCell(1, 1).bounds.left);

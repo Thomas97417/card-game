@@ -43,11 +43,13 @@ export function useCombatPlayback(latest: View | undefined) {
             ? COMBAT_TIMING.death
             : entry.type === "summon"
               ? COMBAT_TIMING.summon
-              : entry.type === "ability" || entry.type === "hero_ability"
-                ? COMBAT_TIMING.ability
-                : entry.type === "withdraw"
-                  ? COMBAT_TIMING.withdraw
-                  : 0;
+              : entry.type === "hero_ability"
+                ? COMBAT_TIMING.heroAbility
+                : entry.type === "ability"
+                  ? COMBAT_TIMING.ability
+                  : entry.type === "withdraw"
+                    ? COMBAT_TIMING.withdraw
+                    : 0;
       const commitAt =
         delay +
         (entry.type === "summon"

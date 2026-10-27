@@ -252,7 +252,7 @@ describe("interface des héros", () => {
       { initialProps: { view: initial } },
     );
     rerender({ view: confirmed });
-    act(() => vi.advanceTimersByTime(COMBAT_TIMING.ability));
+    act(() => vi.advanceTimersByTime(COMBAT_TIMING.heroAbility));
     expect(result.current.display!.players[0]!.heroAbilityUses).toBe(1);
     expect(result.current.display!.players[1]!.board[0]!.hp).toBe(10);
     act(() => vi.advanceTimersByTime(COMBAT_TIMING.abilityImpact));

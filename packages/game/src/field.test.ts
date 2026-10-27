@@ -77,10 +77,10 @@ describe("terrain initial", () => {
       expect(owner.hand).toHaveLength(4);
       expect(
         legalPlacements(cards[0]!, owner.board).length,
-      ).toBeGreaterThanOrEqual(5);
+      ).toBeGreaterThanOrEqual(7);
       expect(
         legalPlacements(cards[3]!, owner.board).length,
-      ).toBeGreaterThanOrEqual(5);
+      ).toBeGreaterThanOrEqual(7);
     }
   });
 
@@ -136,12 +136,16 @@ describe("terrain initial", () => {
       const bonusDifference =
         counts[0]![1]! + counts[0]![2]! - counts[1]![1]! - counts[1]![2]!;
       expect(Math.abs(bonusDifference)).toBeLessThanOrEqual(1);
+      expect(Math.abs(
+        counts[0]!.reduce((sum, count) => sum + count, 0) -
+        counts[1]!.reduce((sum, count) => sum + count, 0),
+      )).toBeLessThanOrEqual(1);
       advantages.add(Math.sign(bonusDifference));
       expect(layout(state.players[0]!)).not.toEqual(layout(state.players[1]!));
       for (const [index, owner] of state.players.entries()) {
         const cells = [...owner.board, ...owner.runes!, ...owner.pentagrams!];
-        expect(cells.length).toBeGreaterThanOrEqual(2);
-        expect(cells.length).toBeLessThanOrEqual(6);
+        expect(cells.length).toBeGreaterThanOrEqual(1);
+        expect(cells.length).toBeLessThanOrEqual(3);
         expect(
           new Set(cells.map((cell) => `${cell.row}:${cell.depth}`)).size,
         ).toBe(cells.length);
@@ -154,9 +158,9 @@ describe("terrain initial", () => {
               cell.depth < 3,
           ),
         ).toBe(true);
-        expect(owner.board.length).toBeLessThanOrEqual(3);
-        expect(owner.runes!.length).toBeLessThanOrEqual(2);
-        expect(owner.pentagrams!.length).toBeLessThanOrEqual(2);
+        expect(owner.board.length).toBeLessThanOrEqual(1);
+        expect(owner.runes!.length).toBeLessThanOrEqual(1);
+        expect(owner.pentagrams!.length).toBeLessThanOrEqual(1);
         for (const mark of [...owner.runes!, ...owner.pentagrams!]) {
           expect(
             (mark.health !== undefined) !== (mark.attack !== undefined),
@@ -180,14 +184,14 @@ describe("terrain initial", () => {
         for (const card of cards)
           expect(
             legalPlacements(card, owner.board).length,
-          ).toBeGreaterThanOrEqual(5);
+          ).toBeGreaterThanOrEqual(7);
       }
     }
     expect(kinds.size).toBe(3);
     expect(layouts.size).toBeGreaterThan(100);
-    expect([...quantities[0]!].sort()).toEqual([0, 1, 2, 3]);
-    expect([...quantities[1]!].sort()).toEqual([0, 1, 2]);
-    expect([...quantities[2]!].sort()).toEqual([0, 1, 2]);
+    expect([...quantities[0]!].sort()).toEqual([0, 1]);
+    expect([...quantities[1]!].sort()).toEqual([0, 1]);
+    expect([...quantities[2]!].sort()).toEqual([0, 1]);
     expect(advantages).toEqual(new Set([-1, 0, 1]));
     expect(sealTypes).toEqual([
       new Set(["health", "attack"]),
@@ -229,6 +233,7 @@ describe("terrain initial", () => {
 
   it("publishes mark positions without sharing their mutable state", () => {
     const state = fresh(true);
+    state.players[0]!.pentagrams = [{ row: 3, depth: 2, attack: 2 }];
     const before = structuredClone(state.players[0]!.pentagrams![0]);
     const view = playerView(state, "a");
     view.players[0]!.pentagrams![0]!.attack = 88;

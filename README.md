@@ -83,7 +83,7 @@ Pour les connexions Google et GitHub, configurer les applications OAuth et leurs
 | `bun run check-types` | Vérification TypeScript des workspaces |
 | `bun run build` | Compilation de production |
 
-Le scénario connecté `bun run test:live`, lancé depuis `packages/backend`, est réservé à un déploiement `dev:`. Il crée deux comptes temporaires et vérifie les invitations, WebSocket, reconnexions, matchmaking et combats. Les comptes et sessions sont supprimés en sortie ; les parties terminées restent en base. `bun scripts/verify-live.mjs --keep` conserve les comptes dans `.cache` pour un contrôle navigateur ; `--cleanup` les supprime ensuite.
+Le scénario connecté `bun run test:live`, lancé depuis `packages/backend`, est réservé à un déploiement `dev:`. Il crée deux comptes temporaires et vérifie les invitations, WebSocket, reconnexions, matchmaking et combats. Les comptes et sessions sont supprimés en sortie ; les états finaux des parties restent en base, mais leurs événements sont purgés deux minutes après la fin du combat. Un rattrapage horaire nettoie les événements des anciennes parties terminées. `bun scripts/verify-live.mjs --keep` conserve les comptes dans `.cache` pour un contrôle navigateur ; `--cleanup` les supprime ensuite.
 
 ## Dépannage
 

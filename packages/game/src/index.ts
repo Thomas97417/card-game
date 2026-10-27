@@ -339,6 +339,8 @@ export interface GameEvent {
   heroAbility?: HeroAbilityId;
   heroAbilityUses?: number;
   ability?: string;
+  /** The caster of a reinforcement; cardId/row/depth identify the new unit. */
+  source?: Pick<Unit, "cardId" | "row" | "depth">;
   amount?: number;
   unit?: Unit;
   runes?: Rune[];
@@ -1088,6 +1090,7 @@ function applyAbilities(
           ...cell,
           unit: snapshot(unit),
           ability: a.name,
+          source: { cardId: source.cardId, row: source.row, depth: source.depth },
         });
         applyAbilities(state, player, unit, "deploy", events, random);
         appeared(state, player, unit, events, random);
