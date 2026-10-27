@@ -8,7 +8,7 @@ import {
 } from "@sylve/game";
 import { cn } from "@/lib/utils";
 import { CreaturePortrait } from "./creature-portrait";
-import { FactionBackdrop } from "./faction-artwork";
+import { FactionBackdrop, FactionIcon } from "./faction-artwork";
 import { StatBadge } from "./stat-badge";
 import { GameIcon } from "./game-icon";
 import { CardAbilityIcons } from "./ability-icons";
@@ -52,6 +52,7 @@ export function CardPortrait({
           </span>
           {card.faction && (
             <span className="upgrade-card-trait">
+              <FactionIcon faction={card.faction} size={16} />
               {FACTION_LABELS[card.faction]}
             </span>
           )}

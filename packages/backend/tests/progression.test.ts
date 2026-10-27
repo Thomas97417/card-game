@@ -12,7 +12,9 @@ import {
   legalPlacements,
   upgradeCost,
   upgradeGoldCost,
+  cardsOfRarity,
 } from "@sylve/game";
+import { deckCapacity } from "@sylve/game/leagues";
 import {
   CHEST_RULES,
   CHEST_SLOTS,
@@ -68,13 +70,39 @@ async function fixture() {
 }
 async function setTrophies(t: Test, deckId: Id<"decks">, trophies: number) {
   await t.run(async (ctx) => {
-    const { ownerId } = (await ctx.db.get(deckId))!;
+    const deck = (await ctx.db.get(deckId))!;
+    const { ownerId } = deck;
     const progress = await ctx.db
       .query("leagueProgress")
       .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
       .unique();
     if (progress) await ctx.db.patch(progress._id, { trophies });
     else await ctx.db.insert("leagueProgress", { ownerId, trophies });
+    // Keep league fixtures playable by filling newly unlocked slots.
+    const capacity = deckCapacity(
+      Math.max(trophies, progress?.peakTrophies ?? trophies),
+    );
+    const cardIds = [...deck.cardIds];
+    for (const card of cardsOfRarity("common")) {
+      if (cardIds.length >= capacity) break;
+      if (cardIds.includes(card.id)) continue;
+      const owned = await ctx.db
+        .query("collection")
+        .withIndex("by_owner_variant", (q) =>
+          q.eq("ownerId", ownerId).eq("variantId", card.id),
+        )
+        .unique();
+      if (!owned)
+        await ctx.db.insert("collection", {
+          ownerId,
+          variantId: card.id,
+          level: 1,
+          copies: 0,
+        });
+      cardIds.push(card.id);
+    }
+    if (cardIds.length !== deck.cardIds.length)
+      await ctx.db.patch(deckId, { cardIds });
   });
 }
 async function winSolo(t: Test, alice: Player, deckId: Id<"decks">) {
@@ -319,6 +347,9 @@ describe("ligues et trophées autoritaires", () => {
       expectedTurn: 1,
     });
     expect((await alice.query(api.collection.league, {})).trophies).toBe(200);
+    await expect(
+      alice.mutation(api.games.createSolo, { deckId }),
+    ).rejects.toThrow("(4/5 cartes)");
     await save(five);
     await expect(save([...five, "guardian:rare"])).rejects.toThrow(
       "autorise 5 cartes",
