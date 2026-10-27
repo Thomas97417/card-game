@@ -244,7 +244,7 @@ describe("le salon de combat", () => {
       expect(document.querySelector(".summon-legendary-effects")).toBeNull();
       expect(screen.queryByText("Débloquée !")).toBeNull();
       expect(screen.getByText("+150")).toBeTruthy();
-      expect(screen.getByText("×24")).toBeTruthy();
+      expect(screen.getByText("24")).toBeTruthy();
       expect(document.querySelectorAll(".chest-reveal-item")).toHaveLength(2);
       expect(screen.getByAltText("Archère de la garde").getAttribute("src")).toBe(
         "/art/characters/evolutions/fox-rare.webp",

@@ -19,7 +19,7 @@ import {
   type ChestType,
   type LootReveal,
 } from "@sylve/game/progression";
-import { CardArtwork } from "@/components/decks/card-artwork";
+import { CardArtwork, CardRewardFooter } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { GoldIcon, useGoldBalance } from "@/components/gold-balance";
 import {
@@ -187,12 +187,12 @@ export function ChestRevealDialog({
                     <ChestRewardCard revealed={isRevealed} effect={effect}>
                       <button
                         type="button"
-                        className="workshop-card"
+                        className="workshop-card reward-card"
                         data-rarity={card.rarity}
                         style={
                           { "--creature-color": card.color } as CSSProperties
                         }
-                        aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, voir les informations${item.isNew ? ", nouvelle créature" : ""}`}
+                        aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, voir les informations${item.isNew ? ", nouvelle créature" : ""}, ${item.count.toLocaleString("fr-FR")} exemplaire${item.count > 1 ? "s obtenus" : " obtenu"}`}
                         aria-haspopup="dialog"
                         onClick={(event) => {
                           cardTrigger.current = event.currentTarget;
@@ -202,32 +202,16 @@ export function ChestRevealDialog({
                         <CardArtwork
                           card={card}
                           copies={copies}
+                          showCombatType={false}
+                          showCopies={false}
                           showUpgradeIndicator={canUpgrade}
+                        />
+                        <CardRewardFooter
+                          rarity={card.rarity ?? "common"}
+                          count={item.count}
                         />
                       </button>
                     </ChestRewardCard>
-                    <div className="chest-reveal-caption">
-                      {isRevealed && (
-                        <>
-                          <div className="chest-reveal-meta">
-                            <span
-                              className="rarity-label"
-                              data-rarity={card.rarity}
-                            >
-                              {RARITY_LABELS[card.rarity ?? "common"]}
-                            </span>
-                            <span className="chest-loot-quantity">
-                              ×{item.count}
-                            </span>
-                          </div>
-                          {!item.isNew && !canUpgrade && (
-                            <small>
-                              {copies} exemplaires en réserve
-                            </small>
-                          )}
-                        </>
-                      )}
-                    </div>
                   </div>
                 );
               })}

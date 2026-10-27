@@ -17,7 +17,7 @@ import {
   summonPack,
   type SummonResult,
 } from "@sylve/game/summoning";
-import { CardArtwork } from "@/components/decks/card-artwork";
+import { CardArtwork, CardRewardFooter } from "@/components/decks/card-artwork";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { FriendshipAmount } from "@/components/friendship-balance";
@@ -316,7 +316,7 @@ export function SummonRevealDialog({
                                 return (
                                   <button
                                     type="button"
-                                    className="workshop-card"
+                                    className="workshop-card reward-card"
                                     data-faction={card.faction}
                                     data-rarity={card.rarity}
                                     style={
@@ -324,7 +324,7 @@ export function SummonRevealDialog({
                                         "--creature-color": card.color,
                                       } as CSSProperties
                                     }
-                                    aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations${reward.item.isNew ? ", nouvelle créature" : ""}`}
+                                    aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity!]}, niveau ${card.level ?? 1}, voir les informations${reward.item.isNew ? ", nouvelle créature" : ""}, ${reward.item.count.toLocaleString("fr-FR")} exemplaire${reward.item.count > 1 ? "s obtenus" : " obtenu"}`}
                                     aria-haspopup="dialog"
                                     onClick={() =>
                                       setInspected(reward.item.variantId)
@@ -333,7 +333,13 @@ export function SummonRevealDialog({
                                     <CardArtwork
                                       card={card}
                                       copies={copies}
+                                      showCombatType={false}
+                                      showCopies={false}
                                       showUpgradeIndicator={canUpgrade}
+                                    />
+                                    <CardRewardFooter
+                                      rarity={card.rarity ?? "common"}
+                                      count={reward.item.count}
                                     />
                                   </button>
                                 );
@@ -342,32 +348,6 @@ export function SummonRevealDialog({
                           </div>
                         )}
                       </div>
-                      {isFlipped && (
-                        <div className="summon-reward-caption">
-                          {reward.kind === "gold" ? (
-                            <span>Carte d’or</span>
-                          ) : (
-                            <>
-                              <span
-                                className="rarity-label"
-                                data-rarity={
-                                  resolveCard(reward.item.variantId).rarity
-                                }
-                              >
-                                {
-                                  RARITY_LABELS[
-                                    resolveCard(reward.item.variantId).rarity!
-                                  ]
-                                }
-                              </span>
-                              <small>
-                                +
-                                {reward.item.count.toLocaleString("fr-FR")}
-                              </small>
-                            </>
-                          )}
-                        </div>
-                      )}
                     </div>
                   );
                 })}

@@ -2,8 +2,10 @@ import {
   combatTypeLabel,
   getCombatType,
   maxCardLevel,
+  RARITY_LABELS,
   upgradeCost,
   type CardDefinition,
+  type CardRarity,
 } from "@sylve/game";
 import { ArrowUp } from "lucide-react";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
@@ -19,12 +21,14 @@ export function CardArtwork({
   card,
   copies = 0,
   showCopies = true,
+  showCombatType = true,
   appearance = "default",
   showUpgradeIndicator = appearance === "deck",
 }: {
   card: CardDefinition;
   copies?: number;
   showCopies?: boolean;
+  showCombatType?: boolean;
   appearance?: "default" | "deck";
   showUpgradeIndicator?: boolean;
 }) {
@@ -62,7 +66,7 @@ export function CardArtwork({
       </span>
       <span className="workshop-card-caption">
         <span className="workshop-card-name">{card.name}</span>
-        {appearance !== "deck" && (
+        {appearance !== "deck" && showCombatType && (
           <span className="workshop-card-type">
             <GameIcon kind={type} size={15} />
             {combatTypeLabel(card)}
@@ -77,5 +81,25 @@ export function CardArtwork({
         )}
       </span>
     </>
+  );
+}
+
+export function CardRewardFooter({
+  rarity,
+  count,
+}: {
+  rarity: CardRarity;
+  count: number;
+}) {
+  return (
+    <span className="reward-card-footer" aria-hidden="true">
+      <span className="reward-card-rarity" data-rarity={rarity}>
+        {RARITY_LABELS[rarity]}
+      </span>
+      <span className="reward-card-quantity">
+        <span>×</span>
+        <strong>{count.toLocaleString("fr-FR")}</strong>
+      </span>
+    </span>
   );
 }
