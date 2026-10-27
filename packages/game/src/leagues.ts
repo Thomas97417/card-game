@@ -8,6 +8,8 @@ export interface TrophyChange {
   trophies: number;
   trophiesTotal: number;
   previousTrophies: number;
+  /** Record before this match; absent on results saved before its introduction. */
+  previousPeakTrophies?: number;
   deckCapacity: number;
   deckSlotsGained: number;
 }

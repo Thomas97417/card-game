@@ -1174,7 +1174,7 @@ describe("le sanctuaire", () => {
       within(dialog).getAllByRole("button", { name: /^Révéler la carte/ }),
     ).toHaveLength(6);
     turnAll(dialog);
-    expect(within(dialog).getByText("Carte d’or")).toBeTruthy();
+    expect(within(dialog).getByRole("img", { name: /^Carte d’or :/ })).toBeTruthy();
     expect(onSaveRevealProgress).toHaveBeenLastCalledWith({
       requestId: draw.requestId,
       round: 9,
