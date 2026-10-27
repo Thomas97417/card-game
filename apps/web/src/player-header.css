@@ -128,12 +128,13 @@
   box-shadow: 0 -2px 9px #dfc17140;
 }
 .player-header-actions .league-panel.is-compact {
-  width: fit-content;
-  min-width: 144px;
-  min-height: 48px;
+  width: 200px;
+  min-width: 180px;
+  height: 44px;
+  min-height: 44px;
   max-width: 340px;
   gap: 16px;
-  padding: 5px 18px 5px 14px;
+  padding: 3px 16px 3px 12px;
   margin: 0;
 }
 .player-header-actions .league-badge {
@@ -146,6 +147,7 @@
 .player-header-actions .league-panel.is-compact .league-panel-heading {
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
 }
 .player-header-actions .league-panel .trophy-amount {

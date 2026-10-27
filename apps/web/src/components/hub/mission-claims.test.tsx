@@ -14,6 +14,8 @@ import {
   type MissionBoard,
 } from "@sylve/game/missions";
 import { MissionsPanel, type HubMissionsProps } from "./missions-dialog";
+import { CurrencyGain } from "@/components/currency-gain";
+import { EmeraldIcon } from "@/components/emerald-balance";
 import { Route } from "@/routes/hub";
 
 const mocks = vi.hoisted(() => ({
@@ -43,7 +45,12 @@ vi.mock("convex/react", () => ({
 }));
 vi.mock("@/components/hub/village-hub", () => ({
   VillageHub: ({ missions }: { missions: HubMissionsProps }) => (
-    <MissionsPanel {...missions} id="test-missions" onClose={() => {}} />
+    <>
+      <CurrencyGain currency="emeralds">
+        <EmeraldIcon />
+      </CurrencyGain>
+      <MissionsPanel {...missions} id="test-missions" onClose={() => {}} />
+    </>
   ),
 }));
 vi.mock("@/hooks/use-mine-collection", () => ({
@@ -68,6 +75,7 @@ beforeEach(() => {
   const state = currentMissionState(null, now);
   state.daily.counters.battles = 1;
   state.weekly.counters.battles = 15;
+  state.lifetime.upgrades = 5;
   mocks.board = missionBoard(state, now);
 });
 afterEach(() => {
@@ -75,7 +83,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("retour de récupération des sceaux", () => {
+describe("retour de récupération des missions", () => {
   it.each([
     ["daily", "Jour", "Entre dans l’arène", 20],
     ["weekly", "Semaine", "L’appel du cercle", 100],
@@ -158,6 +166,73 @@ describe("retour de récupération des sceaux", () => {
           }) as HTMLButtonElement
         ).disabled,
       ).toBe(false);
+    },
+  );
+
+  it("animates confirmed epic emeralds through the mine currency effect without a toast", async () => {
+    let resolve!: (result: {
+      currency: "emeralds";
+      amount: number;
+      alreadyClaimed: boolean;
+    }) => void;
+    mocks.claim.mockImplementation(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    render(<Page />);
+    fireEvent.click(screen.getByRole("tab", { name: /^Épique/ }));
+    const claim = screen.getByRole("button", {
+      name: "Récupérer : Maître de l’atelier",
+    });
+    fireEvent.click(claim);
+    fireEvent.click(claim);
+    expect(mocks.claim).toHaveBeenCalledExactlyOnceWith({
+      missionId: "epic-upgrades",
+      periodKey: "lifetime",
+      tier: 0,
+    });
+    expect(claim.getAttribute("aria-busy")).toBe("true");
+    expect(screen.queryByRole("status")).toBeNull();
+
+    await act(async () =>
+      resolve({ currency: "emeralds", amount: 15, alreadyClaimed: false }),
+    );
+    const gain = screen.getByRole("status", { name: "Émeraudes récupérées" });
+    expect(gain.classList.contains("currency-gain")).toBe(true);
+    expect(gain.getAttribute("data-currency")).toBe("emeralds");
+    expect(gain.textContent).toContain("+ 15");
+    expect(gain.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/ui/emerald.webp",
+    );
+    expect(mocks.success).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  it.each(["replayed", "rejected"] as const)(
+    "does not animate a %s epic claim and releases the button",
+    async (outcome) => {
+      const failure = new Error("Récupération refusée");
+      if (outcome === "replayed")
+        mocks.claim.mockResolvedValue({
+          currency: "emeralds",
+          amount: 15,
+          alreadyClaimed: true,
+        });
+      else mocks.claim.mockRejectedValue(failure);
+      render(<Page />);
+      fireEvent.click(screen.getByRole("tab", { name: /^Épique/ }));
+      const claim = screen.getByRole("button", {
+        name: "Récupérer : Maître de l’atelier",
+      }) as HTMLButtonElement;
+      await act(async () => fireEvent.click(claim));
+      expect(screen.queryByRole("status")).toBeNull();
+      expect(mocks.success).not.toHaveBeenCalled();
+      expect(claim.disabled).toBe(false);
+      if (outcome === "rejected")
+        expect(mocks.error).toHaveBeenCalledExactlyOnceWith(failure);
     },
   );
 });

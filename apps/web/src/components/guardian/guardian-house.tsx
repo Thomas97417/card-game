@@ -129,8 +129,8 @@ export function GuardianHouse({
                 <div>
                   <dt>Points de vie</dt>
                   <dd>
-                    <GameIcon kind="health" size={28} />
-                    {number(progress.health)}
+                    <GameIcon kind="health" size={36} />
+                    <span>{number(progress.health)}</span>
                   </dd>
                 </div>
               </dl>

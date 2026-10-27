@@ -415,12 +415,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 36px;
   gap: 8px;
   margin: 10px 0 0;
   color: #fff0cb;
   font:
     400 30px/1 Georgia,
     serif;
+}
+.guardian-vitals dd > .game-icon {
+  transform: translateY(4px);
 }
 .guardian-level-trigger {
   position: absolute;
