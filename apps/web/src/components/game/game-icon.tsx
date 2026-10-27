@@ -18,6 +18,9 @@ const ICON_ARTWORK = {
   ranking: "ranking-trophy",
   friends: "friends-handshake",
   missions: "missions-scroll",
+  rewards: "rewards-gift",
+  rewardLock: "rewards-lock",
+  rewardClock: "rewards-clock",
   chat: "world-chat-globe",
 } as const;
 

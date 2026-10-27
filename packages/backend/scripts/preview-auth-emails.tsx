@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { renderAuthEmail } from "../convex/lib/auth-email";
+import { renderAuthEmail } from "../convex/lib/authEmail";
 
 // Render locally without importing an action or contacting the email service.
 const directory = resolve(process.argv[2] ?? "/tmp/sylve-auth-emails");

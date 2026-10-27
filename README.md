@@ -6,7 +6,7 @@ Jeu de cartes tactique en français, avec combats solo et multijoueurs, collecti
 
 | Route | Fonction |
 | --- | --- |
-| `/hub` | Refuge, mines d’or et d’émeraudes, classement, amis, chat et missions |
+| `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, chat et missions |
 | `/arena` | Combats solo, matchmaking public, invitations amicales et coffres |
 | `/decks` | Deck, collection, améliorations, évolutions et liens d’âme |
 | `/guardian` | Progression et pouvoirs du Gardien |
@@ -113,6 +113,7 @@ Les fichiers `routeTree.gen.ts` et `packages/backend/convex/_generated/` sont g�
 - [Ligues, coffres et progression](docs/progression.md)
 - [Invocations et tarifs du sanctuaire](docs/summoning.md)
 - [Mines du refuge](docs/mines.md)
+- [Cadeaux quotidiens du refuge](docs/daily-rewards.md)
 - [Amis, messages et entraide](docs/social.md)
 - [Terrain et effets de combat](docs/field.md)
 - [Configuration des paiements Polar](docs/emerald-purchases.md)

@@ -17,7 +17,7 @@ export function HubPanel({
   id: string;
   titleId?: string;
   title: string;
-  description: string;
+  description?: string;
   icon: GameIconKind;
   closeLabel: string;
   onClose: () => void;
@@ -31,7 +31,8 @@ export function HubPanel({
   const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const target = initialFocus === "panel" ? panel.current : closeButton.current;
+    const target =
+      initialFocus === "panel" ? panel.current : closeButton.current;
     target?.focus({ preventScroll: true });
   }, [initialFocus]);
 
@@ -53,7 +54,7 @@ export function HubPanel({
         <GameIcon kind={icon} size={44} />
         <div>
           <h2 id={headingId}>{title}</h2>
-          <p>{description}</p>
+          {description && <p>{description}</p>}
         </div>
         <button
           ref={closeButton}

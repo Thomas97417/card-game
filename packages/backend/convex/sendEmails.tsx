@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { components } from "./_generated/api";
 import { internalAction } from "./_generated/server";
 import { SITE_URL } from "./env";
-import { renderAuthEmail } from "./lib/auth-email";
+import { renderAuthEmail } from "./lib/authEmail";
 
 export const resend: Resend = new Resend(components.resend, {
   testMode: false,

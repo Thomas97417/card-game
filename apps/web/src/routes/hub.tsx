@@ -12,7 +12,10 @@ import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
 import type { MissionSealGain } from "@/components/hub/missions-dialog";
-import { CurrencyGainProvider } from "@/components/currency-gain";
+import {
+  CurrencyGainProvider,
+  useCurrencyGain,
+} from "@/components/currency-gain";
 import { useMineBoard, useMineCollection } from "@/hooks/use-mine-collection";
 import { requireGameAuth } from "@/lib/game-auth";
 import {
@@ -59,6 +62,12 @@ function HubContent() {
   const collection = useQuery(api.collection.list, reward ? {} : "skip");
   const upgrade = useMutation(api.collection.upgrade);
   const inFlight = useRef(false);
+  const [rewardRefreshKey, setRewardRefreshKey] = useState(Date.now);
+  const dailyRewards = useQuery(api.dailyRewards.board, {
+    refreshKey: rewardRefreshKey,
+  });
+  const claimDailyReward = useMutation(api.dailyRewards.claim);
+  const showCurrencyGain = useCurrencyGain();
   const board = useQuery(api.missions.board, {
     refreshKey: missionPeriod("daily", now).key,
   });
@@ -74,6 +83,18 @@ function HubContent() {
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const refreshRewards = () => {
+      if (document.visibilityState === "visible")
+        setRewardRefreshKey(Date.now());
+    };
+    document.addEventListener("visibilitychange", refreshRewards);
+    window.addEventListener("focus", refreshRewards);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshRewards);
+      window.removeEventListener("focus", refreshRewards);
+    };
   }, []);
   useEffect(() => {
     if (!sealGain) return;
@@ -136,10 +157,41 @@ function HubContent() {
     }
   }
 
+  async function collectDailyReward(day: number) {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setPending(`daily-reward-${day}`);
+    try {
+      const result = await claimDailyReward({ day });
+      if (result.alreadyClaimed) return;
+      if (result.rarity) {
+        setReward({
+          rarity: result.rarity,
+          reveals: result.reveals,
+          gold: result.gold,
+        });
+      } else {
+        const currency = result.emeralds > 0 ? "emeralds" : "gold";
+        const amount = result.emeralds || result.gold;
+        showCurrencyGain(currency, amount);
+      }
+    } catch (error) {
+      showGameError(error);
+    } finally {
+      inFlight.current = false;
+      setPending(null);
+    }
+  }
+
   return (
     <>
       <VillageHub
         activity={activity}
+        dailyRewards={{
+          board: dailyRewards,
+          pending: pending !== null,
+          onClaim: collectDailyReward,
+        }}
         mines={{
           board: mines,
           pending: pendingMines,
