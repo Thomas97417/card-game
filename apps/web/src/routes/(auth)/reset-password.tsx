@@ -1,3 +1,4 @@
+import { AuthLayout, authPageLinks } from "@/components/auth/auth-layout";
 import { safeReturnTo } from "@/lib/game-auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import ResetPasswordForm from "@/components/reset-password-form";
@@ -14,9 +15,10 @@ export const Route = createFileRoute("/(auth)/reset-password")({
       { title: "Nouveau mot de passe — Sylve" },
       {
         name: "description",
-        content: "Set a new password for your Toma Stack account.",
+        content: "Choisis un nouveau mot de passe pour ton compte Sylve.",
       },
     ],
+    links: authPageLinks("reset-password"),
   }),
   beforeLoad: async ({ context, search }) => {
     if (context.isAuthenticated) {
@@ -28,8 +30,8 @@ export const Route = createFileRoute("/(auth)/reset-password")({
 
 function RouteComponent() {
   return (
-    <div className="sylve-auth">
+    <AuthLayout scene="reset-password">
       <ResetPasswordForm />
-    </div>
+    </AuthLayout>
   );
 }

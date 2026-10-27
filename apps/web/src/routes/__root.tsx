@@ -104,6 +104,10 @@ function RootDocument() {
   const isLanding = useRouterState({
     select: (state) => state.location.pathname === "/",
   });
+  const authRouteId = useRouterState({
+    select: (state) => state.matches.find((match) => match.routeId.startsWith("/(auth)/"))?.routeId,
+  });
+  const isAuthPage = authRouteId !== undefined;
   const requiresAuth = useRouterState({
     select: (state) =>
       state.matches.some(
@@ -129,6 +133,8 @@ function RootDocument() {
       );
     },
   });
+  const showHeader = !isImmersive && !isLanding && !isAuthPage;
+
   return (
     <ConvexBetterAuthProvider
       client={context.convexQueryClient.convexClient}
@@ -153,19 +159,22 @@ function RootDocument() {
                     <PlayerHeaderProvider>
                       <div
                         className={
-                          isImmersive || isLanding
-                            ? "grid h-svh grid-rows-[minmax(0,1fr)]"
-                            : "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                          showHeader
+                            ? "grid h-svh grid-rows-[auto_minmax(0,1fr)]"
+                            : "grid h-svh grid-rows-[minmax(0,1fr)]"
                         }
                       >
-                        {!isImmersive && !isLanding && <Header />}
+                        {showHeader && <Header />}
                         <div
+                          key={authRouteId}
                           className={
                             isImmersive
                               ? "min-h-0 overflow-hidden"
                               : isLanding
                                 ? "landing-scroll-container min-h-0 overflow-y-auto"
-                                : "min-h-0 overflow-y-auto"
+                                : isAuthPage
+                                  ? "auth-scroll-container min-h-0 overflow-y-auto"
+                                  : "min-h-0 overflow-y-auto"
                           }
                         >
                           <Outlet />

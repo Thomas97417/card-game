@@ -1,188 +1,99 @@
-import { safeReturnTo } from "@/lib/game-auth";
+import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { Link, useSearch } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { Check } from "lucide-react";
 import z from "zod";
-
 import { authClient } from "@/lib/auth-client";
-
-import { GitHubLoginButton, GoogleLoginButton } from "./social-login-buttons";
-import { Button } from "./ui/button";
+import { authErrorMessage, redirectAfterAuth } from "@/lib/auth-feedback";
+import { safeReturnTo } from "@/lib/game-auth";
+import { AuthField, AuthHeading, AuthNotice, AuthSubmit, submitAuthForm } from "./auth/form-ui";
+import { SocialLoginButtons } from "./social-login-buttons";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import PasswordInput from "./ui/password-input";
+
+const passwordRules = [
+  { label: "8 caractères minimum", test: (value: string) => value.length >= 8 },
+  { label: "Majuscule et minuscule", test: (value: string) => /[A-Z]/.test(value) && /[a-z]/.test(value) },
+  { label: "Un chiffre", test: (value: string) => /\d/.test(value) },
+  { label: "Un caractère spécial", test: (value: string) => /[^A-Za-z\d]/.test(value) },
+];
 
 export default function SignUpForm() {
   const search = useSearch({ strict: false });
   const returnTo = safeReturnTo(search.returnTo);
-
+  const [error, setError] = useState<string | null>(null);
+  const [socialPending, setSocialPending] = useState(false);
   const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      name: "",
-    },
-    onSubmit: async ({ value }) => {
-      await authClient.signUp.email(
-        {
-          email: value.email,
-          password: value.password,
-          name: value.name,
-          callbackURL: `${window.location.origin}/sign-in?returnTo=${encodeURIComponent(returnTo)}`,
-        },
-        {
-          onSuccess: () => {
-            window.location.assign(
-              `/verify-email?returnTo=${encodeURIComponent(returnTo)}`,
-            );
-            toast.success(
-              "Compte créé. Vérifie tes emails pour activer ton compte.",
-            );
-          },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
-          },
-        },
-      );
-    },
+    defaultValues: { name: "", email: "", password: "" },
     validators: {
       onSubmit: z.object({
-        name: z.string().min(2, "Choisis un nom de 2 caractères minimum"),
-        email: z.email("Adresse email invalide"),
-        password: z
-          .string()
-          .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-          .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
-            "Ajoute une majuscule, une minuscule, un chiffre et un caractère spécial",
-          ),
+        name: z.string().trim().min(2, "Choisis un pseudo de 2 caractères minimum."),
+        email: z.string().trim().pipe(z.email("Saisis une adresse email valide.")),
+        password: z.string().min(8, "Utilise au moins 8 caractères.").regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/, "Ajoute une majuscule, une minuscule, un chiffre et un caractère spécial."),
       }),
+    },
+    onSubmit: async ({ value }) => {
+      setError(null);
+      const email = value.email.trim();
+      try {
+        const result = await authClient.signUp.email({
+          name: value.name.trim(),
+          email,
+          password: value.password,
+          callbackURL: `${window.location.origin}/sign-in?returnTo=${encodeURIComponent(returnTo)}`,
+        });
+        if (result.error) {
+          setError(authErrorMessage(result.error, "Ton compte n’a pas pu être créé. Réessaie dans un instant."));
+          return;
+        }
+        form.reset();
+        redirectAfterAuth(`/verify-email?returnTo=${encodeURIComponent(returnTo)}&email=${encodeURIComponent(email)}&sent=1`);
+      } catch {
+        setError("La création du compte n’a pas abouti. Vérifie ta connexion internet et réessaie.");
+      }
     },
   });
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">
-        Rejoindre le cercle.
-      </h1>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
-          <form.Field name="name">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Pseudo</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  placeholder="John Doe"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-xs">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  placeholder="john.doe@example.com"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-xs">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Mot de passe</Label>
-                <PasswordInput
-                  id={field.name}
-                  placeholder="********"
-                  autoComplete="new-password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500 text-xs">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-            >
-              {state.isSubmitting ? "Un instant…" : "Créer un compte"}
-            </Button>
+    <>
+      <AuthHeading title="Deviens un gardien.">
+        Crée ton compte et compose ta première alliance.
+      </AuthHeading>
+      <form.Subscribe selector={(state) => state.isSubmitting}>
+        {(submitting) => <SocialLoginButtons returnTo={returnTo} disabled={submitting} onPendingChange={setSocialPending} />}
+      </form.Subscribe>
+      <div className="auth-divider">ou avec ton email</div>
+      {error && <AuthNotice>{error}</AuthNotice>}
+      <form noValidate className="auth-form" onSubmit={(event) => { void submitAuthForm(event, () => form.handleSubmit()); }}>
+        <form.Field name="name">
+          {(field) => (
+            <AuthField id={field.name} label="Pseudo" errors={field.state.meta.errors}>
+              {(accessibility) => <Input {...accessibility} name={field.name} autoComplete="nickname" placeholder="Ton nom de gardien" required value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
           )}
+        </form.Field>
+        <form.Field name="email">
+          {(field) => (
+            <AuthField id={field.name} label="Adresse email" errors={field.state.meta.errors}>
+              {(accessibility) => <Input {...accessibility} name={field.name} type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="toi@exemple.fr" required value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
+          )}
+        </form.Field>
+        <form.Field name="password">
+          {(field) => (
+            <AuthField id={field.name} label="Mot de passe" errors={field.state.meta.errors} descriptionId="password-rules">
+              {(accessibility) => <PasswordInput {...accessibility} name={field.name} placeholder="Choisis un mot de passe" autoComplete="new-password" value={field.state.value} onBlur={field.handleBlur} onChange={(event) => field.handleChange(event.target.value)} />}
+            </AuthField>
+          )}
+        </form.Field>
+        <form.Subscribe selector={(state) => state.values.password}>
+          {(password) => <ul className="auth-password-guide" id="password-rules" aria-label="Critères du mot de passe">{passwordRules.map((rule) => <li key={rule.label} data-met={rule.test(password)}><span aria-hidden="true">{rule.test(password) && <Check size={10} strokeWidth={3} />}</span>{rule.label}</li>)}</ul>}
+        </form.Subscribe>
+        <form.Subscribe>
+          {(state) => <AuthSubmit pending={state.isSubmitting} disabled={!state.canSubmit || socialPending} pendingLabel="Création du compte…">Créer mon compte</AuthSubmit>}
         </form.Subscribe>
       </form>
-
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Ou continuer avec
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <GitHubLoginButton returnTo={returnTo} />
-        <GoogleLoginButton returnTo={returnTo} />
-      </div>
-
-      <div className="mt-4 text-center">
-        <span className="text-sm text-muted-foreground">Déjà un compte ? </span>
-        <Link
-          to="/sign-in"
-          search={{ returnTo }}
-          className="hover:underline text-sm text-muted-foreground hover:text-foreground hover:cursor-pointer"
-        >
-          <span className="font-bold">Se connecter</span>
-        </Link>
-      </div>
-    </div>
+      <p className="auth-switch">Déjà un compte ? <Link to="/sign-in" search={{ returnTo }}>Se connecter</Link></p>
+    </>
   );
 }

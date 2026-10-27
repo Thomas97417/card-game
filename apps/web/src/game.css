@@ -35,33 +35,13 @@ button:disabled {
   z-index: 30;
   position: relative;
 }
-.sylve-header,
-.sylve-auth {
+.sylve-header {
   --background: #f8f6ee;
   --foreground: #283e33;
   --muted-foreground: #7a8176;
   --border: #d7decc;
   --input: #d7decc;
   color-scheme: light;
-}
-.sylve-auth {
-  min-height: 100%;
-  background: var(--paper);
-  color: var(--ink);
-  padding: 30px 16px;
-}
-.sylve-auth h1 {
-  font:
-    34px/1.2 Georgia,
-    serif;
-  letter-spacing: -1px;
-}
-.sylve-auth input {
-  background: #fdfcf7;
-  color: var(--ink);
-}
-.sylve-auth button {
-  border-radius: 7px;
 }
 .header-inner {
   max-width: 1440px;
