@@ -39,7 +39,6 @@
   background: #1a3026f2;
   box-shadow: 0 4px 16px #10251d60;
   transform: translateX(-50%);
-  backdrop-filter: blur(6px);
 }
 .hub-mine-icon {
   flex-shrink: 0;
@@ -84,7 +83,8 @@
   border-radius: inherit;
   background: var(--mine-color);
   box-shadow: 0 0 8px var(--mine-glow);
-  transition: width 1s linear;
+  transition: transform 1s linear;
+  transform-origin: left;
 }
 .hub-mine-details .hub-mine-next {
   color: #b5c2a8;
@@ -1219,7 +1219,6 @@
   background: #1a3026e6;
   color: #f1d28b;
   box-shadow: 0 4px 12px #071b1277;
-  backdrop-filter: blur(4px);
   cursor: pointer;
   pointer-events: auto;
 }

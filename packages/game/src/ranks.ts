@@ -1,4 +1,4 @@
-import cw from "./data/cunt-wars.json";
+import cw from "./data/ranks.json";
 
 /** Sylve's daily token help grants one account XP to its sender. */
 export const FRIEND_HELP_EXPERIENCE = 1;
@@ -57,12 +57,5 @@ export function nextFriendSlotUnlock(rank: number) {
 
 /** Rank eligibility only; ownership, league, dust and companion levels still apply. */
 export function rankSoulbindUnlocks(fromRank: number, toRank: number) {
-  return cw.cards.reduce(
-    (count, card) =>
-      count +
-      card.soulbinds.filter(
-        (link) => link.rank > fromRank && link.rank <= toRank,
-      ).length,
-    0,
-  );
+  return cw.soulbindRanks.filter((rank) => rank > fromRank && rank <= toRank).length;
 }

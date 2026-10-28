@@ -6,6 +6,7 @@ import { useEmeraldBalance } from "@/components/emerald-balance";
 import { GuardianHouse } from "@/components/guardian/guardian-house";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import guardianCss from "@/guardian.css?url";
 
 export const Route = createFileRoute("/guardian")({
   beforeLoad: ({ context, location }) =>
@@ -19,7 +20,10 @@ export const Route = createFileRoute("/guardian")({
           "Retrouve ton Gardien de la Sylve : améliore son niveau, ses points de vie et ses pouvoirs.",
       },
     ],
-    links: [{ rel: "preload", as: "image", href: "/art/guardian-house.webp" }],
+    links: [
+      { rel: "stylesheet", href: guardianCss },
+      { rel: "preload", as: "image", href: "/art/guardian-house.webp" },
+    ],
   }),
   component: GuardianPage,
 });

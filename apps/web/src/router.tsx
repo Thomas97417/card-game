@@ -6,6 +6,7 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 
 import Loader from "./components/loader";
 import { routeTree } from "./routeTree.gen";
+import { createNavigationAuth } from "./lib/navigation-auth";
 
 export function getRouter() {
   const convexUrl = env.VITE_CONVEX_URL;
@@ -30,7 +31,7 @@ export function getRouter() {
     defaultPreload: "intent",
     defaultPendingComponent: () => <Loader />,
     defaultNotFoundComponent: () => <div>Not Found</div>,
-    context: { queryClient, convexQueryClient },
+    context: { queryClient, convexQueryClient, navigationAuth: createNavigationAuth() },
   });
 
   setupRouterSsrQueryIntegration({

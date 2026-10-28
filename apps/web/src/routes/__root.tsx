@@ -15,6 +15,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { Toaster } from "@/components/ui/sonner";
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/auth-server";
+import type { NavigationAuth } from "@/lib/navigation-auth";
 
 import Header from "../components/header";
 import ErrorBoundary from "../components/error-boundary";
@@ -22,12 +23,9 @@ import NotFound from "../components/not-found";
 import appCss from "../index.css?url";
 import gameCss from "../game.css?url";
 import duelIntroCss from "../duel-intro.css?url";
-import workshopCss from "../deck-workshop.css?url";
+import cardArtworkCss from "../card-artwork.css?url";
 import progressionCss from "../progression.css?url";
-import lobbyCss from "../play-lobby.css?url";
 import leaguesCss from "../leagues.css?url";
-import sanctuaryCss from "../sanctuary.css?url";
-import bestiaryCss from "../bestiary.css?url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GoldProvider } from "@/components/gold-balance";
 import { EmeraldProvider } from "@/components/emerald-balance";
@@ -36,12 +34,6 @@ import { PlayerHeaderProvider } from "@/components/player-header";
 import { GameAuthGate } from "@/components/game-auth-gate";
 import { DuelTransitionProvider } from "@/components/game/duel-transition";
 import playerHeaderCss from "../player-header.css?url";
-import settingsCss from "../settings.css?url";
-import hubCss from "../hub.css?url";
-import missionsCss from "../missions.css?url";
-import dailyRewardsCss from "../daily-rewards.css?url";
-import legendaryOffersCss from "../legendary-offers.css?url";
-import guardianCss from "../guardian.css?url";
 import factionsCss from "../factions.css?url";
 import rankCss from "../rank.css?url";
 import { RankProvider } from "@/components/rank-progress";
@@ -53,6 +45,7 @@ const getAuth = createServerFn({ method: "GET" }).handler(async () => {
 export interface RouterAppContext {
   queryClient: QueryClient;
   convexQueryClient: ConvexQueryClient;
+  navigationAuth: NavigationAuth;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
@@ -76,19 +69,10 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
       { rel: "stylesheet", href: gameCss },
       { rel: "stylesheet", href: duelIntroCss },
-      { rel: "stylesheet", href: workshopCss },
+      { rel: "stylesheet", href: cardArtworkCss },
       { rel: "stylesheet", href: progressionCss },
-      { rel: "stylesheet", href: lobbyCss },
       { rel: "stylesheet", href: leaguesCss },
-      { rel: "stylesheet", href: sanctuaryCss },
-      { rel: "stylesheet", href: bestiaryCss },
       { rel: "stylesheet", href: playerHeaderCss },
-      { rel: "stylesheet", href: settingsCss },
-      { rel: "stylesheet", href: hubCss },
-      { rel: "stylesheet", href: missionsCss },
-      { rel: "stylesheet", href: dailyRewardsCss },
-      { rel: "stylesheet", href: legendaryOffersCss },
-      { rel: "stylesheet", href: guardianCss },
       { rel: "stylesheet", href: factionsCss },
       { rel: "stylesheet", href: rankCss },
     ],
@@ -96,14 +80,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
   component: RootDocument,
   beforeLoad: async (ctx) => {
-    const token = await getAuth();
-    if (token) {
-      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token);
+    const auth = await ctx.context.navigationAuth.load(getAuth);
+    if (auth.token) {
+      ctx.context.convexQueryClient.serverHttpClient?.setAuth(auth.token);
     }
-    return {
-      isAuthenticated: !!token,
-      token,
-    };
+    return auth;
   },
   errorComponent: ErrorBoundary,
   notFoundComponent: NotFound,
@@ -170,7 +151,7 @@ function RootDocument() {
             disableTransitionOnChange
             storageKey="vite-ui-theme"
           >
-            <GameAuthGate required={requiresAuth}>
+            <GameAuthGate required={requiresAuth} navigationAuth={context.navigationAuth}>
               <GoldProvider>
                 <EmeraldProvider>
                   <FriendshipProvider>

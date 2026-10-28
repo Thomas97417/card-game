@@ -7,13 +7,14 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveCard } from "@sylve/game";
 import { PlayLobby, remainingTime, type LobbyChest } from "./play-lobby";
 import { ChestUnlockDialog } from "./chest-unlock-dialog";
 import { ChestRevealDialog } from "./chest-reveal-dialog";
 import { GoldContext } from "@/components/gold-balance";
 import { leagueProgress } from "@sylve/game/leagues";
+afterEach(() => vi.useRealTimers());
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     children,
@@ -195,6 +196,7 @@ describe("le salon de combat", () => {
     expect(screen.getAllByLabelText(/Emplacement .* libre/)).toHaveLength(1);
   });
   it("scrolls the chest row horizontally with the wheel while preserving zoom gestures", () => {
+    vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
     setup();
     const row = screen.getByRole("region", { name: /défilement horizontal/ });
     Object.defineProperties(row, {
@@ -202,8 +204,10 @@ describe("le salon de combat", () => {
       clientWidth: { value: 800 },
     });
     expect(fireEvent.wheel(row, { deltaY: 200 })).toBe(false);
+    act(() => vi.advanceTimersToNextFrame());
     expect(row.scrollLeft).toBe(200);
     fireEvent.wheel(row, { deltaY: 100, deltaMode: 1 });
+    act(() => vi.advanceTimersToNextFrame());
     expect(row.scrollLeft).toBe(1800);
     fireEvent.wheel(row, { deltaY: 100, ctrlKey: true });
     expect(row.scrollLeft).toBe(1800);

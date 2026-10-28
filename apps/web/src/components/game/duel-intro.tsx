@@ -6,7 +6,8 @@ import {
   type CSSProperties,
 } from "react";
 import { Swords } from "lucide-react";
-import { heroPortrait, type HeroId, type GameView } from "@sylve/game";
+import { heroPortrait, type HeroId } from "@sylve/game/hero-metadata";
+import type { GameView } from "@sylve/game";
 import type { DuelData } from "./duel-screen";
 import { showGameError } from "./shared";
 

@@ -6,7 +6,8 @@ import {
 } from "@sylve/game/daily-rewards";
 import { HubDock } from "./hub-dock";
 
-vi.mock("./world-chat", () => ({ WorldChat: () => null }));
+const chatRender = vi.hoisted(() => vi.fn());
+vi.mock("./world-chat", () => ({ WorldChat: () => { chatRender(); return null; } }));
 const now = Date.parse("2026-10-27T12:00:00Z");
 beforeEach(() => {
   vi.useFakeTimers();
@@ -15,6 +16,17 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("cadeaux du hub", () => {
+  it("unlocks gifts without rerendering an open unrelated menu", () => {
+    const board = dailyRewardsBoard([{ claimedAt: now - DAILY_REWARD_DELAY_MS + 2000 }], now);
+    render(<HubDock dailyRewards={{ board }} />);
+    fireEvent.click(screen.getByRole("button", { name: /Chat mondial/ }));
+    const renders = chatRender.mock.calls.length;
+    expect(screen.queryByLabelText("Cadeau quotidien à récupérer")).toBeNull();
+    act(() => vi.advanceTimersByTime(5000));
+    expect(screen.getByLabelText("Cadeau quotidien à récupérer")).toBeTruthy();
+    expect(chatRender).toHaveBeenCalledTimes(renders);
+    expect(vi.getTimerCount()).toBe(0);
+  });
   it("opens all seven gifts, offers only the next one, and restores keyboard focus", () => {
     const onClaim = vi.fn();
     render(

@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ChevronUp } from "lucide-react";
 import { GameIcon } from "@/components/game/game-icon";
 import { WorldChat } from "./world-chat";
@@ -52,9 +52,6 @@ export function HubDock({
   const offersTrigger = useRef<HTMLButtonElement>(null);
   const offersOpen =
     activePanel === "offers" && !!legendaryOffers?.board?.eligible;
-  const rewardNow = useDailyRewardClock(dailyRewards?.board);
-  const rewardReady =
-    dailyRewards?.board && canClaimDailyReward(dailyRewards.board, rewardNow);
 
   function closePanel() {
     setActivePanel(null);
@@ -81,30 +78,13 @@ export function HubDock({
 
   return (
     <>
-      <button
-        ref={rewardsTrigger}
-        type="button"
-        className="hub-rewards-trigger"
-        aria-label="Récompenses"
-        title="Récompenses"
-        aria-expanded={rewardsOpen}
-        aria-controls={rewardsOpen ? rewardsId : undefined}
-        data-ready={rewardReady || undefined}
+      <RewardsTrigger
+        triggerRef={rewardsTrigger}
+        board={dailyRewards?.board}
+        open={rewardsOpen}
+        panelId={rewardsId}
         onClick={() => setActivePanel(rewardsOpen ? null : "rewards")}
-      >
-        <span className="hub-rewards-art">
-          <GameIcon kind="rewards" size={80} />
-          {rewardReady && (
-            <span
-              className="hub-rewards-ready"
-              role="img"
-              aria-label="Cadeau quotidien à récupérer"
-            >
-              <MissionCheck />
-            </span>
-          )}
-        </span>
-      </button>
+      />
       {legendaryOffers?.board?.eligible && (
         <>
           <button
@@ -146,10 +126,9 @@ export function HubDock({
           )}
           {rankingOpen && <HubRanking id={rankingId} onClose={closePanel} />}
           {rewardsOpen && (
-            <DailyRewardsPanel
+            <RewardsPanel
               {...dailyRewards}
               id={rewardsId}
-              now={rewardNow}
               onClose={closePanel}
             />
           )}
@@ -248,4 +227,43 @@ export function HubDock({
       </div>
     </>
   );
+}
+
+// Clock updates stay inside the gift controls, independently of other panels.
+function RewardsTrigger({ triggerRef, board, open, panelId, onClick }: {
+  triggerRef: RefObject<HTMLButtonElement | null>;
+  board: HubDailyRewardsProps["board"];
+  open: boolean;
+  panelId: string;
+  onClick: () => void;
+}) {
+  const now = useDailyRewardClock(board);
+  const ready = board && canClaimDailyReward(board, now);
+  return (
+    <button
+      ref={triggerRef}
+      type="button"
+      className="hub-rewards-trigger"
+      aria-label="Récompenses"
+      title="Récompenses"
+      aria-expanded={open}
+      aria-controls={open ? panelId : undefined}
+      data-ready={ready || undefined}
+      onClick={onClick}
+    >
+      <span className="hub-rewards-art">
+        <GameIcon kind="rewards" size={80} />
+        {ready && (
+          <span className="hub-rewards-ready" role="img" aria-label="Cadeau quotidien à récupérer">
+            <MissionCheck />
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
+function RewardsPanel(props: HubDailyRewardsProps & { id: string; onClose: () => void }) {
+  const now = useDailyRewardClock(props.board);
+  return <DailyRewardsPanel {...props} now={now} />;
 }

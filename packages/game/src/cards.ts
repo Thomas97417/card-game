@@ -423,12 +423,12 @@ const definitions = [
   },
 ] as const;
 
-export const CATALOG: readonly CardDefinition[] = definitions.map((base) => ({
+export const CATALOG: readonly CardDefinition[] = /* @__PURE__ */ definitions.map((base) => ({
   ...buildCwCard(base, availableRarities(base.id)[0]!, 1),
   id: base.id,
   name: base.name,
 }));
-export const CARD_VARIANTS: readonly CardDefinition[] = definitions.flatMap(
+export const CARD_VARIANTS: readonly CardDefinition[] = /* @__PURE__ */ definitions.flatMap(
   (base) =>
     availableRarities(base.id).map((rarity) => buildCwCard(base, rarity, 1)),
 );

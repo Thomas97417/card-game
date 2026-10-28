@@ -71,7 +71,7 @@ interface TokenProfile {
   }[];
 }
 export const CW_CATALOGUE = data.cards as unknown as readonly CwProfile[];
-export const CW_TOKENS = data.tokens.map((token) => ({
+export const CW_TOKENS = /* @__PURE__ */ data.tokens.map((token) => ({
   ...token,
   name:
     token.artId === "root-coil"
@@ -82,8 +82,8 @@ export const CW_TOKENS = data.tokens.map((token) => ({
 })) as unknown as readonly TokenProfile[];
 const rarityOrder: CardRarity[] = ["common", "rare", "epic", "legendary"];
 const families = data.families as Record<string, (string | null)[]>;
-const profiles = new Map(
-  CW_CATALOGUE.map((c) => [`${c.baseId}:${c.rarity}`, c]),
+const profiles = /* @__PURE__ */ new Map(
+  /* @__PURE__ */ CW_CATALOGUE.map((c) => [`${c.baseId}:${c.rarity}`, c]),
 );
 
 export function availableRarities(baseId: string): CardRarity[] {

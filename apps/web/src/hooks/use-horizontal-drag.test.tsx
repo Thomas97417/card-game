@@ -1,8 +1,10 @@
-import { cleanup, fireEvent, render } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useHorizontalDrag } from "./use-horizontal-drag";
 
 afterEach(cleanup);
+beforeEach(() => vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] }));
+afterEach(() => vi.useRealTimers());
 
 function setup(enabled = true, ignoreInteractiveElements = false) {
   const enter = vi.fn();
@@ -48,6 +50,7 @@ function pointer(
   target: HTMLElement,
   type: string,
   options: MouseEventInit & { pointerType?: string; pointerId?: number } = {},
+  flushFrame = true,
 ) {
   const { pointerType = "mouse", pointerId = 1, ...mouseOptions } = options;
   const event = new MouseEvent(type, {
@@ -60,9 +63,28 @@ function pointer(
   });
   Object.assign(event, { pointerType, pointerId });
   fireEvent(target, event);
+  if (flushFrame) act(() => vi.advanceTimersToNextFrame());
 }
 
 describe("horizontal map dragging", () => {
+  it("batches rapid moves and preserves the final position when released before the next frame", () => {
+    const { map } = setup();
+    let position = map.scrollLeft;
+    const write = vi.fn((value: number) => { position = value; });
+    Object.defineProperty(map, "scrollLeft", { get: () => position, set: write });
+    pointer(map, "pointerdown");
+    for (let x = 190; x >= 100; x -= 10)
+      pointer(map, "pointermove", { clientX: x }, false);
+    expect(write).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersToNextFrame());
+    expect(position).toBe(500);
+    expect(write).toHaveBeenCalledOnce();
+    pointer(map, "pointermove", { clientX: 80 }, false);
+    pointer(map, "pointerup", { clientX: 80 }, false);
+    expect(position).toBe(520);
+    act(() => vi.advanceTimersToNextFrame());
+    expect(write).toHaveBeenCalledTimes(2);
+  });
   it("can reserve controls for their own gestures while dragging the background", () => {
     const { map, label, enter, capture } = setup(true, true);
     pointer(label, "pointerdown");

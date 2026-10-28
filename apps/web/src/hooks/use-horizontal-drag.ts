@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { HTMLAttributes, PointerEvent } from "react";
 
 const DRAG_THRESHOLD = 6;
@@ -15,13 +15,25 @@ export function useHorizontalDrag(
     startX: number;
     scrollLeft: number;
     captureTarget: Element;
+    row: HTMLDivElement;
+    nextScrollLeft: number;
     moved: boolean;
   } | null>(null);
   const suppressClick = useRef(false);
+  const frame = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (frame.current !== undefined) window.cancelAnimationFrame(frame.current);
+  }, []);
 
   function finishDrag(event: PointerEvent<HTMLDivElement>) {
     const source = drag.current;
     if (!source || source.pointerId !== event.pointerId) return;
+    if (frame.current !== undefined) {
+      window.cancelAnimationFrame(frame.current);
+      frame.current = undefined;
+      source.row.scrollLeft = source.nextScrollLeft;
+    }
     drag.current = null;
     setIsDragging(false);
     if (source.captureTarget.hasPointerCapture(source.pointerId)) {
@@ -47,6 +59,8 @@ export function useHorizontalDrag(
         startX: event.clientX,
         scrollLeft: event.currentTarget.scrollLeft,
         captureTarget,
+        row: event.currentTarget,
+        nextScrollLeft: event.currentTarget.scrollLeft,
         moved: false,
       };
       captureTarget.setPointerCapture(event.pointerId);
@@ -61,11 +75,17 @@ export function useHorizontalDrag(
 
       const distance = event.clientX - source.startX;
       if (!source.moved && Math.abs(distance) < DRAG_THRESHOLD) return;
-      source.moved = true;
+      if (!source.moved) {
+        source.moved = true;
+        setIsDragging(true);
+      }
       suppressClick.current = true;
-      setIsDragging(true);
       event.preventDefault();
-      event.currentTarget.scrollLeft = source.scrollLeft - distance;
+      source.nextScrollLeft = source.scrollLeft - distance;
+      frame.current ??= window.requestAnimationFrame(() => {
+        source.row.scrollLeft = source.nextScrollLeft;
+        frame.current = undefined;
+      });
     },
     onPointerUp: finishDrag,
     onPointerCancel: finishDrag,

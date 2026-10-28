@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
-import { CARD_VARIANTS } from "@sylve/game";
+import { isCardVariantId } from "@sylve/game/card-ids";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { DeckWorkshop } from "@/components/decks/deck-workshop";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import workshopCss from "@/deck-workshop.css?url";
 
 export const Route = createFileRoute("/decks")({
   validateSearch: (search: Record<string, unknown>): { card?: string } => ({
     card:
-      typeof search.card === "string" &&
-      CARD_VARIANTS.some((card) => card.id === search.card)
+      isCardVariantId(search.card)
         ? search.card
         : undefined,
   }),
@@ -19,7 +19,10 @@ export const Route = createFileRoute("/decks")({
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
     meta: [{ title: "Deck et collection — Sylve" }],
-    links: [{ rel: "preload", as: "image", href: "/art/deck-workshop.webp" }],
+    links: [
+      { rel: "stylesheet", href: workshopCss },
+      { rel: "preload", as: "image", href: "/art/deck-workshop.webp" },
+    ],
   }),
   component: DecksPage,
 });

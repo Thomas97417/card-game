@@ -13,6 +13,7 @@ import { CurrencyGain, CurrencyGainProvider } from "./currency-gain";
 import { useMineCollection } from "@/hooks/use-mine-collection";
 import type { MineBoard } from "@sylve/game/mines";
 import * as feedback from "@/components/game/shared";
+import { createNavigationAuth, type NavigationAuth } from "@/lib/navigation-auth";
 
 const mocks = vi.hoisted(() => ({
   auth: { isLoading: true, isAuthenticated: false },
@@ -47,9 +48,9 @@ function ProtectedPage() {
   return <div>Le sanctuaire</div>;
 }
 
-function App({ required = true }: { required?: boolean }) {
+function App({ required = true, navigationAuth }: { required?: boolean; navigationAuth?: NavigationAuth }) {
   return (
-    <GameAuthGate required={required}>
+    <GameAuthGate required={required} navigationAuth={navigationAuth}>
       <GoldProvider>
         <EmeraldProvider>
           <FriendshipProvider>
@@ -83,6 +84,21 @@ beforeEach(() => {
 });
 
 describe("validation de la connexion avant les requêtes du jeu", () => {
+  it("updates navigation from the validated live session, including expiry with a valid JWT", async () => {
+    const navigationAuth = createNavigationAuth();
+    const getToken = vi.fn().mockResolvedValue("initial-token");
+    await navigationAuth.load(getToken);
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "player" };
+    const { rerender } = render(<App navigationAuth={navigationAuth} />);
+    expect(await navigationAuth.load(getToken)).toEqual({ isAuthenticated: true });
+    mocks.user = null;
+    rerender(<App navigationAuth={navigationAuth} />);
+    expect(await navigationAuth.load(getToken)).toEqual({ isAuthenticated: false });
+    expect(screen.queryByText("Le sanctuaire")).toBeNull();
+    expect(mocks.redirect).toHaveBeenCalled();
+    expect(getToken).toHaveBeenCalledOnce();
+  });
   it("waits for Convex and the server session before mounting protected content", () => {
     const { rerender } = render(<App />);
     expect(screen.getByRole("status").textContent).toBe("Connexion en cours…");

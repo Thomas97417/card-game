@@ -11,6 +11,10 @@ import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
 import type { MissionSealGain } from "@/components/hub/missions-dialog";
+import hubCss from "@/hub.css?url";
+import missionsCss from "@/missions.css?url";
+import dailyRewardsCss from "@/daily-rewards.css?url";
+import legendaryOffersCss from "@/legendary-offers.css?url";
 import {
   CurrencyGainProvider,
   useCurrencyGain,
@@ -45,6 +49,10 @@ export const Route = createFileRoute("/hub")({
       },
     ],
     links: [
+      { rel: "stylesheet", href: hubCss },
+      { rel: "stylesheet", href: missionsCss },
+      { rel: "stylesheet", href: dailyRewardsCss },
+      { rel: "stylesheet", href: legendaryOffersCss },
       { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
     ],
   }),

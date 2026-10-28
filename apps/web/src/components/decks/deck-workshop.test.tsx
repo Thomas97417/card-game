@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -84,12 +85,14 @@ const card = (region: ReturnType<typeof within>, name: string) =>
 const deckCards = () =>
   deckRow().getAllByRole("button", { name: /points de vie/ });
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
   vi.stubGlobal("PointerEvent", MouseEvent);
   HTMLElement.prototype.setPointerCapture = vi.fn();
   HTMLElement.prototype.releasePointerCapture = vi.fn();
   HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
 });
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -147,8 +150,10 @@ describe("l’atelier et la collection", () => {
       });
       row.scrollLeft = 100;
       expect(fireEvent.wheel(row, { deltaY: 80 })).toBe(false);
+      act(() => vi.advanceTimersToNextFrame());
       expect(row.scrollLeft).toBe(180);
       expect(fireEvent.wheel(row, { deltaY: -40 })).toBe(false);
+      act(() => vi.advanceTimersToNextFrame());
       expect(row.scrollLeft).toBe(140);
       expect(fireEvent.wheel(row, { deltaX: 50 })).toBe(true);
       expect(fireEvent.wheel(row, { deltaY: 80, ctrlKey: true })).toBe(true);
@@ -170,6 +175,7 @@ describe("l’atelier et la collection", () => {
       row.scrollLeft = 200;
       pointer(row, "pointerdown", { clientX: 200 });
       pointer(row, "pointermove", { clientX: 120 });
+      act(() => vi.advanceTimersToNextFrame());
       expect(row.scrollLeft).toBe(280);
       pointer(row, "pointerup", { clientX: 120 });
       expect(screen.queryByRole("dialog")).toBeNull();
