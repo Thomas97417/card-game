@@ -1,6 +1,6 @@
 # Offres légendaires : petit guide Polar
 
-Le coffre « NEW / OFFER » apparaît sous le cadeau du hub aux **rangs 1 à 25 inclus**. Chaque pack coûte **20 €** et contient **1 500 émeraudes, 40 000 or, 185 exemplaires d’une carte rare, 45 d’une épique et 7 d’une légendaire**. Les cartes sont garanties, sans tirage aléatoire.
+Le coffre « NEW / OFFRE » apparaît sous le cadeau du hub aux **rangs 1 à 25 inclus**. Chaque pack coûte **20 €** et contient **1 500 émeraudes, 40 000 or, 185 exemplaires d’une carte rare, 45 d’une épique et 7 d’une légendaire**. Les cartes sont garanties, sans tirage aléatoire.
 
 ## 1. Créer deux produits dans Polar
 

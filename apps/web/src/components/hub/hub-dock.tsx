@@ -125,7 +125,7 @@ export function HubDock({
               draggable={false}
             />
             <span className="hub-offers-new">NEW</span>
-            <span className="hub-offers-ribbon">OFFER</span>
+            <span className="hub-offers-ribbon">OFFRE</span>
           </button>
           <LegendaryOffersDialog
             {...legendaryOffers}
