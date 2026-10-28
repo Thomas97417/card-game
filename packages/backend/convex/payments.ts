@@ -278,7 +278,7 @@ function configuredLegendaryProducts(): Record<
   string | undefined
 > {
   return {
-    "solar-oath": process.env.POLAR_PRODUCT_OFFER_SOLAR_OATH,
+    "solar-oath": process.env.POLAR_PRODUCT_OFFER_SOLAR_PACT,
     "abyssal-pact": process.env.POLAR_PRODUCT_OFFER_ABYSSAL_PACT,
   };
 }

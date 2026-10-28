@@ -14,7 +14,7 @@ Commencer sur [Polar Sandbox](https://sandbox.polar.sh). Dans **Products**, cré
 | Carte rare ×185               | Archère de la garde              | Vipère des ombres                  |
 | Carte épique ×45              | Paladin du royaume               | Matriarche des maléfices           |
 | Carte légendaire ×7           | Dragon du soleil éternel         | Monarque des abysses               |
-| Variable Convex du Product ID | `POLAR_PRODUCT_OFFER_SOLAR_OATH` | `POLAR_PRODUCT_OFFER_ABYSSAL_PACT` |
+| Variable Convex du Product ID | `POLAR_PRODUCT_OFFER_SOLAR_PACT` | `POLAR_PRODUCT_OFFER_ABYSSAL_PACT` |
 
 Description à copier en adaptant les noms : « Pack Sylve : 1 500 émeraudes, 40 000 pièces d’or, 185 [carte rare], 45 [carte épique] et 7 [carte légendaire]. Contenu garanti. Réservé aux joueurs de rang 1 à 25 inclus. »
 
@@ -30,7 +30,7 @@ Dans **Convex → Settings → Environment Variables** du backend utilisé par l
 
 | Variable                           | Valeur                                              |
 | ---------------------------------- | --------------------------------------------------- |
-| `POLAR_PRODUCT_OFFER_SOLAR_OATH`   | Product ID du Serment solaire                       |
+| `POLAR_PRODUCT_OFFER_SOLAR_PACT`   | Product ID du Serment solaire                       |
 | `POLAR_PRODUCT_OFFER_ABYSSAL_PACT` | Product ID du Pacte des abysses                     |
 | `POLAR_ORGANIZATION_TOKEN`         | Jeton de cette organisation Polar                   |
 | `POLAR_WEBHOOK_SECRET`             | Secret complet du webhook, préfixe `whsec_` compris |

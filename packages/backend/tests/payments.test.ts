@@ -29,7 +29,7 @@ beforeEach(() => {
   vi.stubEnv("POLAR_ORGANIZATION_TOKEN", "test-token");
   vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
   vi.stubEnv("POLAR_SERVER", "sandbox");
-  vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_OATH", "product-solar-oath");
+  vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_PACT", "product-solar-oath");
   vi.stubEnv("POLAR_PRODUCT_OFFER_ABYSSAL_PACT", "product-abyssal-pact");
   for (const pack of EMERALD_PACKS)
     vi.stubEnv(
@@ -833,7 +833,7 @@ describe("offres légendaires du refuge", () => {
       (await client.query(api.payments.legendaryOffers, {})).offers[0]
         .available,
     ).toBe(false);
-    vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_OATH", "product-abyssal-pact");
+    vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_PACT", "product-abyssal-pact");
     expect(
       (await client.query(api.payments.legendaryOffers, {})).offers.every(
         (offer) => !offer.available,
