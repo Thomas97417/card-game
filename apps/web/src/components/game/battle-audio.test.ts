@@ -4,6 +4,11 @@ import type { GameEvent } from "@sylve/game";
 import { createBattleAudio } from "./battle-audio";
 import { combatAudioCues } from "./combat-audio-cues";
 import { COMBAT_TIMING } from "./combat-timing";
+import sprite from "./combat-audio-sprite.json";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 
 const mocks = vi.hoisted(() => {
   const make = (options: HowlOptions) => ({
@@ -38,6 +43,29 @@ beforeEach(() => {
 afterEach(() => { audio.destroy(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe("Howler combat clock and lifecycle", () => {
+  it("loads the versioned Freesound recording with playable clips and no background loop", () => {
+    expect(effects().options.src).toEqual([sprite.src]);
+    expect(effects().options.sprite).toEqual(sprite.sprite);
+    expect(effects().options.loop).toBe(false);
+    const wav = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), "../../../public", `.${sprite.src}`));
+    expect(wav.toString("ascii", 0, 4)).toBe("RIFF");
+    expect(wav.readUInt32LE(24)).toBe(44100);
+    const hash = createHash("sha256").update(wav).digest("hex").slice(0, 12);
+    expect(sprite.src).toBe(`/audio/combat/freesound-effects-${hash}.wav`);
+    for (const variants of Object.values(sprite.sounds)) {
+      for (const name of variants) {
+        const [start, duration] = sprite.sprite[name as keyof typeof sprite.sprite];
+        const first = Math.round(start / 1000 * 44100);
+        const last = first + Math.round(duration / 1000 * 44100);
+        expect(44 + last * 2).toBeLessThanOrEqual(wav.length);
+        let peak = 0;
+        for (let index = first; index < last; index++) peak = Math.max(peak, Math.abs(wav.readInt16LE(44 + index * 2)));
+        expect(peak).toBeGreaterThan(1000);
+        expect(peak).toBeLessThanOrEqual(Math.ceil(32767 * 0.58));
+      }
+    }
+  });
+
   it("requires interaction, keeps an unchanged frame scheduled and lands damage at the shared impact", () => {
     audio.play([attack], 0, 0);
     expect(effects().play).not.toHaveBeenCalled();
@@ -46,7 +74,7 @@ describe("Howler combat clock and lifecycle", () => {
     expect(effects().play).not.toHaveBeenCalled();
     const next = { ...attack, seq: 2 };
     audio.play([next], 0, 0);
-    expect(effects().play).toHaveBeenCalledExactlyOnceWith("swing");
+    expect(effects().play).toHaveBeenCalledExactlyOnceWith("swing-3");
     audio.play([{ ...next }], 0, 0);
     vi.advanceTimersByTime(COMBAT_TIMING.impact - 1);
     expect(effects().play).toHaveBeenCalledTimes(1);
@@ -97,6 +125,17 @@ describe("Howler combat clock and lifecycle", () => {
     expect(effects().play.mock.calls.filter(([name]) => name === "victory")).toHaveLength(1);
     audio.play([{ ...attack, seq: 30 }], 0, 0);
     expect(effects().play).toHaveBeenCalledTimes(13);
+  });
+
+  it("varies melee recordings and preserves each effect's mix when changing volume", () => {
+    audio.unlock();
+    for (const seq of [1, 2, 3]) audio.play([{ ...attack, seq }], 0, 0);
+    expect(effects().play.mock.calls.map(([name]) => name)).toEqual(["swing-2", "swing-3", "swing"]);
+    vi.advanceTimersByTime(COMBAT_TIMING.impact);
+    const volumes = effects().volume.mock.calls.slice();
+    effects().volume.mockClear();
+    audio.setPreferences({ enabled: true, volume: 0.3 });
+    expect(effects().volume.mock.calls).toEqual(volumes.map(([volume, id]) => [volume / 2, id]));
   });
 });
 

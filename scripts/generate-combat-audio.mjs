@@ -1,43 +1,50 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-// Original synthesized sound design: no external recordings or runtime synthesis.
-// Run with: bun scripts/generate-combat-audio.mjs
-const rate = 22050;
-const output = new URL("../apps/web/public/audio/combat/", import.meta.url);
-const manifest = new URL("../apps/web/src/components/game/combat-audio-sprite.json", import.meta.url);
-const tau = Math.PI * 2;
-let seed = 481516;
-const random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296 * 2 - 1; };
-const sine = (frequency, time) => Math.sin(tau * frequency * time);
-const bell = (frequency, time, decay = 6) => (sine(frequency, time) + sine(frequency * 2.003, time) * 0.24) * Math.exp(-time * decay);
-const envelope = (time, duration) => Math.min(1, time / 0.012) * Math.min(1, (duration - time) / 0.04);
+// Rebuild the combat sprite from the downloaded CC0 originals. Requires FFmpeg.
+// Run with: FFMPEG=/path/to/ffmpeg bun scripts/generate-combat-audio.mjs
+const rate = 44100;
+const root = new URL("../", import.meta.url);
+const output = new URL("apps/web/public/audio/combat/", root);
+const runtimeManifest = new URL("apps/web/src/components/game/combat-audio-sprite.json", root);
+const sourcesPath = new URL("docs/combat-audio-sources.json", root);
+const sources = JSON.parse(await readFile(sourcesPath, "utf8"));
+const edits = JSON.parse(await readFile(new URL("combat-audio-edits.json", import.meta.url), "utf8"));
+const ffmpeg = process.env.FFMPEG || "ffmpeg";
 
-function render(duration, sample) {
-  const samples = new Float32Array(Math.round(duration * rate));
-  let air = 0;
+function render(edit) {
+  const source = sources.sounds.find((sound) => sound.freesoundId === edit.source);
+  if (!source?.isOriginal || source.license !== "CC0-1.0") throw new Error(`Missing CC0 original: ${edit.source}`);
+  const original = originalBuffers.get(source.freesoundId);
+  if (createHash("sha256").update(original).digest("hex") !== source.sha256) throw new Error(`Source checksum mismatch: ${source.file}`);
+  const decoded = spawnSync(ffmpeg, [
+    "-v", "error", "-i", fileURLToPath(new URL(source.file, root)),
+    "-ss", String(edit.start), "-t", String(edit.duration),
+    "-ar", String(rate), "-ac", "1", "-f", "f32le", "pipe:1",
+  ], { maxBuffer: 8 * 1024 * 1024 });
+  if (decoded.error) throw new Error(`FFmpeg is required to rebuild combat audio: ${decoded.error.message}`);
+  if (decoded.status !== 0) throw new Error(decoded.stderr.toString());
+  const samples = new Float32Array(Math.min(Math.round(edit.duration * rate), decoded.stdout.length / 4));
+  let peak = 0;
+  let energy = 0;
+  const fadeIn = Math.round(rate * 0.003);
+  const fadeOut = Math.round(rate * edit.fadeOut);
   for (let index = 0; index < samples.length; index++) {
-    air = air * 0.86 + random() * 0.14;
-    samples[index] = Math.tanh(sample(index / rate, air, random()) * envelope(index / rate, duration));
+    const envelope = Math.min(1, index / fadeIn, (samples.length - 1 - index) / fadeOut);
+    const value = decoded.stdout.readFloatLE(index * 4) * envelope;
+    if (!Number.isFinite(value)) throw new Error(`Invalid sample in ${edit.name}`);
+    samples[index] = value;
+    peak = Math.max(peak, Math.abs(value));
+    energy += value * value;
   }
-  return samples;
+  if (!peak) throw new Error(`Empty sound: ${edit.name}`);
+  // Match average level while retaining headroom for simultaneous impacts.
+  const gain = Math.min(0.11 / Math.sqrt(energy / samples.length), 0.58 / peak);
+  for (let index = 0; index < samples.length; index++) samples[index] *= gain;
+  return { samples, gain };
 }
-
-const sounds = {
-  swing: render(0.22, (t, air) => air * Math.sin(Math.PI * t / 0.22) ** 2 * 2.8 + sine(330 - 500 * t, t) * Math.exp(-t * 22) * 0.12),
-  shot: render(0.27, (t, air) => sine(800 - t * 1600, t) * Math.exp(-t * 18) * 0.24 + air * Math.exp(-t * 14) * 1.8),
-  strike: render(0.3, (t, air, noise) => sine(95, t) * Math.exp(-t * 23) * 0.7 + noise * Math.exp(-t * 65) * 0.8 + air * Math.exp(-t * 19) * 0.9),
-  shield: render(0.6, (t, _air, noise) => (bell(880, t, 8) + bell(1327, t, 10) * 0.4) * 0.25 + noise * Math.exp(-t * 70) * 0.4),
-  magic: render(0.65, (t, air) => (sine(330 + 130 * t, t) + sine(660 + 260 * t, t) * 0.3) * Math.exp(-t * 6) * 0.25 + air * Math.exp(-t * 7) * 0.7),
-  heal: render(0.9, (t) => [523.25, 659.25, 783.99].reduce((sum, frequency, index) => t >= index * 0.09 ? sum + bell(frequency, t - index * 0.09, 6) * 0.18 : sum, 0)),
-  poison: render(0.55, (t, air) => sine(135 + 35 * sine(17, t), t) * Math.exp(-t * 8) * 0.3 + air * (0.5 + 0.5 * sine(23, t)) * Math.exp(-t * 6)),
-  freeze: render(0.7, (t, _air, noise) => (bell(1600, t, 9) + bell(2113, t, 11) * 0.6 + bell(2777, t, 13) * 0.2) * 0.2 + noise * Math.exp(-t * 32) * 0.2),
-  summon: render(0.85, (t, air) => (sine(196, t) + sine(293.66, t) * 0.5 + sine(392, t) * 0.4) * Math.sin(Math.PI * t / 0.85) * Math.exp(-t * 2) * 0.25 + air * Math.exp(-t * 6) * 0.35),
-  death: render(0.65, (t, air) => sine(165 - t * 100, t) * Math.exp(-t * 6) * 0.3 + air * Math.exp(-t * 5) * 0.65),
-  hero: render(0.85, (t, air) => (sine(130.81, t) + sine(196, t) * 0.6 + sine(261.63 + t * 150, t) * 0.4) * Math.sin(Math.PI * t / 0.85) * 0.25 + air * Math.sin(Math.PI * t / 0.85) * 0.4),
-  victory: render(1.9, (t) => [392, 523.25, 659.25, 783.99].reduce((sum, frequency, index) => t >= index * 0.17 ? sum + bell(frequency, t - index * 0.17, 3.2) * 0.2 : sum, 0)),
-  defeat: render(1.6, (t) => [293.66, 261.63, 196].reduce((sum, frequency, index) => t >= index * 0.22 ? sum + bell(frequency, t - index * 0.22, 3.5) * 0.2 : sum, 0)),
-};
 
 function wave(samples) {
   const buffer = Buffer.alloc(44 + samples.length * 2);
@@ -53,15 +60,22 @@ function wave(samples) {
   buffer.writeUInt16LE(16, 34);
   buffer.write("data", 36);
   buffer.writeUInt32LE(samples.length * 2, 40);
-  samples.forEach((sample, index) => buffer.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sample)) * 32767), 44 + index * 2));
+  samples.forEach((sample, index) => buffer.writeInt16LE(Math.round(sample * 32767), 44 + index * 2));
   return buffer;
 }
 
+const originalBuffers = new Map(await Promise.all(sources.sounds.map(async (sound) =>
+  [sound.freesoundId, await readFile(new URL(sound.file, root))])));
 const sprite = {};
+const sounds = {};
+const processed = [];
 const chunks = [];
 let length = 0;
-for (const [name, samples] of Object.entries(sounds)) {
-  sprite[name] = [length / rate * 1000, samples.length / rate * 1000];
+for (const edit of edits) {
+  const { samples, gain } = render(edit);
+  sprite[edit.name] = [length / rate * 1000, samples.length / rate * 1000];
+  (sounds[edit.sound] ??= []).push(edit.name);
+  processed.push({ ...edit, gain, duration: samples.length / rate });
   const silence = new Float32Array(Math.round(rate * 0.12));
   chunks.push(samples, silence);
   length += samples.length + silence.length;
@@ -69,8 +83,20 @@ for (const [name, samples] of Object.entries(sounds)) {
 const effects = new Float32Array(length);
 let offset = 0;
 for (const chunk of chunks) { effects.set(chunk, offset); offset += chunk.length; }
+const audio = wave(effects);
+const sha256 = createHash("sha256").update(audio).digest("hex");
+const filename = `freesound-effects-${sha256.slice(0, 12)}.wav`;
 
 await mkdir(output, { recursive: true });
-await writeFile(new URL("effects.wav", output), wave(effects));
-await writeFile(manifest, `${JSON.stringify(sprite, null, 2)}\n`);
-console.log(`Generated combat effects in ${fileURLToPath(output)} (${Math.round(effects.length * 2 / 1024)} KiB)`);
+await writeFile(new URL(filename, output), audio);
+await writeFile(runtimeManifest, `${JSON.stringify({ src: `/audio/combat/${filename}`, sounds, sprite }, null, 2)}\n`);
+sources.status = "active-in-combat";
+sources.note = "CC0 originals are used for combat effects after trimming, fades, resampling and level balancing. Public HQ MP3 previews are retained only for the listening gallery.";
+sources.combat = { file: `apps/web/public/audio/combat/${filename}`, sha256, sampleRate: rate, channels: 1, bitDepth: 16, clips: processed };
+await writeFile(sourcesPath, `${JSON.stringify(sources, null, 2)}\n`);
+for (const old of await readdir(output)) {
+  if (old === "effects.wav" || (/^freesound-effects-[a-f0-9]{12}\.wav$/.test(old) && old !== filename)) {
+    await unlink(new URL(old, output));
+  }
+}
+console.log(`Generated ${edits.length} Freesound clips: ${filename} (${Math.round(audio.length / 1024)} KiB)`);

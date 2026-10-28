@@ -1,7 +1,7 @@
 import { Howl, Howler } from "howler";
 import type { GameEvent } from "@sylve/game";
 import sprite from "./combat-audio-sprite.json";
-import { combatAudioCues, type CombatAudioCue, type CombatSound } from "./combat-audio-cues";
+import { combatAudioCues, type CombatAudioCue } from "./combat-audio-cues";
 import { combatActorKey } from "./combat-visuals";
 
 export interface BattleAudioPreferences { enabled: boolean; volume: number }
@@ -15,11 +15,13 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
   let suspended = document.hidden;
   let finished: boolean | null = null;
   const scheduled = new Set<number>();
-  const voices = new Set<number>();
+  const voices = new Map<number, number>();
   const seen = new Set<string>();
   const effects = new Howl({
-    src: ["/audio/combat/effects.wav"],
-    sprite: sprite as Record<CombatSound, [number, number]>,
+    src: [sprite.src],
+    sprite: Object.fromEntries(Object.entries(sprite.sprite).map(([name, range]) =>
+      [name, [range[0]!, range[1]!] as [number, number]])),
+    loop: false,
     preload: true, pool: maxVoices,
     onend: (id) => { voices.delete(id); },
   });
@@ -28,12 +30,13 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     // Never queue a missed hit for replay when a file loads or audio unlocks later.
     if (!audible() || effects.state() !== "loaded" || (Howler.ctx && Howler.ctx.state !== "running")) return;
     while (voices.size >= maxVoices) {
-      const oldest = voices.values().next().value!;
+      const oldest = voices.keys().next().value!;
       effects.stop(oldest);
       voices.delete(oldest);
     }
-    const id = effects.play(cue.sound);
-    voices.add(id);
+    const variants = sprite.sounds[cue.sound];
+    const id = effects.play(variants[Math.abs(cue.seed) % variants.length]!);
+    voices.set(id, cue.gain);
     effects.volume(preferences.volume * cue.gain, id);
     effects.stereo(cue.pan, id);
     effects.rate(cue.sound === "victory" || cue.sound === "defeat" ? 1 : 0.97 + Math.abs(cue.seed % 5) * 0.015, id);
@@ -58,7 +61,7 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     setPreferences(next: BattleAudioPreferences) {
       preferences = next;
       if (!next.enabled || next.volume === 0) stop();
-      else for (const id of voices) effects.volume(next.volume * 0.7, id);
+      else for (const [id, gain] of voices) effects.volume(next.volume * gain, id);
     },
     play(events: readonly GameEvent[], elapsed: number, viewer: number) {
       if (destroyed) return;
