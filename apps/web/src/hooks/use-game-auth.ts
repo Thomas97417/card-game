@@ -10,5 +10,6 @@ export function useGameAuth() {
   return {
     isLoading: isLoading || (isAuthenticated && user === undefined),
     isAuthenticated: isAuthenticated && !!user,
+    userId: isAuthenticated && user ? user._id : null,
   };
 }

@@ -14,6 +14,8 @@ import { useMineCollection } from "@/hooks/use-mine-collection";
 import type { MineBoard } from "@sylve/game/mines";
 import * as feedback from "@/components/game/shared";
 import { createNavigationAuth, type NavigationAuth } from "@/lib/navigation-auth";
+import { useDeckWorkshopState, useDeckWorkshopStore } from "./decks/deck-workshop-state";
+import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 
 const mocks = vi.hoisted(() => ({
   auth: { isLoading: true, isAuthenticated: false },
@@ -84,6 +86,48 @@ beforeEach(() => {
 });
 
 describe("validation de la connexion avant les requêtes du jeu", () => {
+  it("retains workshop state across pages and resets it when the player changes or signs out", () => {
+    function WorkshopProbe() {
+      const draft = useDeckWorkshopState((state) => state.draft);
+      const filter = useDeckWorkshopState((state) => state.filter);
+      const store = useDeckWorkshopStore();
+      return (
+        <>
+          <button onClick={() => {
+            store.getState().syncDeck({ _id: "deck" as Id<"decks">, name: "Mon deck", cardIds: ["fox:rare"] });
+            store.getState().selectCombatType("ranged");
+          }}>Modifier l’atelier</button>
+          <output aria-label="Brouillon">{draft?.name ?? "Aucun"}</output>
+          <output aria-label="Filtre">{filter ?? "Toutes"}</output>
+        </>
+      );
+    }
+    const view = (workshop: boolean) => (
+      <GameAuthGate required={false}>
+        {workshop ? <WorkshopProbe /> : <div>Village</div>}
+      </GameAuthGate>
+    );
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "first-player" };
+    const { rerender } = render(view(true));
+    fireEvent.click(screen.getByRole("button", { name: "Modifier l’atelier" }));
+    rerender(view(false));
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Mon deck");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("ranged");
+
+    mocks.user = { _id: "second-player" };
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Aucun");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("Toutes");
+    fireEvent.click(screen.getByRole("button", { name: "Modifier l’atelier" }));
+    mocks.auth = { isLoading: false, isAuthenticated: false };
+    mocks.user = null;
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Aucun");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("Toutes");
+  });
+
   it("updates navigation from the validated live session, including expiry with a valid JWT", async () => {
     const navigationAuth = createNavigationAuth();
     const getToken = vi.fn().mockResolvedValue("initial-token");

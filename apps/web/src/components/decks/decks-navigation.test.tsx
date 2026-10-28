@@ -13,6 +13,7 @@ import { leagueProgress } from "@sylve/game/leagues";
 import { LEGENDARY_OFFERS } from "@sylve/game/legendary-offers";
 import { GoldContext } from "@/components/gold-balance";
 import { Route } from "@/routes/decks";
+import { DeckWorkshopStoreProvider } from "./deck-workshop-state";
 
 const mocks = vi.hoisted(() => ({
   search: {} as { card?: string },
@@ -53,9 +54,11 @@ vi.mock("convex/react", () => ({
 
 const Page = Route.options.component as ComponentType;
 const view = () => (
-  <GoldContext.Provider value={10000}>
-    <Page />
-  </GoldContext.Provider>
+  <DeckWorkshopStoreProvider>
+    <GoldContext.Provider value={10000}>
+      <Page />
+    </GoldContext.Provider>
+  </DeckWorkshopStoreProvider>
 );
 const owned: OwnedCard[] = [
   ...DEFAULT_DECK.map((id) => ({ card: resolveCard(id), copies: 0 })),

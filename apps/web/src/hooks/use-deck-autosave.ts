@@ -10,10 +10,15 @@ export type DeckSaveStatus = "saved" | "saving" | "error";
 const keyOf = (deck: DeckSave) => JSON.stringify(deck);
 
 /** Start writes immediately, serialize them, and coalesce edits made during a write. */
-export function useDeckAutosave(onSave: (deck: DeckSave) => Promise<unknown>) {
+export function useDeckAutosave(
+  onSave: (deck: DeckSave) => Promise<unknown>,
+  onPersisted?: (deck: DeckSave) => void,
+) {
   const [status, setStatus] = useState<DeckSaveStatus>("saved");
   const save = useRef(onSave);
   save.current = onSave;
+  const persisted = useRef(onPersisted);
+  persisted.current = onPersisted;
   const queue = useRef({
     persisted: "",
     pending: null as DeckSave | null,
@@ -34,11 +39,15 @@ export function useDeckAutosave(onSave: (deck: DeckSave) => Promise<unknown>) {
       while (state.pending) {
         const next = state.pending;
         state.pending = null;
-        if (keyOf(next) === state.persisted) continue;
+        if (keyOf(next) === state.persisted) {
+          persisted.current?.(next);
+          continue;
+        }
         if (state.mounted) setStatus("saving");
         try {
           await save.current(next);
           state.persisted = keyOf(next);
+          persisted.current?.(next);
           state.retryDelay = 1000;
         } catch {
           // A newer local edit always wins over a failed older snapshot.
@@ -71,8 +80,10 @@ export function useDeckAutosave(onSave: (deck: DeckSave) => Promise<unknown>) {
   const enqueue = useCallback(
     (deck: DeckSave) => {
       const state = queue.current;
-      if (!state.running && !state.pending && keyOf(deck) === state.persisted)
+      if (!state.running && !state.pending && keyOf(deck) === state.persisted) {
+        persisted.current?.(deck);
         return;
+      }
       state.pending = deck;
       void flush();
     },

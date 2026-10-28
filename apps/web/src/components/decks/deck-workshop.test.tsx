@@ -20,6 +20,8 @@ import {
 } from "@sylve/game";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DeckWorkshop, type WorkshopDeck } from "./deck-workshop";
+import { DeckWorkshopStoreProvider } from "./deck-workshop-state";
+import { createDeckWorkshopStore } from "@/stores/deck-workshop-store";
 import { GoldContext } from "@/components/gold-balance";
 import { leagueProgress } from "@sylve/game/leagues";
 
@@ -60,6 +62,7 @@ function setup(
   collection = fullCollection,
   gold: number | undefined = 500,
   trophies = 2400,
+  store = createDeckWorkshopStore(),
 ) {
   const onSave = vi.fn().mockResolvedValue(deckId);
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
@@ -73,8 +76,9 @@ function setup(
         onUpgrade={onUpgrade}
       />
     </GoldContext.Provider>,
+    { wrapper: ({ children }) => <DeckWorkshopStoreProvider store={store}>{children}</DeckWorkshopStoreProvider> },
   );
-  return { ...result, onSave, onUpgrade };
+  return { ...result, onSave, onUpgrade, store };
 }
 const deckRow = () =>
   within(screen.getByRole("region", { name: "Cartes du deck" }));
@@ -139,6 +143,62 @@ function dragCard(
 }
 
 describe("l’atelier et la collection", () => {
+  it("retains all collection filters after leaving and returning without saving them to Convex", () => {
+    const first = setup();
+    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables"]) {
+      fireEvent.click(screen.getByRole("button", { name }));
+    }
+    first.unmount();
+    const second = setup(savedDeck, fullCollection, 500, 2400, first.store);
+    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables"]) {
+      expect(screen.getByRole("button", { name }).getAttribute("aria-pressed")).toBe("true");
+    }
+    expect(first.onSave).not.toHaveBeenCalled();
+    expect(second.onSave).not.toHaveBeenCalled();
+    expect(deckCards()).toHaveLength(8);
+  });
+
+  it("keeps a reverted composition when Convex confirms the previous edit before the newest save", async () => {
+    const { onSave, onUpgrade, rerender, store } = setup();
+    let resolve!: (id: Id<"decks">) => void;
+    onSave.mockReturnValueOnce(new Promise<Id<"decks">>((done) => { resolve = done; }));
+    dragCard(card(collection(), "Écuyer du royaume"), card(deckRow(), "Gardien du rempart"));
+    const intermediate = onSave.mock.calls[0]![0];
+    dragCard(card(collection(), "Gardien du rempart"), card(deckRow(), "Écuyer du royaume"));
+    rerender(
+      <GoldContext.Provider value={500}>
+        <DeckWorkshop
+          league={leagueProgress(2400)}
+          deck={{ ...savedDeck, cardIds: intermediate.cardIds }}
+          collection={fullCollection}
+          onSave={onSave}
+          onUpgrade={onUpgrade}
+        />
+      </GoldContext.Provider>,
+    );
+    expect(card(deckRow(), "Gardien du rempart").getAttribute("aria-label")).toContain("carte 1 du deck");
+    expect(onSave).toHaveBeenCalledOnce();
+    await act(async () => resolve(deckId));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
+    expect(onSave.mock.calls[1]![0].cardIds).toEqual(savedDeck.cardIds);
+    expect(store.getState().draft?.cards).toEqual(savedDeck.cardIds);
+    expect(store.getState().isDirty).toBe(false);
+  });
+
+  it("keeps an unsaved draft across remounts and retries it through Convex on return", async () => {
+    const first = setup();
+    first.onSave.mockRejectedValue(new Error("Offline"));
+    dragCard(card(collection(), "Écuyer du royaume"), card(deckRow(), "Gardien du rempart"));
+    await screen.findByText("Enregistrement interrompu · nouvelle tentative automatique…");
+    expect(first.store.getState().isDirty).toBe(true);
+    first.unmount();
+    const second = setup(savedDeck, fullCollection, 500, 2400, first.store);
+    expect(card(deckRow(), "Écuyer du royaume").getAttribute("aria-label")).toContain("carte 1 du deck");
+    await waitFor(() => expect(second.onSave).toHaveBeenCalledOnce());
+    expect(second.onSave.mock.calls[0]![0].cardIds[0]).toBe("knight:common");
+    await waitFor(() => expect(first.store.getState().isDirty).toBe(false));
+  });
+
   it.each(["Cartes du deck", "Cartes de la collection"])(
     "scrolls %s horizontally with the wheel and leaves trackpad gestures and zoom native",
     (label) => {
