@@ -9,6 +9,7 @@
     "./leagues": "./src/leagues.ts",
     "./summoning": "./src/summoning.ts",
     "./emerald-packs": "./src/emerald-packs.ts",
+    "./legendary-offers": "./src/legendary-offers.ts",
     "./missions": "./src/missions.ts",
     "./daily-rewards": "./src/daily-rewards.ts",
     "./gold-packs": "./src/gold-packs.ts",

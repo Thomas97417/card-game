@@ -24,10 +24,13 @@ const now = Date.parse("2026-10-27T12:00:00Z");
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (options: { component: ComponentType }) => ({
     options,
+    useSearch: () => ({}),
+    useNavigate: () => vi.fn(),
   }),
   redirect: vi.fn(),
 }));
 vi.mock("convex/react", () => ({
+  useAction: () => vi.fn(),
   useQuery: (query: Parameters<typeof getFunctionName>[0]) =>
     getFunctionName(query) === "dailyRewards:board"
       ? dailyRewardsBoard([], now)

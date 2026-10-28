@@ -11,6 +11,8 @@ import {
   FACTION_LABELS,
   combatTypeLabel,
   getCombatType,
+  maxCardLevel,
+  upgradeCost,
 } from "@sylve/game";
 import type {
   CardDefinition,
@@ -24,7 +26,14 @@ import { CardArtwork } from "./card-artwork";
 import { HeroProgressSummary } from "@/components/guardian/hero-progress-summary";
 import type { HeroProgress } from "@/components/guardian/guardian-house";
 import type { CardProgressionActions } from "./card-soulbind";
-import { ArrowRight, ArrowRightLeft, Check, Leaf, ListFilter, X } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowRightLeft,
+  Check,
+  Leaf,
+  ListFilter,
+  X,
+} from "lucide-react";
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { FactionIcon } from "@/components/game/faction-artwork";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
@@ -51,6 +60,8 @@ interface Draft {
 }
 
 interface DeckWorkshopProps extends CardProgressionActions {
+  inspectedCardId?: string;
+  onInspectCard?: (variantId: string | undefined) => void;
   hero?: HeroProgress;
   league?: LeagueProgress;
   deck: WorkshopDeck | undefined;
@@ -82,13 +93,21 @@ export function DeckWorkshop({
   onSacrifice,
   onEvolve,
   hero,
+  inspectedCardId,
+  onInspectCard,
 }: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
-  const [inspected, setInspected] = useState<string | null>(null);
+  const [localInspected, setLocalInspected] = useState<string | null>(null);
+  const inspected = onInspectCard ? (inspectedCardId ?? null) : localInspected;
+  function setInspected(variantId: string | null) {
+    if (onInspectCard) onInspectCard(variantId ?? undefined);
+    else setLocalInspected(variantId);
+  }
   const [rarityFilters, setRarityFilters] = useState<CardRarity[]>([]);
   const [factionFilters, setFactionFilters] = useState<Faction[]>([]);
+  const [upgradeOnly, setUpgradeOnly] = useState(false);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
@@ -148,7 +167,11 @@ export function DeckWorkshop({
         (factionFilters.length === 0 ||
           (!!card.faction && factionFilters.includes(card.faction))) &&
         (rarityFilters.length === 0 ||
-          rarityFilters.includes(card.rarity ?? "common")),
+          rarityFilters.includes(card.rarity ?? "common")) &&
+        (!upgradeOnly ||
+          ((card.level ?? 1) < maxCardLevel(card.rarity, card.baseId) &&
+            (entries.get(card.id)?.copies ?? 0) >=
+              upgradeCost(card.level ?? 1, card.rarity))),
     )
     .sort(
       (a, b) =>
@@ -490,7 +513,7 @@ export function DeckWorkshop({
                     ) : (
                       <>
                         {collection!.length > 0 && (
-                          <>Toutes tes cartes sont déjà dans ton deck.{" "}</>
+                          <>Toutes tes cartes sont déjà dans ton deck. </>
                         )}
                         Remporte des combats et ouvre des coffres pour découvrir
                         de nouveaux alliés.
@@ -505,6 +528,7 @@ export function DeckWorkshop({
                         setFilter(null);
                         setRarityFilters([]);
                         setFactionFilters([]);
+                        setUpgradeOnly(false);
                       }}
                     >
                       <ListFilter size={18} aria-hidden="true" />
@@ -531,10 +555,6 @@ export function DeckWorkshop({
           role="group"
           aria-label="Filtrer la collection"
         >
-          <span className="workshop-filter-label">
-            <ListFilter size={16} />
-            <span>FILTRES</span>
-          </span>
           {(
             [
               { type: null, label: "Toutes" },
@@ -549,30 +569,51 @@ export function DeckWorkshop({
               className={
                 filter === type &&
                 (type !== null ||
-                  (rarityFilters.length === 0 && factionFilters.length === 0))
+                  (rarityFilters.length === 0 &&
+                    factionFilters.length === 0 &&
+                    !upgradeOnly))
                   ? "is-active"
                   : ""
               }
               aria-pressed={
                 filter === type &&
                 (type !== null ||
-                  (rarityFilters.length === 0 && factionFilters.length === 0))
+                  (rarityFilters.length === 0 &&
+                    factionFilters.length === 0 &&
+                    !upgradeOnly))
               }
+              aria-label={label}
+              title={label}
               disabled={!ready}
               onClick={() => {
                 setFilter(filter === type ? null : type);
                 if (type === null) {
                   setRarityFilters([]);
                   setFactionFilters([]);
+                  setUpgradeOnly(false);
                 }
                 setPicked(null);
                 setMessage(instructions);
               }}
             >
-              <GameIcon kind={type ?? "all"} size={25} />
-              <span>{label}</span>
+              <GameIcon kind={type ?? "all"} size={30} />
             </button>
           ))}
+          <button
+            type="button"
+            className={`workshop-upgrade-toggle ${upgradeOnly ? "is-active" : ""}`}
+            aria-label="Cartes améliorables"
+            title="Cartes améliorables"
+            aria-pressed={upgradeOnly}
+            disabled={!ready}
+            onClick={() => {
+              setUpgradeOnly((current) => !current);
+              setPicked(null);
+              setMessage(instructions);
+            }}
+          >
+            <GameIcon kind="cardUpgrade" size={34} />
+          </button>
           <div className="workshop-secondary-filters">
             <div
               className="workshop-rarity-filters"
@@ -634,6 +675,8 @@ export function DeckWorkshop({
                     type="button"
                     className={`workshop-faction-toggle ${active ? "is-active" : ""}`}
                     data-faction={faction}
+                    aria-label={FACTION_LABELS[faction]}
+                    title={FACTION_LABELS[faction]}
                     aria-pressed={active}
                     disabled={!ready}
                     onClick={() => {
@@ -647,7 +690,6 @@ export function DeckWorkshop({
                     }}
                   >
                     <FactionIcon faction={faction} size={28} />
-                    <span>{FACTION_LABELS[faction]}</span>
                     {active && (
                       <Check
                         size={10}
@@ -717,7 +759,6 @@ export function DeckWorkshop({
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
         inDeck={!!inspected && cards.includes(inspected)}
-        hasSpace={cards.length < league.deckCapacity}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         collection={collection}

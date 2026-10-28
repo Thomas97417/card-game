@@ -41,12 +41,10 @@ import {
 type DeckActions =
   | {
       inDeck: boolean;
-      hasSpace: boolean;
       onMove: () => void;
     }
   | {
       inDeck?: never;
-      hasSpace?: never;
       onMove?: never;
     };
 
@@ -63,7 +61,6 @@ type UpgradeActions =
 export function CardUpgradeDialog({
   entry,
   inDeck,
-  hasSpace,
   onClose,
   onUpgrade,
   onMove,
@@ -192,7 +189,7 @@ export function CardUpgradeDialog({
                     {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
                   </span>
                 </div>
-                {!readOnly && onMove && (inDeck || !hasSpace) && (
+                {!readOnly && onMove && inDeck && (
                   <div className="upgrade-deck-actions">
                     <button
                       type="button"
@@ -200,7 +197,7 @@ export function CardUpgradeDialog({
                       onClick={onMove}
                     >
                       <ArrowRightLeft size={18} aria-hidden="true" />
-                      {inDeck ? "Déplacer dans le deck" : "Remplacer une carte"}
+                      Déplacer dans le deck
                     </button>
                   </div>
                 )}
