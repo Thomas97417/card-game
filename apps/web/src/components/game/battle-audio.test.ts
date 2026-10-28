@@ -50,13 +50,14 @@ afterEach(() => { audio.destroy(); vi.useRealTimers(); vi.restoreAllMocks(); });
 describe("Howler combat clock and lifecycle", () => {
   it("uses the revised magic, water, thunder and orchestral palette with the required credits", () => {
     const sources = edits.flatMap((clip) => [clip.source, ...("layers" in clip ? clip.layers!.map((layer) => layer.source) : [])]);
-    for (const retired of [160420, 449069, 609028, 556387, 801349, 483713, 737234, 737235, 512471, 529024]) {
+    for (const retired of [160420, 449069, 609028, 556387, 801349, 483713, 737234, 737235, 512471, 529024, 394900, 844109, 410751]) {
       expect(sources).not.toContain(retired);
     }
-    expect(edits.find((clip) => clip.name === "claw-swing")?.source).toBe(844109);
+    expect(edits.find((clip) => clip.name === "freeze")?.source).toBe(709888);
+    expect(edits.find((clip) => clip.name === "claw-swing")?.source).toBe(591525);
     expect(edits.find((clip) => clip.name === "hit-storm")?.source).toBe(683420);
-    expect(edits.find((clip) => clip.name === "hit-arrow")).toMatchObject({ source: 410751, levelDb: -5.5, lowpass: 3500 });
-    expect(credits.map((credit) => credit.freesoundId).sort()).toEqual([394900, 470083]);
+    expect(edits.find((clip) => clip.name === "hit-arrow")).toMatchObject({ source: 434147, levelDb: -6, lowpass: 1800 });
+    expect(credits.map((credit) => credit.freesoundId).sort()).toEqual([470083, 793513]);
     for (const credit of credits) expect(credit.modifications).toBeTruthy();
   });
 

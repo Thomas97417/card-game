@@ -1,7 +1,7 @@
 # Sons des cartes
 
-30 enregistrements Freesound utilisés ; 41 originaux archivés dans `originals/`.
-La galerie `index.html` fait écouter les 46 extraits du jeu et isole les 17 sons révisés.
+30 enregistrements Freesound utilisés ; 44 originaux archivés dans `originals/`.
+La galerie `index.html` fait écouter les 46 extraits du jeu et isole les 4 sons révisés.
 
 Les profils de `combat-audio-profile.ts` distinguent le corps à corps, la distance, les rôles et les éléments.
 Les invocations utilisent des montées magiques superposées, sans contacts de pièces ni grognements.
@@ -33,15 +33,15 @@ Les recettes figurent dans `scripts/combat-audio-edits.json` ; les sources et em
 | Dark spell-1.wav | DneproMan | [Freesound 683627](https://freesound.org/people/DneproMan/sounds/683627/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Ice Crack 1 | j_p_higgins | [Freesound 262635](https://freesound.org/people/j_p_higgins/sounds/262635/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Punch | NeoSpica | [Freesound 434147](https://freesound.org/people/NeoSpica/sounds/434147/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
-| Arrow strike.mp3 | plantmonkey | [Freesound 410751](https://freesound.org/people/plantmonkey/sounds/410751/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Falling Rock.wav | spookymodem | [Freesound 202098](https://freesound.org/people/spookymodem/sounds/202098/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Harp Glissando Up.aiff | Cunningar0807 | [Freesound 436128](https://freesound.org/people/Cunningar0807/sounds/436128/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Hammer hitting an anvil | draftcraft | [Freesound 434339](https://freesound.org/people/draftcraft/sounds/434339/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | ice grinding cracking freezing designed.wav | kyles | [Freesound 452645](https://freesound.org/people/kyles/sounds/452645/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Short_Thunder_Deep.wav | SholeColtis | [Freesound 683420](https://freesound.org/people/SholeColtis/sounds/683420/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Gentle waves on a lake | TheFlyFishingFilmmaker | [Freesound 614299](https://freesound.org/people/TheFlyFishingFilmmaker/sounds/614299/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
-| scratch_short_dry | perspektywa_tn | [Freesound 844109](https://freesound.org/people/perspektywa_tn/sounds/844109/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Shimmering Object 2.wav | opticaillusions | [Freesound 521883](https://freesound.org/people/opticaillusions/sounds/521883/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | CHIMES - 2 | SamuelGremaud | [Freesound 459401](https://freesound.org/people/SamuelGremaud/sounds/459401/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 | Music: Orchestral Victory Fanfare | Sheyvan | [Freesound 470083](https://freesound.org/people/Sheyvan/sounds/470083/) | [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) |
-| Failure 1.wav | FunWithSound | [Freesound 394900](https://freesound.org/people/FunWithSound/sounds/394900/) | [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) |
+| outro 1 | robcro6010 | [Freesound 793513](https://freesound.org/people/robcro6010/sounds/793513/) | [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Cloth Rip Uneven Long | Rudmer_Rotteveel | [Freesound 591525](https://freesound.org/people/Rudmer_Rotteveel/sounds/591525/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
+| Ice Magic Arrow_type 01 | lotteria001 | [Freesound 709888](https://freesound.org/people/lotteria001/sounds/709888/) | [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/) |

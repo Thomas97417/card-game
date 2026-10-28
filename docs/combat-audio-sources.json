@@ -855,7 +855,7 @@
       "sampleRate": 44100,
       "channels": 2,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "earth",
@@ -1023,7 +1023,7 @@
       "channels": 1,
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "summon-shimmer",
@@ -1121,12 +1121,87 @@
       "bitDepth": 16,
       "licenseVerifiedAt": "2026-10-28",
       "modifications": "Extrait, rééchantillonnage, filtres, niveau et fondus adaptés au jeu.",
+      "usedInCombat": false
+    },
+    {
+      "role": "defeat-soft",
+      "freesoundId": 793513,
+      "title": "outro 1",
+      "author": "robcro6010",
+      "license": "CC-BY-4.0",
+      "source": "https://freesound.org/people/robcro6010/sounds/793513/",
+      "file": "apps/web/public/audio/combat/freesound/originals/defeat-soft-793513.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "retrievedAt": "2026-10-28",
+      "licenseVerifiedAt": "2026-10-28",
+      "originalDownloadUrl": "https://freesound.org/people/robcro6010/sounds/793513/download/793513__robcro6010__outro-1.wav",
+      "sizeBytes": 1537192,
+      "sha256": "d292d07a63d6b58efae8b76be96c3374c48a93d3f7de3407567ccdf94d3e157a",
+      "durationSeconds": 8.713,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "modifications": "Extrait, rééchantillonnage, filtres, niveau et fondus adaptés au jeu.",
+      "usedInCombat": true
+    },
+    {
+      "role": "claw-cloth",
+      "freesoundId": 591525,
+      "title": "Cloth Rip Uneven Long",
+      "author": "Rudmer_Rotteveel",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/Rudmer_Rotteveel/sounds/591525/",
+      "file": "apps/web/public/audio/combat/freesound/originals/claw-cloth-591525.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "licenseVerifiedAt": "2026-10-28",
+      "originalDownloadUrl": "https://freesound.org/people/Rudmer_Rotteveel/sounds/591525/download/591525__rudmer_rotteveel__cloth-rip-uneven-long.wav",
+      "sizeBytes": 571508,
+      "sha256": "218b4fb0935c5e20abb666f9949f017dd6b9e8d1f84aa0a4abccfb59b191141f",
+      "durationSeconds": 3.239,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "usedInCombat": true
+    },
+    {
+      "role": "freeze-magic",
+      "variant": "main",
+      "freesoundId": 709888,
+      "title": "Ice Magic Arrow_type 01",
+      "author": "lotteria001",
+      "source": "https://freesound.org/people/lotteria001/sounds/709888/",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "licenseVerifiedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/freeze-magic-709888.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/lotteria001/sounds/709888/download/709888__lotteria001__ice-magic-arrow_type-01.wav",
+      "sizeBytes": 934186,
+      "sha256": "780461004e4b154a5ff64195fc602f8b5c048626cae5f929813e3c3668c42c2b",
+      "durationSeconds": 2.3964583333333334,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 32,
+      "encoding": "pcm_f32le",
+      "modifications": "Extrait de 0,25 à 1,40 s, conversion mono 44,1 kHz, niveau ajusté et fondus. Hauteur originale conservée.",
       "usedInCombat": true
     }
   ],
   "combat": {
-    "file": "apps/web/public/audio/combat/freesound-effects-8a36772a3bd3.wav",
-    "sha256": "8a36772a3bd34d3e0161ddb425d5fee7bd3c0cd00ab5ae7b8089ff4e03b435cc",
+    "file": "apps/web/public/audio/combat/freesound-effects-dea0a567a7f5.wav",
+    "sha256": "dea0a567a7f5f50e2bd1a18eac0ee860c38bfd1d3f847d9bb371b101afe0a18b",
     "sampleRate": 44100,
     "channels": 1,
     "bitDepth": 16,
@@ -1138,6 +1213,7 @@
         "start": 0,
         "duration": 0.34,
         "fadeOut": 0.035,
+        "revised": false,
         "gain": 0.49420949419175486,
         "at": 0
       },
@@ -1148,6 +1224,7 @@
         "start": 0,
         "duration": 0.46,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 0.5012062633674264,
         "at": 460
       },
@@ -1158,6 +1235,7 @@
         "start": 0.22,
         "duration": 0.43,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 0.4551084717053881,
         "at": 1040
       },
@@ -1168,6 +1246,7 @@
         "start": 0.2,
         "duration": 0.28,
         "fadeOut": 0.04,
+        "revised": false,
         "gain": 1.2667429141835311,
         "at": 1590
       },
@@ -1178,6 +1257,7 @@
         "start": 0.025,
         "duration": 0.38,
         "fadeOut": 0.04,
+        "revised": false,
         "gain": 0.99212848627787,
         "at": 1990
       },
@@ -1188,6 +1268,7 @@
         "start": 0.02,
         "duration": 0.26,
         "fadeOut": 0.04,
+        "revised": false,
         "gain": 0.41113823794203086,
         "at": 2490
       },
@@ -1198,6 +1279,7 @@
         "start": 0,
         "duration": 0.68,
         "fadeOut": 0.08,
+        "revised": false,
         "gain": 0.22285122862724108,
         "at": 2870
       },
@@ -1208,6 +1290,7 @@
         "start": 0,
         "duration": 0.95,
         "fadeOut": 0.07,
+        "revised": false,
         "gain": 0.6835689839195516,
         "at": 3670
       },
@@ -1218,22 +1301,21 @@
         "start": 0.045,
         "duration": 0.62,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 3.807567930304826,
         "at": 4740
       },
       {
         "name": "freeze",
         "sound": "freeze",
-        "source": 452645,
-        "start": 0.5,
-        "duration": 0.55,
-        "fadeOut": 0.12,
-        "fadeIn": 0.035,
-        "highpass": 120,
-        "lowpass": 4800,
-        "levelDb": -3,
+        "source": 709888,
+        "start": 0.25,
+        "duration": 1.15,
+        "fadeIn": 0.008,
+        "fadeOut": 0.2,
+        "levelDb": -2,
         "revised": true,
-        "gain": 0.7978171215963251,
+        "gain": 0.3665213132690477,
         "at": 5480
       },
       {
@@ -1243,8 +1325,9 @@
         "start": 0.004,
         "duration": 0.2,
         "fadeOut": 0.035,
+        "revised": false,
         "gain": 0.5808580676525056,
-        "at": 6150
+        "at": 6750
       },
       {
         "name": "hero",
@@ -1253,8 +1336,9 @@
         "start": 1.05,
         "duration": 1.1,
         "fadeOut": 0.16,
+        "revised": false,
         "gain": 0.5720659108316664,
-        "at": 6470
+        "at": 7070
       },
       {
         "name": "victory",
@@ -1267,24 +1351,24 @@
         "highpass": 60,
         "lowpass": 11000,
         "levelDb": -1.5,
-        "revised": true,
+        "revised": false,
         "gain": 0.411081295625216,
-        "at": 7690
+        "at": 8290
       },
       {
         "name": "defeat",
         "sound": "defeat",
-        "source": 394900,
-        "start": 2.375,
-        "duration": 3.9,
-        "fadeOut": 0.55,
-        "fadeIn": 0.035,
-        "highpass": 60,
-        "lowpass": 7400,
-        "levelDb": -2.5,
+        "source": 793513,
+        "start": 2.88,
+        "duration": 3.6,
+        "fadeOut": 0.4,
+        "fadeIn": 0.025,
+        "highpass": 70,
+        "lowpass": 6200,
+        "levelDb": -3,
         "revised": true,
-        "gain": 0.3362607580551236,
-        "at": 12310
+        "gain": 1.6689688981862,
+        "at": 12910
       },
       {
         "name": "summon",
@@ -1324,9 +1408,9 @@
             "lowpass": 3500
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 18.158737657288984,
-        "at": 16329.999999999998
+        "at": 16630
       },
       {
         "name": "summon-2",
@@ -1366,9 +1450,9 @@
             "lowpass": 3400
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 20.603108372195248,
-        "at": 17190
+        "at": 17490
       },
       {
         "name": "summon-3",
@@ -1408,9 +1492,9 @@
             "lowpass": 3500
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 17.00768254745592,
-        "at": 18010
+        "at": 18310
       },
       {
         "name": "summon-heavy",
@@ -1450,9 +1534,9 @@
             "lowpass": 3000
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 14.489918122402283,
-        "at": 18890
+        "at": 19190
       },
       {
         "name": "heavy-swing",
@@ -1462,23 +1546,39 @@
         "duration": 0.36,
         "fadeOut": 0.04,
         "speed": 0.72,
+        "revised": false,
         "gain": 0.43385526472309244,
-        "at": 19830
+        "at": 20130
       },
       {
         "name": "claw-swing",
         "sound": "claw-swing",
-        "source": 844109,
-        "start": 0.515,
+        "source": 591525,
+        "start": 1.66,
         "duration": 0.25,
-        "fadeOut": 0.055,
-        "fadeIn": 0.006,
-        "highpass": 200,
-        "lowpass": 5200,
-        "levelDb": -4,
+        "fadeOut": 0.065,
+        "speed": 1.1,
+        "fadeIn": 0.004,
+        "highpass": 300,
+        "lowpass": 3300,
+        "levelDb": -4.5,
+        "layers": [
+          {
+            "source": 733889,
+            "start": 0.002,
+            "duration": 0.16,
+            "at": 0,
+            "gainDb": -15,
+            "speed": 1.2,
+            "fadeIn": 0.004,
+            "fadeOut": 0.08,
+            "highpass": 250,
+            "lowpass": 3000
+          }
+        ],
         "revised": true,
-        "gain": 0.7725361323917285,
-        "at": 20310
+        "gain": 1.2977595789833023,
+        "at": 20610
       },
       {
         "name": "hammer-hit",
@@ -1488,8 +1588,9 @@
         "duration": 0.46,
         "fadeOut": 0.08,
         "speed": 0.85,
+        "revised": false,
         "gain": 0.5915191916986342,
-        "at": 20680
+        "at": 20980
       },
       {
         "name": "hit-blunt",
@@ -1498,23 +1599,25 @@
         "start": 0,
         "duration": 0.27,
         "fadeOut": 0.04,
+        "revised": false,
         "gain": 0.3832888860346047,
-        "at": 21260
+        "at": 21560
       },
       {
         "name": "hit-arrow",
         "sound": "hit-arrow",
-        "source": 410751,
-        "start": 0.8,
-        "duration": 0.43,
-        "fadeOut": 0.1,
+        "source": 434147,
+        "start": 0.005,
+        "duration": 0.2,
+        "fadeOut": 0.09,
+        "speed": 0.85,
         "fadeIn": 0.006,
-        "highpass": 150,
-        "lowpass": 3500,
-        "levelDb": -5.5,
+        "highpass": 100,
+        "lowpass": 1800,
+        "levelDb": -6,
         "revised": true,
-        "gain": 0.3116869026168288,
-        "at": 21650
+        "gain": 0.44408503030631385,
+        "at": 21950
       },
       {
         "name": "bard-cast",
@@ -1524,8 +1627,9 @@
         "duration": 0.56,
         "fadeOut": 0.09,
         "speed": 1.25,
+        "revised": false,
         "gain": 1.36220047220616,
-        "at": 22200
+        "at": 22270
       },
       {
         "name": "beast-arrival",
@@ -1539,9 +1643,9 @@
         "highpass": 220,
         "lowpass": 3200,
         "levelDb": -9,
-        "revised": true,
+        "revised": false,
         "gain": 26.991906837986427,
-        "at": 22880
+        "at": 22950
       },
       {
         "name": "arrival-metal",
@@ -1550,8 +1654,9 @@
         "start": 0.024,
         "duration": 0.22,
         "fadeOut": 0.04,
+        "revised": false,
         "gain": 0.41113823794203086,
-        "at": 23420
+        "at": 23490
       },
       {
         "name": "cast-fire",
@@ -1561,8 +1666,9 @@
         "duration": 0.37,
         "fadeOut": 0.055,
         "speed": 1.28,
+        "revised": false,
         "gain": 0.2742691891247613,
-        "at": 23760
+        "at": 23830
       },
       {
         "name": "hit-fire",
@@ -1571,8 +1677,9 @@
         "start": 0.008,
         "duration": 0.5,
         "fadeOut": 0.09,
+        "revised": false,
         "gain": 0.35118293285495344,
-        "at": 24250
+        "at": 24320
       },
       {
         "name": "cast-water",
@@ -1599,9 +1706,9 @@
             "lowpass": 3800
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 0.8994207844164043,
-        "at": 24870
+        "at": 24940
       },
       {
         "name": "hit-water",
@@ -1615,9 +1722,9 @@
         "highpass": 120,
         "lowpass": 3400,
         "levelDb": -3,
-        "revised": true,
+        "revised": false,
         "gain": 0.360904945059213,
-        "at": 25510
+        "at": 25580
       },
       {
         "name": "cast-storm",
@@ -1631,9 +1738,9 @@
         "highpass": 65,
         "lowpass": 1300,
         "levelDb": -6,
-        "revised": true,
+        "revised": false,
         "gain": 3.4876506251834907,
-        "at": 26370
+        "at": 26440
       },
       {
         "name": "hit-storm",
@@ -1646,9 +1753,9 @@
         "highpass": 55,
         "lowpass": 2200,
         "levelDb": -3,
-        "revised": true,
+        "revised": false,
         "gain": 1.557790397003495,
-        "at": 26940
+        "at": 27010
       },
       {
         "name": "cast-nature",
@@ -1658,8 +1765,9 @@
         "duration": 0.34,
         "fadeOut": 0.055,
         "speed": 1.15,
+        "revised": false,
         "gain": 1.210979207995153,
-        "at": 27910
+        "at": 27980
       },
       {
         "name": "hit-nature",
@@ -1668,8 +1776,9 @@
         "start": 2.07,
         "duration": 0.37,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 1.6984246645816534,
-        "at": 28370
+        "at": 28440
       },
       {
         "name": "cast-light",
@@ -1679,8 +1788,9 @@
         "duration": 0.42,
         "fadeOut": 0.075,
         "speed": 1.6,
+        "revised": false,
         "gain": 0.7192018595884769,
-        "at": 28860
+        "at": 28930
       },
       {
         "name": "hit-light",
@@ -1690,8 +1800,9 @@
         "duration": 0.4,
         "fadeOut": 0.08,
         "speed": 1.1,
+        "revised": false,
         "gain": 0.7660493921685909,
-        "at": 29400
+        "at": 29470
       },
       {
         "name": "cast-arcane",
@@ -1719,9 +1830,9 @@
             "lowpass": 3500
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 12.981257430926062,
-        "at": 29920
+        "at": 29990
       },
       {
         "name": "hit-arcane",
@@ -1748,9 +1859,9 @@
             "lowpass": 4300
           }
         ],
-        "revised": true,
+        "revised": false,
         "gain": 1.2415254308633512,
-        "at": 30490
+        "at": 30560
       },
       {
         "name": "cast-shadow",
@@ -1760,8 +1871,9 @@
         "duration": 0.35,
         "fadeOut": 0.06,
         "speed": 1.3,
+        "revised": false,
         "gain": 0.3735270067776629,
-        "at": 31160
+        "at": 31230
       },
       {
         "name": "hit-shadow",
@@ -1771,8 +1883,9 @@
         "duration": 0.46,
         "fadeOut": 0.08,
         "speed": 0.9,
+        "revised": false,
         "gain": 0.3690945009566246,
-        "at": 31630
+        "at": 31700
       },
       {
         "name": "cast-ice",
@@ -1786,9 +1899,9 @@
         "highpass": 200,
         "lowpass": 4300,
         "levelDb": -6,
-        "revised": true,
+        "revised": false,
         "gain": 1.4753782285050325,
-        "at": 32210
+        "at": 32280
       },
       {
         "name": "hit-ice",
@@ -1797,8 +1910,9 @@
         "start": 0.51,
         "duration": 0.34,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 0.9015435700393719,
-        "at": 32710
+        "at": 32780
       },
       {
         "name": "cast-poison",
@@ -1808,8 +1922,9 @@
         "duration": 0.32,
         "fadeOut": 0.045,
         "speed": 1.1,
+        "revised": false,
         "gain": 4.015431663786525,
-        "at": 33170
+        "at": 33240
       },
       {
         "name": "hit-poison",
@@ -1818,8 +1933,9 @@
         "start": 0.08,
         "duration": 0.42,
         "fadeOut": 0.06,
+        "revised": false,
         "gain": 13.159411569560023,
-        "at": 33610
+        "at": 33680
       },
       {
         "name": "cast-earth",
@@ -1829,8 +1945,9 @@
         "duration": 0.3,
         "fadeOut": 0.055,
         "speed": 0.82,
+        "revised": false,
         "gain": 0.40894559890692156,
-        "at": 34150
+        "at": 34220
       },
       {
         "name": "hit-earth",
@@ -1840,10 +1957,11 @@
         "duration": 0.47,
         "fadeOut": 0.09,
         "speed": 0.9,
+        "revised": false,
         "gain": 0.3322117131447683,
-        "at": 34570
+        "at": 34640
       }
     ]
   },
-  "paletteRevision": "fantasy-orchestral-2"
+  "paletteRevision": "freeze-709888"
 }

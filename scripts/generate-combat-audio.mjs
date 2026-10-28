@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { writeAudioGallery } from "./combat-audio-gallery.mjs";
 
-// Rebuild the combat sprite from the downloaded CC0 originals. Requires FFmpeg.
+// Rebuild the combat sprite from the downloaded licensed originals. Requires FFmpeg.
 // Run with: FFMPEG=/path/to/ffmpeg bun scripts/generate-combat-audio.mjs
 const rate = 44100;
 const root = new URL("../", import.meta.url);
