@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import { Check, Crown, LoaderCircle, ShieldCheck, X } from "lucide-react";
+import { Check, LoaderCircle, ShieldCheck, X } from "lucide-react";
 import { resolveCard, RARITY_LABELS } from "@sylve/game";
 import {
   LEGENDARY_OFFERS,
@@ -13,6 +13,7 @@ import {
   type LegendaryPaymentStatus,
 } from "@sylve/game/legendary-offers";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
+import { GameIcon } from "@/components/game/game-icon";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export interface HubLegendaryOffersProps {
@@ -70,8 +71,8 @@ export function LegendaryOffersDialog({
         <header className="legendary-offers-heading">
           <DialogTitle>Le pouvoir des légendes</DialogTitle>
           <span className="legendary-offers-rank">
-            <Crown size={14} /> Jusqu’au rang {LEGENDARY_OFFER_MAX_RANK} inclus{" "}
-            <span>· Ton rang : {board?.rank ?? "…"}</span>
+            <GameIcon kind="guardian" size={24} /> Jusqu’au rang{" "}
+            {LEGENDARY_OFFER_MAX_RANK} inclus
           </span>
         </header>
         <div className="legendary-offers-grid" aria-busy={busy !== null}>
@@ -134,13 +135,13 @@ export function LegendaryOffersDialog({
                   </span>
                   <strong>20,00 €</strong>
                 </button>
-                <p className="legendary-offer-purchase-note">
-                  {!board?.eligible
-                    ? "Offre réservée aux rangs 1 à 25 inclus"
-                    : !available
-                      ? "Bientôt disponible"
-                      : "Paiement ponctuel · Sécurisé par Polar"}
-                </p>
+                {!available && (
+                  <p className="legendary-offer-purchase-note">
+                    {!board?.eligible
+                      ? "Offre réservée aux rangs 1 à 25 inclus"
+                      : "Bientôt disponible"}
+                  </p>
+                )}
               </article>
             );
           })}

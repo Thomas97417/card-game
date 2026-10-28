@@ -156,9 +156,9 @@
   font-size: 10px;
   font-weight: 650;
 }
-.legendary-offers-rank > span {
-  color: #b8b6a4;
-  font-weight: 400;
+.legendary-offers-rank > .game-icon {
+  flex-shrink: 0;
+  object-fit: contain;
 }
 .legendary-offers-grid {
   display: grid;
@@ -218,7 +218,7 @@
 .legendary-offer-showcase {
   position: relative;
   height: 248px;
-  margin: 8px -12px 0;
+  margin: 8px -12px 24px;
 }
 .legendary-offer-magic {
   position: absolute;
