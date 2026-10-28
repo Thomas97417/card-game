@@ -16,8 +16,8 @@ const eventSchema = z.object({
   type: z.string(),
   data: z.record(z.string(), z.unknown()),
 });
-const emeraldMetadataSchema = z.object({
-  metadata: z.object({ purpose: z.literal("emerald_pack") }),
+const purchaseMetadataSchema = z.object({
+  metadata: z.object({ purpose: z.enum(["emerald_pack", "legendary_offer"]) }),
 });
 // Validate only the fields our payment ledger uses, independently of SDK versions.
 const orderSchema = z.object({
@@ -73,12 +73,12 @@ http.route({
       await polar.syncProducts(ctx);
     } else if (
       (type === "order.paid" || type === "order.refunded") &&
-      emeraldMetadataSchema.safeParse(data).success
+      purchaseMetadataSchema.safeParse(data).success
     ) {
       const order = orderSchema.safeParse(data);
       if (!order.success) return new Response("Invalid order", { status: 400 });
-      await ctx.runMutation(internal.payments.processOrder, {
-        kind: type === "order.paid" ? "paid" : "refunded",
+      const args = {
+        kind: type === "order.paid" ? ("paid" as const) : ("refunded" as const),
         orderId: order.data.id,
         checkoutId: order.data.checkout_id,
         customerId: order.data.customer_id,
@@ -88,7 +88,23 @@ http.route({
         status: order.data.status,
         netAmount: order.data.net_amount,
         refundedAmount: order.data.refunded_amount,
-      });
+      };
+      if (
+        purchaseMetadataSchema.parse(data).metadata.purpose ===
+        "legendary_offer"
+      ) {
+        const total = z
+          .number()
+          .int()
+          .nonnegative()
+          .safeParse(data.total_amount);
+        if (!total.success)
+          return new Response("Invalid order total", { status: 400 });
+        await ctx.runMutation(internal.payments.processLegendaryOrder, {
+          ...args,
+          totalAmount: total.data,
+        });
+      } else await ctx.runMutation(internal.payments.processOrder, args);
     }
     return new Response("Accepted", { status: 202 });
   }),

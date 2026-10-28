@@ -13,6 +13,7 @@ import type { HubDailyRewardsProps } from "./daily-rewards-panel";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
+import type { HubLegendaryOffersProps } from "./legendary-offers";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
 type Place = {
@@ -76,6 +77,7 @@ const hotspotStyle = cn(
 
 interface VillageHubProps {
   dailyRewards?: HubDailyRewardsProps;
+  legendaryOffers?: HubLegendaryOffersProps;
   missions?: HubMissionsProps;
   mines?: HubMinesProps;
   activity?: {
@@ -90,6 +92,7 @@ export function VillageHub({
   missions,
   mines,
   dailyRewards,
+  legendaryOffers,
 }: VillageHubProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [isPannable, setIsPannable] = useState(false);
@@ -210,7 +213,11 @@ export function VillageHub({
         </div>
       </div>
 
-      <HubDock missions={missions} dailyRewards={dailyRewards}>
+      <HubDock
+        missions={missions}
+        dailyRewards={dailyRewards}
+        legendaryOffers={legendaryOffers}
+      >
         {isPannable && (
           <button
             type="button"

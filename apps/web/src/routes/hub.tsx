@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import {
   missionPeriod,
@@ -17,12 +17,22 @@ import {
 } from "@/components/currency-gain";
 import { useMineBoard, useMineCollection } from "@/hooks/use-mine-collection";
 import { requireGameAuth } from "@/lib/game-auth";
+import { LegendaryPaymentFeedback } from "@/components/hub/legendary-offers";
 import {
   ChestRevealDialog,
   type ChestReveal,
 } from "@/components/play/chest-reveal-dialog";
 
 export const Route = createFileRoute("/hub")({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { offerCheckout?: string } => ({
+    offerCheckout:
+      typeof search.offerCheckout === "string" &&
+      /^[a-zA-Z0-9_-]{1,128}$/.test(search.offerCheckout)
+        ? search.offerCheckout
+        : undefined,
+  }),
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
@@ -50,6 +60,16 @@ function HubPage() {
 }
 
 function HubContent() {
+  const { offerCheckout } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const legendaryOffers = useQuery(api.payments.legendaryOffers, {});
+  const createLegendaryCheckout = useAction(
+    api.payments.createLegendaryCheckout,
+  );
+  const legendaryPaymentStatus = useQuery(
+    api.payments.legendaryCheckoutStatus,
+    offerCheckout ? { checkoutId: offerCheckout } : "skip",
+  );
   const [now, setNow] = useState(Date.now);
   const [pending, setPending] = useState<string | null>(null);
   const [sealGain, setSealGain] = useState<MissionSealGain | null>(null);
@@ -182,6 +202,13 @@ function HubContent() {
   return (
     <>
       <VillageHub
+        legendaryOffers={{
+          board: legendaryOffers,
+          onPurchase: async (offerId) => {
+            const { url } = await createLegendaryCheckout({ offerId });
+            window.location.assign(url);
+          },
+        }}
         activity={activity}
         dailyRewards={{
           board: dailyRewards,
@@ -202,6 +229,13 @@ function HubContent() {
           onOpenChest: openMissionChest,
         }}
       />
+      {offerCheckout && (
+        <LegendaryPaymentFeedback
+          key={offerCheckout}
+          status={legendaryPaymentStatus}
+          onDismiss={() => void navigate({ search: {}, replace: true })}
+        />
+      )}
       <ChestRevealDialog
         reward={reward}
         collection={collection}

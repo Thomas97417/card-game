@@ -69,6 +69,8 @@ Les variables `VITE_` sont accessibles au navigateur. Ne jamais y placer de secr
 
 Les achats d’émeraudes utilisent Polar : voir [la configuration des paiements](docs/emerald-purchases.md). Les offres restent indisponibles tant que le service n’est pas configuré.
 
+Le hub propose aussi deux packs légendaires à 20 €, réservés aux rangs 1 à 25 inclus : voir le [petit guide Polar des offres légendaires](docs/legendary-offers-polar.md).
+
 Pour les connexions Google et GitHub, configurer les applications OAuth et leurs URL de retour, puis les variables Convex `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`.
 
 ## Commandes et vérifications

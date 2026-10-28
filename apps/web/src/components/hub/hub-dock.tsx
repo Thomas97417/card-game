@@ -13,18 +13,24 @@ import {
 } from "./daily-rewards-panel";
 import { canClaimDailyReward } from "@sylve/game/daily-rewards";
 import { useDailyRewardClock } from "@/hooks/use-daily-reward-clock";
+import {
+  LegendaryOffersDialog,
+  type HubLegendaryOffersProps,
+} from "./legendary-offers";
 
 export function HubDock({
   missions,
   dailyRewards,
+  legendaryOffers,
   children,
 }: {
   missions?: HubMissionsProps;
   dailyRewards?: HubDailyRewardsProps;
+  legendaryOffers?: HubLegendaryOffersProps;
   children?: ReactNode;
 }) {
   const [activePanel, setActivePanel] = useState<
-    "ranking" | "missions" | "rewards" | "chat" | "friends" | null
+    "ranking" | "missions" | "rewards" | "offers" | "chat" | "friends" | null
   >(null);
   const [conversation, setConversation] = useState<SocialPlayer | null>(null);
   const friendsOpen = activePanel === "friends";
@@ -43,6 +49,9 @@ export function HubDock({
   const rewardsOpen = activePanel === "rewards";
   const rewardsId = useId();
   const rewardsTrigger = useRef<HTMLButtonElement>(null);
+  const offersTrigger = useRef<HTMLButtonElement>(null);
+  const offersOpen =
+    activePanel === "offers" && !!legendaryOffers?.board?.eligible;
   const rewardNow = useDailyRewardClock(dailyRewards?.board);
   const rewardReady =
     dailyRewards?.board && canClaimDailyReward(dailyRewards.board, rewardNow);
@@ -56,9 +65,11 @@ export function HubDock({
           ? friendsTrigger
           : activePanel === "missions"
             ? missionsTrigger
-            : activePanel === "rewards"
-              ? rewardsTrigger
-              : rankingTrigger;
+            : activePanel === "offers"
+              ? offersTrigger
+              : activePanel === "rewards"
+                ? rewardsTrigger
+                : rankingTrigger;
     trigger.current?.focus({ preventScroll: true });
   }
 
@@ -94,6 +105,35 @@ export function HubDock({
           )}
         </span>
       </button>
+      {legendaryOffers?.board?.eligible && (
+        <>
+          <button
+            ref={offersTrigger}
+            type="button"
+            className="hub-offers-trigger"
+            aria-label="Offres légendaires"
+            aria-haspopup="dialog"
+            aria-expanded={offersOpen}
+            onClick={() => setActivePanel(offersOpen ? null : "offers")}
+          >
+            <span className="hub-offers-aura" aria-hidden="true" />
+            <img
+              src="/art/chests/legendary.webp"
+              width={100}
+              height={100}
+              alt=""
+              draggable={false}
+            />
+            <span className="hub-offers-new">NEW</span>
+            <span className="hub-offers-ribbon">OFFRE</span>
+          </button>
+          <LegendaryOffersDialog
+            {...legendaryOffers}
+            open={offersOpen}
+            onClose={closePanel}
+          />
+        </>
+      )}
       <div className="hub-footer">
         {children}
         <div className="hub-dock" role="region" aria-label="Vie du refuge">

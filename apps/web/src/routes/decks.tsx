@@ -1,12 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
+import { CARD_VARIANTS } from "@sylve/game";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { DeckWorkshop } from "@/components/decks/deck-workshop";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 
 export const Route = createFileRoute("/decks")({
+  validateSearch: (search: Record<string, unknown>): { card?: string } => ({
+    card:
+      typeof search.card === "string" &&
+      CARD_VARIANTS.some((card) => card.id === search.card)
+        ? search.card
+        : undefined,
+  }),
   beforeLoad: ({ context, location }) =>
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
@@ -17,6 +25,8 @@ export const Route = createFileRoute("/decks")({
 });
 
 function DecksPage() {
+  const { card } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const decks = useQuery(api.decks.list);
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const save = useMutation(api.decks.save);
@@ -48,6 +58,10 @@ function DecksPage() {
       hero={hero}
       deck={initialized && league ? decks?.[0] : undefined}
       collection={collection}
+      inspectedCardId={card}
+      onInspectCard={(card) =>
+        void navigate({ search: { card }, replace: true })
+      }
       onSave={save}
       onUpgrade={(variantId) => upgrade({ variantId })}
       soulProgress={soulProgress}

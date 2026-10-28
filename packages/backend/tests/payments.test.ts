@@ -4,10 +4,26 @@ import polarTest from "@convex-dev/polar/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EMERALD_PACKS } from "@sylve/game/emerald-packs";
 import { WELCOME_DIAMONDS } from "@sylve/game/summoning";
+import { LEGENDARY_OFFERS } from "@sylve/game/legendary-offers";
+import rankData from "../../game/src/data/cunt-wars.json";
+import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate.js";
+import { customersCreate } from "@polar-sh/sdk/funcs/customersCreate.js";
+import { customersList } from "@polar-sh/sdk/funcs/customersList.js";
+import { productsGet } from "@polar-sh/sdk/funcs/productsGet.js";
 import { api, components, internal } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
 const modules = import.meta.glob("../convex/**/*.ts");
+vi.mock("@polar-sh/sdk/funcs/checkoutsCreate.js", () => ({
+  checkoutsCreate: vi.fn(),
+}));
+vi.mock("@polar-sh/sdk/funcs/customersCreate.js", () => ({
+  customersCreate: vi.fn(),
+}));
+vi.mock("@polar-sh/sdk/funcs/customersList.js", () => ({
+  customersList: vi.fn(),
+}));
+vi.mock("@polar-sh/sdk/funcs/productsGet.js", () => ({ productsGet: vi.fn() }));
 // Test-only keys are generated locally and never read from a real environment.
 function createTestWebhookSecret() {
   return `whsec_${btoa(
@@ -16,11 +32,16 @@ function createTestWebhookSecret() {
 }
 let webhookSecret: string;
 beforeEach(() => {
+  vi.mocked(checkoutsCreate).mockReset();
+  vi.mocked(customersCreate).mockReset();
+  vi.mocked(customersList).mockReset();
   webhookSecret = createTestWebhookSecret();
   vi.stubEnv("SITE_URL", "https://sylve.example");
   vi.stubEnv("POLAR_ORGANIZATION_TOKEN", "test-token");
   vi.stubEnv("POLAR_WEBHOOK_SECRET", webhookSecret);
   vi.stubEnv("POLAR_SERVER", "sandbox");
+  vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_PACT", "product-solar-oath");
+  vi.stubEnv("POLAR_PRODUCT_OFFER_ABYSSAL_PACT", "product-abyssal-pact");
   for (const pack of EMERALD_PACKS)
     vi.stubEnv(
       `POLAR_PRODUCT_EMERALDS_${pack.id.replaceAll("-", "_").toUpperCase()}`,
@@ -452,22 +473,28 @@ describe("achats d’émeraudes avec Polar", () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
     const attempts = [
       {
-        deliveredBody: JSON.stringify(orderEvent("order.paid", { net_amount: 1 })),
+        deliveredBody: JSON.stringify(
+          orderEvent("order.paid", { net_amount: 1 }),
+        ),
       },
       { timestamp: Math.floor(Date.now() / 1000) - 600 },
       { timestamp: Math.floor(Date.now() / 1000) + 600 },
     ];
     for (const attempt of attempts)
       expect(
-        (await sendWebhook(t, event, webhookSecret, {
-          scheme: "standard",
-          ...attempt,
-        })).status,
+        (
+          await sendWebhook(t, event, webhookSecret, {
+            scheme: "standard",
+            ...attempt,
+          })
+        ).status,
       ).toBe(403);
     expect(
-      (await sendWebhook(t, event, createTestWebhookSecret(), {
-        scheme: "standard",
-      })).status,
+      (
+        await sendWebhook(t, event, createTestWebhookSecret(), {
+          scheme: "standard",
+        })
+      ).status,
     ).toBe(403);
     expect(await balance(t, userId)).toBeNull();
     expect(JSON.stringify(errorLog.mock.calls)).not.toContain(webhookSecret);
@@ -479,17 +506,24 @@ describe("achats d’émeraudes avec Polar", () => {
     const { userId } = await player(t);
     await pendingPurchase(t, userId);
     expect(
-      (await sendWebhook(t, orderEvent(), webhookSecret, {
-        scheme: "standard",
-      })).status,
+      (
+        await sendWebhook(t, orderEvent(), webhookSecret, {
+          scheme: "standard",
+        })
+      ).status,
     ).toBe(202);
     expect(
-      (await sendWebhook(
-        t,
-        orderEvent("order.refunded", { status: "refunded", refunded_amount: 499 }),
-        webhookSecret,
-        { scheme: "standard" },
-      )).status,
+      (
+        await sendWebhook(
+          t,
+          orderEvent("order.refunded", {
+            status: "refunded",
+            refunded_amount: 499,
+          }),
+          webhookSecret,
+          { scheme: "standard" },
+        )
+      ).status,
     ).toBe(202);
     expect((await balance(t, userId))?.diamonds).toBe(WELCOME_DIAMONDS);
   });
@@ -500,14 +534,20 @@ describe("achats d’émeraudes avec Polar", () => {
       const t = setup();
       const { polar } = await import("../convex/polar");
       const sync = vi.spyOn(polar, "syncProducts").mockResolvedValue();
-      const event = { type, api_version: "2026-10", data: { id: "product-test" } };
+      const event = {
+        type,
+        api_version: "2026-10",
+        data: { id: "product-test" },
+      };
       vi.spyOn(console, "error").mockImplementation(() => {});
       expect((await sendWebhook(t, event, "forged-secret")).status).toBe(403);
       expect(sync).not.toHaveBeenCalled();
       expect(
-        (await sendWebhook(t, event, webhookSecret, {
-          scheme: "standard",
-        })).status,
+        (
+          await sendWebhook(t, event, webhookSecret, {
+            scheme: "standard",
+          })
+        ).status,
       ).toBe(202);
       expect(sync).toHaveBeenCalledOnce();
     },
@@ -518,10 +558,12 @@ describe("achats d’émeraudes avec Polar", () => {
     const { userId } = await player(t);
     await pendingPurchase(t, userId);
     expect(
-      (await sendWebhook(t, orderEvent("order.paid", { net_amount: "499" }))).status,
+      (await sendWebhook(t, orderEvent("order.paid", { net_amount: "499" })))
+        .status,
     ).toBe(400);
     expect(
-      (await sendWebhook(t, orderEvent("order.paid", { checkout_id: null }))).status,
+      (await sendWebhook(t, orderEvent("order.paid", { checkout_id: null })))
+        .status,
     ).toBe(400);
     expect(
       (await sendWebhook(t, orderEvent("order.paid", { metadata: {} }))).status,
@@ -729,5 +771,536 @@ describe("achats d’émeraudes avec Polar", () => {
       paidOrder("next-checkout", "next-order"),
     );
     expect((await balance(t, userId))?.diamonds).toBe(0);
+  });
+});
+
+async function legendaryCatalog(t: Test) {
+  for (const offer of LEGENDARY_OFFERS) {
+    const item = product(offer.id);
+    item.prices[0].priceAmount = 2000;
+    await t.mutation(components.polar.lib.createProduct, { product: item });
+  }
+}
+async function legendaryPurchase(
+  t: Test,
+  ownerId: string,
+  offerId: "solar-oath" | "abyssal-pact" = "solar-oath",
+) {
+  await t.mutation(internal.payments.recordLegendaryCheckout, {
+    ownerId,
+    offerId,
+    checkoutId: "legendary-checkout",
+    customerId: "customer-test",
+    productId: `product-${offerId}`,
+  });
+}
+const legendaryOrder = () => ({
+  ...paidOrder("legendary-checkout", "legendary-order"),
+  productId: "product-solar-oath",
+  netAmount: 2000,
+  totalAmount: 2000,
+});
+function legendaryEvent(
+  type = "order.paid",
+  changes: Record<string, unknown> = {},
+) {
+  return orderEvent(type, {
+    id: "legendary-order",
+    checkout_id: "legendary-checkout",
+    product_id: "product-solar-oath",
+    metadata: { purpose: "legendary_offer" },
+    net_amount: 2000,
+    total_amount: 2000,
+    ...changes,
+  });
+}
+
+function mockLegendaryPayment(
+  offerId: "solar-oath" | "abyssal-pact" = "solar-oath",
+  taxBehavior: string | null = null,
+) {
+  const item = product(offerId);
+  item.prices[0].priceAmount = 2000;
+  vi.mocked(productsGet).mockResolvedValue({
+    ok: true,
+    value: { ...item, prices: [{ ...item.prices[0], taxBehavior }] },
+  } as never);
+  const checkout = {
+    id: "legendary-checkout",
+    customerId: "customer-test",
+    amount: 2000,
+    totalAmount: 2000,
+    currency: "eur",
+    url: "https://sandbox.polar.sh/checkout/legendary",
+    taxBehavior: "inclusive",
+    allowDiscountCodes: false,
+    discountId: null,
+  };
+  vi.mocked(checkoutsCreate).mockResolvedValue({
+    ok: true,
+    value: checkout,
+  } as never);
+  return checkout;
+}
+
+describe("offres légendaires du refuge", () => {
+  it("requires authentication and the exact fixed EUR price for both products", async () => {
+    const t = setup();
+    await expect(t.query(api.payments.legendaryOffers, {})).rejects.toThrow(
+      "Connecte-toi",
+    );
+    await expect(
+      t.action(api.payments.createLegendaryCheckout, { offerId: "solar-oath" }),
+    ).rejects.toThrow("Connecte-toi");
+    await expect(
+      t.query(api.payments.legendaryCheckoutStatus, { checkoutId: "x" }),
+    ).rejects.toThrow("Connecte-toi");
+    const { client } = await player(t);
+    await legendaryCatalog(t);
+    expect(await client.query(api.payments.legendaryOffers, {})).toEqual({
+      rank: 1,
+      eligible: true,
+      offers: [
+        { id: "solar-oath", available: true },
+        { id: "abyssal-pact", available: true },
+      ],
+    });
+    const changed = product("solar-oath");
+    changed.prices[0].priceAmount = 1999;
+    await t.mutation(components.polar.lib.updateProduct, { product: changed });
+    expect(
+      (await client.query(api.payments.legendaryOffers, {})).offers[0]
+        .available,
+    ).toBe(false);
+    vi.stubEnv("POLAR_PRODUCT_OFFER_SOLAR_PACT", "product-abyssal-pact");
+    expect(
+      (await client.query(api.payments.legendaryOffers, {})).offers.every(
+        (offer) => !offer.available,
+      ),
+    ).toBe(true);
+  });
+
+  it("allows rank 25, blocks rank 26 server-side, and rechecks rank before recording checkout", async () => {
+    const t = setup();
+    const { client, userId } = await player(t);
+    await legendaryCatalog(t);
+    const experience25 = rankData.rankCosts
+      .slice(0, 24)
+      .reduce((sum, cost) => sum + cost, 0);
+    const walletId = await t.run((ctx) =>
+      ctx.db.insert("wallets", {
+        ownerId: userId,
+        gold: 0,
+        experience: experience25,
+        catalogueVersion: 2,
+      }),
+    );
+    expect(
+      (await client.query(api.payments.legendaryOffers, {})).eligible,
+    ).toBe(true);
+    await t.run((ctx) =>
+      ctx.db.patch(walletId, {
+        experience: experience25 + rankData.rankCosts[24],
+      }),
+    );
+    expect(await client.query(api.payments.legendaryOffers, {})).toMatchObject({
+      rank: 26,
+      eligible: false,
+    });
+    await expect(
+      client.action(api.payments.createLegendaryCheckout, {
+        offerId: "solar-oath",
+      }),
+    ).rejects.toThrow("rangs 1 à 25");
+    await expect(legendaryPurchase(t, userId)).rejects.toThrow("rangs 1 à 25");
+  });
+
+  it.each([null, "inclusive", "exclusive", "location"])(
+    "keeps a 20 EUR inclusive checkout with catalog tax behavior %s, bound to the player without redirect credit",
+    async (taxBehavior) => {
+      const t = setup();
+      const alice = await player(t);
+      const bob = await player(t, "bob");
+      await legendaryCatalog(t);
+      const { polar } = await import("../convex/polar");
+      const checkout = mockLegendaryPayment("solar-oath", taxBehavior);
+      await t.mutation(components.polar.lib.insertCustomer, {
+        id: checkout.customerId,
+        userId: alice.userId,
+      });
+      expect(
+        await alice.client.action(api.payments.createLegendaryCheckout, {
+          offerId: "solar-oath",
+        }),
+      ).toEqual({ url: `${checkout.url}?locale=fr&theme=dark` });
+      expect(checkoutsCreate).toHaveBeenCalledWith(polar.polar, {
+        products: ["product-solar-oath"],
+        prices: {
+          "product-solar-oath": [
+            {
+              amountType: "fixed",
+              priceAmount: 2000,
+              priceCurrency: "eur",
+              taxBehavior: "inclusive",
+            },
+          ],
+        },
+        customerId: checkout.customerId,
+        allowDiscountCodes: false,
+        discountId: null,
+        allowTrial: false,
+        embedOrigin: "https://sylve.example",
+        successUrl: "https://sylve.example/hub?offerCheckout={CHECKOUT_ID}",
+        returnUrl: "https://sylve.example/hub",
+        metadata: {
+          purpose: "legendary_offer",
+          offerId: "solar-oath",
+          userId: alice.userId,
+        },
+      });
+      expect(customersList).not.toHaveBeenCalled();
+      expect(customersCreate).not.toHaveBeenCalled();
+      expect((await balance(t, alice.userId))?.gold).toBe(0);
+      expect(
+        await bob.client.query(api.payments.legendaryCheckoutStatus, {
+          checkoutId: checkout.id,
+        }),
+      ).toBeNull();
+      expect(
+        await alice.client.query(api.payments.legendaryCheckoutStatus, {
+          checkoutId: checkout.id,
+        }),
+      ).toMatchObject({ status: "pending", emeralds: 0, gold: 0 });
+      await expect(
+        alice.client.action(api.payments.createLegendaryCheckout, {
+          offerId: "solar-oath",
+          gold: 999999,
+        } as never),
+      ).rejects.toThrow();
+    },
+  );
+
+  it.each([true, false])(
+    "saves the customer mapping when an existing Polar customer is %s",
+    async (exists) => {
+      const t = setup();
+      const { userId, client } = await player(t);
+      await legendaryCatalog(t);
+      const checkout = mockLegendaryPayment("abyssal-pact");
+      vi.mocked(customersList).mockResolvedValue({
+        ok: true,
+        value: {
+          result: { items: exists ? [{ id: checkout.customerId }] : [] },
+        },
+      } as never);
+      vi.mocked(customersCreate).mockResolvedValue({
+        ok: true,
+        value: { id: checkout.customerId },
+      } as never);
+      await client.action(api.payments.createLegendaryCheckout, {
+        offerId: "abyssal-pact",
+      });
+      expect(
+        await t.query(components.polar.lib.getCustomerByUserId, { userId }),
+      ).toMatchObject({ id: checkout.customerId, userId });
+      expect(customersList).toHaveBeenCalledWith(expect.anything(), {
+        email: "alice@example.invalid",
+        limit: 1,
+      });
+      if (exists) expect(customersCreate).not.toHaveBeenCalled();
+      else
+        expect(customersCreate).toHaveBeenCalledWith(expect.anything(), {
+          email: "alice@example.invalid",
+          metadata: { userId },
+        });
+      expect(checkoutsCreate).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          products: ["product-abyssal-pact"],
+          customerId: checkout.customerId,
+          prices: {
+            "product-abyssal-pact": [
+              {
+                amountType: "fixed",
+                priceAmount: 2000,
+                priceCurrency: "eur",
+                taxBehavior: "inclusive",
+              },
+            ],
+          },
+        }),
+      );
+    },
+  );
+
+  it.each([
+    { totalAmount: 2400 },
+    { taxBehavior: "exclusive" },
+    { allowDiscountCodes: true },
+    { discountId: "discount-test" },
+    { customerId: "another-customer" },
+  ])(
+    "does not expose or record a checkout with an invalid response %j",
+    async (changes) => {
+      const t = setup();
+      const { userId, client } = await player(t);
+      await legendaryCatalog(t);
+      const checkout = mockLegendaryPayment();
+      await t.mutation(components.polar.lib.insertCustomer, {
+        id: checkout.customerId,
+        userId,
+      });
+      vi.mocked(checkoutsCreate).mockResolvedValue({
+        ok: true,
+        value: { ...checkout, ...changes },
+      } as never);
+      await expect(
+        client.action(api.payments.createLegendaryCheckout, {
+          offerId: "solar-oath",
+        }),
+      ).rejects.toThrow();
+      expect(
+        await t.run((ctx) => ctx.db.query("legendaryPurchases").collect()),
+      ).toHaveLength(0);
+      expect((await balance(t, userId))?.gold ?? 0).toBe(0);
+    },
+  );
+
+  it.each(["solar-oath", "abyssal-pact"] as const)(
+    "credits all guaranteed %s contents once and preserves owned levels",
+    async (offerId) => {
+      const t = setup();
+      const { userId, client } = await player(t);
+      const offer = LEGENDARY_OFFERS.find((item) => item.id === offerId)!;
+      await t.run(async (ctx) => {
+        await ctx.db.insert("wallets", {
+          ownerId: userId,
+          gold: 31,
+          diamonds: 17,
+          catalogueVersion: 2,
+        });
+        await ctx.db.insert("collection", {
+          ownerId: userId,
+          variantId: offer.cards[0].variantId,
+          level: 3,
+          copies: 9,
+        });
+      });
+      await legendaryPurchase(t, userId, offerId);
+      const order = { ...legendaryOrder(), productId: `product-${offerId}` };
+      await Promise.all([
+        t.mutation(internal.payments.processLegendaryOrder, order),
+        t.mutation(internal.payments.processLegendaryOrder, order),
+      ]);
+      expect(await balance(t, userId)).toMatchObject({
+        diamonds: 1517,
+        gold: 40031,
+      });
+      const entries = await t.run((ctx) =>
+        ctx.db.query("collection").collect(),
+      );
+      expect(entries).toHaveLength(3);
+      expect(
+        entries.find((entry) => entry.variantId === offer.cards[0].variantId),
+      ).toMatchObject({ level: 3, copies: 194 });
+      for (const card of offer.cards.slice(1))
+        expect(
+          entries.find((entry) => entry.variantId === card.variantId)?.copies,
+        ).toBe(card.count - 1);
+      expect(
+        await client.query(api.payments.legendaryCheckoutStatus, {
+          checkoutId: "legendary-checkout",
+        }),
+      ).toMatchObject({
+        status: "paid",
+        gold: 40000,
+        emeralds: 1500,
+        cards: offer.cards,
+      });
+    },
+  );
+
+  it("routes signed notifications, ignores unpaid events, and fulfills even after the player passes rank 25", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await legendaryPurchase(t, userId);
+    const wallet = await balance(t, userId);
+    await t.run((ctx) => ctx.db.patch(wallet!._id, { experience: 1_000_000 }));
+    expect((await sendWebhook(t, legendaryEvent("order.created"))).status).toBe(
+      202,
+    );
+    expect((await balance(t, userId))?.gold).toBe(0);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(
+      (await sendWebhook(t, legendaryEvent(), "wrong-secret")).status,
+    ).toBe(403);
+    for (let attempt = 0; attempt < 2; attempt++)
+      expect(
+        (
+          await sendWebhook(t, legendaryEvent(), webhookSecret, {
+            scheme: "standard",
+          })
+        ).status,
+      ).toBe(202);
+    expect(await balance(t, userId)).toMatchObject({
+      diamonds: WELCOME_DIAMONDS + 1500,
+      gold: 40000,
+    });
+  });
+
+  it("rejects mismatched orders and incorrect totals before granting a bundle", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await legendaryPurchase(t, userId);
+    for (const change of [
+      { customerId: "other" },
+      { productId: "other" },
+      { currency: "usd" },
+      { totalAmount: 2400 },
+      { totalAmount: 1000 },
+      { netAmount: 0 },
+    ]) {
+      await expect(
+        t.mutation(internal.payments.processLegendaryOrder, {
+          ...legendaryOrder(),
+          ...change,
+        }),
+      ).rejects.toThrow();
+    }
+    expect((await balance(t, userId))?.gold).toBe(0);
+  });
+
+  it("applies cumulative refunds to every reward without restoring them on older paid events", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await legendaryPurchase(t, userId);
+    const order = legendaryOrder();
+    await t.mutation(internal.payments.processLegendaryOrder, order);
+    const partial = {
+      ...order,
+      kind: "refunded" as const,
+      status: "partially_refunded",
+      refundedAmount: 1000,
+    };
+    await t.mutation(internal.payments.processLegendaryOrder, partial);
+    await t.mutation(internal.payments.processLegendaryOrder, order);
+    expect(await balance(t, userId)).toMatchObject({
+      diamonds: WELCOME_DIAMONDS + 750,
+      gold: 20000,
+    });
+    expect(
+      (await t.run((ctx) => ctx.db.query("collection").collect()))
+        .map((entry) => entry.copies)
+        .sort((a, b) => a - b),
+    ).toEqual([3, 22, 92]);
+    expect(
+      (
+        await sendWebhook(
+          t,
+          legendaryEvent("order.refunded", {
+            status: "refunded",
+            refunded_amount: 2000,
+          }),
+        )
+      ).status,
+    ).toBe(202);
+    await t.mutation(internal.payments.processLegendaryOrder, partial);
+    expect(await balance(t, userId)).toMatchObject({
+      diamonds: WELCOME_DIAMONDS,
+      gold: 0,
+    });
+    expect(
+      await t.run((ctx) => ctx.db.query("collection").collect()),
+    ).toHaveLength(0);
+  });
+
+  it("handles a full refund before payment and keeps checkout recording idempotent", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await legendaryPurchase(t, userId);
+    const order = legendaryOrder();
+    const refund = {
+      ...order,
+      kind: "refunded" as const,
+      status: "refunded",
+      refundedAmount: 2000,
+    };
+    await t.mutation(internal.payments.processLegendaryOrder, refund);
+    await t.mutation(internal.payments.processLegendaryOrder, order);
+    expect((await balance(t, userId))?.gold).toBe(0);
+    expect(
+      await t.run((ctx) => ctx.db.query("collection").collect()),
+    ).toHaveLength(0);
+    await legendaryPurchase(t, userId, "abyssal-pact"); // repeated checkout IDs stay idempotent
+    expect(
+      await t.run((ctx) => ctx.db.query("legendaryPurchases").collect()),
+    ).toHaveLength(1);
+  });
+
+  it.each(["price-changed", "currency-changed", "archived", "recurring"])(
+    "does not open a checkout for the live %s product configuration",
+    async (invalid) => {
+      const t = setup();
+      const { client } = await player(t);
+      await legendaryCatalog(t);
+      const item = product("solar-oath");
+      const price = {
+        ...item.prices[0],
+        priceAmount: invalid === "price-changed" ? 2400 : 2000,
+        priceCurrency: invalid === "currency-changed" ? "usd" : "eur",
+        taxBehavior: null,
+      };
+      vi.mocked(productsGet).mockResolvedValue({
+        ok: true,
+        value: {
+          ...item,
+          prices: [price],
+          isArchived: invalid === "archived",
+          isRecurring: invalid === "recurring",
+        },
+      } as never);
+      await expect(
+        client.action(api.payments.createLegendaryCheckout, {
+          offerId: "solar-oath",
+        }),
+      ).rejects.toThrow("indisponible");
+      expect(checkoutsCreate).not.toHaveBeenCalled();
+      expect(customersList).not.toHaveBeenCalled();
+    },
+  );
+
+  it("keeps spent currencies and card reserves as a debt after a refund, preserving levels", async () => {
+    const t = setup();
+    const { userId } = await player(t);
+    await legendaryPurchase(t, userId);
+    const order = legendaryOrder();
+    await t.mutation(internal.payments.processLegendaryOrder, order);
+    await t.run(async (ctx) => {
+      const wallet = (await ctx.db.query("wallets").collect())[0];
+      await ctx.db.patch(wallet._id, { gold: 0, diamonds: 0 });
+      const cards = await ctx.db.query("collection").collect();
+      for (const card of cards)
+        await ctx.db.patch(card._id, { level: 2, copies: 0 });
+    });
+    await t.mutation(internal.payments.processLegendaryOrder, {
+      ...order,
+      kind: "refunded",
+      status: "refunded",
+      refundedAmount: 2000,
+    });
+    expect(await balance(t, userId)).toMatchObject({
+      diamonds: -1500,
+      gold: -40000,
+    });
+    const cards = await t.run((ctx) => ctx.db.query("collection").collect());
+    expect(cards.map((card) => card.level)).toEqual([2, 2, 2]);
+    expect(cards.map((card) => card.copies).sort((a, b) => a - b)).toEqual([
+      -185, -45, -7,
+    ]);
+    await t.mutation(internal.payments.processLegendaryOrder, order);
+    expect(await balance(t, userId)).toMatchObject({
+      diamonds: -1500,
+      gold: -40000,
+    });
   });
 });
