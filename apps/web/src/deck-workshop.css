@@ -260,7 +260,17 @@
 .deck-workshop .workshop-card[data-rarity] {
   border-width: 1px;
   border-color: var(--rarity-color);
+  background: var(--rarity-color);
   box-shadow: 0 3px 8px #08130f66;
+}
+.deck-workshop .workshop-card[data-rarity]::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 2px;
+  border: 1px solid color-mix(in srgb, var(--rarity-color), #13251c 45%);
+  border-radius: 5px;
+  pointer-events: none;
 }
 .deck-workshop .workshop-card[data-rarity]:hover:not(:disabled) {
   border-color: var(--rarity-color);
@@ -343,6 +353,9 @@
 }
 .workshop-card .card-stats .stat-badge strong {
   font-size: 22px;
+}
+.deck-workshop .workshop-card .card-stats {
+  z-index: 3;
 }
 .deck-workshop .workshop-card .card-stats .stat-badge {
   width: 34px;
