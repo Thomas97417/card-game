@@ -1,8 +1,8 @@
 {
-  "collection": "Sylve — sons de cartes Freesound CC0",
+  "collection": "Sylve — sons de cartes Freesound",
   "retrievedAt": "2026-10-28",
   "status": "active-in-combat",
-  "note": "CC0 originals are used for card-specific combat effects after trimming, fades, resampling, pitch adjustment and level balancing. The listening gallery plays the same processed excerpts as the game.",
+  "note": "Licensed Freesound originals are used after trimming, fades, filtering, layering and level balancing. CC BY 4.0 compositions are credited in the gallery and legal notices. The listening gallery plays the same processed excerpts as the game.",
   "sounds": [
     {
       "role": "swing",
@@ -331,7 +331,7 @@
       "sampleRate": 44100,
       "encoding": "Int16, interleaved",
       "bitDepth": 16,
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "summon",
@@ -463,7 +463,7 @@
       "sampleRate": 44100,
       "encoding": "Float32, interleaved",
       "bitDepth": 32,
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "defeat",
@@ -496,7 +496,7 @@
       "sampleRate": 96000,
       "encoding": "Int16, interleaved",
       "bitDepth": 16,
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "placement",
@@ -520,7 +520,7 @@
       "channels": 2,
       "bitDepth": 16,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "placement",
@@ -544,7 +544,7 @@
       "channels": 2,
       "bitDepth": 16,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "fire-cast",
@@ -616,7 +616,7 @@
       "channels": 2,
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "water-hit",
@@ -640,7 +640,7 @@
       "channels": 2,
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "storm",
@@ -664,7 +664,7 @@
       "channels": 2,
       "bitDepth": 16,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "nature",
@@ -736,7 +736,7 @@
       "channels": 2,
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "shadow",
@@ -808,7 +808,7 @@
       "channels": 2,
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
-      "usedInCombat": true
+      "usedInCombat": false
     },
     {
       "role": "blunt-hit",
@@ -928,11 +928,205 @@
       "bitDepth": 24,
       "licenseVerifiedAt": "2026-10-28",
       "usedInCombat": true
+    },
+    {
+      "role": "freeze-natural",
+      "freesoundId": 452645,
+      "title": "ice grinding cracking freezing designed.wav",
+      "author": "kyles",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/kyles/sounds/452645/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/freeze-natural-452645.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/kyles/sounds/452645/download/452645__kyles__ice-grinding-cracking-freezing-designed.wav",
+      "sizeBytes": 1026810,
+      "sha256": "415edcd2c47b9c0fca70f20650daf63603f3ac56510167680edf489e14b2e925",
+      "durationSeconds": 7.006,
+      "sampleRate": 48000,
+      "channels": 1,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "thunder",
+      "freesoundId": 683420,
+      "title": "Short_Thunder_Deep.wav",
+      "author": "SholeColtis",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/SholeColtis/sounds/683420/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/thunder-683420.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/SholeColtis/sounds/683420/download/683420__sholecoltis__short_thunder_deep.wav",
+      "sizeBytes": 1861570,
+      "sha256": "4a46aef56ccdb5ca825bea313544da4f23045e2bb45a820a03330779e0820bd9",
+      "durationSeconds": 6.423,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "water-waves",
+      "freesoundId": 614299,
+      "title": "Gentle waves on a lake",
+      "author": "TheFlyFishingFilmmaker",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/TheFlyFishingFilmmaker/sounds/614299/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/water-waves-614299.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/TheFlyFishingFilmmaker/sounds/614299/download/614299__theflyfishingfilmmaker__gentle-waves-on-a-lake.wav",
+      "sizeBytes": 30952862,
+      "sha256": "f70458eefa21a673270187ea488a2215602fca1a8cc76cfedf1f7d2042484eb0",
+      "durationSeconds": 175.46699999999998,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "claw-scratch",
+      "freesoundId": 844109,
+      "title": "scratch_short_dry",
+      "author": "perspektywa_tn",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/perspektywa_tn/sounds/844109/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/claw-scratch-844109.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/perspektywa_tn/sounds/844109/download/844109__perspektywa_tn__scratch_short_dry.wav",
+      "sizeBytes": 1152690,
+      "sha256": "58219d46f7b53ed321b4070033f531b8657a17ba01f5c97822aecc4ee8dc8631",
+      "durationSeconds": 4,
+      "sampleRate": 96000,
+      "channels": 1,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "summon-shimmer",
+      "freesoundId": 521883,
+      "title": "Shimmering Object 2.wav",
+      "author": "opticaillusions",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/opticaillusions/sounds/521883/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/summon-shimmer-521883.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/opticaillusions/sounds/521883/download/521883__opticaillusions__shimmering-object-2.wav",
+      "sizeBytes": 4319944,
+      "sha256": "601ce61251d839b86b89d55b6bf90b312a22e73216fbfde80283f132c94b6e21",
+      "durationSeconds": 12.243,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 32,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "arcane-chimes",
+      "freesoundId": 459401,
+      "title": "CHIMES - 2",
+      "author": "SamuelGremaud",
+      "license": "CC0-1.0",
+      "source": "https://freesound.org/people/SamuelGremaud/sounds/459401/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/arcane-chimes-459401.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/SamuelGremaud/sounds/459401/download/459401__samuelgremaud__chimes-2.wav",
+      "sizeBytes": 4935950,
+      "sha256": "58cb1604694f203f4f6510d52981bd9ce2663fc91316b322d8544452f1c423d8",
+      "durationSeconds": 17.081,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "victory-orchestra",
+      "freesoundId": 470083,
+      "title": "Music: Orchestral Victory Fanfare",
+      "author": "Sheyvan",
+      "license": "CC-BY-4.0",
+      "source": "https://freesound.org/people/Sheyvan/sounds/470083/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/victory-orchestra-470083.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Sheyvan/sounds/470083/download/470083__sheyvan__music-orchestral-victory-fanfare.wav",
+      "sizeBytes": 1306134,
+      "sha256": "fab30018b8f3d501923fbe780dfefa62a1da02711d0f988665b6fdf769660d26",
+      "durationSeconds": 4.528,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "modifications": "Extrait, rééchantillonnage, filtres, niveau et fondus adaptés au jeu.",
+      "usedInCombat": true
+    },
+    {
+      "role": "defeat-orchestra",
+      "freesoundId": 394900,
+      "title": "Failure 1.wav",
+      "author": "FunWithSound",
+      "license": "CC-BY-4.0",
+      "source": "https://freesound.org/people/FunWithSound/sounds/394900/",
+      "variant": "main",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/defeat-orchestra-394900.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/FunWithSound/sounds/394900/download/394900__funwithsound__failure-1.wav",
+      "sizeBytes": 3231242,
+      "sha256": "6324ec0c5d5e8c390be2e7126ef595cbcbb18740d64a645960971e4b43518152",
+      "durationSeconds": 8.414,
+      "sampleRate": 96000,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "modifications": "Extrait, rééchantillonnage, filtres, niveau et fondus adaptés au jeu.",
+      "usedInCombat": true
     }
   ],
   "combat": {
-    "file": "apps/web/public/audio/combat/freesound-effects-877a05901026.wav",
-    "sha256": "877a0590102664063f36be2caeaa4c11659ec0a83179f2b5bc89c9e55f25dc74",
+    "file": "apps/web/public/audio/combat/freesound-effects-8a36772a3bd3.wav",
+    "sha256": "8a36772a3bd34d3e0161ddb425d5fee7bd3c0cd00ab5ae7b8089ff4e03b435cc",
     "sampleRate": 44100,
     "channels": 1,
     "bitDepth": 16,
@@ -1030,11 +1224,16 @@
       {
         "name": "freeze",
         "sound": "freeze",
-        "source": 160420,
-        "start": 0,
-        "duration": 0.6,
-        "fadeOut": 0.04,
-        "gain": 0.5369750777585324,
+        "source": 452645,
+        "start": 0.5,
+        "duration": 0.55,
+        "fadeOut": 0.12,
+        "fadeIn": 0.035,
+        "highpass": 120,
+        "lowpass": 4800,
+        "levelDb": -3,
+        "revised": true,
+        "gain": 0.7978171215963251,
         "at": 5480
       },
       {
@@ -1045,7 +1244,7 @@
         "duration": 0.2,
         "fadeOut": 0.035,
         "gain": 0.5808580676525056,
-        "at": 6200
+        "at": 6150
       },
       {
         "name": "hero",
@@ -1055,68 +1254,205 @@
         "duration": 1.1,
         "fadeOut": 0.16,
         "gain": 0.5720659108316664,
-        "at": 6520
+        "at": 6470
       },
       {
         "name": "victory",
         "sound": "victory",
-        "source": 449069,
+        "source": 470083,
         "start": 0,
-        "duration": 2,
-        "fadeOut": 0.1,
-        "gain": 0.6043391798166741,
-        "at": 7740
+        "duration": 4.5,
+        "fadeOut": 0.25,
+        "fadeIn": 0.01,
+        "highpass": 60,
+        "lowpass": 11000,
+        "levelDb": -1.5,
+        "revised": true,
+        "gain": 0.411081295625216,
+        "at": 7690
       },
       {
         "name": "defeat",
         "sound": "defeat",
-        "source": 609028,
-        "start": 0.025,
-        "duration": 3.1,
-        "fadeOut": 0.12,
-        "gain": 1.319244319458205,
-        "at": 9860
+        "source": 394900,
+        "start": 2.375,
+        "duration": 3.9,
+        "fadeOut": 0.55,
+        "fadeIn": 0.035,
+        "highpass": 60,
+        "lowpass": 7400,
+        "levelDb": -2.5,
+        "revised": true,
+        "gain": 0.3362607580551236,
+        "at": 12310
       },
       {
         "name": "summon",
         "sound": "summon",
-        "source": 556387,
-        "start": 0.034,
-        "duration": 0.19,
-        "fadeOut": 0.04,
-        "gain": 1.6336079878830652,
-        "at": 13080
+        "source": 521883,
+        "start": 0.4,
+        "duration": 0.74,
+        "fadeOut": 0.2,
+        "speed": 0.9,
+        "fadeIn": 0.065,
+        "highpass": 200,
+        "lowpass": 4000,
+        "levelDb": -3,
+        "layers": [
+          {
+            "source": 507466,
+            "start": 0.23,
+            "duration": 0.3,
+            "fadeOut": 0.1,
+            "at": 0,
+            "gainDb": -12,
+            "reverse": true,
+            "highpass": 180,
+            "lowpass": 3200,
+            "fadeIn": 0.02
+          },
+          {
+            "source": 459401,
+            "start": 2.65,
+            "duration": 0.52,
+            "fadeOut": 0.22,
+            "at": 0.1,
+            "gainDb": -15,
+            "speed": 0.95,
+            "fadeIn": 0.04,
+            "highpass": 250,
+            "lowpass": 3500
+          }
+        ],
+        "revised": true,
+        "gain": 18.158737657288984,
+        "at": 16329.999999999998
       },
       {
         "name": "summon-2",
         "sound": "summon",
-        "source": 556387,
-        "start": 3.654,
-        "duration": 0.2,
-        "fadeOut": 0.04,
-        "gain": 1.1507364745864452,
-        "at": 13390
+        "source": 521883,
+        "start": 2.7,
+        "duration": 0.7,
+        "fadeOut": 0.2,
+        "speed": 1.02,
+        "fadeIn": 0.07,
+        "highpass": 200,
+        "lowpass": 3900,
+        "levelDb": -3,
+        "layers": [
+          {
+            "source": 507466,
+            "start": 0.23,
+            "duration": 0.3,
+            "fadeOut": 0.1,
+            "at": 0,
+            "gainDb": -12,
+            "reverse": true,
+            "highpass": 180,
+            "lowpass": 3200,
+            "fadeIn": 0.02
+          },
+          {
+            "source": 459401,
+            "start": 5.75,
+            "duration": 0.48,
+            "fadeOut": 0.22,
+            "at": 0.08,
+            "gainDb": -17,
+            "speed": 0.9,
+            "fadeIn": 0.04,
+            "highpass": 250,
+            "lowpass": 3400
+          }
+        ],
+        "revised": true,
+        "gain": 20.603108372195248,
+        "at": 17190
       },
       {
         "name": "summon-3",
         "sound": "summon",
-        "source": 801349,
-        "start": 2.635,
-        "duration": 0.2,
-        "fadeOut": 0.04,
-        "gain": 6.488880127415928,
-        "at": 13710
+        "source": 521883,
+        "start": 5.8,
+        "duration": 0.76,
+        "fadeOut": 0.22,
+        "speed": 0.88,
+        "fadeIn": 0.065,
+        "highpass": 180,
+        "lowpass": 4000,
+        "levelDb": -3,
+        "layers": [
+          {
+            "source": 507466,
+            "start": 0.23,
+            "duration": 0.3,
+            "fadeOut": 0.1,
+            "at": 0,
+            "gainDb": -12,
+            "reverse": true,
+            "highpass": 180,
+            "lowpass": 3200,
+            "fadeIn": 0.02
+          },
+          {
+            "source": 459401,
+            "start": 3.05,
+            "duration": 0.52,
+            "fadeOut": 0.22,
+            "at": 0.12,
+            "gainDb": -15,
+            "speed": 1.05,
+            "fadeIn": 0.04,
+            "highpass": 250,
+            "lowpass": 3500
+          }
+        ],
+        "revised": true,
+        "gain": 17.00768254745592,
+        "at": 18010
       },
       {
         "name": "summon-heavy",
         "sound": "summon-heavy",
-        "source": 556387,
-        "start": 4.61,
-        "duration": 0.25,
-        "fadeOut": 0.04,
-        "speed": 0.76,
-        "gain": 0.530274848755802,
-        "at": 14030
+        "source": 521883,
+        "start": 8.35,
+        "duration": 0.82,
+        "fadeOut": 0.24,
+        "speed": 0.72,
+        "fadeIn": 0.07,
+        "highpass": 100,
+        "lowpass": 3300,
+        "levelDb": -3,
+        "layers": [
+          {
+            "source": 507466,
+            "start": 0.23,
+            "duration": 0.43,
+            "fadeOut": 0.16,
+            "at": 0,
+            "gainDb": -11,
+            "speed": 0.7,
+            "fadeIn": 0.03,
+            "highpass": 100,
+            "lowpass": 2500
+          },
+          {
+            "source": 459401,
+            "start": 2.65,
+            "duration": 0.58,
+            "fadeOut": 0.24,
+            "at": 0.13,
+            "gainDb": -16,
+            "speed": 0.85,
+            "fadeIn": 0.04,
+            "highpass": 150,
+            "lowpass": 3000
+          }
+        ],
+        "revised": true,
+        "gain": 14.489918122402283,
+        "at": 18890
       },
       {
         "name": "heavy-swing",
@@ -1127,18 +1463,22 @@
         "fadeOut": 0.04,
         "speed": 0.72,
         "gain": 0.43385526472309244,
-        "at": 14400
+        "at": 19830
       },
       {
         "name": "claw-swing",
         "sound": "claw-swing",
-        "source": 733889,
-        "start": 0.001,
-        "duration": 0.22,
-        "fadeOut": 0.04,
-        "speed": 1.2,
-        "gain": 0.49689647474018955,
-        "at": 14880
+        "source": 844109,
+        "start": 0.515,
+        "duration": 0.25,
+        "fadeOut": 0.055,
+        "fadeIn": 0.006,
+        "highpass": 200,
+        "lowpass": 5200,
+        "levelDb": -4,
+        "revised": true,
+        "gain": 0.7725361323917285,
+        "at": 20310
       },
       {
         "name": "hammer-hit",
@@ -1149,7 +1489,7 @@
         "fadeOut": 0.08,
         "speed": 0.85,
         "gain": 0.5915191916986342,
-        "at": 15220
+        "at": 20680
       },
       {
         "name": "hit-blunt",
@@ -1159,7 +1499,7 @@
         "duration": 0.27,
         "fadeOut": 0.04,
         "gain": 0.3832888860346047,
-        "at": 15800
+        "at": 21260
       },
       {
         "name": "hit-arrow",
@@ -1167,9 +1507,14 @@
         "source": 410751,
         "start": 0.8,
         "duration": 0.43,
-        "fadeOut": 0.055,
-        "gain": 0.5409272896745855,
-        "at": 16190.000000000002
+        "fadeOut": 0.1,
+        "fadeIn": 0.006,
+        "highpass": 150,
+        "lowpass": 3500,
+        "levelDb": -5.5,
+        "revised": true,
+        "gain": 0.3116869026168288,
+        "at": 21650
       },
       {
         "name": "bard-cast",
@@ -1180,18 +1525,23 @@
         "fadeOut": 0.09,
         "speed": 1.25,
         "gain": 1.36220047220616,
-        "at": 16740
+        "at": 22200
       },
       {
         "name": "beast-arrival",
         "sound": "beast-arrival",
-        "source": 483713,
-        "start": 0.055,
-        "duration": 0.52,
-        "fadeOut": 0.07,
+        "source": 521883,
+        "start": 4.3,
+        "duration": 0.42,
+        "fadeOut": 0.15,
         "speed": 0.9,
-        "gain": 0.826194665981085,
-        "at": 17420
+        "fadeIn": 0.1,
+        "highpass": 220,
+        "lowpass": 3200,
+        "levelDb": -9,
+        "revised": true,
+        "gain": 26.991906837986427,
+        "at": 22880
       },
       {
         "name": "arrival-metal",
@@ -1201,7 +1551,7 @@
         "duration": 0.22,
         "fadeOut": 0.04,
         "gain": 0.41113823794203086,
-        "at": 18060
+        "at": 23420
       },
       {
         "name": "cast-fire",
@@ -1212,7 +1562,7 @@
         "fadeOut": 0.055,
         "speed": 1.28,
         "gain": 0.2742691891247613,
-        "at": 18400
+        "at": 23760
       },
       {
         "name": "hit-fire",
@@ -1222,49 +1572,83 @@
         "duration": 0.5,
         "fadeOut": 0.09,
         "gain": 0.35118293285495344,
-        "at": 18890
+        "at": 24250
       },
       {
         "name": "cast-water",
         "sound": "cast-water",
-        "source": 737235,
-        "start": 0.035,
-        "duration": 0.35,
-        "fadeOut": 0.04,
-        "gain": 0.45309884729407734,
-        "at": 19510
+        "source": 614299,
+        "start": 0.3,
+        "duration": 0.52,
+        "fadeOut": 0.18,
+        "speed": 0.8,
+        "fadeIn": 0.08,
+        "highpass": 180,
+        "lowpass": 4200,
+        "levelDb": -4,
+        "layers": [
+          {
+            "source": 521883,
+            "start": 0.4,
+            "duration": 0.38,
+            "fadeOut": 0.15,
+            "at": 0.05,
+            "gainDb": -16,
+            "fadeIn": 0.05,
+            "highpass": 300,
+            "lowpass": 3800
+          }
+        ],
+        "revised": true,
+        "gain": 0.8994207844164043,
+        "at": 24870
       },
       {
         "name": "hit-water",
         "sound": "hit-water",
-        "source": 737234,
-        "start": 0.015,
-        "duration": 0.4,
-        "fadeOut": 0.055,
-        "gain": 0.5046728666404029,
-        "at": 19980
+        "source": 614299,
+        "start": 20.6,
+        "duration": 0.74,
+        "fadeOut": 0.22,
+        "speed": 0.9,
+        "fadeIn": 0.06,
+        "highpass": 120,
+        "lowpass": 3400,
+        "levelDb": -3,
+        "revised": true,
+        "gain": 0.360904945059213,
+        "at": 25510
       },
       {
         "name": "cast-storm",
         "sound": "cast-storm",
-        "source": 512471,
-        "start": 0,
-        "duration": 0.17,
-        "fadeOut": 0.025,
-        "speed": 1.3,
-        "gain": 0.5456908415679455,
-        "at": 20500
+        "source": 683420,
+        "start": 0.24,
+        "duration": 0.45,
+        "fadeOut": 0.18,
+        "speed": 0.85,
+        "fadeIn": 0.08,
+        "highpass": 65,
+        "lowpass": 1300,
+        "levelDb": -6,
+        "revised": true,
+        "gain": 3.4876506251834907,
+        "at": 26370
       },
       {
         "name": "hit-storm",
         "sound": "hit-storm",
-        "source": 512471,
-        "start": 0,
-        "duration": 0.27,
-        "fadeOut": 0.035,
-        "speed": 0.8,
-        "gain": 0.5138180709119434,
-        "at": 20790
+        "source": 683420,
+        "start": 0.42,
+        "duration": 0.85,
+        "fadeOut": 0.24,
+        "fadeIn": 0.025,
+        "highpass": 55,
+        "lowpass": 2200,
+        "levelDb": -3,
+        "revised": true,
+        "gain": 1.557790397003495,
+        "at": 26940
       },
       {
         "name": "cast-nature",
@@ -1275,7 +1659,7 @@
         "fadeOut": 0.055,
         "speed": 1.15,
         "gain": 1.210979207995153,
-        "at": 21180
+        "at": 27910
       },
       {
         "name": "hit-nature",
@@ -1285,7 +1669,7 @@
         "duration": 0.37,
         "fadeOut": 0.06,
         "gain": 1.6984246645816534,
-        "at": 21640
+        "at": 28370
       },
       {
         "name": "cast-light",
@@ -1296,7 +1680,7 @@
         "fadeOut": 0.075,
         "speed": 1.6,
         "gain": 0.7192018595884769,
-        "at": 22130
+        "at": 28860
       },
       {
         "name": "hit-light",
@@ -1307,28 +1691,66 @@
         "fadeOut": 0.08,
         "speed": 1.1,
         "gain": 0.7660493921685909,
-        "at": 22670
+        "at": 29400
       },
       {
         "name": "cast-arcane",
         "sound": "cast-arcane",
-        "source": 529024,
-        "start": 0.43,
-        "duration": 0.34,
-        "fadeOut": 0.06,
-        "speed": 1.3,
-        "gain": 0.22571929056399181,
-        "at": 23190
+        "source": 521883,
+        "start": 2.9,
+        "duration": 0.45,
+        "fadeOut": 0.17,
+        "speed": 0.98,
+        "fadeIn": 0.07,
+        "highpass": 220,
+        "lowpass": 4800,
+        "levelDb": -4,
+        "layers": [
+          {
+            "source": 459401,
+            "start": 2.72,
+            "duration": 0.34,
+            "fadeOut": 0.14,
+            "at": 0.04,
+            "gainDb": -13,
+            "speed": 1.05,
+            "fadeIn": 0.015,
+            "highpass": 250,
+            "lowpass": 3500
+          }
+        ],
+        "revised": true,
+        "gain": 12.981257430926062,
+        "at": 29920
       },
       {
         "name": "hit-arcane",
         "sound": "hit-arcane",
-        "source": 529024,
-        "start": 0.68,
-        "duration": 0.42,
-        "fadeOut": 0.08,
-        "gain": 0.23837029668883206,
-        "at": 23650
+        "source": 459401,
+        "start": 3.03,
+        "duration": 0.55,
+        "fadeOut": 0.22,
+        "speed": 0.9,
+        "fadeIn": 0.01,
+        "highpass": 250,
+        "lowpass": 4000,
+        "levelDb": -4,
+        "layers": [
+          {
+            "source": 521883,
+            "start": 5.95,
+            "duration": 0.4,
+            "fadeOut": 0.16,
+            "at": 0.03,
+            "gainDb": -7,
+            "fadeIn": 0.05,
+            "highpass": 180,
+            "lowpass": 4300
+          }
+        ],
+        "revised": true,
+        "gain": 1.2415254308633512,
+        "at": 30490
       },
       {
         "name": "cast-shadow",
@@ -1339,7 +1761,7 @@
         "fadeOut": 0.06,
         "speed": 1.3,
         "gain": 0.3735270067776629,
-        "at": 24190
+        "at": 31160
       },
       {
         "name": "hit-shadow",
@@ -1350,18 +1772,23 @@
         "fadeOut": 0.08,
         "speed": 0.9,
         "gain": 0.3690945009566246,
-        "at": 24660
+        "at": 31630
       },
       {
         "name": "cast-ice",
         "sound": "cast-ice",
-        "source": 160420,
-        "start": 0,
-        "duration": 0.32,
-        "fadeOut": 0.05,
-        "speed": 1.15,
-        "gain": 0.6081928579544893,
-        "at": 25240
+        "source": 452645,
+        "start": 1.7,
+        "duration": 0.38,
+        "fadeOut": 0.12,
+        "fadeIn": 0.07,
+        "reverse": true,
+        "highpass": 200,
+        "lowpass": 4300,
+        "levelDb": -6,
+        "revised": true,
+        "gain": 1.4753782285050325,
+        "at": 32210
       },
       {
         "name": "hit-ice",
@@ -1371,7 +1798,7 @@
         "duration": 0.34,
         "fadeOut": 0.06,
         "gain": 0.9015435700393719,
-        "at": 25680
+        "at": 32710
       },
       {
         "name": "cast-poison",
@@ -1382,7 +1809,7 @@
         "fadeOut": 0.045,
         "speed": 1.1,
         "gain": 4.015431663786525,
-        "at": 26140
+        "at": 33170
       },
       {
         "name": "hit-poison",
@@ -1392,7 +1819,7 @@
         "duration": 0.42,
         "fadeOut": 0.06,
         "gain": 13.159411569560023,
-        "at": 26580
+        "at": 33610
       },
       {
         "name": "cast-earth",
@@ -1403,7 +1830,7 @@
         "fadeOut": 0.055,
         "speed": 0.82,
         "gain": 0.40894559890692156,
-        "at": 27120
+        "at": 34150
       },
       {
         "name": "hit-earth",
@@ -1414,8 +1841,9 @@
         "fadeOut": 0.09,
         "speed": 0.9,
         "gain": 0.3322117131447683,
-        "at": 27540
+        "at": 34570
       }
     ]
-  }
+  },
+  "paletteRevision": "fantasy-orchestral-2"
 }

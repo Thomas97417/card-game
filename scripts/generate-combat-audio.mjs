@@ -15,15 +15,22 @@ const sources = JSON.parse(await readFile(sourcesPath, "utf8"));
 const edits = JSON.parse(await readFile(new URL("combat-audio-edits.json", import.meta.url), "utf8"));
 const ffmpeg = process.env.FFMPEG || "ffmpeg";
 
-function render(edit) {
+function renderLayer(edit) {
   const source = sources.sounds.find((sound) => sound.freesoundId === edit.source);
-  if (!source?.isOriginal || source.license !== "CC0-1.0") throw new Error(`Missing CC0 original: ${edit.source}`);
+  if (!source?.isOriginal || !["CC0-1.0", "CC-BY-4.0"].includes(source.license)) throw new Error(`Missing licensed original: ${edit.source}`);
   const original = originalBuffers.get(source.freesoundId);
   if (createHash("sha256").update(original).digest("hex") !== source.sha256) throw new Error(`Source checksum mismatch: ${source.file}`);
   const speed = edit.speed ?? 1;
+  const filters = [
+    `atrim=start=${edit.start}:duration=${edit.duration * speed}`, "asetpts=PTS-STARTPTS",
+    `aresample=${rate}`, `asetrate=${Math.round(rate * speed)}`, `aresample=${rate}`,
+    ...(edit.reverse ? ["areverse"] : []),
+    ...(edit.highpass ? [`highpass=f=${edit.highpass}`] : []),
+    ...(edit.lowpass ? [`lowpass=f=${edit.lowpass}`] : []),
+  ];
   const decoded = spawnSync(ffmpeg, [
     "-v", "error", "-i", fileURLToPath(new URL(source.file, root)),
-    "-af", `atrim=start=${edit.start}:duration=${edit.duration * speed},asetpts=PTS-STARTPTS,aresample=${rate},asetrate=${Math.round(rate * speed)},aresample=${rate}`,
+    "-af", filters.join(","),
     "-ar", String(rate), "-ac", "1", "-f", "f32le", "pipe:1",
   ], { maxBuffer: 8 * 1024 * 1024 });
   if (decoded.error) throw new Error(`FFmpeg is required to rebuild combat audio: ${decoded.error.message}`);
@@ -31,7 +38,7 @@ function render(edit) {
   const samples = new Float32Array(Math.min(Math.round(edit.duration * rate), decoded.stdout.length / 4));
   let peak = 0;
   let energy = 0;
-  const fadeIn = Math.round(rate * 0.003);
+  const fadeIn = Math.max(1, Math.round(rate * (edit.fadeIn ?? 0.003)));
   const fadeOut = Math.round(rate * edit.fadeOut);
   for (let index = 0; index < samples.length; index++) {
     const envelope = Math.min(1, index / fadeIn, (samples.length - 1 - index) / fadeOut);
@@ -46,6 +53,23 @@ function render(edit) {
   const gain = Math.min(0.11 / Math.sqrt(energy / samples.length), 0.58 / peak);
   for (let index = 0; index < samples.length; index++) samples[index] *= gain;
   return { samples, gain };
+}
+
+function render(edit) {
+  const primary = renderLayer(edit);
+  const samples = new Float32Array(Math.round(edit.duration * rate));
+  samples.set(primary.samples);
+  for (const layer of edit.layers ?? []) {
+    if ((layer.at ?? 0) + layer.duration > edit.duration + 1 / rate) throw new Error(`Layer extends beyond ${edit.name}`);
+    const rendered = renderLayer(layer);
+    const at = Math.round((layer.at ?? 0) * rate);
+    const gain = 10 ** ((layer.gainDb ?? 0) / 20);
+    for (let index = 0; index < rendered.samples.length; index++) samples[at + index] += rendered.samples[index] * gain;
+  }
+  const peak = samples.reduce((max, sample) => Math.max(max, Math.abs(sample)), 0);
+  const gain = (peak > 0.580001 ? 0.58 / peak : 1) * 10 ** ((edit.levelDb ?? 0) / 20);
+  for (let index = 0; index < samples.length; index++) samples[index] *= gain;
+  return { samples, gain: primary.gain * gain };
 }
 
 function wave(samples) {
@@ -93,10 +117,14 @@ await mkdir(output, { recursive: true });
 await writeFile(new URL(filename, output), audio);
 await writeFile(runtimeManifest, `${JSON.stringify({ src: `/audio/combat/${filename}`, sounds, sprite }, null, 2)}\n`);
 sources.status = "active-in-combat";
-sources.note = "CC0 originals are used for card-specific combat effects after trimming, fades, resampling, pitch adjustment and level balancing. The listening gallery plays the same processed excerpts as the game.";
+sources.note = "Licensed Freesound originals are used after trimming, fades, filtering, layering and level balancing. CC BY 4.0 compositions are credited in the gallery and legal notices. The listening gallery plays the same processed excerpts as the game.";
 sources.combat = { file: `apps/web/public/audio/combat/${filename}`, sha256, sampleRate: rate, channels: 1, bitDepth: 16, clips: processed };
-for (const source of sources.sounds) source.usedInCombat = edits.some((edit) => edit.source === source.freesoundId);
+for (const source of sources.sounds) source.usedInCombat = edits.some((edit) =>
+  edit.source === source.freesoundId || edit.layers?.some((layer) => layer.source === source.freesoundId));
 await writeFile(sourcesPath, `${JSON.stringify(sources, null, 2)}\n`);
+const credits = sources.sounds.filter((source) => source.usedInCombat && source.license === "CC-BY-4.0")
+  .map(({ freesoundId, title, author, source, licenseUrl, modifications }) => ({ freesoundId, title, author, source, licenseUrl, modifications }));
+await writeFile(new URL("apps/web/src/components/game/combat-audio-credits.json", root), `${JSON.stringify(credits, null, 2)}\n`);
 await writeAudioGallery(output, filename, sources.sounds, processed);
 for (const old of await readdir(output)) {
   if (old === "effects.wav" || (/^freesound-effects-[a-f0-9]{12}\.wav$/.test(old) && old !== filename)) {

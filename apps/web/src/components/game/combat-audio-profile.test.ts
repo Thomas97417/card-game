@@ -69,13 +69,14 @@ describe("card identities and elements", () => {
 });
 
 describe("personalised timing and abilities", () => {
-  it("places the piece immediately then adds its short arrival accent", () => {
+  it("starts magical materialisation at placement then adds the creature's accent", () => {
     const cues = combatAudioCues([{ seq: 1, type: "summon", player: 0, cardId: "guardian" }], 0);
     expect(cues.map(({ sound, at }) => ({ sound, at }))).toEqual([
       { sound: "summon-heavy", at: 0 }, { sound: "cast-earth", at: 45 },
     ]);
     expect(soundtrack.sounds.summon).toHaveLength(3);
-    expect(soundtrack.sprite.summon[1]).toBeLessThanOrEqual(220);
+    expect(soundtrack.sprite.summon[1]).toBeGreaterThanOrEqual(500);
+    expect(soundtrack.sprite.summon[1]).toBeLessThanOrEqual(1000);
   });
 
   it("lands physical and elemental damage together, with only a shield on blocked hits", () => {

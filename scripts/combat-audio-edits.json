@@ -74,10 +74,15 @@
   {
     "name": "freeze",
     "sound": "freeze",
-    "source": 160420,
-    "start": 0,
-    "duration": 0.6,
-    "fadeOut": 0.04
+    "source": 452645,
+    "start": 0.5,
+    "duration": 0.55,
+    "fadeOut": 0.12,
+    "fadeIn": 0.035,
+    "highpass": 120,
+    "lowpass": 4800,
+    "levelDb": -3,
+    "revised": true
   },
   {
     "name": "death",
@@ -98,51 +103,188 @@
   {
     "name": "victory",
     "sound": "victory",
-    "source": 449069,
+    "source": 470083,
     "start": 0,
-    "duration": 2,
-    "fadeOut": 0.1
+    "duration": 4.5,
+    "fadeOut": 0.25,
+    "fadeIn": 0.01,
+    "highpass": 60,
+    "lowpass": 11000,
+    "levelDb": -1.5,
+    "revised": true
   },
   {
     "name": "defeat",
     "sound": "defeat",
-    "source": 609028,
-    "start": 0.025,
-    "duration": 3.1,
-    "fadeOut": 0.12
+    "source": 394900,
+    "start": 2.375,
+    "duration": 3.9,
+    "fadeOut": 0.55,
+    "fadeIn": 0.035,
+    "highpass": 60,
+    "lowpass": 7400,
+    "levelDb": -2.5,
+    "revised": true
   },
   {
     "name": "summon",
     "sound": "summon",
-    "source": 556387,
-    "start": 0.034,
-    "duration": 0.19,
-    "fadeOut": 0.04
+    "source": 521883,
+    "start": 0.4,
+    "duration": 0.74,
+    "fadeOut": 0.2,
+    "speed": 0.9,
+    "fadeIn": 0.065,
+    "highpass": 200,
+    "lowpass": 4000,
+    "levelDb": -3,
+    "layers": [
+      {
+        "source": 507466,
+        "start": 0.23,
+        "duration": 0.3,
+        "fadeOut": 0.1,
+        "at": 0,
+        "gainDb": -12,
+        "reverse": true,
+        "highpass": 180,
+        "lowpass": 3200,
+        "fadeIn": 0.02
+      },
+      {
+        "source": 459401,
+        "start": 2.65,
+        "duration": 0.52,
+        "fadeOut": 0.22,
+        "at": 0.1,
+        "gainDb": -15,
+        "speed": 0.95,
+        "fadeIn": 0.04,
+        "highpass": 250,
+        "lowpass": 3500
+      }
+    ],
+    "revised": true
   },
   {
     "name": "summon-2",
     "sound": "summon",
-    "source": 556387,
-    "start": 3.654,
-    "duration": 0.2,
-    "fadeOut": 0.04
+    "source": 521883,
+    "start": 2.7,
+    "duration": 0.7,
+    "fadeOut": 0.2,
+    "speed": 1.02,
+    "fadeIn": 0.07,
+    "highpass": 200,
+    "lowpass": 3900,
+    "levelDb": -3,
+    "layers": [
+      {
+        "source": 507466,
+        "start": 0.23,
+        "duration": 0.3,
+        "fadeOut": 0.1,
+        "at": 0,
+        "gainDb": -12,
+        "reverse": true,
+        "highpass": 180,
+        "lowpass": 3200,
+        "fadeIn": 0.02
+      },
+      {
+        "source": 459401,
+        "start": 5.75,
+        "duration": 0.48,
+        "fadeOut": 0.22,
+        "at": 0.08,
+        "gainDb": -17,
+        "speed": 0.9,
+        "fadeIn": 0.04,
+        "highpass": 250,
+        "lowpass": 3400
+      }
+    ],
+    "revised": true
   },
   {
     "name": "summon-3",
     "sound": "summon",
-    "source": 801349,
-    "start": 2.635,
-    "duration": 0.2,
-    "fadeOut": 0.04
+    "source": 521883,
+    "start": 5.8,
+    "duration": 0.76,
+    "fadeOut": 0.22,
+    "speed": 0.88,
+    "fadeIn": 0.065,
+    "highpass": 180,
+    "lowpass": 4000,
+    "levelDb": -3,
+    "layers": [
+      {
+        "source": 507466,
+        "start": 0.23,
+        "duration": 0.3,
+        "fadeOut": 0.1,
+        "at": 0,
+        "gainDb": -12,
+        "reverse": true,
+        "highpass": 180,
+        "lowpass": 3200,
+        "fadeIn": 0.02
+      },
+      {
+        "source": 459401,
+        "start": 3.05,
+        "duration": 0.52,
+        "fadeOut": 0.22,
+        "at": 0.12,
+        "gainDb": -15,
+        "speed": 1.05,
+        "fadeIn": 0.04,
+        "highpass": 250,
+        "lowpass": 3500
+      }
+    ],
+    "revised": true
   },
   {
     "name": "summon-heavy",
     "sound": "summon-heavy",
-    "source": 556387,
-    "start": 4.61,
-    "duration": 0.25,
-    "fadeOut": 0.04,
-    "speed": 0.76
+    "source": 521883,
+    "start": 8.35,
+    "duration": 0.82,
+    "fadeOut": 0.24,
+    "speed": 0.72,
+    "fadeIn": 0.07,
+    "highpass": 100,
+    "lowpass": 3300,
+    "levelDb": -3,
+    "layers": [
+      {
+        "source": 507466,
+        "start": 0.23,
+        "duration": 0.43,
+        "fadeOut": 0.16,
+        "at": 0,
+        "gainDb": -11,
+        "speed": 0.7,
+        "fadeIn": 0.03,
+        "highpass": 100,
+        "lowpass": 2500
+      },
+      {
+        "source": 459401,
+        "start": 2.65,
+        "duration": 0.58,
+        "fadeOut": 0.24,
+        "at": 0.13,
+        "gainDb": -16,
+        "speed": 0.85,
+        "fadeIn": 0.04,
+        "highpass": 150,
+        "lowpass": 3000
+      }
+    ],
+    "revised": true
   },
   {
     "name": "heavy-swing",
@@ -156,11 +298,15 @@
   {
     "name": "claw-swing",
     "sound": "claw-swing",
-    "source": 733889,
-    "start": 0.001,
-    "duration": 0.22,
-    "fadeOut": 0.04,
-    "speed": 1.2
+    "source": 844109,
+    "start": 0.515,
+    "duration": 0.25,
+    "fadeOut": 0.055,
+    "fadeIn": 0.006,
+    "highpass": 200,
+    "lowpass": 5200,
+    "levelDb": -4,
+    "revised": true
   },
   {
     "name": "hammer-hit",
@@ -185,7 +331,12 @@
     "source": 410751,
     "start": 0.8,
     "duration": 0.43,
-    "fadeOut": 0.055
+    "fadeOut": 0.1,
+    "fadeIn": 0.006,
+    "highpass": 150,
+    "lowpass": 3500,
+    "levelDb": -5.5,
+    "revised": true
   },
   {
     "name": "bard-cast",
@@ -199,11 +350,16 @@
   {
     "name": "beast-arrival",
     "sound": "beast-arrival",
-    "source": 483713,
-    "start": 0.055,
-    "duration": 0.52,
-    "fadeOut": 0.07,
-    "speed": 0.9
+    "source": 521883,
+    "start": 4.3,
+    "duration": 0.42,
+    "fadeOut": 0.15,
+    "speed": 0.9,
+    "fadeIn": 0.1,
+    "highpass": 220,
+    "lowpass": 3200,
+    "levelDb": -9,
+    "revised": true
   },
   {
     "name": "arrival-metal",
@@ -233,36 +389,70 @@
   {
     "name": "cast-water",
     "sound": "cast-water",
-    "source": 737235,
-    "start": 0.035,
-    "duration": 0.35,
-    "fadeOut": 0.04
+    "source": 614299,
+    "start": 0.3,
+    "duration": 0.52,
+    "fadeOut": 0.18,
+    "speed": 0.8,
+    "fadeIn": 0.08,
+    "highpass": 180,
+    "lowpass": 4200,
+    "levelDb": -4,
+    "layers": [
+      {
+        "source": 521883,
+        "start": 0.4,
+        "duration": 0.38,
+        "fadeOut": 0.15,
+        "at": 0.05,
+        "gainDb": -16,
+        "fadeIn": 0.05,
+        "highpass": 300,
+        "lowpass": 3800
+      }
+    ],
+    "revised": true
   },
   {
     "name": "hit-water",
     "sound": "hit-water",
-    "source": 737234,
-    "start": 0.015,
-    "duration": 0.4,
-    "fadeOut": 0.055
+    "source": 614299,
+    "start": 20.6,
+    "duration": 0.74,
+    "fadeOut": 0.22,
+    "speed": 0.9,
+    "fadeIn": 0.06,
+    "highpass": 120,
+    "lowpass": 3400,
+    "levelDb": -3,
+    "revised": true
   },
   {
     "name": "cast-storm",
     "sound": "cast-storm",
-    "source": 512471,
-    "start": 0,
-    "duration": 0.17,
-    "fadeOut": 0.025,
-    "speed": 1.3
+    "source": 683420,
+    "start": 0.24,
+    "duration": 0.45,
+    "fadeOut": 0.18,
+    "speed": 0.85,
+    "fadeIn": 0.08,
+    "highpass": 65,
+    "lowpass": 1300,
+    "levelDb": -6,
+    "revised": true
   },
   {
     "name": "hit-storm",
     "sound": "hit-storm",
-    "source": 512471,
-    "start": 0,
-    "duration": 0.27,
-    "fadeOut": 0.035,
-    "speed": 0.8
+    "source": 683420,
+    "start": 0.42,
+    "duration": 0.85,
+    "fadeOut": 0.24,
+    "fadeIn": 0.025,
+    "highpass": 55,
+    "lowpass": 2200,
+    "levelDb": -3,
+    "revised": true
   },
   {
     "name": "cast-nature",
@@ -302,19 +492,57 @@
   {
     "name": "cast-arcane",
     "sound": "cast-arcane",
-    "source": 529024,
-    "start": 0.43,
-    "duration": 0.34,
-    "fadeOut": 0.06,
-    "speed": 1.3
+    "source": 521883,
+    "start": 2.9,
+    "duration": 0.45,
+    "fadeOut": 0.17,
+    "speed": 0.98,
+    "fadeIn": 0.07,
+    "highpass": 220,
+    "lowpass": 4800,
+    "levelDb": -4,
+    "layers": [
+      {
+        "source": 459401,
+        "start": 2.72,
+        "duration": 0.34,
+        "fadeOut": 0.14,
+        "at": 0.04,
+        "gainDb": -13,
+        "speed": 1.05,
+        "fadeIn": 0.015,
+        "highpass": 250,
+        "lowpass": 3500
+      }
+    ],
+    "revised": true
   },
   {
     "name": "hit-arcane",
     "sound": "hit-arcane",
-    "source": 529024,
-    "start": 0.68,
-    "duration": 0.42,
-    "fadeOut": 0.08
+    "source": 459401,
+    "start": 3.03,
+    "duration": 0.55,
+    "fadeOut": 0.22,
+    "speed": 0.9,
+    "fadeIn": 0.01,
+    "highpass": 250,
+    "lowpass": 4000,
+    "levelDb": -4,
+    "layers": [
+      {
+        "source": 521883,
+        "start": 5.95,
+        "duration": 0.4,
+        "fadeOut": 0.16,
+        "at": 0.03,
+        "gainDb": -7,
+        "fadeIn": 0.05,
+        "highpass": 180,
+        "lowpass": 4300
+      }
+    ],
+    "revised": true
   },
   {
     "name": "cast-shadow",
@@ -337,11 +565,16 @@
   {
     "name": "cast-ice",
     "sound": "cast-ice",
-    "source": 160420,
-    "start": 0,
-    "duration": 0.32,
-    "fadeOut": 0.05,
-    "speed": 1.15
+    "source": 452645,
+    "start": 1.7,
+    "duration": 0.38,
+    "fadeOut": 0.12,
+    "fadeIn": 0.07,
+    "reverse": true,
+    "highpass": 200,
+    "lowpass": 4300,
+    "levelDb": -6,
+    "revised": true
   },
   {
     "name": "hit-ice",
