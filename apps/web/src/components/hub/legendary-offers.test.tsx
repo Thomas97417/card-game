@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ConvexError } from "convex/values";
 import {
@@ -17,6 +18,26 @@ import { HubDock } from "./hub-dock";
 import { LegendaryPaymentFeedback } from "./legendary-offers";
 
 vi.mock("./world-chat", () => ({ WorldChat: () => null }));
+vi.mock("@tanstack/react-router", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-router")>()),
+  Link: ({
+    to,
+    search,
+    children,
+    ...props
+  }: {
+    to: string;
+    search?: Record<string, string>;
+    children: ReactNode;
+  }) => (
+    <a
+      href={`${to}${search ? `?${new URLSearchParams(search)}` : ""}`}
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+}));
 const board: LegendaryOfferBoard = {
   rank: 25,
   eligible: true,
@@ -160,8 +181,8 @@ describe("offres légendaires du hub", () => {
       />,
     );
     const dialog = screen.getByRole("dialog", { name: "Serment solaire" });
-    expect(within(dialog).getByText("Pack reçu")).toBeTruthy();
-    expect(within(dialog).getByText("237 cartes")).toBeTruthy();
+    expect(within(dialog).queryByText("Pack reçu")).toBeNull();
+    expect(within(dialog).queryByText("237 cartes")).toBeNull();
     expect(within(dialog).getByText(/^1\s500$/)).toBeTruthy();
     expect(within(dialog).getByText(/^40\s000$/)).toBeTruthy();
     fireEvent.click(
@@ -207,6 +228,12 @@ describe("offres légendaires du hub", () => {
         expect(
           within(cards).getByText(String(card.count), { exact: false }),
         ).toBeTruthy();
+        const link = within(cards).getByRole("link", {
+          name: `Voir ${resolveCard(card.variantId).name} dans l’atelier`,
+        });
+        const target = new URL(link.getAttribute("href")!, "http://localhost");
+        expect(target.pathname).toBe("/decks");
+        expect(target.searchParams.get("card")).toBe(card.variantId);
       }
       expect(
         within(dialog).queryByRole("button", { name: /Acheter/ }),
@@ -235,7 +262,6 @@ describe("offres légendaires du hub", () => {
     const dialog = screen.getByRole("dialog", { name: "Serment solaire" });
     expect(within(dialog).getByText("750")).toBeTruthy();
     expect(within(dialog).getByText(/^20\s000$/)).toBeTruthy();
-    expect(within(dialog).getByText("120 cartes")).toBeTruthy();
     const cards = within(dialog).getByRole("list");
     for (const count of [93, 23, 4])
       expect(

@@ -51,6 +51,8 @@ interface Draft {
 }
 
 interface DeckWorkshopProps extends CardProgressionActions {
+  inspectedCardId?: string;
+  onInspectCard?: (variantId: string | undefined) => void;
   hero?: HeroProgress;
   league?: LeagueProgress;
   deck: WorkshopDeck | undefined;
@@ -82,11 +84,18 @@ export function DeckWorkshop({
   onSacrifice,
   onEvolve,
   hero,
+  inspectedCardId,
+  onInspectCard,
 }: DeckWorkshopProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<CombatType | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
-  const [inspected, setInspected] = useState<string | null>(null);
+  const [localInspected, setLocalInspected] = useState<string | null>(null);
+  const inspected = onInspectCard ? (inspectedCardId ?? null) : localInspected;
+  function setInspected(variantId: string | null) {
+    if (onInspectCard) onInspectCard(variantId ?? undefined);
+    else setLocalInspected(variantId);
+  }
   const [rarityFilters, setRarityFilters] = useState<CardRarity[]>([]);
   const [factionFilters, setFactionFilters] = useState<Faction[]>([]);
   const [message, setMessage] = useState(instructions);

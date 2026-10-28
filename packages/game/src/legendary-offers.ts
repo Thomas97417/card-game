@@ -8,7 +8,7 @@ export const LEGENDARY_OFFERS = [
   {
     id: "solar-oath",
     name: "Serment solaire",
-    subtitle: "Éveille le feu des légendes",
+    subtitle: null,
     description:
       "Le Dragon du soleil éternel prend son envol. Rassemble sa garde et fais rayonner ton armée.",
     theme: "solar",
