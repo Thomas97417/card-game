@@ -16,10 +16,11 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("cadeaux du hub", () => {
-  it("unlocks gifts without rerendering an open unrelated menu", () => {
+  it("unlocks gifts without rerendering an open unrelated menu", async () => {
     const board = dailyRewardsBoard([{ claimedAt: now - DAILY_REWARD_DELAY_MS + 2000 }], now);
     render(<HubDock dailyRewards={{ board }} />);
-    fireEvent.click(screen.getByRole("button", { name: /Chat mondial/ }));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Chat mondial/ })));
+    expect(chatRender).toHaveBeenCalled();
     const renders = chatRender.mock.calls.length;
     expect(screen.queryByLabelText("Cadeau quotidien à récupérer")).toBeNull();
     act(() => vi.advanceTimersByTime(5000));

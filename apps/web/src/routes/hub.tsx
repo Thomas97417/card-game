@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   missionPeriod,
   type MissionPeriodKind,
@@ -21,11 +21,16 @@ import {
 } from "@/components/currency-gain";
 import { useMineBoard, useMineCollection } from "@/hooks/use-mine-collection";
 import { requireGameAuth } from "@/lib/game-auth";
-import { LegendaryPaymentFeedback } from "@/components/hub/legendary-offers";
-import {
-  ChestRevealDialog,
-  type ChestReveal,
-} from "@/components/play/chest-reveal-dialog";
+import { DeferredContent } from "@/components/deferred-content";
+import { DialogLoading } from "@/components/dialog-loading";
+import type { ChestReveal } from "@/components/play/chest-reveal-dialog";
+
+const LegendaryPaymentFeedback = lazy(() =>
+  import("@/components/hub/legendary-offers").then((module) => ({ default: module.LegendaryPaymentFeedback })),
+);
+const ChestRevealDialog = lazy(() =>
+  import("@/components/play/chest-reveal-dialog").then((module) => ({ default: module.ChestRevealDialog })),
+);
 
 export const Route = createFileRoute("/hub")({
   validateSearch: (
@@ -238,18 +243,27 @@ function HubContent() {
         }}
       />
       {offerCheckout && (
-        <LegendaryPaymentFeedback
-          key={offerCheckout}
-          status={legendaryPaymentStatus}
-          onDismiss={() => void navigate({ search: {}, replace: true })}
-        />
+        <Suspense fallback={
+          <p role="status" className="legendary-payment-feedback">Vérification du paiement…</p>
+        }>
+          <LegendaryPaymentFeedback
+            key={offerCheckout}
+            status={legendaryPaymentStatus}
+            onDismiss={() => void navigate({ search: {}, replace: true })}
+          />
+        </Suspense>
       )}
-      <ChestRevealDialog
-        reward={reward}
-        collection={collection}
-        onUpgrade={(variantId) => upgrade({ variantId })}
-        onClose={() => setReward(null)}
-      />
+      <DeferredContent
+        active={reward !== null}
+        fallback={<DialogLoading title="Ton coffre" onClose={() => setReward(null)} />}
+      >
+        <ChestRevealDialog
+          reward={reward}
+          collection={collection}
+          onUpgrade={(variantId) => upgrade({ variantId })}
+          onClose={() => setReward(null)}
+        />
+      </DeferredContent>
     </>
   );
 }

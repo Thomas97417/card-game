@@ -121,11 +121,20 @@ describe("offres légendaires du hub", () => {
     fireEvent.click(abyssal);
     expect(onPurchase).toHaveBeenCalledExactlyOnceWith("solar-oath");
     expect((abyssal as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.click(screen.getByRole("button", { name: "Offres légendaires" }));
+    const reopenedAbyssal = await screen.findByRole("button", {
+      name: "Acheter Pacte des abysses pour 20 €",
+    });
+    expect((reopenedAbyssal as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(reopenedAbyssal);
+    expect(onPurchase).toHaveBeenCalledOnce();
     await act(async () =>
       rejectPurchase(new ConvexError("Polar indisponible")),
     );
     expect(screen.getByRole("alert").textContent).toBe("Polar indisponible");
-    fireEvent.click(abyssal);
+    fireEvent.click(reopenedAbyssal);
     await waitFor(() =>
       expect(onPurchase).toHaveBeenLastCalledWith("abyssal-pact"),
     );

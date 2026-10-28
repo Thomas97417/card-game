@@ -4,7 +4,7 @@ import { CHEST_TYPES, chestPoolForLeague, type ChestType } from "./chest-types";
 import { rewardLeague, rollReward } from "./reward-tables";
 import chestReference from "./data/chest-rewards.json";
 
-export { CHEST_TYPES, CHEST_POOL_VERSION, type ChestType } from "./chest-types";
+export { CHEST_TYPES, CHEST_POOL_VERSION, CHEST_LABELS, chestName, type ChestType } from "./chest-types";
 
 export const CHEST_REWARD_VERSION = 3;
 
@@ -62,18 +62,6 @@ export interface VictoryChestProgress {
   wins: number;
   requiredWins: number;
   cycle: number;
-}
-export const CHEST_LABELS: Record<ChestType, string> = {
-  common: "Commun",
-  rare: "Rare",
-  bigRare: "grand coffre rare",
-  epic: "Épique",
-  legendary: "Légendaire",
-};
-export function chestName(type: ChestType) {
-  return type === "bigRare"
-    ? "Grand coffre rare"
-    : `Coffre ${CHEST_LABELS[type].toLowerCase()}`;
 }
 export interface LootStack {
   variantId: string;

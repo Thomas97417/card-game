@@ -1,9 +1,18 @@
-import { useId, useRef, useState, type ReactNode, type RefObject } from "react";
+import {
+  lazy,
+  Suspense,
+  useId,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { ChevronUp } from "lucide-react";
 import { GameIcon } from "@/components/game/game-icon";
-import { WorldChat } from "./world-chat";
-import { HubRanking } from "./hub-ranking";
-import { FriendsPanel } from "./friends-panel";
+import { DeferredContent } from "@/components/deferred-content";
+import { DialogLoading } from "@/components/dialog-loading";
+import { HubPanel } from "./hub-panel";
 import type { SocialPlayer } from "./player-menu";
 import { MissionsPanel, type HubMissionsProps } from "./missions-dialog";
 import { MissionCheck } from "./mission-icons";
@@ -13,10 +22,22 @@ import {
 } from "./daily-rewards-panel";
 import { canClaimDailyReward } from "@sylve/game/daily-rewards";
 import { useDailyRewardClock } from "@/hooks/use-daily-reward-clock";
-import {
-  LegendaryOffersDialog,
-  type HubLegendaryOffersProps,
-} from "./legendary-offers";
+import type { HubLegendaryOffersProps } from "./legendary-offers";
+
+const loadChat = () => import("./world-chat").then((module) => ({ default: module.WorldChat }));
+const loadRanking = () => import("./hub-ranking").then((module) => ({ default: module.HubRanking }));
+const loadFriends = () => import("./friends-panel").then((module) => ({ default: module.FriendsPanel }));
+const loadOffers = () => import("./legendary-offers").then((module) => ({ default: module.LegendaryOffersDialog }));
+const WorldChat = lazy(loadChat);
+const HubRanking = lazy(loadRanking);
+const FriendsPanel = lazy(loadFriends);
+const LegendaryOffersDialog = lazy(loadOffers);
+
+// Hover/focus expresses intent; closed panels are never prefetched on a timer.
+const preloadChat = () => { void loadChat().catch(() => {}); };
+const preloadRanking = () => { void loadRanking().catch(() => {}); };
+const preloadFriends = () => { void loadFriends().catch(() => {}); };
+const preloadOffers = () => { void loadOffers().catch(() => {}); };
 
 export function HubDock({
   missions,
@@ -94,6 +115,8 @@ export function HubDock({
             aria-label="Offres légendaires"
             aria-haspopup="dialog"
             aria-expanded={offersOpen}
+            onPointerEnter={preloadOffers}
+            onFocus={preloadOffers}
             onClick={() => setActivePanel(offersOpen ? null : "offers")}
           >
             <span className="hub-offers-aura" aria-hidden="true" />
@@ -107,24 +130,53 @@ export function HubDock({
             <span className="hub-offers-new">NEW</span>
             <span className="hub-offers-ribbon">OFFRE</span>
           </button>
-          <LegendaryOffersDialog
-            {...legendaryOffers}
-            open={offersOpen}
-            onClose={closePanel}
-          />
+          <DeferredContent
+            active={offersOpen}
+            fallback={<DialogLoading title="Offres légendaires" onClose={closePanel} />}
+          >
+            <LegendaryOffersDialog
+              {...legendaryOffers}
+              open={offersOpen}
+              onClose={closePanel}
+            />
+          </DeferredContent>
         </>
       )}
       <div className="hub-footer">
         {children}
         <div className="hub-dock" role="region" aria-label="Vie du refuge">
           {friendsOpen && (
-            <FriendsPanel
-              id={friendsId}
-              onClose={closePanel}
-              onMessage={openConversation}
-            />
+            <Suspense fallback={
+              <PanelLoading
+                id={friendsId}
+                title="Amis"
+                icon="friends"
+                closeLabel="Fermer les amis"
+                className="hub-friends"
+                onClose={closePanel}
+              />
+            }>
+              <FriendsPanel
+                id={friendsId}
+                onClose={closePanel}
+                onMessage={openConversation}
+              />
+            </Suspense>
           )}
-          {rankingOpen && <HubRanking id={rankingId} onClose={closePanel} />}
+          {rankingOpen && (
+            <Suspense fallback={
+              <PanelLoading
+                id={rankingId}
+                title="Classement mondial"
+                icon="ranking"
+                closeLabel="Fermer le classement"
+                className="hub-ranking"
+                onClose={closePanel}
+              />
+            }>
+              <HubRanking id={rankingId} onClose={closePanel} />
+            </Suspense>
+          )}
           {rewardsOpen && (
             <RewardsPanel
               {...dailyRewards}
@@ -140,14 +192,29 @@ export function HubDock({
               onNavigate={() => setActivePanel(null)}
             />
           )}
-          <WorldChat
-            id={chatId}
-            titleId={chatTitleId}
-            open={chatOpen}
-            onClose={closePanel}
-            conversation={conversation}
-            onConversationChange={setConversation}
-          />
+          <DeferredContent
+            active={chatOpen}
+            fallback={
+              <PanelLoading
+                id={chatId}
+                titleId={chatTitleId}
+                title="Chat mondial"
+                icon="chat"
+                closeLabel="Fermer le chat"
+                className="hub-world-chat"
+                onClose={closePanel}
+              />
+            }
+          >
+            <WorldChat
+              id={chatId}
+              titleId={chatTitleId}
+              open={chatOpen}
+              onClose={closePanel}
+              conversation={conversation}
+              onConversationChange={setConversation}
+            />
+          </DeferredContent>
 
           <nav className="hub-dock-shortcuts" aria-label="Communauté du refuge">
             <button
@@ -156,6 +223,8 @@ export function HubDock({
               className="hub-dock-shortcut"
               aria-expanded={rankingOpen}
               aria-controls={rankingOpen ? rankingId : undefined}
+              onPointerEnter={preloadRanking}
+              onFocus={preloadRanking}
               onClick={() => {
                 setActivePanel(rankingOpen ? null : "ranking");
               }}
@@ -169,6 +238,8 @@ export function HubDock({
               className="hub-dock-shortcut"
               aria-expanded={friendsOpen}
               aria-controls={friendsOpen ? friendsId : undefined}
+              onPointerEnter={preloadFriends}
+              onFocus={preloadFriends}
               onClick={() => setActivePanel(friendsOpen ? null : "friends")}
             >
               <GameIcon kind="friends" size={52} />
@@ -202,6 +273,8 @@ export function HubDock({
             className="hub-chat-toggle"
             aria-expanded={chatOpen}
             aria-controls={chatOpen ? chatId : undefined}
+            onPointerEnter={preloadChat}
+            onFocus={preloadChat}
             onClick={() => {
               setActivePanel(chatOpen ? null : "chat");
             }}
@@ -226,6 +299,14 @@ export function HubDock({
         </div>
       </div>
     </>
+  );
+}
+
+function PanelLoading(props: Omit<ComponentProps<typeof HubPanel>, "children">) {
+  return (
+    <HubPanel {...props}>
+      <p role="status" className="hub-ranking-loading">Chargement…</p>
+    </HubPanel>
   );
 }
 

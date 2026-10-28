@@ -16,7 +16,8 @@
     "./mines": "./src/mines.ts",
     "./ranks": "./src/ranks.ts",
     "./hero-metadata": "./src/hero-metadata.ts",
-    "./card-ids": "./src/card-ids.ts"
+    "./card-ids": "./src/card-ids.ts",
+    "./chest-types": "./src/chest-types.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit",

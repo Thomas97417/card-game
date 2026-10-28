@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -113,21 +114,23 @@ beforeEach(() => {
     mutation.mockReset().mockResolvedValue(undefined);
 });
 
-function openWorld() {
-  fireEvent.click(screen.getByRole("button", { name: /^Chat mondial/ }));
+async function openWorld() {
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: /^Chat mondial/ })));
+  await screen.findByLabelText("Ton message");
 }
-function openFriends() {
-  fireEvent.click(screen.getByRole("button", { name: "Amis" }));
+async function openFriends() {
+  await act(async () => fireEvent.click(screen.getByRole("button", { name: "Amis" })));
+  await screen.findByRole("region", { name: "Mes amis" });
 }
 
 describe("la vie sociale du refuge", () => {
-  it("shows the rank allowance and blocks pending acceptances while friends are locked", () => {
+  it("shows the rank allowance and blocks pending acceptances while friends are locked", async () => {
     state.data.friends = [];
     state.data.rank = 1;
     state.data.limit = 0;
     state.data.nextUnlock = { rank: 5, friends: 5 };
     render(<HubDock />);
-    openFriends();
+    await openFriends();
     expect(screen.getByText("Les amis au rang 5")).toBeTruthy();
     const accept = screen.getByRole("button", { name: "Accepter Clara" });
     expect(accept.hasAttribute("disabled")).toBe(true);
@@ -137,7 +140,7 @@ describe("la vie sociale du refuge", () => {
 
   it("opens an avatar action menu, sends a friend request and shows the public profile", async () => {
     render(<HubDock />);
-    openWorld();
+    await openWorld();
     fireEvent.click(screen.getByRole("button", { name: "Actions pour Bob" }));
     fireEvent.click(
       await screen.findByRole("menuitem", { name: "Ajouter aux amis" }),
@@ -157,7 +160,7 @@ describe("la vie sociale du refuge", () => {
 
   it("shows friends and requests, accepts an invitation, and sends help only to an eligible friend", async () => {
     const view = render(<HubDock />);
-    openFriends();
+    await openFriends();
     expect(screen.getByRole("region", { name: "Amis" })).toBeTruthy();
     expect(screen.getByText("310")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Accepter Clara" }));
@@ -199,7 +202,7 @@ describe("la vie sociale du refuge", () => {
 
   it("opens private chat from friends, isolates drafts by recipient and sends to the selected friend", async () => {
     render(<HubDock />);
-    openWorld();
+    await openWorld();
     fireEvent.change(screen.getByLabelText("Ton message"), {
       target: { value: "Brouillon mondial" },
     });
@@ -242,7 +245,7 @@ describe("la vie sociale du refuge", () => {
 
   it("opens a conversation directly from the friends panel and revokes it when the friend is removed", async () => {
     const view = render(<HubDock />);
-    openFriends();
+    await openFriends();
     fireEvent.click(
       screen.getByRole("button", { name: "Envoyer un message à Bob" }),
     );
@@ -251,7 +254,7 @@ describe("la vie sociale du refuge", () => {
     ).toBeTruthy();
     expect(screen.getByRole("log", { name: "Messages avec Bob" })).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "Mondial" }));
-    openFriends();
+    await openFriends();
     fireEvent.click(
       screen.getByRole("button", { name: "Envoyer un message à Bob" }),
     );
