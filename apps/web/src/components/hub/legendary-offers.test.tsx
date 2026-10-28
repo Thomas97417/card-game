@@ -146,6 +146,7 @@ describe("offres légendaires du hub", () => {
       "Vérification du paiement",
     );
     expect(screen.getByRole("status").textContent).not.toContain("reçu");
+    expect(screen.queryByRole("dialog")).toBeNull();
     rerender(
       <LegendaryPaymentFeedback
         status={{
@@ -158,10 +159,15 @@ describe("offres légendaires du hub", () => {
         onDismiss={onDismiss}
       />,
     );
-    expect(screen.getByRole("status").textContent).toContain("237 cartes");
-    expect(screen.getByRole("status").textContent).toContain(
-      "Serment solaire reçu",
+    const dialog = screen.getByRole("dialog", { name: "Serment solaire" });
+    expect(within(dialog).getByText("Pack reçu")).toBeTruthy();
+    expect(within(dialog).getByText("237 cartes")).toBeTruthy();
+    expect(within(dialog).getByText(/^1\s500$/)).toBeTruthy();
+    expect(within(dialog).getByText(/^40\s000$/)).toBeTruthy();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Continuer l’aventure" }),
     );
+    expect(onDismiss).toHaveBeenCalledOnce();
     rerender(<LegendaryPaymentFeedback status={null} onDismiss={onDismiss} />);
     expect(screen.getByRole("status").textContent).toContain(
       "n’a pas été retrouvé",
@@ -169,6 +175,91 @@ describe("offres légendaires du hub", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Fermer le suivi du paiement" }),
     );
-    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(onDismiss).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(LEGENDARY_OFFERS)(
+    "celebrates the purchased $name pack with its own cards and theme",
+    (offer) => {
+      const onDismiss = vi.fn();
+      render(
+        <LegendaryPaymentFeedback
+          status={{
+            status: "paid",
+            offerId: offer.id,
+            emeralds: 1500,
+            gold: 40000,
+            cards: [...offer.cards],
+          }}
+          onDismiss={onDismiss}
+        />,
+      );
+      const dialog = screen.getByRole("dialog", { name: offer.name });
+      expect(dialog.classList.contains(`is-${offer.theme}`)).toBe(true);
+      const cards = within(dialog).getByRole("list", {
+        name: `Cartes du pack ${offer.name}`,
+      });
+      expect(within(cards).getAllByRole("listitem")).toHaveLength(3);
+      for (const card of offer.cards) {
+        expect(
+          within(cards).getByText(resolveCard(card.variantId).name),
+        ).toBeTruthy();
+        expect(
+          within(cards).getByText(String(card.count), { exact: false }),
+        ).toBeTruthy();
+      }
+      expect(
+        within(dialog).queryByRole("button", { name: /Acheter/ }),
+      ).toBeNull();
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      expect(onDismiss).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("uses the credited quantities returned by the server instead of the catalog amounts", () => {
+    render(
+      <LegendaryPaymentFeedback
+        status={{
+          status: "paid",
+          offerId: "solar-oath",
+          emeralds: 750,
+          gold: 20000,
+          cards: LEGENDARY_OFFERS[0].cards.map((card, index) => ({
+            variantId: card.variantId,
+            count: [93, 23, 4][index]!,
+          })),
+        }}
+        onDismiss={vi.fn()}
+      />,
+    );
+    const dialog = screen.getByRole("dialog", { name: "Serment solaire" });
+    expect(within(dialog).getByText("750")).toBeTruthy();
+    expect(within(dialog).getByText(/^20\s000$/)).toBeTruthy();
+    expect(within(dialog).getByText("120 cartes")).toBeTruthy();
+    const cards = within(dialog).getByRole("list");
+    for (const count of [93, 23, 4])
+      expect(
+        within(cards).getByText(String(count), { exact: false }),
+      ).toBeTruthy();
+    expect(within(dialog).queryByText("237 cartes")).toBeNull();
+  });
+
+  it("does not celebrate a refunded purchase", () => {
+    render(
+      <LegendaryPaymentFeedback
+        status={{
+          status: "refunded",
+          offerId: "solar-oath",
+          emeralds: 0,
+          gold: 0,
+          cards: [],
+        }}
+        onDismiss={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain(
+      "Cet achat a été remboursé",
+    );
   });
 });

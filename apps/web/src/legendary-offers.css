@@ -524,6 +524,161 @@
   font-size: 12px;
   text-align: center;
 }
+.legendary-received-dialog[data-slot="dialog-content"] {
+  position: fixed;
+  width: min(640px, calc(100% - 24px));
+  max-width: 640px;
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border-color: color-mix(in srgb, var(--offer-accent), transparent 20%);
+  border-radius: 22px;
+  box-shadow:
+    0 25px 100px #000b,
+    0 0 60px color-mix(in srgb, var(--offer-glow), transparent 85%),
+    inset 0 0 0 4px #f1cd7a0c;
+}
+.legendary-received-dialog::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 7px;
+  border: 1px solid color-mix(in srgb, var(--offer-accent), transparent 85%);
+  border-radius: 16px;
+  pointer-events: none;
+}
+.legendary-received-dialog > [data-slot="dialog-body"] {
+  max-height: calc(100dvh - 24px);
+  padding: 28px 34px 26px;
+  text-align: center;
+  scrollbar-color: var(--offer-accent) #15231f;
+}
+.legendary-received-dialog > [data-slot="dialog-close"] {
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d6bb7966;
+  color: #ecd8ad;
+  background: #192b27;
+}
+.legendary-received-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid #9dc6a54d;
+  border-radius: 20px;
+  color: #c8e7b6;
+  background: #2e483c99;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.legendary-received-heading [data-slot="dialog-title"] {
+  margin: 12px 0 6px;
+  padding: 0;
+  color: #fff0ce;
+  font-size: clamp(32px, 4.5vw, 44px);
+  line-height: 1.1;
+  text-shadow: 0 2px 22px color-mix(in srgb, var(--offer-glow), transparent 60%);
+}
+.legendary-received-dialog .legendary-offer-subtitle {
+  font-size: 12px;
+}
+.legendary-received-dialog .legendary-offer-showcase {
+  height: 334px;
+  margin: 10px 0 24px;
+}
+.legendary-received-dialog .legendary-offer-card-slot {
+  top: 68px;
+  width: 146px;
+}
+.legendary-received-dialog .legendary-offer-card-slot[data-rarity="rare"] {
+  left: calc(50% - 225px);
+}
+.legendary-received-dialog .legendary-offer-card-slot[data-rarity="epic"] {
+  right: calc(50% - 225px);
+}
+.legendary-received-dialog .legendary-offer-card-slot[data-rarity="legendary"] {
+  top: 22px;
+  left: calc(50% - 92px);
+  width: 184px;
+}
+.legendary-received-dialog .offer-card-rarity {
+  top: 10px;
+  font-size: 10px;
+}
+.legendary-received-dialog .offer-card-name {
+  min-height: 46px;
+  font-size: 13px;
+}
+.legendary-received-dialog [data-rarity="legendary"] .offer-card-name {
+  min-height: 60px;
+  padding-inline: 12px;
+  font-size: 18px;
+}
+.legendary-received-dialog .offer-card-count {
+  font-size: 20px;
+}
+.legendary-received-dialog [data-rarity="legendary"] .offer-card-count {
+  padding-inline: 20px;
+  font-size: 26px;
+}
+.legendary-received-dialog .offer-magic-rays {
+  top: -70px;
+  left: calc(50% - 240px);
+  width: 480px;
+  height: 480px;
+  opacity: 0.25;
+}
+.legendary-received-dialog .offer-magic-ring {
+  top: 38px;
+  left: calc(50% - 130px);
+  width: 260px;
+  height: 260px;
+}
+.legendary-received-card-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: #c8c4b2;
+  font-size: 12px;
+}
+.legendary-received-card-total strong {
+  color: var(--offer-accent);
+}
+.legendary-received-dialog .legendary-offer-currencies {
+  margin-top: 18px;
+  padding-block: 13px;
+}
+.legendary-received-dialog .legendary-offer-currencies img {
+  width: 66px;
+  height: 56px;
+}
+.legendary-received-dialog .legendary-offer-currencies strong {
+  font-size: 28px;
+}
+.legendary-received-dialog .legendary-offer-currencies small {
+  font-size: 11px;
+}
+.legendary-received-description[data-slot="dialog-description"] {
+  margin: 16px 0 0;
+  color: #c8c4b2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.legendary-received-continue {
+  justify-content: center;
+  min-height: 50px;
+  margin-top: 18px;
+}
+.legendary-received-continue > span {
+  font-size: 14px;
+}
 .legendary-payment-feedback {
   position: fixed;
   z-index: 45;
@@ -618,6 +773,63 @@
   }
 }
 @media (max-width: 600px) {
+  .legendary-received-dialog > [data-slot="dialog-body"] {
+    padding: 24px 18px 22px;
+  }
+  .legendary-received-dialog .legendary-offer-showcase {
+    height: 252px;
+    margin: 10px -6px 24px;
+  }
+  .legendary-received-dialog
+    .legendary-offer-card-slot:not([data-rarity="legendary"]) {
+    top: 56px;
+    width: 100px;
+  }
+  .legendary-received-dialog .legendary-offer-card-slot[data-rarity="rare"] {
+    left: calc(50% - 150px);
+  }
+  .legendary-received-dialog .legendary-offer-card-slot[data-rarity="epic"] {
+    right: calc(50% - 150px);
+  }
+  .legendary-received-dialog
+    .legendary-offer-card-slot[data-rarity="legendary"] {
+    width: 134px;
+    left: calc(50% - 67px);
+  }
+  .legendary-received-dialog .offer-card-rarity {
+    top: 7px;
+    font-size: 8px;
+  }
+  .legendary-received-dialog .offer-card-name {
+    min-height: 40px;
+    font-size: 11px;
+  }
+  .legendary-received-dialog [data-rarity="legendary"] .offer-card-name {
+    min-height: 49px;
+    padding-inline: 8px;
+    font-size: 14px;
+  }
+  .legendary-received-dialog .offer-card-count {
+    padding-inline: 11px;
+    font-size: 17px;
+  }
+  .legendary-received-dialog [data-rarity="legendary"] .offer-card-count {
+    padding-inline: 14px;
+    font-size: 22px;
+  }
+  .legendary-received-dialog .offer-magic-ring {
+    top: 25px;
+    left: calc(50% - 105px);
+    width: 210px;
+    height: 210px;
+  }
+  .legendary-received-dialog .legendary-offer-currencies img {
+    width: 49px;
+    height: 43px;
+  }
+  .legendary-received-dialog .legendary-offer-currencies strong {
+    font-size: 23px;
+  }
   .hub-offers-trigger {
     top: calc(25% + 40px);
     left: max(12px, env(safe-area-inset-left));
@@ -659,6 +871,30 @@
   }
 }
 @media (max-width: 370px) {
+  .legendary-received-dialog > [data-slot="dialog-body"] {
+    padding-inline: 14px;
+  }
+  .legendary-received-dialog
+    .legendary-offer-card-slot:not([data-rarity="legendary"]) {
+    width: 80px;
+  }
+  .legendary-received-dialog .legendary-offer-card-slot[data-rarity="rare"] {
+    left: calc(50% - 126px);
+  }
+  .legendary-received-dialog .legendary-offer-card-slot[data-rarity="epic"] {
+    right: calc(50% - 126px);
+  }
+  .legendary-received-dialog
+    .legendary-offer-card-slot[data-rarity="legendary"] {
+    width: 116px;
+    left: calc(50% - 58px);
+  }
+  .legendary-received-dialog [data-rarity="legendary"] .offer-card-name {
+    font-size: 12px;
+  }
+  .legendary-received-dialog .legendary-offer-currencies strong {
+    font-size: 19px;
+  }
   .legendary-offer-card-slot[data-rarity="rare"] {
     left: calc(50% - 124px);
   }

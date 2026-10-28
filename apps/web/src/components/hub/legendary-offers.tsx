@@ -14,7 +14,12 @@ import {
 } from "@sylve/game/legendary-offers";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameIcon } from "@/components/game/game-icon";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface HubLegendaryOffersProps {
   board?: LegendaryOfferBoard;
@@ -95,26 +100,10 @@ export function LegendaryOffersDialog({
                 <p className="legendary-offer-description">
                   {offer.description}
                 </p>
-                <div className="legendary-offer-currencies">
-                  <span>
-                    <img src="/art/treasures/emerald-small-pouch.webp" alt="" />
-                    <span>
-                      <strong>
-                        {LEGENDARY_OFFER_EMERALDS.toLocaleString("fr-FR")}
-                      </strong>
-                      <small>Émeraudes</small>
-                    </span>
-                  </span>
-                  <span>
-                    <img src="/art/treasures/gold-pouch.webp" alt="" />
-                    <span>
-                      <strong>
-                        {LEGENDARY_OFFER_GOLD.toLocaleString("fr-FR")}
-                      </strong>
-                      <small>Or</small>
-                    </span>
-                  </span>
-                </div>
+                <OfferCurrencies
+                  emeralds={LEGENDARY_OFFER_EMERALDS}
+                  gold={LEGENDARY_OFFER_GOLD}
+                />
                 <button
                   type="button"
                   className="legendary-offer-buy"
@@ -156,7 +145,40 @@ export function LegendaryOffersDialog({
   );
 }
 
-function OfferCards({ offer }: { offer: LegendaryOffer }) {
+function OfferCurrencies({
+  emeralds,
+  gold,
+}: {
+  emeralds: number;
+  gold: number;
+}) {
+  return (
+    <div className="legendary-offer-currencies">
+      <span>
+        <img src="/art/treasures/emerald-small-pouch.webp" alt="" />
+        <span>
+          <strong>{emeralds.toLocaleString("fr-FR")}</strong>
+          <small>Émeraudes</small>
+        </span>
+      </span>
+      <span>
+        <img src="/art/treasures/gold-pouch.webp" alt="" />
+        <span>
+          <strong>{gold.toLocaleString("fr-FR")}</strong>
+          <small>Or</small>
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function OfferCards({
+  offer,
+  cards = offer.cards,
+}: {
+  offer: LegendaryOffer;
+  cards?: readonly { variantId: string; count: number }[];
+}) {
   return (
     <div className="legendary-offer-showcase">
       <div className="legendary-offer-magic" aria-hidden="true">
@@ -170,7 +192,7 @@ function OfferCards({ offer }: { offer: LegendaryOffer }) {
         className="legendary-offer-cards"
         aria-label={`Cartes du pack ${offer.name}`}
       >
-        {offer.cards.map(({ variantId, count }) => {
+        {cards.map(({ variantId, count }) => {
           const card = resolveCard(variantId);
           const rarity = card.rarity ?? "rare";
           return (
@@ -216,6 +238,48 @@ export function LegendaryPaymentFeedback({
   }, []);
   const pending = status === undefined || status?.status === "pending";
   const offer = LEGENDARY_OFFERS.find((item) => item.id === status?.offerId);
+  if (status?.status === "paid" && offer) {
+    return (
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open) onDismiss();
+        }}
+      >
+        <DialogContent
+          className={`legendary-offer legendary-received-dialog is-${offer.theme}`}
+          appearance="game"
+        >
+          <header className="legendary-received-heading">
+            <span className="legendary-received-seal">
+              <Check size={14} aria-hidden="true" /> Pack reçu
+            </span>
+            <DialogTitle>{offer.name}</DialogTitle>
+            <p className="legendary-offer-subtitle">{offer.subtitle}</p>
+          </header>
+          <OfferCards offer={offer} cards={status.cards} />
+          <p className="legendary-received-card-total">
+            <GameIcon kind="all" size={22} />
+            <strong>
+              {status.cards.reduce((sum, card) => sum + card.count, 0)} cartes
+            </strong>
+            <span>dans ta collection</span>
+          </p>
+          <OfferCurrencies emeralds={status.emeralds} gold={status.gold} />
+          <DialogDescription className="legendary-received-description">
+            Tes cartes et tes ressources ont rejoint ton armée.
+          </DialogDescription>
+          <button
+            type="button"
+            className="legendary-offer-buy legendary-received-continue"
+            onClick={onDismiss}
+          >
+            <span>Continuer l’aventure</span>
+          </button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   return (
     <div className="legendary-payment-feedback" role="status">
       {pending ? (
