@@ -7,14 +7,13 @@ import { combatActorKey } from "./combat-visuals";
 export interface BattleAudioPreferences { enabled: boolean; volume: number }
 const maxVoices = 8;
 
-/** Isolated Howler buses: changing combat audio never changes other app sounds. */
+/** Combat effects use their own Howler instance, without changing other app sounds. */
 export function createBattleAudio(root: HTMLElement, initial: BattleAudioPreferences) {
   let preferences = initial;
   let destroyed = false;
   let unlocked = false;
   let suspended = document.hidden;
   let finished: boolean | null = null;
-  let ambienceId: number | null = null;
   const scheduled = new Set<number>();
   const voices = new Set<number>();
   const seen = new Set<string>();
@@ -24,20 +23,7 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     preload: true, pool: maxVoices,
     onend: (id) => { voices.delete(id); },
   });
-  const ambience = new Howl({ src: ["/audio/combat/ambience.wav"], preload: true, loop: true, volume: 0 });
   const audible = () => !destroyed && !Howler.noAudio && unlocked && !suspended && !document.hidden && preferences.enabled && preferences.volume > 0;
-  const ambientVolume = () => preferences.volume * 0.22;
-  const updateAmbience = () => {
-    if (!audible() || finished !== null) {
-      ambience.pause();
-      return;
-    }
-    if (ambience.state() !== "loaded") return;
-    if (ambienceId !== null && ambience.playing(ambienceId)) return;
-    ambienceId = ambienceId === null ? ambience.play() : ambience.play(ambienceId);
-    ambience.volume(0, ambienceId);
-    ambience.fade(0, ambientVolume(), 900, ambienceId);
-  };
   const emit = (cue: CombatAudioCue) => {
     // Never queue a missed hit for replay when a file loads or audio unlocks later.
     if (!audible() || effects.state() !== "loaded" || (Howler.ctx && Howler.ctx.state !== "running")) return;
@@ -56,13 +42,11 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     for (const timer of scheduled) window.clearTimeout(timer);
     scheduled.clear();
   };
-  const stop = () => { cancelFrame(); effects.stop(); voices.clear(); ambience.pause(); };
+  const stop = () => { cancelFrame(); effects.stop(); voices.clear(); };
   const unlockedAudio = () => {
     if (destroyed) return;
     unlocked = true;
-    updateAmbience();
   };
-  ambience.on("load", updateAmbience);
   effects.once("unlock", unlockedAudio);
   return {
     unlock() {
@@ -74,12 +58,7 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     setPreferences(next: BattleAudioPreferences) {
       preferences = next;
       if (!next.enabled || next.volume === 0) stop();
-      else {
-        // Stop a running fade before applying a new user-selected volume.
-        ambience.volume(ambientVolume());
-        for (const id of voices) effects.volume(next.volume * 0.7, id);
-        updateAmbience();
-      }
+      else for (const id of voices) effects.volume(next.volume * 0.7, id);
     },
     play(events: readonly GameEvent[], elapsed: number, viewer: number) {
       if (destroyed) return;
@@ -117,14 +96,12 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     setHidden(hidden: boolean) {
       suspended = hidden;
       if (hidden) stop();
-      else updateAmbience();
     },
     destroy() {
       if (destroyed) return;
       destroyed = true;
       stop();
       effects.unload();
-      ambience.unload();
     },
   };
 }

@@ -158,7 +158,6 @@ export function DuelArena({
           aria-haspopup="dialog"
           onClick={() => onInspectHero(index)}
         >
-          <span className="hero-ground-shadow" />
           {player.heroLevel !== undefined && (
             <span className="hero-level-badge">Niv. {player.heroLevel}</span>
           )}

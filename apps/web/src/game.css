@@ -1329,7 +1329,6 @@ button:disabled {
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
-  filter: drop-shadow(0 4px 3px #19352760);
   transform-origin: center 85%;
 }
 .hero-figure > .stat-badge {
@@ -1343,16 +1342,6 @@ button:disabled {
 }
 .hero-figure > .stat-badge strong {
   font-size: 27px;
-}
-.hero-ground-shadow {
-  position: absolute;
-  bottom: -3px;
-  left: 20%;
-  width: 60%;
-  height: 12px;
-  border-radius: 50%;
-  background: #183d3860;
-  filter: blur(4px);
 }
 .hand-area {
   position: absolute;
@@ -1448,7 +1437,6 @@ button:disabled {
   z-index: 100;
   pointer-events: none;
   transform: translate(-50%, -85%);
-  filter: drop-shadow(0 8px 9px #142a2566);
   opacity: 0.9;
 }
 .drag-preview > .creature-portrait {

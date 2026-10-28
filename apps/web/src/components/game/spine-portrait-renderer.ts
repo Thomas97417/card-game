@@ -1,4 +1,4 @@
-import { Container, Graphics, ImageSource, MeshSimple, Texture, type Application } from "pixi.js";
+import { Container, ImageSource, MeshSimple, Texture, type Application } from "pixi.js";
 import { gsap } from "gsap";
 import { ARENA_HEIGHT, ARENA_WIDTH } from "./arena-layout";
 import type { SpinePortraitBinding, SpinePortraitRenderer } from "./spine-battle-rig";
@@ -17,9 +17,8 @@ export function createSpinePortraitRenderer(app: Application, host: HTMLElement,
       const sprite = control.querySelector<HTMLElement>("[data-combat-sprite]")!;
       const container = new Container({ eventMode: "none" });
       const motion = new Container({ eventMode: "none" });
-      const shadow = new Graphics().ellipse(0, 0, 0.27, 0.045).fill({ color: 0x183d28, alpha: 0.24 });
       container.addChild(motion);
-      layer.addChild(shadow, container);
+      layer.addChild(container);
       let mesh: MeshSimple | null = null;
       let disposed = false;
       let box = control.getBoundingClientRect();
@@ -68,11 +67,6 @@ export function createSpinePortraitRenderer(app: Application, host: HTMLElement,
           mesh.alpha = value("opacity", 1) * (sprite.classList.contains("blocked") ? 0.6 : 1);
           const row = control.closest<HTMLElement>(".projected-cell")?.style.zIndex ?? "5";
           container.zIndex = sprite.classList.contains("attacking") ? 100 : Number(row);
-          shadow.visible = !control.classList.contains("hero-figure");
-          shadow.position.set((box.left + box.width / 2 - ground.left + x) / sx, (box.bottom - ground.top + y * 0.12) / sy);
-          shadow.scale.set(box.width / sx, box.width / sy);
-          shadow.alpha = mesh.alpha * Math.max(0.35, 1 + Math.min(0, y) / box.height);
-          shadow.zIndex = -1;
         },
         destroy() {
           if (disposed) return;
@@ -81,7 +75,6 @@ export function createSpinePortraitRenderer(app: Application, host: HTMLElement,
           actor.setRendered(false);
           mesh?.geometry.destroy(true);
           container.destroy({ children: true });
-          shadow.destroy({ context: true });
           bindings.delete(binding);
         },
       };

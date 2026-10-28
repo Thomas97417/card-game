@@ -8,9 +8,9 @@ import { COMBAT_TIMING } from "./combat-timing";
 const mocks = vi.hoisted(() => {
   const make = (options: HowlOptions) => ({
     options, play: vi.fn((_sprite?: string | number): number => Math.random()),
-    playing: vi.fn(() => false), state: vi.fn(() => "loaded"),
-    volume: vi.fn(), stereo: vi.fn(), rate: vi.fn(), fade: vi.fn(),
-    stop: vi.fn(), pause: vi.fn(), unload: vi.fn(), once: vi.fn(), on: vi.fn(),
+    state: vi.fn(() => "loaded"),
+    volume: vi.fn(), stereo: vi.fn(), rate: vi.fn(),
+    stop: vi.fn(), unload: vi.fn(), once: vi.fn(),
   });
   return { make, sounds: [] as ReturnType<typeof make>[] };
 });
@@ -29,7 +29,6 @@ const attack: GameEvent = {
 };
 let audio: ReturnType<typeof createBattleAudio>;
 const effects = () => mocks.sounds[0]!;
-const ambience = () => mocks.sounds[1]!;
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "performance"] });
@@ -43,7 +42,7 @@ describe("Howler combat clock and lifecycle", () => {
     audio.play([attack], 0, 0);
     expect(effects().play).not.toHaveBeenCalled();
     audio.unlock();
-    expect(ambience().fade).toHaveBeenCalledWith(0, 0.132, 900, expect.any(Number));
+    expect(mocks.sounds).toHaveLength(1);
     expect(effects().play).not.toHaveBeenCalled();
     const next = { ...attack, seq: 2 };
     audio.play([next], 0, 0);
@@ -70,7 +69,7 @@ describe("Howler combat clock and lifecycle", () => {
     expect(effects().play).not.toHaveBeenCalled();
   });
 
-  it("cancels pending impacts on mute or tab hiding, resumes only ambience and unloads on exit", () => {
+  it("cancels pending impacts on mute or tab hiding and unloads on exit", () => {
     audio.unlock();
     audio.play([attack], 0, 0);
     audio.setPreferences({ enabled: false, volume: 0.6 });
@@ -88,7 +87,6 @@ describe("Howler combat clock and lifecycle", () => {
     vi.advanceTimersByTime(500);
     expect(effects().play).toHaveBeenCalledTimes(3);
     expect(effects().unload).toHaveBeenCalledOnce();
-    expect(ambience().unload).toHaveBeenCalledOnce();
   });
 
   it("limits simultaneous voices and plays the result only once", () => {

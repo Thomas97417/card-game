@@ -70,16 +70,7 @@ const effects = new Float32Array(length);
 let offset = 0;
 for (const chunk of chunks) { effects.set(chunk, offset); offset += chunk.length; }
 
-// Periodic partials create a seamless eight-second forest/arcane bed.
-const ambience = new Float32Array(rate * 8);
-for (let index = 0; index < ambience.length; index++) {
-  const t = index / rate;
-  const wind = (sine(62, t) * 0.5 + sine(93, t) * 0.25 + sine(124, t) * 0.12) * (0.8 + sine(0.125, t) * 0.2);
-  const leaves = (sine(733.125, t) + sine(1173.375, t) * 0.4) * (0.5 + sine(0.375, t) * 0.5) ** 10 * 0.025;
-  ambience[index] = wind * 0.18 + leaves;
-}
 await mkdir(output, { recursive: true });
 await writeFile(new URL("effects.wav", output), wave(effects));
-await writeFile(new URL("ambience.wav", output), wave(ambience));
 await writeFile(manifest, `${JSON.stringify(sprite, null, 2)}\n`);
-console.log(`Generated combat audio in ${fileURLToPath(output)} (${Math.round((effects.length + ambience.length) * 2 / 1024)} KiB)`);
+console.log(`Generated combat effects in ${fileURLToPath(output)} (${Math.round(effects.length * 2 / 1024)} KiB)`);
