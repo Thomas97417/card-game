@@ -130,14 +130,27 @@ export function createBattleFrame(
       pose(actor, ranged ? "ranged" : "melee");
       if (sprite) {
         const width = source?.clientWidth || 80;
-        const lunge = ranged ? direction * 3 : direction * Math.min(width * 0.65,
-          Math.abs(targetPoint.x - sourcePoint.x) / ARENA_WIDTH * bounds.width * 0.35);
-        timeline.to(sprite, { x: -direction * Math.min(12, width * 0.1), rotation: -direction * 3,
-          scaleY: 0.97, duration: 0.1, ease: "power2.in" }, 0);
-        timeline.to(sprite, { x: lunge, rotation: direction * 2, scaleY: 1.03,
-          duration: Math.max(0.01, at - 0.1), ease: "power3.in" }, 0.1);
-        timeline.to(sprite, { x: 0, rotation: 0, scaleY: 1, duration: 0.3, ease: "power3.out" }, at + 0.055);
-        restore(sprite, at + 0.36);
+        const dx = (targetPoint.x - sourcePoint.x) / ARENA_WIDTH * bounds.width;
+        const dy = (targetPoint.y - sourcePoint.y) / ARENA_HEIGHT * bounds.height;
+        const distance = Math.hypot(dx, dy);
+        const contact = Math.max(0, distance - (width + (elementFor(target)?.clientWidth || width)) * 0.3);
+        const lunge = ranged ? direction * 4 : distance ? dx / distance * contact : 0;
+        const landing = ranged ? 0 : distance ? dy / distance * contact : 0;
+        const launch = Math.min(0.1, at * 0.4);
+        const crest = launch + (at - launch) * 0.52;
+        timeline.to(sprite, { x: -direction * Math.min(16, width * 0.13), y: 3, rotation: -direction * 4,
+          scaleY: 0.96, duration: launch, ease: "power2.in" }, 0);
+        timeline.to(sprite, { x: lunge * 0.48, y: landing * 0.48 - (ranged ? 2 : width * 0.24),
+          rotation: direction * 3, scaleY: 1.03, duration: crest - launch, ease: "power2.in" }, launch);
+        timeline.to(sprite, { x: lunge, y: landing, rotation: direction * 5, scaleY: 1.01,
+          duration: Math.max(0.01, at - crest), ease: "power2.in" }, crest);
+        // Hold contact briefly before pushing off and recovering to the same cell.
+        timeline.to(sprite, { x: lunge + direction * (ranged ? 0 : width * 0.04), y: landing + 2,
+          duration: 0.045, ease: "none" }, at);
+        timeline.to(sprite, { x: lunge * 0.45, y: landing * 0.45 - (ranged ? 0 : width * 0.1),
+          rotation: -direction * 2, duration: 0.16, ease: "power2.out" }, at + 0.045);
+        timeline.to(sprite, { x: 0, y: 0, rotation: 0, scaleY: 1, duration: 0.2, ease: "power2.out" }, at + 0.205);
+        restore(sprite, at + 0.41);
       }
       const appearance = impactAppearance(event);
       if (ranged) {
@@ -173,7 +186,7 @@ export function createBattleFrame(
         event.type === "summon" ? "summon" : "death");
       if (!sprite) continue;
       if (event.type === "summon") {
-        timeline.fromTo(sprite, { y: 16, scale: 0.65, opacity: 0 },
+        timeline.fromTo(sprite, { y: 12, scale: 1, opacity: 0 },
           { y: 0, scale: 1, opacity: 1, duration: Math.max(0.05, end - 0.015), ease: "back.out(1.5)" }, 0);
         restore(sprite, end - 0.005);
       } else {
@@ -195,7 +208,7 @@ export function createBattleFrame(
 export async function createBattleScene(arena: HTMLElement, host: HTMLElement, signal: AbortSignal) {
   let effects = await createPixiBattleEffects(host, signal);
   if (signal.aborted) { effects?.destroy(); return null; }
-  const rig = createSpineBattleRig(arena);
+  const rig = createSpineBattleRig(arena, effects?.portraits);
   const active = new Set<ReturnType<typeof createBattleFrame>>();
   const played = new Set<string>();
   let destroyed = false;

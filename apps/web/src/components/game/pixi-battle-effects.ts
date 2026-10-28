@@ -1,6 +1,8 @@
 import { Application, Container, Graphics } from "pixi.js";
 import { gsap } from "gsap";
 import { ARENA_HEIGHT, ARENA_WIDTH } from "./arena-layout";
+import { createSpinePortraitRenderer } from "./spine-portrait-renderer";
+import type { SpinePortraitRenderer } from "./spine-battle-rig";
 
 export interface BattlePoint { x: number; y: number }
 export type ImpactStyle = "strike" | "magic" | "heal" | "shield" | "summon" | "death";
@@ -11,8 +13,18 @@ export interface BattleEffectFrame {
   destroy(): void;
 }
 
+export interface PixiBattleEffects {
+  canvas: HTMLCanvasElement;
+  portraits?: SpinePortraitRenderer;
+  onResize(callback: () => void): void;
+  start(): void;
+  stop(): void;
+  frame(timeline: gsap.core.Timeline): BattleEffectFrame;
+  destroy(): void;
+}
+
 /** One transparent canvas per arena; the GSAP ticker renders only active effects. */
-export async function createPixiBattleEffects(host: HTMLElement, signal: AbortSignal) {
+export async function createPixiBattleEffects(host: HTMLElement, signal: AbortSignal): Promise<PixiBattleEffects | null> {
   const app = new Application();
   try {
     await app.init({
@@ -43,6 +55,7 @@ export async function createPixiBattleEffects(host: HTMLElement, signal: AbortSi
   let resized: (() => void) | null = null;
   let previousWidth = 0;
   let previousHeight = 0;
+  let effectsRunning = false;
   const render = () => { if (!destroyed) app.render(); };
   const resize = () => {
     if (destroyed) return;
@@ -60,12 +73,14 @@ export async function createPixiBattleEffects(host: HTMLElement, signal: AbortSi
   observer?.observe(host);
   window.addEventListener("resize", resize);
   resize();
+  const portraits = createSpinePortraitRenderer(app, host, () => { if (!effectsRunning) render(); });
 
   return {
     canvas: app.canvas,
+    portraits,
     onResize(callback: () => void) { resized = callback; },
-    start() { gsap.ticker.add(render); },
-    stop() { gsap.ticker.remove(render); render(); },
+    start() { effectsRunning = true; gsap.ticker.add(render); },
+    stop() { effectsRunning = false; gsap.ticker.remove(render); render(); },
     frame(timeline: gsap.core.Timeline): BattleEffectFrame {
       const layer = new Container();
       layer.eventMode = "none";
@@ -155,9 +170,8 @@ export async function createPixiBattleEffects(host: HTMLElement, signal: AbortSi
       observer?.disconnect();
       window.removeEventListener("resize", resize);
       gsap.ticker.remove(render);
+      portraits.destroy();
       app.destroy(true, { children: true, context: true });
     },
   };
 }
-
-export type PixiBattleEffects = NonNullable<Awaited<ReturnType<typeof createPixiBattleEffects>>>;

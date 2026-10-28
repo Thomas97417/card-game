@@ -2,10 +2,48 @@ import { afterEach, describe, expect, it } from "vitest";
 import { gsap } from "gsap";
 import { createSpineActor, createSpineBattleRig } from "./spine-battle-rig";
 import { combatActorKey } from "./combat-visuals";
+import { spineRigData } from "./spine-rig-data";
+import type { RigProfile } from "./combat-rig-profile";
+import { Physics, Skeleton } from "@esotericsoftware/spine-core";
 
 afterEach(() => { gsap.ticker.sleep(); document.body.replaceChildren(); });
 
 describe("Spine portrait rig", () => {
+  it.each<RigProfile>(["humanoid", "quadruped", "winged", "avian", "serpent", "plant", "spirit"])(
+    "reconstructs the source art exactly from the weighted %s bind pose", (profile) => {
+      const { data, mesh, height } = spineRigData(profile);
+      const skeleton = new Skeleton(data);
+      skeleton.updateWorldTransform(Physics.none);
+      const points = new Float32Array(mesh.worldVerticesLength);
+      mesh.computeWorldVertices(skeleton.slots[0]!, 0, points.length, points, 0, 2);
+      for (let vertex = 0; vertex < points.length / 2; vertex++) {
+        expect(points[vertex * 2]).toBeCloseTo((mesh.regionUVs[vertex * 2]! - 0.5) * 100, 4);
+        expect(points[vertex * 2 + 1]).toBeCloseTo((1 - mesh.regionUVs[vertex * 2 + 1]!) * height, 4);
+      }
+      expect(data.bones.length).toBeGreaterThan(5);
+      expect(mesh.triangles).toHaveLength(12 * 14 * 6);
+    },
+  );
+
+  it("articulates the head, elbows and knees independently instead of transforming a flat portrait", () => {
+    const actor = createSpineActor(document.createElement("span"));
+    actor.pose("melee", 0.26);
+    const skeleton = actor.skeleton;
+    expect(skeleton.findBone("arm-1")!.rotation).toBeCloseTo(32);
+    expect(skeleton.findBone("forearm-1")!.rotation).toBeCloseTo(30);
+    expect(skeleton.findBone("leg1")!.rotation).toBeCloseTo(-13);
+    expect(skeleton.findBone("head")!.rotation).toBeCloseTo(7);
+    const rest = new Skeleton(skeleton.data);
+    rest.updateWorldTransform(Physics.none);
+    const setup = new Float32Array(actor.attachment.worldVerticesLength);
+    const posed = new Float32Array(setup.length);
+    actor.attachment.computeWorldVertices(rest.slots[0]!, 0, setup.length, setup, 0, 2);
+    actor.attachment.computeWorldVertices(skeleton.slots[0]!, 0, posed.length, posed, 0, 2);
+    expect(posed.some((value, index) => Math.abs(value - setup[index]!) > 4)).toBe(true);
+    expect(posed.every(Number.isFinite)).toBe(true);
+    actor.destroy();
+  });
+
   it("inherits the body bone matrix, mirrors reactions and blends back to breathing", () => {
     const left = document.createElement("span");
     const right = document.createElement("span");

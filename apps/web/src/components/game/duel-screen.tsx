@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
-import { CreaturePortrait } from "./creature-portrait";
 import { AbilityIcon, eventIconKind } from "./ability-icons";
 import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
@@ -32,6 +31,7 @@ import type { ChestType } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
 import { useBattleAudio } from "./use-battle-audio";
 import { BattleAudioControls } from "./battle-audio-controls";
+import { BattleDragPreview } from "./battle-drag-preview";
 import { DuelResult } from "./duel-result";
 import { HeroAbilityStack } from "./hero-ability-stack";
 import type { TrophyChange } from "@sylve/game/leagues";
@@ -475,13 +475,7 @@ export function DuelScreen({
         <DuelResult data={data} practice={practice} onRestart={onRestart} />
       )}
       {drag && (
-        <div
-          className="drag-preview"
-          style={{ left: drag.x, top: drag.y }}
-          aria-hidden="true"
-        >
-          <CreaturePortrait card={drag.card} />
-        </div>
+        <BattleDragPreview {...drag} room={room} hovered={hovered} />
       )}
       <DuelDetailsDialog
         inspection={inspection}

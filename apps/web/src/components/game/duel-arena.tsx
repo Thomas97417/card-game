@@ -30,6 +30,7 @@ import { GameIcon } from "./game-icon";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
 import { useBattleAnimations } from "./use-battle-animations";
+import { cardRigProfile } from "./combat-rig-profile";
 import { abilityOrigins, abilitySource, combatActorKey, combatFrameTiming, sealActivation } from "./combat-visuals";
 import {
   AbilityIcon,
@@ -151,6 +152,7 @@ export function DuelArena({
         <button
           type="button"
           data-combat-actor={combatActorKey({ player: index, cardId: "hero" })}
+          data-combat-profile="humanoid"
           className={`hero-figure ${hit ? "hero-hit" : ""} ${casting ? "ability-casting" : ""}`}
           aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
@@ -256,7 +258,7 @@ export function DuelArena({
             <div
               key={`${row}-${depth}`}
               className={`projected-cell ${unit ? "occupied" : ""} ${mark && !unit ? "marked-cell" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
-              style={{ ...cell.bounds, zIndex: row + 1 }}
+              style={{ ...cell.bounds, zIndex: acting?.type === "attack" ? 8 : row + 1 }}
             >
               <button
                 type="button"
@@ -297,6 +299,7 @@ export function DuelArena({
                   className="board-unit-control"
                   data-combat-actor={combatActorKey({ player: playerIndex, cardId: unit.cardId, row, depth })}
                   data-combat-type={getCombatType(unit.card)}
+                  data-combat-profile={cardRigProfile(unit.card)}
                   data-combat-faction={unit.card.faction}
                   data-combat-static={!!unit.fieldObject}
                   style={cell.unit}

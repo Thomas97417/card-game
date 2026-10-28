@@ -1445,15 +1445,17 @@ button:disabled {
 }
 .drag-preview {
   position: fixed;
-  width: clamp(76px, 8vw, 112px);
   z-index: 100;
   pointer-events: none;
-  transform: translate(-50%, -75%) rotate(2deg);
+  transform: translate(-50%, -85%);
   filter: drop-shadow(0 8px 9px #142a2566);
   opacity: 0.9;
 }
 .drag-preview > .creature-portrait {
   width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
 }
 .sylve-dialog {
   margin: auto;
@@ -2304,7 +2306,7 @@ button:disabled {
 .battle-pixi-layer {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: 1;
   overflow: hidden;
   pointer-events: none;
 }
@@ -2351,6 +2353,10 @@ button:disabled {
 }
 [data-combat-sprite] {
   transform-origin: center 85%;
+}
+.combat-body[data-spine-mesh="ready"] > img,
+.hero-body > img[data-spine-mesh="ready"] {
+  visibility: hidden;
 }
 /* GSAP owns sprite transforms; CSS remains the fallback before loading. */
 .arena[data-combat-motion="enhanced"] .board-unit,

@@ -1,53 +1,23 @@
 import {
-  Animation, AnimationState, AnimationStateData, BoneData, Physics,
-  RotateTimeline, ScaleTimeline, Skeleton, SkeletonData, TranslateTimeline,
-  type Bone, type Timeline,
+  AnimationState, AnimationStateData, Physics, Skeleton, type Bone,
 } from "@esotericsoftware/spine-core";
 import { gsap } from "gsap";
 import type { CombatActor } from "./combat-visuals";
 import { combatActorKey } from "./combat-visuals";
+import { spineRigData, type RigProfile } from "./spine-rig-data";
+export type { BattlePose } from "./spine-rig-data";
+import type { BattlePose } from "./spine-rig-data";
 
-export type BattlePose = "idle" | "melee" | "ranged" | "cast" | "hit" | "summon" | "death";
-type PoseKey = readonly [time: number, x: number, y: number, rotation: number, scaleX: number, scaleY: number];
-
-/** Original two-bone rig. Existing, unsliced art is attached to the body bone in
- * the DOM; Spine owns interpolation, blending and the inherited bone matrix. */
-function rigData() {
-  const data = new SkeletonData();
-  const root = new BoneData(0, "root", null);
-  data.bones.push(root, new BoneData(1, "body", root));
-  const poses: Record<BattlePose, readonly PoseKey[]> = {
-    idle: [[0, 0, 0, -0.4, 1, 1], [1.4, 0, 0.8, 0.5, 1.008, 1.015], [2.8, 0, 0, -0.4, 1, 1]],
-    melee: [[0, 0, 0, 0, 1, 1], [0.1, -1, -1, 6, 1.04, 0.95], [0.26, 2, 0, -9, 0.96, 1.06], [0.44, 0, 0, 2, 1.02, 0.99], [0.65, 0, 0, 0, 1, 1]],
-    ranged: [[0, 0, 0, 0, 1, 1], [0.12, -1, 0, 5, 0.97, 1.025], [0.26, 0, 0, -4, 1.025, 0.98], [0.55, 0, 0, 0, 1, 1]],
-    cast: [[0, 0, 0, 0, 1, 1], [0.16, 0, 1.5, -3, 1.025, 1.05], [0.28, 0, 0.5, 2, 1.04, 0.99], [0.5, 0, 0, 0, 1, 1]],
-    hit: [[0, 0, 0, 0, 1, 1], [0.035, -1, -1, 7, 1.08, 0.91], [0.12, 0, 0, -3, 0.98, 1.04], [0.25, 0, 0, 0, 1, 1]],
-    summon: [[0, 0, -3, -5, 0.85, 1.12], [0.2, 0, 1, 3, 1.06, 0.96], [0.4, 0, 0, 0, 1, 1]],
-    death: [[0, 0, 0, 0, 1, 1], [0.16, -1, -1, 8, 1.03, 0.95], [0.38, -2, -3, 18, 0.95, 0.85]],
-  };
-  for (const [name, keys] of Object.entries(poses)) {
-    const translation = new TranslateTimeline(keys.length, 0, 0);
-    const rotation = new RotateTimeline(keys.length, 0, 1);
-    const scale = new ScaleTimeline(keys.length, 0, 1);
-    keys.forEach(([time, x, y, angle, sx, sy], index) => {
-      translation.setFrame(index, time, x, y);
-      rotation.setFrame(index, time, angle);
-      scale.setFrame(index, time, sx, sy);
-    });
-    const timelines: Timeline[] = [translation, rotation, scale];
-    data.animations.push(new Animation(name, timelines, keys[keys.length - 1]![0]));
-  }
-  return data;
-}
-
-const skeletonData = rigData();
-const mixData = new AnimationStateData(skeletonData);
-mixData.defaultMix = 0.08;
-
-export function createSpineActor(body: HTMLElement, facing = 1, phase = 0) {
-  const skeleton = new Skeleton(skeletonData);
+export function createSpineActor(body: HTMLElement, facing = 1, phase = 0, profile: RigProfile = "humanoid") {
+  const image = body instanceof HTMLImageElement ? body : body.querySelector("img");
+  const aspect = image ? (image.naturalHeight || image.height || 1) / (image.naturalWidth || image.width || 1) : 1;
+  const rig = spineRigData(profile, aspect);
+  const skeleton = new Skeleton(rig.data);
+  const mixData = new AnimationStateData(rig.data);
+  mixData.defaultMix = 0.065;
   const state = new AnimationState(mixData);
   const bone: Bone = skeleton.bones[1]!;
+  let rendered = false;
   const idle = () => {
     state.clearTracks();
     skeleton.setToSetupPose();
@@ -57,27 +27,45 @@ export function createSpineActor(body: HTMLElement, facing = 1, phase = 0) {
     state.apply(skeleton);
     skeleton.updateWorldTransform(Physics.none);
     // Spine uses Y-up; conjugate its bone matrix for CSS's Y-down space.
-    body.style.transform = `translate(${facing * bone.worldX}%, ${-bone.worldY}%) matrix(${bone.a}, ${-facing * bone.c}, ${-facing * bone.b}, ${bone.d}, 0, 0)`;
+    if (!rendered) body.style.transform = `translate(${facing * bone.worldX}%, ${-bone.worldY}%) matrix(${bone.a}, ${-facing * bone.c}, ${-facing * bone.b}, ${bone.d}, 0, 0)`;
   };
   idle();
+  draw();
   return {
     body,
+    skeleton,
+    attachment: rig.mesh,
+    rigHeight: rig.height,
+    setRendered(value: boolean) {
+      rendered = value;
+      if (value) { body.dataset.spineMesh = "ready"; body.style.removeProperty("transform"); }
+      else { delete body.dataset.spineMesh; draw(); }
+    },
     pose(name: Exclude<BattlePose, "idle">, elapsed = 0, duration?: number) {
       const entry = state.setAnimation(0, name, false);
       entry.mixDuration = name === "hit" ? 0 : mixData.defaultMix;
       if (duration && entry.animation) entry.timeScale = entry.animation.duration / duration;
       entry.trackTime = elapsed * entry.timeScale;
+      entry.mixTime = elapsed;
       if (name !== "death") state.addAnimation(0, "idle", true, 0);
       draw();
     },
     update(delta: number) { state.update(delta); draw(); },
     reset() { idle(); body.style.removeProperty("transform"); },
-    destroy() { state.clearTracks(); body.style.removeProperty("transform"); },
+    destroy() { state.clearTracks(); body.style.removeProperty("transform"); delete body.dataset.spineMesh; },
   };
 }
 
-export function createSpineBattleRig(arena: HTMLElement) {
+export interface SpinePortraitBinding { update(): void; measure(): void; destroy(): void }
+export interface SpinePortraitRenderer {
+  attach(control: HTMLElement, actor: ReturnType<typeof createSpineActor>): SpinePortraitBinding;
+  render(): void;
+  destroy(): void;
+}
+
+export function createSpineBattleRig(arena: HTMLElement, renderer?: SpinePortraitRenderer) {
   const actors = new Map<string, ReturnType<typeof createSpineActor>>();
+  const portraits = new Map<string, SpinePortraitBinding>();
   let destroyed = false;
   const sync = () => {
     if (destroyed) return;
@@ -88,20 +76,27 @@ export function createSpineBattleRig(arena: HTMLElement) {
       const key = control.dataset.combatActor!;
       present.add(key);
       if (actors.get(key)?.body === body) continue;
+      portraits.get(key)?.destroy();
       actors.get(key)?.destroy();
       const player = (JSON.parse(key) as [number])[0];
       const phase = [...key].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 28 / 10;
-      actors.set(key, createSpineActor(body, player === Number(arena.dataset.combatViewer) ? 1 : -1, phase));
+      const actor = createSpineActor(body, player === Number(arena.dataset.combatViewer) ? 1 : -1, phase, control.dataset.combatProfile as RigProfile | undefined);
+      actors.set(key, actor);
+      if (renderer) portraits.set(key, renderer.attach(control, actor));
     }
     for (const [key, actor] of actors) {
       if (present.has(key)) continue;
+      portraits.get(key)?.destroy();
+      portraits.delete(key);
       actor.destroy();
       actors.delete(key);
     }
   };
   const tick = (_time: number, delta: number) => {
     if (destroyed || document.hidden) return;
-    for (const actor of actors.values()) actor.update(Math.min(delta / 1000, 0.05));
+    for (const actor of actors.values()) actor.update(Math.max(0, delta / 1000));
+    for (const portrait of portraits.values()) portrait.update();
+    renderer?.render();
   };
   const visibility = () => {
     if (document.hidden) {
@@ -123,13 +118,18 @@ export function createSpineBattleRig(arena: HTMLElement) {
     pose(actor: CombatActor, name: Exclude<BattlePose, "idle">, elapsed = 0, duration?: number) {
       actors.get(combatActorKey(actor))?.pose(name, elapsed, duration);
     },
-    clear() { for (const actor of actors.values()) actor.reset(); },
+    clear() {
+      for (const actor of actors.values()) actor.reset();
+      for (const portrait of portraits.values()) portrait.measure();
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
       observer.disconnect();
       document.removeEventListener("visibilitychange", visibility);
       gsap.ticker.remove(tick);
+      for (const portrait of portraits.values()) portrait.destroy();
+      portraits.clear();
       for (const actor of actors.values()) actor.destroy();
       actors.clear();
       delete arena.dataset.combatRig;

@@ -51,6 +51,24 @@ const attack: GameEvent = {
 };
 
 describe("GSAP combat choreography", () => {
+  it("leaps into contact at impact, holds the strike and returns to the original cell", () => {
+    const arena = terrain();
+    const source = actor(arena, { player: 0, cardId: "guardian:common", row: 0, depth: 0 }, 200);
+    actor(arena, { player: 1, cardId: "guardian:common", row: 0, depth: 0 }, 600);
+    const frame = createBattleFrame(arena, [attack]);
+    frame.timeline.seek(0.1);
+    expect(Number(gsap.getProperty(source, "x"))).toBeLessThan(0);
+    frame.timeline.seek(0.18);
+    expect(Number(gsap.getProperty(source, "y"))).toBeLessThan(-10);
+    frame.timeline.seek(0.26);
+    expect(Number(gsap.getProperty(source, "x"))).toBeCloseTo(352, 0);
+    frame.timeline.seek(0.29);
+    expect(Number(gsap.getProperty(source, "x"))).toBeGreaterThan(350);
+    frame.timeline.seek(0.7);
+    expect(source.style.transform).toBe("");
+    frame.dispose();
+  });
+
   it("starts the Spine reaction at impact and catches up a late rig without delaying HP", () => {
     const arena = terrain();
     const source = { player: 0, cardId: "guardian:common", row: 0, depth: 0 };
