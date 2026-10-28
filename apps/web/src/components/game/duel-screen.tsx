@@ -23,13 +23,15 @@ import {
 } from "lucide-react";
 import { DuelArena } from "./duel-arena";
 import { CreatureCard } from "./creature-card";
-import { CreaturePortrait } from "./creature-portrait";
 import { AbilityIcon, eventIconKind } from "./ability-icons";
 import { AbilityLegend } from "./ability-legend";
 import { DuelDetailsDialog, type DuelInspection } from "./duel-details-dialog";
 import { GameLoading, showGameError } from "./shared";
 import type { ChestType } from "@sylve/game/progression";
 import { useCombatPlayback } from "./use-combat-playback";
+import { useBattleAudio } from "./use-battle-audio";
+import { BattleAudioControls } from "./battle-audio-controls";
+import { BattleDragPreview } from "./battle-drag-preview";
 import { DuelResult } from "./duel-result";
 import { HeroAbilityStack } from "./hero-ability-stack";
 import type { TrophyChange } from "@sylve/game/leagues";
@@ -78,6 +80,9 @@ export function DuelScreen({
   onPlaybackSettled,
 }: DuelScreenProps) {
   const { display, event: combatEvent, events: combatEvents, playing } = useCombatPlayback(data);
+  const room = useRef<HTMLElement>(null);
+  const battleAudio = useBattleAudio(room, combatEvents, data.me,
+    data.status === "finished" && !playing && display?.sequence === data.sequence ? data.winner === data.me : null);
   const [now, setNow] = useState(Date.now());
   const [selected, setSelected] = useState<string | null>(null);
   const [inspection, setInspection] = useState<DuelInspection | null>(null);
@@ -263,6 +268,7 @@ export function DuelScreen({
             : "Tour adverse";
   return (
     <main
+      ref={room}
       className="game-room"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
@@ -301,6 +307,7 @@ export function DuelScreen({
           </span>
         </div>
         <div className="game-tools">
+          <BattleAudioControls {...battleAudio} />
           {onRestart && (
             <button
               className="icon-button"
@@ -468,13 +475,7 @@ export function DuelScreen({
         <DuelResult data={data} practice={practice} onRestart={onRestart} />
       )}
       {drag && (
-        <div
-          className="drag-preview"
-          style={{ left: drag.x, top: drag.y }}
-          aria-hidden="true"
-        >
-          <CreaturePortrait card={drag.card} />
-        </div>
+        <BattleDragPreview {...drag} room={room} hovered={hovered} />
       )}
       <DuelDetailsDialog
         inspection={inspection}

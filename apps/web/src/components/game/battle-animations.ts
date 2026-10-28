@@ -10,6 +10,7 @@ import {
   createPixiBattleEffects,
   type BattleEffectFrame, type BattlePoint, type ImpactStyle, type PixiBattleEffects,
 } from "./pixi-battle-effects";
+import { createSpineBattleRig, type BattlePose, type SpineBattleRig } from "./spine-battle-rig";
 
 const motionProperties = "transform,opacity,filter";
 const factionColors: Record<string, number> = {
@@ -36,10 +37,17 @@ export function createBattleFrame(
   arena: HTMLElement,
   events: readonly GameEvent[],
   effects?: Pick<PixiBattleEffects, "frame"> | null,
+  rig?: Pick<SpineBattleRig, "pose"> | null,
+  elapsed = 0,
 ) {
   const { duration, impact } = combatFrameTiming(events);
   const end = duration / 1000;
   const at = impact / 1000;
+  function pose(actor: CombatActor, name: Exclude<BattlePose, "idle">, when = 0, length?: number) {
+    if (!rig) return;
+    if (elapsed / 1000 >= when) rig.pose(actor, name, elapsed / 1000 - when, length);
+    else timeline.call(() => rig.pose(actor, name, 0, length), [], when);
+  }
   const timeline = gsap.timeline({ paused: true }).addLabel("impact", at);
   timeline.to({}, { duration: end }, 0);
   const frame: BattleEffectFrame | undefined = effects?.frame(timeline);
@@ -90,6 +98,7 @@ export function createBattleFrame(
 
   for (const event of abilityOrigins(events)) {
     const source = abilitySource(event)!;
+    pose(source, "cast", 0, end);
     const sprite = spriteFor(source);
     const color = factionColors[elementFor(source)?.dataset.combatFaction ?? ""] ?? 0xffdfa0;
     frame?.impact(pointFor(source), color, 0, "magic");
@@ -118,16 +127,30 @@ export function createBattleFrame(
       const sprite = spriteFor(actor);
       const direction = Math.sign(targetPoint.x - sourcePoint.x) || (event.player === viewer ? 1 : -1);
       const ranged = source?.dataset.combatType === "ranged";
+      pose(actor, ranged ? "ranged" : "melee");
       if (sprite) {
         const width = source?.clientWidth || 80;
-        const lunge = ranged ? direction * 3 : direction * Math.min(width * 0.65,
-          Math.abs(targetPoint.x - sourcePoint.x) / ARENA_WIDTH * bounds.width * 0.35);
-        timeline.to(sprite, { x: -direction * Math.min(12, width * 0.1), rotation: -direction * 3,
-          scaleY: 0.97, duration: 0.1, ease: "power2.in" }, 0);
-        timeline.to(sprite, { x: lunge, rotation: direction * 2, scaleY: 1.03,
-          duration: Math.max(0.01, at - 0.1), ease: "power3.in" }, 0.1);
-        timeline.to(sprite, { x: 0, rotation: 0, scaleY: 1, duration: 0.3, ease: "power3.out" }, at + 0.055);
-        restore(sprite, at + 0.36);
+        const dx = (targetPoint.x - sourcePoint.x) / ARENA_WIDTH * bounds.width;
+        const dy = (targetPoint.y - sourcePoint.y) / ARENA_HEIGHT * bounds.height;
+        const distance = Math.hypot(dx, dy);
+        const contact = Math.max(0, distance - (width + (elementFor(target)?.clientWidth || width)) * 0.3);
+        const lunge = ranged ? direction * 4 : distance ? dx / distance * contact : 0;
+        const landing = ranged ? 0 : distance ? dy / distance * contact : 0;
+        const launch = Math.min(0.1, at * 0.4);
+        const crest = launch + (at - launch) * 0.52;
+        timeline.to(sprite, { x: -direction * Math.min(16, width * 0.13), y: 3, rotation: -direction * 4,
+          scaleY: 0.96, duration: launch, ease: "power2.in" }, 0);
+        timeline.to(sprite, { x: lunge * 0.48, y: landing * 0.48 - (ranged ? 2 : width * 0.24),
+          rotation: direction * 3, scaleY: 1.03, duration: crest - launch, ease: "power2.in" }, launch);
+        timeline.to(sprite, { x: lunge, y: landing, rotation: direction * 5, scaleY: 1.01,
+          duration: Math.max(0.01, at - crest), ease: "power2.in" }, crest);
+        // Hold contact briefly before pushing off and recovering to the same cell.
+        timeline.to(sprite, { x: lunge + direction * (ranged ? 0 : width * 0.04), y: landing + 2,
+          duration: 0.045, ease: "none" }, at);
+        timeline.to(sprite, { x: lunge * 0.45, y: landing * 0.45 - (ranged ? 0 : width * 0.1),
+          rotation: -direction * 2, duration: 0.16, ease: "power2.out" }, at + 0.045);
+        timeline.to(sprite, { x: 0, y: 0, rotation: 0, scaleY: 1, duration: 0.2, ease: "power2.out" }, at + 0.205);
+        restore(sprite, at + 0.41);
       }
       const appearance = impactAppearance(event);
       if (ranged) {
@@ -135,7 +158,10 @@ export function createBattleFrame(
         frame?.projectile(sourcePoint, targetPoint, color, 0.08, Math.max(0.01, at - 0.08));
       }
       frame?.impact(targetPoint, appearance.color, at, appearance.style);
-      if ((event.damage ?? 0) > 0) recoil(target, appearance.color);
+      if ((event.damage ?? 0) > 0) {
+        pose(target, "hit", at);
+        recoil(target, appearance.color);
+      }
     } else if (event.type === "ability") {
       // Creating an empty field mark has no creature/hero target.
       if ((event.runes || event.pentagrams) && !event.unit) continue;
@@ -149,14 +175,18 @@ export function createBattleFrame(
       if (source?.cardId === "hero" && combatActorKey(source) !== combatActorKey(target))
         frame?.projectile(pointFor(source), pointFor(target), appearance.color, 0.02, Math.max(0.01, at - 0.02));
       frame?.impact(pointFor(target), appearance.color, at, appearance.style);
-      if ((event.amount ?? 0) < 0) recoil(target, appearance.color);
+      if ((event.amount ?? 0) < 0) {
+        pose(target, "hit", at);
+        recoil(target, appearance.color);
+      }
     } else if (event.type === "summon" || event.type === "death" || event.type === "withdraw") {
+      pose(actor, event.type === "summon" ? "summon" : "death", 0, end);
       const sprite = spriteFor(actor);
       frame?.impact(pointFor(actor), event.type === "summon" ? 0xc9ed9c : 0xe6c99b, 0,
         event.type === "summon" ? "summon" : "death");
       if (!sprite) continue;
       if (event.type === "summon") {
-        timeline.fromTo(sprite, { y: 16, scale: 0.65, opacity: 0 },
+        timeline.fromTo(sprite, { y: 12, scale: 1, opacity: 0 },
           { y: 0, scale: 1, opacity: 1, duration: Math.max(0.05, end - 0.015), ease: "back.out(1.5)" }, 0);
         restore(sprite, end - 0.005);
       } else {
@@ -178,6 +208,7 @@ export function createBattleFrame(
 export async function createBattleScene(arena: HTMLElement, host: HTMLElement, signal: AbortSignal) {
   let effects = await createPixiBattleEffects(host, signal);
   if (signal.aborted) { effects?.destroy(); return null; }
+  const rig = createSpineBattleRig(arena, effects?.portraits);
   const active = new Set<ReturnType<typeof createBattleFrame>>();
   const played = new Set<string>();
   let destroyed = false;
@@ -190,6 +221,7 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
     const sprites = arena.querySelectorAll<HTMLElement>("[data-combat-sprite]");
     if (sprites.length) gsap.set(sprites, { clearProps: motionProperties });
     effects?.stop();
+    rig.clear();
   };
   // Sprite height depends on width. Discard in-flight anchors on rotation or
   // resize; the next frame measures the new DOM positions before animating.
@@ -210,7 +242,8 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
       if (played.has(key) || !duration || elapsed >= duration) return;
       played.add(key);
       if (played.size > 128) played.delete(played.values().next().value!);
-      const frame = createBattleFrame(arena, events, effects);
+      rig.sync();
+      const frame = createBattleFrame(arena, events, effects, rig, Math.max(0, elapsed));
       active.add(frame);
       effects?.start();
       frame.timeline.eventCallback("onComplete", () => {
@@ -227,6 +260,7 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
       clear();
       canvas?.removeEventListener("webglcontextlost", contextLost);
       effects?.destroy();
+      rig.destroy();
       delete arena.dataset.combatMotion;
       delete arena.dataset.combatRenderer;
     },

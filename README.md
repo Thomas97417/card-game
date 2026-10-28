@@ -119,7 +119,7 @@ Les fichiers `routeTree.gen.ts` et `packages/backend/convex/_generated/` sont g�
 - [Cadeaux quotidiens du refuge](docs/daily-rewards.md)
 - [Amis, messages et entraide](docs/social.md)
 - [Terrain et effets de combat](docs/field.md)
-- [Animations des batailles avec PixiJS et GSAP](docs/combat-animations.md)
+- [Animations et son des batailles avec Spine, PixiJS, GSAP et Howler.js](docs/combat-animations.md)
 - [Configuration des paiements Polar](docs/emerald-purchases.md)
 - [Illustrations et prompts conservés](docs/art.md)
 - [Données historiques nécessaires à la compatibilité](docs/legacy-data.md)

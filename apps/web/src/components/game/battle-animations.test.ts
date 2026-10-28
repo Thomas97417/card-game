@@ -51,6 +51,45 @@ const attack: GameEvent = {
 };
 
 describe("GSAP combat choreography", () => {
+  it("leaps into contact at impact, holds the strike and returns to the original cell", () => {
+    const arena = terrain();
+    const source = actor(arena, { player: 0, cardId: "guardian:common", row: 0, depth: 0 }, 200);
+    actor(arena, { player: 1, cardId: "guardian:common", row: 0, depth: 0 }, 600);
+    const frame = createBattleFrame(arena, [attack]);
+    frame.timeline.seek(0.1);
+    expect(Number(gsap.getProperty(source, "x"))).toBeLessThan(0);
+    frame.timeline.seek(0.18);
+    expect(Number(gsap.getProperty(source, "y"))).toBeLessThan(-10);
+    frame.timeline.seek(0.26);
+    expect(Number(gsap.getProperty(source, "x"))).toBeCloseTo(352, 0);
+    frame.timeline.seek(0.29);
+    expect(Number(gsap.getProperty(source, "x"))).toBeGreaterThan(350);
+    frame.timeline.seek(0.7);
+    expect(source.style.transform).toBe("");
+    frame.dispose();
+  });
+
+  it("starts the Spine reaction at impact and catches up a late rig without delaying HP", () => {
+    const arena = terrain();
+    const source = { player: 0, cardId: "guardian:common", row: 0, depth: 0 };
+    const target = { player: 1, cardId: "guardian:common", row: 0, depth: 0 };
+    actor(arena, source, 200);
+    actor(arena, target, 600);
+    const rig = { pose: vi.fn() };
+    const frame = createBattleFrame(arena, [attack], null, rig);
+    expect(rig.pose).toHaveBeenCalledWith(source, "melee", 0, undefined);
+    frame.timeline.totalTime(0.259, false);
+    expect(rig.pose).not.toHaveBeenCalledWith(target, "hit", expect.any(Number), undefined);
+    frame.timeline.totalTime(0.26, false);
+    expect(rig.pose).toHaveBeenCalledWith(target, "hit", 0, undefined);
+    frame.dispose();
+    rig.pose.mockClear();
+    const late = createBattleFrame(arena, [attack], null, rig, 300);
+    expect(rig.pose).toHaveBeenCalledWith(target, "hit", expect.closeTo(0.04), undefined);
+    expect(late.timeline.duration()).toBe(combatFrameTiming([attack]).duration / 1000);
+    late.dispose();
+  });
+
   it.each([0, 1])("recoils only the targeted copy at the HP impact for viewer %s", (viewer) => {
     const arena = terrain(viewer);
     const source = actor(arena, { player: 0, cardId: "guardian:common", row: 0, depth: 0 }, 200);

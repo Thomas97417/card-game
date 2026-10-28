@@ -20,6 +20,7 @@ import {
 } from "@sylve/game";
 import { DuelScreen, type DuelData } from "./duel-screen";
 import { COMBAT_TIMING } from "./combat-timing";
+import { projectedUnitSize } from "./arena-layout";
 import * as feedback from "./shared";
 
 const DEFAULT_DECK = CATALOG.slice(0, 8).map((card) => card.id);
@@ -69,6 +70,43 @@ function setup(data = matchData()) {
   const result = render(<DuelScreen data={data} {...actions} practice />);
   return { ...result, data, actions };
 }
+
+it("drags a character at its deployed size, follows row perspective and drops it into the hovered cell", async () => {
+  const capture = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "setPointerCapture");
+  const point = Object.getOwnPropertyDescriptor(document, "elementFromPoint");
+  vi.stubGlobal("PointerEvent", MouseEvent);
+  Object.defineProperty(HTMLElement.prototype, "setPointerCapture", { configurable: true, value: vi.fn() });
+  try {
+    const { container, data, actions } = setup();
+    const root = container.querySelector<HTMLElement>("main.game-room")!;
+    const arena = container.querySelector<HTMLElement>(".arena")!;
+    arena.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 800);
+    const card = data.players[data.me]!.hand[0]!;
+    const source = [...container.querySelectorAll<HTMLButtonElement>(".player-hand button")]
+      .find((node) => node.getAttribute("aria-label")?.startsWith(`${card.name},`))!;
+    let target = container.querySelector<HTMLElement>('[data-own-cell][data-row="0"][data-depth="1"]')!;
+    Object.defineProperty(document, "elementFromPoint", { configurable: true, value: () => target });
+    fireEvent.pointerDown(source, { button: 0, clientX: 100, clientY: 750, pointerId: 1 });
+    fireEvent.pointerMove(root, { clientX: 350, clientY: 200, pointerId: 1 });
+    const first = container.querySelector<HTMLElement>(".drag-preview")!;
+    expect(parseFloat(first.style.width)).toBeCloseTo(projectedUnitSize(1200, 0, 1).width);
+    const farSize = parseFloat(first.style.width);
+    target = container.querySelector<HTMLElement>('[data-own-cell][data-row="3"][data-depth="1"]')!;
+    fireEvent.pointerMove(root, { clientX: 350, clientY: 600, pointerId: 1 });
+    const near = container.querySelector<HTMLElement>(".drag-preview")!;
+    expect(parseFloat(near.style.width)).toBeCloseTo(projectedUnitSize(1200, 3, 1).width);
+    expect(parseFloat(near.style.width)).toBeGreaterThan(farSize);
+    await act(async () => fireEvent.pointerUp(root, { clientX: 350, clientY: 600, pointerId: 1 }));
+    expect(actions.onPlayCard).toHaveBeenCalledWith(card.id, 3, 1, data.turn);
+    expect(container.querySelector(".drag-preview")).toBeNull();
+  } finally {
+    vi.unstubAllGlobals();
+    if (capture) Object.defineProperty(HTMLElement.prototype, "setPointerCapture", capture);
+    else Reflect.deleteProperty(HTMLElement.prototype, "setPointerCapture");
+    if (point) Object.defineProperty(document, "elementFromPoint", point);
+    else Reflect.deleteProperty(document, "elementFromPoint");
+  }
+});
 
 function fieldData(): DuelData {
   const cards = validateDeck(DEFAULT_DECK);

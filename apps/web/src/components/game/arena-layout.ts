@@ -140,3 +140,10 @@ export const ARENA_CELLS = Array.from({ length: ROWS * COLUMNS }, (_, index) =>
 
 export const groundCell = (row: number, column: number) =>
   ARENA_CELLS[row * COLUMNS + column]!;
+
+/** The drag ghost and deployed sprite use the same projected box and aspect. */
+export function projectedUnitSize(arenaWidth: number, row: number, column: number) {
+  const cell = groundCell(row, column);
+  const width = arenaWidth * parseFloat(cell.bounds.width) / 100 * parseFloat(cell.unit.width) / 100;
+  return { width, height: width * 1.1 };
+}

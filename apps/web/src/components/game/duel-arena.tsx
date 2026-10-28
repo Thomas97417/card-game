@@ -30,6 +30,8 @@ import { GameIcon } from "./game-icon";
 import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
 import { useBattleAnimations } from "./use-battle-animations";
+import { cardRigProfile } from "./combat-rig-profile";
+import { audioProfileKey, cardAudioProfile, heroAudioProfile } from "./combat-audio-profile";
 import { abilityOrigins, abilitySource, combatActorKey, combatFrameTiming, sealActivation } from "./combat-visuals";
 import {
   AbilityIcon,
@@ -151,30 +153,36 @@ export function DuelArena({
         <button
           type="button"
           data-combat-actor={combatActorKey({ player: index, cardId: "hero" })}
+          data-combat-profile="humanoid"
+          data-combat-audio={audioProfileKey(heroAudioProfile(player.heroId))}
           className={`hero-figure ${hit ? "hero-hit" : ""} ${casting ? "ability-casting" : ""}`}
           aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
           onClick={() => onInspectHero(index)}
         >
-          <span className="hero-ground-shadow" />
           {player.heroLevel !== undefined && (
             <span className="hero-level-badge">Niv. {player.heroLevel}</span>
           )}
-          <img
+          <span
             data-combat-sprite=""
             key={casting ? current!.seq : "idle"}
-            src={heroPortrait(player.heroId, !own)}
-            alt={
-              player.heroId
-                ? heroDefinition(player.heroId).name
-                : own
-                  ? "Gardien de la Sylve"
-                  : "Gardien mécanique d’ambre"
-            }
-            width={320}
-            height={400}
-            draggable={false}
-          />
+            className="hero-body"
+          >
+            <img
+              data-combat-rig=""
+              src={heroPortrait(player.heroId, !own)}
+              alt={
+                player.heroId
+                  ? heroDefinition(player.heroId).name
+                  : own
+                    ? "Gardien de la Sylve"
+                    : "Gardien mécanique d’ambre"
+              }
+              width={320}
+              height={400}
+              draggable={false}
+            />
+          </span>
           <StatBadge
             kind="health"
             value={player.heroHp}
@@ -251,7 +259,7 @@ export function DuelArena({
             <div
               key={`${row}-${depth}`}
               className={`projected-cell ${unit ? "occupied" : ""} ${mark && !unit ? "marked-cell" : ""} ${unit && own && selectedUnit === `${row}-${depth}` ? "unit-selected" : ""}`}
-              style={{ ...cell.bounds, zIndex: row + 1 }}
+              style={{ ...cell.bounds, zIndex: acting?.type === "attack" ? 8 : row + 1 }}
             >
               <button
                 type="button"
@@ -292,7 +300,10 @@ export function DuelArena({
                   className="board-unit-control"
                   data-combat-actor={combatActorKey({ player: playerIndex, cardId: unit.cardId, row, depth })}
                   data-combat-type={getCombatType(unit.card)}
+                  data-combat-profile={cardRigProfile(unit.card)}
                   data-combat-faction={unit.card.faction}
+                  data-combat-audio={audioProfileKey(cardAudioProfile(unit.card))}
+                  data-combat-static={!!unit.fieldObject}
                   style={cell.unit}
                   aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
@@ -304,7 +315,9 @@ export function DuelArena({
                     data-field-object={unit.fieldObject}
                     className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${casting ? "ability-casting" : ""} ${acting?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting?.type === "summon" ? "spawning" : ""} ${acting?.type === "death" || acting?.type === "withdraw" ? "dying" : ""}`}
                   >
-                    <CreaturePortrait card={unit.card} />
+                    <span className="combat-body" data-combat-rig="">
+                      <CreaturePortrait card={unit.card} />
+                    </span>
                     <div className="unit-stats">
                       {!unit.fieldObject && (
                         <StatBadge
