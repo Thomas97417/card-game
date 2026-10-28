@@ -20,7 +20,9 @@ Description à copier en adaptant les noms : « Pack Sylve : 1 500 émeraudes, 4
 
 Conserver **un seul prix actif par produit**, sans abonnement, avec deux **Product ID** distincts de ceux des packs d’émeraudes. Copier l’ID du produit, pas celui de son prix. Le modèle ponctuel et le prix fixe sont décrits dans la [documentation des produits Polar](https://docs.polar.sh/documentation/features/products).
 
-Configurer explicitement le prix de chaque produit en **Inclusive / taxes incluses** pour que le total payé reste à **20 €**. Vérifier ce total en sandbox après avoir renseigné un pays taxable. Le jeu relit le prix et refuse d’ouvrir le paiement si son réglage `tax_behavior` n’est pas `inclusive`. Polar distingue les modes `inclusive` et `exclusive` ; ce dernier ajoute les taxes au prix. Voir les [champs du checkout](https://polar.sh/docs/api-reference/checkouts/create-session). Les codes promotionnels sont désactivés par le jeu pour ces deux offres.
+Le jeu fixe directement un prix de **20 € taxes incluses** sur chaque session de paiement des offres, grâce aux [prix propres au checkout Polar](https://polar.sh/docs/api-reference/checkouts/create-session). Aucun réglage de taxes supplémentaire sur ces deux produits n’est nécessaire : `tax_behavior` peut rester vide et hériter de l’organisation. Vérifier le total de **20 €** en sandbox après avoir renseigné un pays taxable. Les codes promotionnels sont désactivés dès la création du paiement.
+
+Le réglage général Polar se trouve dans **Settings → Payments → Default tax behavior**. Il s’applique aux prix qui héritent de l’organisation, notamment aux achats d’émeraudes existants ; voir la [documentation des taxes incluses](https://polar.sh/docs/features/tax-inclusive-pricing). Les offres légendaires fixent leur propre prix taxes incluses au checkout.
 
 Le jeu contrôle le rang et délivre les cartes : aucun Benefit Polar ni lien de paiement public n’est nécessaire. Le joueur doit démarrer son paiement depuis le coffre du hub pour lier l’achat à son compte.
 

@@ -1,5 +1,7 @@
 import { ConvexError, v } from "convex/values";
-import { checkoutsUpdate } from "@polar-sh/sdk/funcs/checkoutsUpdate.js";
+import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate.js";
+import { customersCreate } from "@polar-sh/sdk/funcs/customersCreate.js";
+import { customersList } from "@polar-sh/sdk/funcs/customersList.js";
 import { productsGet } from "@polar-sh/sdk/funcs/productsGet.js";
 import {
   EMERALD_PACKS,
@@ -7,12 +9,13 @@ import {
   type EmeraldPackOffer,
   type EmeraldPaymentStatus,
 } from "@sylve/game/emerald-packs";
-import { api, internal } from "./_generated/api";
+import { api, components, internal } from "./_generated/api";
 import {
   action,
   internalAction,
   internalMutation,
   query,
+  type ActionCtx,
 } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
 import { ensureEmeraldWallet } from "./lib/progression";
@@ -283,6 +286,34 @@ function configuredLegendaryProducts(): Record<
   };
 }
 
+async function legendaryCheckoutCustomer(
+  ctx: ActionCtx,
+  userId: string,
+  email: string,
+): Promise<string> {
+  // Reuse the same customer mapping as the component's emerald checkouts.
+  const saved = await ctx.runQuery(components.polar.lib.getCustomerByUserId, {
+    userId,
+  });
+  if (saved) return saved.id;
+  const existing = await customersList(polar.polar, { email, limit: 1 });
+  if (!existing.ok) throw existing.error;
+  let customer = existing.value.result.items[0];
+  if (!customer) {
+    const created = await customersCreate(polar.polar, {
+      email,
+      metadata: { userId },
+    });
+    if (!created.ok) throw created.error;
+    customer = created.value;
+  }
+  await ctx.runMutation(components.polar.lib.insertCustomer, {
+    id: customer.id,
+    userId,
+  });
+  return customer.id;
+}
+
 export const legendaryOffers = query({
   args: {},
   handler: async (ctx): Promise<LegendaryOfferBoard> => {
@@ -354,8 +385,7 @@ export const createLegendaryCheckout = action({
       !board.offers.find((offer) => offer.id === offerId)?.available
     )
       throw new ConvexError("Cette offre est momentanément indisponible.");
-    // The component's product cache omits tax behavior. Read the live price to
-    // guarantee a 20 € total before any player can enter payment information.
+    // Check that the live product still matches the offer before opening payment.
     const liveProduct = await productsGet(polar.polar, { id: productId });
     if (!liveProduct.ok) throw liveProduct.error;
     const prices = liveProduct.value.prices.filter(
@@ -367,25 +397,46 @@ export const createLegendaryCheckout = action({
       liveProduct.value.isRecurring ||
       price?.amountType !== "fixed" ||
       price.priceAmount !== LEGENDARY_OFFER_PRICE ||
-      price.priceCurrency !== "eur" ||
-      price.taxBehavior !== "inclusive"
+      price.priceCurrency !== "eur"
     )
       throw new ConvexError("Cette offre est momentanément indisponible.");
     const site = new URL(process.env.SITE_URL!);
-    const checkout = await polar.createCheckoutSession(ctx, {
-      productIds: [productId],
-      userId: String(user._id),
-      email: user.email,
-      origin: site.origin,
+    const customerId = await legendaryCheckoutCustomer(
+      ctx,
+      String(user._id),
+      user.email,
+    );
+    // A checkout-specific inclusive price keeps the promised 20 € total without
+    // requiring a product override or changing the organization's tax default.
+    const created = await checkoutsCreate(polar.polar, {
+      products: [productId],
+      prices: {
+        [productId]: [
+          {
+            amountType: "fixed",
+            priceAmount: LEGENDARY_OFFER_PRICE,
+            priceCurrency: "eur",
+            taxBehavior: "inclusive",
+          },
+        ],
+      },
+      customerId,
+      allowDiscountCodes: false,
+      discountId: null,
+      allowTrial: false,
+      embedOrigin: site.origin,
       successUrl: `${site.origin}/hub?offerCheckout={CHECKOUT_ID}`,
+      returnUrl: `${site.origin}/hub`,
       metadata: {
         purpose: "legendary_offer",
         offerId,
         userId: String(user._id),
       },
     });
-    if (!checkout.customerId)
-      throw new Error("Polar checkout has no customer.");
+    if (!created.ok) throw created.error;
+    const checkout = created.value;
+    if (checkout.customerId !== customerId)
+      throw new Error("Polar checkout does not match the customer.");
     if (
       checkout.amount !== LEGENDARY_OFFER_PRICE ||
       checkout.currency !== "eur"
@@ -393,24 +444,11 @@ export const createLegendaryCheckout = action({
       throw new ConvexError(
         "Le prix de cette offre a changé. Réessaie après actualisation.",
       );
-    if (checkout.taxBehavior === "exclusive")
-      throw new ConvexError("Cette offre est momentanément indisponible.");
-    // The component enables coupon codes by default. Lock this fixed-price offer
-    // before exposing its URL and give the checkout a way back to the refuge.
-    const updated = await checkoutsUpdate(polar.polar, {
-      id: checkout.id,
-      checkoutUpdate: {
-        allowDiscountCodes: false,
-        discountId: null,
-        returnUrl: `${site.origin}/hub`,
-      },
-    });
-    if (!updated.ok) throw updated.error;
     if (
-      updated.value.amount !== LEGENDARY_OFFER_PRICE ||
-      updated.value.currency !== "eur" ||
-      updated.value.allowDiscountCodes ||
-      updated.value.taxBehavior === "exclusive"
+      checkout.allowDiscountCodes ||
+      checkout.discountId ||
+      checkout.taxBehavior === "exclusive" ||
+      checkout.totalAmount !== LEGENDARY_OFFER_PRICE
     )
       throw new ConvexError("Cette offre est momentanément indisponible.");
     await ctx.runMutation(internal.payments.recordLegendaryCheckout, {
