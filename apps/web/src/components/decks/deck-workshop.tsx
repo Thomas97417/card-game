@@ -726,7 +726,6 @@ export function DeckWorkshop({
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
         inDeck={!!inspected && cards.includes(inspected)}
-        hasSpace={cards.length < league.deckCapacity}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         collection={collection}

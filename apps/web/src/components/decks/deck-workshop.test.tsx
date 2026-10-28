@@ -228,9 +228,10 @@ describe("l’atelier et la collection", () => {
     expect(deckCards()).toHaveLength(4);
     expect(onSave).not.toHaveBeenCalled();
     fireEvent.click(card(collection(), "Archère du bastion"), { detail: 0 });
+    expect(await screen.findByRole("dialog")).toBeTruthy();
     expect(
-      await screen.findByRole("button", { name: "Remplacer une carte" }),
-    ).toBeTruthy();
+      screen.queryByRole("button", { name: "Remplacer une carte" }),
+    ).toBeNull();
     expect(
       screen.queryByRole("button", { name: "Ajouter au deck" }),
     ).toBeNull();
@@ -505,12 +506,26 @@ describe("l’atelier et la collection", () => {
       ).toBe("false");
     }
   });
-  it("opens the card dialog on click and permits keyboard replacement with cancellation", async () => {
-    setup();
+  it("opens collection card details without a replacement button or changing the deck", async () => {
+    const { onSave } = setup();
     fireEvent.click(card(collection(), "Écuyer du royaume"), { detail: 0 });
     expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Remplacer une carte" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Déplacer dans le deck" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(card(collection(), "Écuyer du royaume")).toBeTruthy();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+  it("keeps keyboard movement and cancellation for cards already in the deck", async () => {
+    const { onSave } = setup();
+    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
     fireEvent.click(
-      screen.getByRole("button", { name: "Remplacer une carte" }),
+      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: "Escape" });
@@ -518,14 +533,22 @@ describe("l’atelier et la collection", () => {
       screen.getByRole("status", { name: "Conseils pour ton deck" })
         .textContent,
     ).not.toContain("Choisis une carte");
-    fireEvent.click(card(collection(), "Écuyer du royaume"), { detail: 0 });
+    expect(onSave).not.toHaveBeenCalled();
+    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
     fireEvent.click(
-      await screen.findByRole("button", { name: "Remplacer une carte" }),
+      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
     );
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
-    expect(card(deckRow(), "Écuyer du royaume")).toBeTruthy();
-    expect(card(collection(), "Gardien du rempart")).toBeTruthy();
+    const targetId = savedDeck.cardIds[1]!;
+    const target = fullCollection.find(
+      (entry) => entry.card.id === targetId,
+    )!.card;
+    fireEvent.click(card(deckRow(), target.name), { detail: 0 });
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls.at(-1)?.[0].cardIds.slice(0, 2)).toEqual([
+      targetId,
+      savedDeck.cardIds[0],
+    ]);
   });
   it("grows a starter deck through an empty slot and saves the added card", async () => {
     const { onSave } = setup(starter);
