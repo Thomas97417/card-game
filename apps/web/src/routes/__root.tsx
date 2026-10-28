@@ -151,7 +151,7 @@ function RootDocument() {
             disableTransitionOnChange
             storageKey="vite-ui-theme"
           >
-            <GameAuthGate required={requiresAuth} navigationAuth={context.navigationAuth}>
+            <GameAuthGate required={requiresAuth} navigationAuth={context.navigationAuth} queryClient={context.queryClient}>
               <GoldProvider>
                 <EmeraldProvider>
                   <FriendshipProvider>

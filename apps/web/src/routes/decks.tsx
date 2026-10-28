@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useMutation } from "convex/react";
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
+import { useEffect, useRef } from "react";
 import { isCardVariantId } from "@sylve/game/card-ids";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { DeckWorkshop } from "@/components/decks/deck-workshop";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import { PLAYER_QUERY_OPTIONS } from "@/hooks/use-player-query-cache";
 import workshopCss from "@/deck-workshop.css?url";
 
 export const Route = createFileRoute("/decks")({
@@ -30,36 +33,46 @@ export const Route = createFileRoute("/decks")({
 function DecksPage() {
   const { card } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const decks = useQuery(api.decks.list);
+  const { data: decks } = useQuery({
+    ...convexQuery(api.decks.list, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const save = useMutation(api.decks.save);
-  const collection = useQuery(api.collection.list);
-  const league = useQuery(api.collection.league);
+  const { data: collection } = useQuery({
+    ...convexQuery(api.collection.list, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const { data: league } = useQuery({
+    ...convexQuery(api.collection.league, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const upgrade = useMutation(api.collection.upgrade);
-  const hero = useQuery(api.collection.hero);
-  const soulProgress = useQuery(api.collection.soulProgress);
+  const { data: hero } = useQuery({
+    ...convexQuery(api.collection.hero, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const { data: soulProgress } = useQuery({
+    ...convexQuery(api.collection.soulProgress, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const soulbind = useMutation(api.collection.soulbind);
   const sacrifice = useMutation(api.collection.sacrifice);
   const evolve = useMutation(api.collection.evolve);
-  const [initialized, setInitialized] = useState(false);
+  const starterRequested = useRef(false);
+  const needsStarter = decks?.length === 0 || collection?.length === 0;
 
   useEffect(() => {
-    let mounted = true;
-    void ensureStarter()
-      .catch(showGameError)
-      .finally(() => {
-        if (mounted) setInitialized(true);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [ensureStarter]);
+    if (!needsStarter || starterRequested.current) return;
+    starterRequested.current = true;
+    void ensureStarter().catch(showGameError);
+  }, [needsStarter, ensureStarter]);
 
   return (
     <DeckWorkshop
       league={league}
       hero={hero}
-      deck={initialized && league ? decks?.[0] : undefined}
+      deck={!needsStarter && league ? decks?.[0] : undefined}
       collection={collection}
       inspectedCardId={card}
       onInspectCard={(card) =>
