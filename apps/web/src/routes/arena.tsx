@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import lobbyCss from "@/play-lobby.css?url";
 import { useMutation, useQuery as useConvexQuery } from "convex/react";
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/arena")({
   head: () => ({
     meta: [{ title: "L’arène des gardiens — Sylve" }],
     links: [
-      { rel: "stylesheet", href: lobbyCss },
+      stylesheet(lobbyCss),
       { rel: "preload", as: "image", href: "/art/play-lobby.webp" },
       { rel: "prefetch", as: "image", href: "/art/heroes/hero-amber.webp" },
       { rel: "prefetch", as: "image", href: "/art/duel-arena-overhead.webp" },

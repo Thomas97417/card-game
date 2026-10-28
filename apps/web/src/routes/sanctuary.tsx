@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import sanctuaryCss from "@/sanctuary.css?url";
 import bestiaryCss from "@/bestiary.css?url";
@@ -24,8 +25,8 @@ export const Route = createFileRoute("/sanctuary")({
   head: () => ({
     meta: [{ title: "Le sanctuaire — Sylve" }],
     links: [
-      { rel: "stylesheet", href: sanctuaryCss },
-      { rel: "stylesheet", href: bestiaryCss },
+      stylesheet(sanctuaryCss),
+      stylesheet(bestiaryCss),
       { rel: "preload", as: "image", href: "/art/sanctuary.webp" },
     ],
   }),

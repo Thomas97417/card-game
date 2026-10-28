@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/guardian")({
       },
     ],
     links: [
-      { rel: "stylesheet", href: guardianCss },
+      stylesheet(guardianCss),
       { rel: "preload", as: "image", href: "/art/guardian-house.webp" },
     ],
   }),

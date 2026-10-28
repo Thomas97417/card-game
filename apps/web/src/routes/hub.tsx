@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -54,10 +55,10 @@ export const Route = createFileRoute("/hub")({
       },
     ],
     links: [
-      { rel: "stylesheet", href: hubCss },
-      { rel: "stylesheet", href: missionsCss },
-      { rel: "stylesheet", href: dailyRewardsCss },
-      { rel: "stylesheet", href: legendaryOffersCss },
+      stylesheet(hubCss),
+      stylesheet(missionsCss),
+      stylesheet(dailyRewardsCss),
+      stylesheet(legendaryOffersCss),
       { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
     ],
   }),

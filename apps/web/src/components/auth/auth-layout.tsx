@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Leaf } from "lucide-react";
@@ -35,7 +36,7 @@ export type AuthScene = keyof typeof scenes;
 
 export function authPageLinks(scene: AuthScene) {
   return [
-    { rel: "stylesheet", href: authCss },
+    stylesheet(authCss),
     { rel: "preload", as: "image", href: scenes[scene].background },
   ];
 }

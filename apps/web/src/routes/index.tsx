@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LandingPage } from "@/components/home/landing-page";
 import homeCss from "@/home.css?url";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/")({
       { name: "theme-color", content: "#12251e" },
     ],
     links: [
-      { rel: "stylesheet", href: homeCss },
+      stylesheet(homeCss),
       { rel: "preload", as: "image", href: "/art/forest-arena.png" },
     ],
   }),

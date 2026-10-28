@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import type { ConvexQueryClient } from "@convex-dev/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -63,18 +64,15 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      { rel: "stylesheet", href: gameCss },
-      { rel: "stylesheet", href: duelIntroCss },
-      { rel: "stylesheet", href: cardArtworkCss },
-      { rel: "stylesheet", href: progressionCss },
-      { rel: "stylesheet", href: leaguesCss },
-      { rel: "stylesheet", href: playerHeaderCss },
-      { rel: "stylesheet", href: factionsCss },
-      { rel: "stylesheet", href: rankCss },
+      stylesheet(appCss, "app"),
+      stylesheet(gameCss, "app"),
+      stylesheet(duelIntroCss, "app"),
+      stylesheet(cardArtworkCss, "app"),
+      stylesheet(progressionCss, "app"),
+      stylesheet(leaguesCss, "app"),
+      stylesheet(playerHeaderCss, "app"),
+      stylesheet(factionsCss, "app"),
+      stylesheet(rankCss, "app"),
     ],
   }),
 

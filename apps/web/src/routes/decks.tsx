@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/decks")({
   head: () => ({
     meta: [{ title: "Deck et collection — Sylve" }],
     links: [
-      { rel: "stylesheet", href: workshopCss },
+      stylesheet(workshopCss),
       { rel: "preload", as: "image", href: "/art/deck-workshop.webp" },
     ],
   }),

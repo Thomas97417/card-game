@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { requireGameAuth } from "@/lib/game-auth";
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/settings")({
       },
     ],
     links: [
-      { rel: "stylesheet", href: settingsCss },
+      stylesheet(settingsCss),
       { rel: "preload", as: "image", href: "/art/guardian-house.webp" },
     ],
   }),
