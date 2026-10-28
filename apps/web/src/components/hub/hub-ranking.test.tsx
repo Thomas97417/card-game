@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
 import { DEFAULT_DECK, resolveCard } from "@sylve/game";
@@ -55,16 +55,17 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-function openRanking() {
+async function openRanking() {
   render(<HubDock />);
   const trigger = screen.getByRole("button", { name: "Classement" });
-  fireEvent.click(trigger);
+  await act(async () => fireEvent.click(trigger));
+  await waitFor(() => expect(useQuery).toHaveBeenCalled());
   return { trigger, panel: screen.getByRole("region", { name: "Classement mondial" }) };
 }
 
 describe("le classement du refuge", () => {
-  it("opens above the shortcuts, closes with Escape and restores focus", () => {
-    const { trigger, panel } = openRanking();
+  it("opens above the shortcuts, closes with Escape and restores focus", async () => {
+    const { trigger, panel } = await openRanking();
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     const shortcuts = screen.getByRole("navigation", { name: "Communauté du refuge" });
     expect(panel.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -75,7 +76,7 @@ describe("le classement du refuge", () => {
   });
 
   it("expands one player's deck downwards and allows collapsing it", async () => {
-    const { panel } = openRanking();
+    const { panel } = await openRanking();
     const first = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
     const second = within(panel).getByRole("button", { name: /#2.*Sylvar.*Toi/ });
     expect(first.getAttribute("aria-expanded")).toBe("false");
@@ -94,14 +95,14 @@ describe("le classement du refuge", () => {
     await waitFor(() => expect(screen.queryByRole("list", { name: "Deck du joueur" })).toBeNull());
   });
 
-  it("moves between players with the keyboard and keeps the chat and ranking mutually exclusive", () => {
-    const { panel } = openRanking();
+  it("moves between players with the keyboard and keeps the chat and ranking mutually exclusive", async () => {
+    const { panel } = await openRanking();
     const first = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
     const second = within(panel).getByRole("button", { name: /#2.*Sylvar/ });
     first.focus();
     fireEvent.keyDown(first, { key: "ArrowDown" });
     expect(document.activeElement).toBe(second);
-    fireEvent.click(screen.getByRole("button", { name: /Chat mondial/ }));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: /Chat mondial/ })));
     expect(screen.queryByRole("region", { name: "Classement mondial" })).toBeNull();
     expect(screen.getByRole("region", { name: "Chat mondial" })).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: "Classement" }));
@@ -114,7 +115,7 @@ describe("le classement du refuge", () => {
     profileState = {
       data: { ...profile!, deck: { name: "Les renards", cards: [rare, legendary] } },
     };
-    const { panel } = openRanking();
+    const { panel } = await openRanking();
     fireEvent.click(within(panel).getByRole("button", { name: /#1.*Aëlys/ }));
 
     for (const card of [rare, legendary]) {
@@ -140,7 +141,7 @@ describe("le classement du refuge", () => {
   });
 
   it("closes only the card dialog with Escape and restores focus to the card in the expanded deck", async () => {
-    const { panel } = openRanking();
+    const { panel } = await openRanking();
     const player = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
     fireEvent.click(player);
     const card = within(panel).getByRole("button", { name: /Voir Gardien du rempart, Commune, niveau 5/ });
@@ -156,9 +157,9 @@ describe("le classement du refuge", () => {
     await waitFor(() => expect(document.activeElement).toBe(card));
   });
 
-  it("handles a loading, empty or unavailable ranking with a retry action", () => {
+  it("handles a loading, empty or unavailable ranking with a retry action", async () => {
     rankingState = { data: undefined, isPending: true };
-    const { panel } = openRanking();
+    const { panel } = await openRanking();
     expect(within(panel).getByRole("status").textContent).toContain("Chargement");
     rankingState = { data: [] };
     fireEvent.click(screen.getByRole("button", { name: "Classement" }));
@@ -172,9 +173,9 @@ describe("le classement du refuge", () => {
     expect(retry).toHaveBeenCalledOnce();
   });
 
-  it("handles a missing deck or unavailable player without hiding the ranking", () => {
+  it("handles a missing deck or unavailable player without hiding the ranking", async () => {
     profileState = { data: { ...profile!, deck: null } };
-    const { panel } = openRanking();
+    const { panel } = await openRanking();
     fireEvent.click(within(panel).getByRole("button", { name: /#1.*Aëlys/ }));
     expect(screen.getByText("Ce gardien n’a pas encore de deck.")).toBeDefined();
     profileState = { data: undefined, isError: true };

@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
@@ -6,6 +7,7 @@ import { useEmeraldBalance } from "@/components/emerald-balance";
 import { GuardianHouse } from "@/components/guardian/guardian-house";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
+import guardianCss from "@/guardian.css?url";
 
 export const Route = createFileRoute("/guardian")({
   beforeLoad: ({ context, location }) =>
@@ -19,7 +21,10 @@ export const Route = createFileRoute("/guardian")({
           "Retrouve ton Gardien de la Sylve : améliore son niveau, ses points de vie et ses pouvoirs.",
       },
     ],
-    links: [{ rel: "preload", as: "image", href: "/art/guardian-house.webp" }],
+    links: [
+      stylesheet(guardianCss),
+      { rel: "preload", as: "image", href: "/art/guardian-house.webp" },
+    ],
   }),
   component: GuardianPage,
 });

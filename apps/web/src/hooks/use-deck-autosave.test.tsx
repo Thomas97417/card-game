@@ -23,6 +23,27 @@ beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
 describe("automatic deck persistence", () => {
+  it("confirms a retained revert when the failed intermediate edit never reached the server", async () => {
+    const first = deferred();
+    const save = vi.fn().mockReturnValueOnce(first.promise);
+    const persisted = vi.fn();
+    const { result } = renderHook(() => useDeckAutosave(save, persisted));
+    act(() => {
+      result.current.initialize(original);
+      result.current.enqueue(renamed("Intermédiaire"));
+      result.current.enqueue(original);
+    });
+    await act(async () => {
+      first.reject(new Error("Offline"));
+      await result.current.flush();
+    });
+    expect(persisted).not.toHaveBeenCalled();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(save).toHaveBeenCalledOnce();
+    expect(persisted).toHaveBeenCalledExactlyOnceWith(original);
+    expect(result.current.status).toBe("saved");
+  });
+
   it("does not rewrite the loaded snapshot or an identical edit", async () => {
     const save = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() => useDeckAutosave(save));

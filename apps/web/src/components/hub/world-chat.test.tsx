@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -44,9 +45,10 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
-function openChat() {
+async function openChat() {
   const trigger = screen.getByRole("button", { name: /^Chat mondial/ });
-  fireEvent.click(trigger);
+  await act(async () => fireEvent.click(trigger));
+  await screen.findByLabelText("Ton message");
   return trigger;
 }
 
@@ -69,16 +71,16 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("le chat mondial du refuge", () => {
-  it("preserves the draft when switching between the chat, ranking and missions", () => {
+  it("preserves the draft when switching between the chat, ranking and missions", async () => {
     render(<HubDock />);
-    const chatTrigger = openChat();
+    const chatTrigger = await openChat();
     fireEvent.change(screen.getByLabelText("Ton message"), {
       target: { value: "Mon message en cours" },
     });
     const rankingTrigger = screen.getByRole("button", {
       name: "Classement",
     });
-    fireEvent.click(rankingTrigger);
+    await act(async () => fireEvent.click(rankingTrigger));
     expect(
       screen.getByRole("region", { name: "Classement mondial" }),
     ).toBeTruthy();
@@ -107,7 +109,7 @@ describe("le chat mondial du refuge", () => {
     ).toBe("Mon message en cours");
   });
 
-  it("subscribes on opening, shows live messages and closes with Escape, restoring focus and the draft", () => {
+  it("subscribes on opening, shows live messages and closes with Escape, restoring focus and the draft", async () => {
     state.messages = [
       {
         id: "one",
@@ -118,9 +120,9 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     render(<HubDock />);
-    expect(vi.mocked(useQuery).mock.calls.at(-1)?.[1]).toBe("skip");
+    expect(useQuery).not.toHaveBeenCalled();
     expect(screen.queryByRole("log")).toBeNull();
-    const trigger = openChat();
+    const trigger = await openChat();
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByText("Léa")).toBeTruthy();
     expect(screen.getByText("Bonjour les gardiens !")).toBeTruthy();
@@ -150,7 +152,7 @@ describe("le chat mondial du refuge", () => {
         }),
     );
     render(<HubDock />);
-    openChat();
+    await openChat();
     const input = screen.getByLabelText("Ton message") as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: "  Salut la Sylve !  " } });
     fireEvent.keyDown(input, { key: "Enter", shiftKey: true });
@@ -173,7 +175,7 @@ describe("le chat mondial du refuge", () => {
       new ConvexError("Patiente deux secondes entre deux messages."),
     );
     render(<HubDock />);
-    openChat();
+    await openChat();
     const input = screen.getByLabelText("Ton message") as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: "Une nouvelle aventure" } });
     fireEvent.click(screen.getByRole("button", { name: "Envoyer le message" }));
@@ -186,10 +188,10 @@ describe("le chat mondial du refuge", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("handles loading, an empty chat and a lost connection without losing text", () => {
+  it("handles loading, an empty chat and a lost connection without losing text", async () => {
     state.messages = undefined;
     const view = render(<HubDock />);
-    openChat();
+    await openChat();
     expect(screen.getByText("Les messages arrivent…")).toBeTruthy();
     expect(
       (
@@ -230,7 +232,7 @@ describe("le chat mondial du refuge", () => {
     ).toBe(false);
   });
 
-  it("preserves the reading position when new messages arrive and can jump back to the latest", () => {
+  it("preserves the reading position when new messages arrive and can jump back to the latest", async () => {
     state.messages = [
       {
         id: "one",
@@ -241,7 +243,7 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     const view = render(<HubDock />);
-    openChat();
+    await openChat();
     const log = screen.getByRole("log");
     Object.defineProperties(log, {
       scrollHeight: { value: 1200 },
@@ -271,7 +273,7 @@ describe("le chat mondial du refuge", () => {
     ).toBeNull();
   });
 
-  it("keeps the latest messages visible when the viewport resizes while preserving an older reading position", () => {
+  it("keeps the latest messages visible when the viewport resizes while preserving an older reading position", async () => {
     state.messages = [
       {
         id: "one",
@@ -282,7 +284,7 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     render(<HubDock />);
-    openChat();
+    await openChat();
     const log = screen.getByRole("log");
     Object.defineProperties(log, {
       scrollHeight: { value: 1200 },
@@ -301,7 +303,7 @@ describe("le chat mondial du refuge", () => {
     expect(log.scrollTop).toBe(100);
   });
 
-  it("groups consecutive messages with one header and an avatar on the last row, on both sides", () => {
+  it("groups consecutive messages with one header and an avatar on the last row, on both sides", async () => {
     const sentAt = new Date(2026, 9, 25, 14).getTime();
     state.messages = [
       {
@@ -346,7 +348,7 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     render(<HubDock />);
-    openChat();
+    await openChat();
 
     const received = screen.getAllByRole("group", { name: "Messages de Léa" });
     const own = screen.getByRole("group", { name: "Tes messages" });
@@ -367,7 +369,7 @@ describe("le chat mondial du refuge", () => {
     }
   });
 
-  it("starts another group at a day boundary even when the sender continues", () => {
+  it("starts another group at a day boundary even when the sender continues", async () => {
     state.messages = [
       {
         id: "one",
@@ -387,7 +389,7 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     render(<HubDock />);
-    openChat();
+    await openChat();
     expect(
       screen.getAllByRole("group", { name: "Messages de Léa" }),
     ).toHaveLength(2);
@@ -395,7 +397,7 @@ describe("le chat mondial du refuge", () => {
     expect(screen.getByText("25 octobre")).toBeTruthy();
   });
 
-  it("extends a live group and moves the avatar to the new last message", () => {
+  it("extends a live group and moves the avatar to the new last message", async () => {
     state.messages = [
       {
         id: "one",
@@ -407,7 +409,7 @@ describe("le chat mondial du refuge", () => {
       },
     ];
     const view = render(<HubDock />);
-    openChat();
+    await openChat();
     const firstAvatar = screen
       .getByRole("group", { name: "Messages de Léa" })
       .querySelector('[data-slot="message-avatar"]');

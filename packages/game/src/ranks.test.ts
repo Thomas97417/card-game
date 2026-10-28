@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
 import source from "../../../docs/references/cunt-wars/rules.json";
+import catalogue from "./data/cunt-wars.json";
 import { MAX_RANK, nextFriendSlotUnlock, rankBenefits, rankEmeraldReward, rankProgress, rankSoulbindUnlocks } from "./ranks";
 
 describe("CW account ranks", () => {
+  it("keeps the lightweight soulbind projection aligned with the complete catalogue", () => {
+    const ranks = catalogue.cards.flatMap((card) => card.soulbinds.map((link) => link.rank));
+    for (const rank of new Set(ranks)) {
+      expect(rankSoulbindUnlocks(rank - 1, rank)).toBe(ranks.filter((value) => value === rank).length);
+    }
+    expect(rankSoulbindUnlocks(0, MAX_RANK)).toBe(ranks.length);
+  });
   it("matches every independently collected rank threshold, friend cap, mine level and gem award", () => {
     const rows = source.Rank.tables.flatMap((table) => table.rows).filter((row) => /^\d+$/.test(row[0]!));
     expect(rows).toHaveLength(MAX_RANK);

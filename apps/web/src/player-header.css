@@ -1,7 +1,163 @@
+.currency-balances {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.friendship-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #17372380);
+}
+.friendship-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.friendship-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 3px 14px 3px 6px;
+  border: 1px solid #d7bc7e88;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #38452bf2, #182e20f2);
+  color: #f3dda5;
+  font:
+    700 15px/1.2 "Avenir Next",
+    sans-serif;
+}
+.friendship-balance-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 24px;
+}
+.friendship-balance-link:hover {
+  filter: brightness(1.12);
+}
+.friendship-balance-link:focus-visible {
+  outline: 2px solid #ffe2a2;
+  outline-offset: 3px;
+}
+.emerald-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #073c2180);
+}
+.emerald-amount,
+.emerald-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.emerald-balance {
+  min-height: 44px;
+  flex-shrink: 0;
+  padding: 3px 14px 3px 6px;
+  border: 1px solid #83ce9b88;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #243c2df2, #102c1cf2);
+  color: #c3f5ce;
+  box-shadow:
+    0 3px 12px #08130f40,
+    inset 0 1px #d0ffdc1a;
+  font:
+    700 15px/1.2 "Avenir Next",
+    sans-serif;
+}
+.emerald-balance-link,
+.gold-balance-link {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 24px;
+  transition: filter 160ms;
+}
+.emerald-balance-link:hover,
+.gold-balance-link:hover {
+  filter: brightness(1.12);
+}
+.emerald-balance-link:focus-visible,
+.gold-balance-link:focus-visible {
+  outline: 2px solid #c3f5ce;
+  outline-offset: 3px;
+}
+.gold-balance-link:focus-visible {
+  outline-color: #ffe2a2;
+}
+@media (max-width: 760px) {
+  .currency-balances {
+    gap: 5px;
+  }
+  .emerald-balance {
+    gap: 5px;
+    padding-right: 10px;
+    font-size: 13px;
+  }
+  .emerald-amount {
+    gap: 5px;
+  }
+  .emerald-balance .emerald-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+@media (max-width: 380px) {
+  .currency-balances .gold-balance,
+  .currency-balances .emerald-balance {
+    min-height: 40px;
+    gap: 3px;
+    padding: 3px 8px 3px 3px;
+    font-size: 11px;
+  }
+  .currency-balances .gold-amount,
+  .currency-balances .emerald-amount {
+    gap: 3px;
+  }
+  .currency-balances .gold-icon,
+  .currency-balances .emerald-icon {
+    width: 25px;
+    height: 25px;
+  }
+}
 :root {
   --game-header-height: 100px;
   --game-header-padding-y: 24px;
   --game-header-padding-x: 28px;
+}
+.workshop-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  filter: drop-shadow(0 3px 4px #0006);
+  transition: transform 160ms;
+}
+.workshop-back img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.workshop-back:hover { transform: translateX(-4px); }
+.workshop-back:active { transform: translateX(-2px) scale(0.96); }
+@media (max-width: 760px) {
+  .workshop-back { width: 60px; height: 50px; }
 }
 .game-page-header {
   position: sticky;

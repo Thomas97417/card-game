@@ -16,10 +16,7 @@ import {
 } from "@sylve/game";
 import type {
   CardDefinition,
-  CombatType,
-  CardRarity,
   OwnedCard,
-  Faction,
 } from "@sylve/game";
 import { CardUpgradeDialog } from "./card-upgrade-dialog";
 import { CardArtwork } from "./card-artwork";
@@ -37,6 +34,8 @@ import {
 import { CollectionIcon, GameIcon } from "@/components/game/game-icon";
 import { FactionIcon } from "@/components/game/faction-artwork";
 import { useDeckAutosave } from "@/hooks/use-deck-autosave";
+import { useDeckWorkshopState, useDeckWorkshopStore } from "./deck-workshop-state";
+import type { DeckDraft, WorkshopDeck } from "@/stores/deck-workshop-store";
 import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { GameHeader } from "@/components/game-header";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
@@ -47,17 +46,7 @@ import {
   type LeagueProgress,
 } from "@sylve/game/leagues";
 
-export interface WorkshopDeck {
-  _id: Id<"decks">;
-  name: string;
-  cardIds: string[];
-}
-
-interface Draft {
-  id: Id<"decks">;
-  name: string;
-  cards: string[];
-}
+export type { WorkshopDeck } from "@/stores/deck-workshop-store";
 
 interface DeckWorkshopProps extends CardProgressionActions {
   inspectedCardId?: string;
@@ -74,11 +63,6 @@ interface DeckWorkshopProps extends CardProgressionActions {
   }) => Promise<Id<"decks">>;
 }
 
-const deckDraft = (deck: WorkshopDeck): Draft => ({
-  id: deck._id,
-  name: deck.name,
-  cards: [...deck.cardIds],
-});
 const instructions =
   "Glisse une carte de la collection sur une carte de ton deck pour la remplacer.";
 
@@ -96,8 +80,22 @@ export function DeckWorkshop({
   inspectedCardId,
   onInspectCard,
 }: DeckWorkshopProps) {
-  const [draft, setDraft] = useState<Draft | null>(null);
-  const [filter, setFilter] = useState<CombatType | null>(null);
+  const store = useDeckWorkshopStore();
+  const draft = useDeckWorkshopState((state) => state.draft);
+  const filter = useDeckWorkshopState((state) => state.filter);
+  const rarityFilters = useDeckWorkshopState((state) => state.rarityFilters);
+  const factionFilters = useDeckWorkshopState((state) => state.factionFilters);
+  const upgradeOnly = useDeckWorkshopState((state) => state.upgradeOnly);
+  const {
+    syncDeck,
+    setDraft,
+    markSaved,
+    selectCombatType,
+    toggleRarity,
+    toggleFaction,
+    toggleUpgradeOnly,
+    resetFilters,
+  } = store.getState();
   const [picked, setPicked] = useState<string | null>(null);
   const [localInspected, setLocalInspected] = useState<string | null>(null);
   const inspected = onInspectCard ? (inspectedCardId ?? null) : localInspected;
@@ -105,9 +103,6 @@ export function DeckWorkshop({
     if (onInspectCard) onInspectCard(variantId ?? undefined);
     else setLocalInspected(variantId);
   }
-  const [rarityFilters, setRarityFilters] = useState<CardRarity[]>([]);
-  const [factionFilters, setFactionFilters] = useState<Faction[]>([]);
-  const [upgradeOnly, setUpgradeOnly] = useState(false);
   const [message, setMessage] = useState(instructions);
   const [hovered, setHovered] = useState<number | null>(null);
   const [drag, setDrag] = useState<{
@@ -137,25 +132,32 @@ export function DeckWorkshop({
   } | null>(null);
 
   const { status, initialize, enqueue, flush, hasPendingChanges } =
-    useDeckAutosave(onSave);
+    useDeckAutosave(onSave, (saved) => {
+      markSaved({ id: saved.deckId, name: saved.name, cards: saved.cardIds });
+    });
 
   useEffect(() => {
-    if (!deck || draft) return;
-    setDraft(deckDraft(deck));
+    if (!deck) return;
+    syncDeck(deck);
+    const state = store.getState();
+    if (deck.updatedAt !== undefined && state.serverUpdatedAt !== null && deck.updatedAt < state.serverUpdatedAt) return;
     initialize({
       deckId: deck._id,
       name: deck.name,
       cardIds: [...deck.cardIds],
     });
-  }, [deck, draft, initialize]);
+    // A retained draft can outlive the page; resume any unconfirmed save on return.
+    const current = state.draft!;
+    enqueue({ deckId: current.id, name: current.name, cardIds: [...current.cards] });
+  }, [deck, syncDeck, store, initialize, enqueue]);
 
   useBlocker({
     shouldBlockFn: async () => !(await flush()),
     enableBeforeUnload: hasPendingChanges,
   });
 
-  const ready = !!deck && draft !== null && !!collection;
-  const cards = draft?.cards ?? [];
+  const ready = !!deck && draft?.id === deck._id && !!collection;
+  const cards = deck && draft?.id === deck._id ? draft.cards : [];
   const entries = new Map(collection?.map((entry) => [entry.card.id, entry]));
   const available = (collection ?? [])
     .map((entry) => entry.card)
@@ -189,7 +191,7 @@ export function DeckWorkshop({
     setHovered(null);
   }
 
-  function updateDraft(next: Draft) {
+  function updateDraft(next: DeckDraft) {
     setDraft(next);
     enqueue({
       deckId: next.id,
@@ -524,12 +526,7 @@ export function DeckWorkshop({
                     <button
                       type="button"
                       className="workshop-empty-action"
-                      onClick={() => {
-                        setFilter(null);
-                        setRarityFilters([]);
-                        setFactionFilters([]);
-                        setUpgradeOnly(false);
-                      }}
+                      onClick={resetFilters}
                     >
                       <ListFilter size={18} aria-hidden="true" />
                       Voir toute la collection
@@ -586,12 +583,7 @@ export function DeckWorkshop({
               title={label}
               disabled={!ready}
               onClick={() => {
-                setFilter(filter === type ? null : type);
-                if (type === null) {
-                  setRarityFilters([]);
-                  setFactionFilters([]);
-                  setUpgradeOnly(false);
-                }
+                selectCombatType(type);
                 setPicked(null);
                 setMessage(instructions);
               }}
@@ -607,7 +599,7 @@ export function DeckWorkshop({
             aria-pressed={upgradeOnly}
             disabled={!ready}
             onClick={() => {
-              setUpgradeOnly((current) => !current);
+              toggleUpgradeOnly();
               setPicked(null);
               setMessage(instructions);
             }}
@@ -634,11 +626,7 @@ export function DeckWorkshop({
                     aria-pressed={active}
                     disabled={!ready}
                     onClick={() => {
-                      setRarityFilters((current) =>
-                        current.includes(rarity)
-                          ? current.filter((value) => value !== rarity)
-                          : [...current, rarity],
-                      );
+                      toggleRarity(rarity);
                       setPicked(null);
                       setMessage(instructions);
                     }}
@@ -680,11 +668,7 @@ export function DeckWorkshop({
                     aria-pressed={active}
                     disabled={!ready}
                     onClick={() => {
-                      setFactionFilters((current) =>
-                        current.includes(faction)
-                          ? current.filter((value) => value !== faction)
-                          : [...current, faction],
-                      );
+                      toggleFaction(faction);
                       setPicked(null);
                       setMessage(instructions);
                     }}

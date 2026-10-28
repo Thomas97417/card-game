@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { heroPortrait } from "@sylve/game";
+import { heroPortrait } from "@sylve/game/hero-metadata";
 import {
   DuelIntro,
   rememberDuelIntro,

@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/legal-page";
 import legalCss from "@/legal.css?url";
@@ -8,7 +9,7 @@ export const Route = createFileRoute("/(legal)/cgu")({
       { title: "Conditions générales d’utilisation — Sylve" },
       { name: "description", content: "Les règles essentielles pour jouer à Sylve et respecter les autres gardiens." },
     ],
-    links: [{ rel: "stylesheet", href: legalCss }],
+    links: [stylesheet(legalCss)],
   }),
   component: TermsPage,
 });

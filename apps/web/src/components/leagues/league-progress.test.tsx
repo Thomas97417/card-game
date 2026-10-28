@@ -13,7 +13,7 @@ describe("le parcours des ligues", () => {
   it("places every guardian at its exact recruitment milestone and preserves emerald prices", async () => {
     render(<LeaguePanel progress={leagueProgress(0)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     const milestones = [
       { league: "Fer IV", heroes: ["Gardien de la Sylve", "Gardien du Givre"] },
       { league: "Bronze IV", heroes: ["Chamane des Racines"] },
@@ -69,7 +69,7 @@ describe("le parcours des ligues", () => {
   it("keeps recruitment available through demotion and shows the next hero milestone", async () => {
     render(<LeaguePanel progress={leagueProgress(100, 3000)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     expect(
       dialog.getByRole("heading", { name: "Artificier des Neiges" }),
     ).toBeTruthy();
@@ -125,7 +125,7 @@ describe("le parcours des ligues", () => {
     fireEvent.click(
       screen.getByRole("button", { name: /Ta ligue : Fer IV, 175 trophées/ }),
     );
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     expect(dialog.getByText("La ligue des gardiens")).toBeTruthy();
     expect(dialog.getByText("5 cartes dans le deck")).toBeTruthy();
     expect(dialog.getByText("8 cartes dans le deck")).toBeTruthy();
@@ -144,7 +144,7 @@ describe("le parcours des ligues", () => {
   it("previews a milestone's rewards and returns to the player's position", async () => {
     render(<LeaguePanel progress={leagueProgress(175)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     const details = within(
       dialog.getByRole("region", {
         name: "Détails du palier sélectionné",
@@ -178,7 +178,7 @@ describe("le parcours des ligues", () => {
       ),
     );
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const reopened = within(await screen.findByRole("dialog"));
+    const reopened = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     expect(
       within(
         reopened.getByRole("region", {
@@ -191,7 +191,7 @@ describe("le parcours des ligues", () => {
   it("previews CW card quantities, gold and chest unlock leagues", async () => {
     render(<LeaguePanel progress={leagueProgress(0)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     const details = within(
       dialog.getByRole("region", { name: "Détails du palier sélectionné" }),
     );
@@ -245,7 +245,7 @@ describe("le parcours des ligues", () => {
       <LeaguePanel progress={leagueProgress(420)} compact />,
     );
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer II/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     const ring = dialog.getByRole("progressbar", {
       name: "Progression vers Fer I",
     });
@@ -293,7 +293,7 @@ describe("le parcours des ligues", () => {
   it("explores the entire timeline with the keyboard while retaining the current league", async () => {
     render(<LeaguePanel progress={leagueProgress(175)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     const road = dialog.getByRole("list", { name: "Parcours des ligues" });
     const first = dialog.getByRole("button", { name: /^Fer IV,/ });
     fireEvent.keyDown(first, { key: "ArrowRight" });
@@ -327,7 +327,7 @@ describe("le parcours des ligues", () => {
   it("keeps reached milestones unlocked after a demotion and offers the next unearned reward", async () => {
     render(<LeaguePanel progress={leagueProgress(185, 800)} compact />);
     fireEvent.click(screen.getByRole("button", { name: /Ta ligue : Fer IV/ }));
-    const dialog = within(await screen.findByRole("dialog"));
+    const dialog = within(await screen.findByRole("dialog", { name: "La ligue des gardiens" }, { timeout: 5000 }));
     expect(
       dialog.getByRole("heading", { name: "Gardien des Ronces" }),
     ).toBeTruthy();

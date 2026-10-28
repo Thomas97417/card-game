@@ -1,4 +1,7 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
+import sanctuaryCss from "@/sanctuary.css?url";
+import bestiaryCss from "@/bestiary.css?url";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
@@ -21,7 +24,11 @@ export const Route = createFileRoute("/sanctuary")({
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
     meta: [{ title: "Le sanctuaire — Sylve" }],
-    links: [{ rel: "preload", as: "image", href: "/art/sanctuary.webp" }],
+    links: [
+      stylesheet(sanctuaryCss),
+      stylesheet(bestiaryCss),
+      { rel: "preload", as: "image", href: "/art/sanctuary.webp" },
+    ],
   }),
   component: SanctuaryPage,
 });

@@ -120,7 +120,7 @@ function MineBuilding({
                   aria-valuemax={Math.max(view.capacity, view.available)}
                   aria-valuenow={view.available}
                 >
-                  <span style={{ width: `${view.progress * 100}%` }} />
+                  <span style={{ width: "100%", transform: `scaleX(${view.progress})` }} />
                 </div>
                 <span className="sr-only">
                   Mine niv. {state!.level ?? state!.heroLevel ?? 1}, liée à ton rang {board!.rank}. {view.perHour} {unit} par heure.

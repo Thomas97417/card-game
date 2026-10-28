@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider, useQuery as useCachedQuery } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName } from "convex/server";
 import { useQuery } from "convex/react";
@@ -13,6 +14,10 @@ import { CurrencyGain, CurrencyGainProvider } from "./currency-gain";
 import { useMineCollection } from "@/hooks/use-mine-collection";
 import type { MineBoard } from "@sylve/game/mines";
 import * as feedback from "@/components/game/shared";
+import { createNavigationAuth, type NavigationAuth } from "@/lib/navigation-auth";
+import { useDeckWorkshopState, useDeckWorkshopStore } from "./decks/deck-workshop-state";
+import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
+import { PLAYER_QUERY_OPTIONS } from "@/hooks/use-player-query-cache";
 
 const mocks = vi.hoisted(() => ({
   auth: { isLoading: true, isAuthenticated: false },
@@ -47,9 +52,9 @@ function ProtectedPage() {
   return <div>Le sanctuaire</div>;
 }
 
-function App({ required = true }: { required?: boolean }) {
+function App({ required = true, navigationAuth }: { required?: boolean; navigationAuth?: NavigationAuth }) {
   return (
-    <GameAuthGate required={required}>
+    <GameAuthGate required={required} navigationAuth={navigationAuth}>
       <GoldProvider>
         <EmeraldProvider>
           <FriendshipProvider>
@@ -83,6 +88,138 @@ beforeEach(() => {
 });
 
 describe("validation de la connexion avant les requêtes du jeu", () => {
+  it("retains cached player data across pages, then clears it before another account or signed-out content can read it", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const key = ["convexQuery", "collection:list", {}];
+    client.setQueryData(key, { owner: "unknown-previous-owner" });
+    const load = vi.fn(async () => ({ owner: mocks.user?._id ?? "anonymous" }));
+    const seen: { session: string | undefined; value: string | undefined }[] = [];
+    let boundaryVersion = 0;
+    function CachedPlayer() {
+      const { data } = useCachedQuery({ queryKey: key, queryFn: load, staleTime: Infinity, ...PLAYER_QUERY_OPTIONS });
+      seen.push({ session: mocks.user?._id, value: data?.owner });
+      return <output aria-label="Cache du joueur">{data?.owner ?? "Chargement"}</output>;
+    }
+    const view = (workshop = true) => (
+      <QueryClientProvider client={client}>
+        <GameAuthGate key={boundaryVersion} required queryClient={client}>
+          {workshop ? <CachedPlayer /> : <div>Village</div>}
+        </GameAuthGate>
+      </QueryClientProvider>
+    );
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "first-player" };
+    const { rerender, unmount } = render(view());
+    await waitFor(() => expect(screen.getByLabelText("Cache du joueur").textContent).toBe("first-player"));
+    expect(seen.some(({ value }) => value === "unknown-previous-owner")).toBe(false);
+    rerender(view(false));
+    rerender(view());
+    expect(screen.getByLabelText("Cache du joueur").textContent).toBe("first-player");
+    expect(load).toHaveBeenCalledOnce();
+
+    // The owner also survives a boundary remount while the router client remains.
+    boundaryVersion++;
+    mocks.user = { _id: "second-player" };
+    rerender(view());
+    await waitFor(() => expect(screen.getByLabelText("Cache du joueur").textContent).toBe("second-player"));
+    expect(seen.some(({ session, value }) => session === "second-player" && value === "first-player")).toBe(false);
+
+    mocks.auth = { isLoading: false, isAuthenticated: false };
+    mocks.user = null;
+    rerender(view());
+    expect(client.getQueryData(key)).toBeUndefined();
+    expect(screen.queryByLabelText("Cache du joueur")).toBeNull();
+    unmount();
+    client.clear();
+  });
+
+  it("ignores a former player's late query response after switching accounts", async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const key = ["convexQuery", "collection:list", {}];
+    let resolveFirst!: (value: { owner: string }) => void;
+    const load = vi.fn(() => mocks.user?._id === "first-player"
+      ? new Promise<{ owner: string }>((resolve) => { resolveFirst = resolve; })
+      : Promise.resolve({ owner: "second-player" }));
+    function CachedPlayer() {
+      const { data } = useCachedQuery({ queryKey: key, queryFn: load, staleTime: Infinity, ...PLAYER_QUERY_OPTIONS });
+      return <output aria-label="Cache du joueur">{data?.owner ?? "Chargement"}</output>;
+    }
+    const view = () => (
+      <QueryClientProvider client={client}>
+        <GameAuthGate required queryClient={client}><CachedPlayer /></GameAuthGate>
+      </QueryClientProvider>
+    );
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "first-player" };
+    const { rerender, unmount } = render(view());
+    await waitFor(() => expect(load).toHaveBeenCalledOnce());
+    mocks.user = { _id: "second-player" };
+    rerender(view());
+    await waitFor(() => expect(screen.getByLabelText("Cache du joueur").textContent).toBe("second-player"));
+    await act(async () => resolveFirst({ owner: "first-player" }));
+    expect(client.getQueryData(key)).toEqual({ owner: "second-player" });
+    expect(screen.getByLabelText("Cache du joueur").textContent).toBe("second-player");
+    unmount();
+    client.clear();
+  });
+
+  it("retains workshop state across pages and resets it when the player changes or signs out", () => {
+    function WorkshopProbe() {
+      const draft = useDeckWorkshopState((state) => state.draft);
+      const filter = useDeckWorkshopState((state) => state.filter);
+      const store = useDeckWorkshopStore();
+      return (
+        <>
+          <button onClick={() => {
+            store.getState().syncDeck({ _id: "deck" as Id<"decks">, name: "Mon deck", cardIds: ["fox:rare"] });
+            store.getState().selectCombatType("ranged");
+          }}>Modifier l’atelier</button>
+          <output aria-label="Brouillon">{draft?.name ?? "Aucun"}</output>
+          <output aria-label="Filtre">{filter ?? "Toutes"}</output>
+        </>
+      );
+    }
+    const view = (workshop: boolean) => (
+      <GameAuthGate required={false}>
+        {workshop ? <WorkshopProbe /> : <div>Village</div>}
+      </GameAuthGate>
+    );
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "first-player" };
+    const { rerender } = render(view(true));
+    fireEvent.click(screen.getByRole("button", { name: "Modifier l’atelier" }));
+    rerender(view(false));
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Mon deck");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("ranged");
+
+    mocks.user = { _id: "second-player" };
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Aucun");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("Toutes");
+    fireEvent.click(screen.getByRole("button", { name: "Modifier l’atelier" }));
+    mocks.auth = { isLoading: false, isAuthenticated: false };
+    mocks.user = null;
+    rerender(view(true));
+    expect(screen.getByLabelText("Brouillon").textContent).toBe("Aucun");
+    expect(screen.getByLabelText("Filtre").textContent).toBe("Toutes");
+  });
+
+  it("updates navigation from the validated live session, including expiry with a valid JWT", async () => {
+    const navigationAuth = createNavigationAuth();
+    const getToken = vi.fn().mockResolvedValue("initial-token");
+    await navigationAuth.load(getToken);
+    mocks.auth = { isLoading: false, isAuthenticated: true };
+    mocks.user = { _id: "player" };
+    const { rerender } = render(<App navigationAuth={navigationAuth} />);
+    expect(await navigationAuth.load(getToken)).toEqual({ isAuthenticated: true });
+    mocks.user = null;
+    rerender(<App navigationAuth={navigationAuth} />);
+    expect(await navigationAuth.load(getToken)).toEqual({ isAuthenticated: false });
+    expect(screen.queryByText("Le sanctuaire")).toBeNull();
+    expect(mocks.redirect).toHaveBeenCalled();
+    expect(getToken).toHaveBeenCalledOnce();
+  });
   it("waits for Convex and the server session before mounting protected content", () => {
     const { rerender } = render(<App />);
     expect(screen.getByRole("status").textContent).toBe("Connexion en cours…");

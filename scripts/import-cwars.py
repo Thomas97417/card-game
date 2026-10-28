@@ -431,4 +431,9 @@ data = dict(version=2, source="docs/references/cunt-wars", families=FAMILIES, ca
             upgrade=upgrade, rankCosts=rank_costs, rankBenefits=rank_benefits,
             soulbindCosts=dict(common=[0,50,100,150], rare=[0,75,125,175], epic=[100,150,200,250], legendary=[200,250,300,350]))
 (OUT / "cunt-wars.json").write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
+# The persistent player header only needs account progression, not combat tables.
+ranks = dict(rankCosts=rank_costs, rankBenefits=rank_benefits,
+             soulbindRanks=[link["rank"] for card in cards for link in card["soulbinds"]])
+(OUT / "ranks.json").write_text(json.dumps(ranks, ensure_ascii=False, indent=2)+"\n")
+(OUT / "card-ids.json").write_text(json.dumps([card["baseId"]+":"+card["rarity"] for card in cards], indent=2)+"\n")
 print(f"Imported {len(cards)} CW profiles, {sum(len(c['stats']) for c in cards)} stat pairs, {sum(len(c['skills']) for c in cards)} skills and {sum(len(c['soulbinds']) for c in cards)} Soulbind links.")

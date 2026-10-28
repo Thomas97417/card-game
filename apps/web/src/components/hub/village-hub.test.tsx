@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VillageHub } from "./village-hub";
 
@@ -17,6 +17,7 @@ vi.mock("@/components/currency-balances", () => ({
 }));
 
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame"] });
   vi.stubGlobal(
     "ResizeObserver",
     class {
@@ -25,7 +26,7 @@ beforeEach(() => {
     },
   );
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("le refuge", () => {
   it("explores the map horizontally with the wheel and links to the arena", () => {
@@ -36,10 +37,13 @@ describe("le refuge", () => {
       clientWidth: { value: 800 },
     });
     expect(fireEvent.wheel(map, { deltaY: 120 })).toBe(false);
+    act(() => vi.advanceTimersToNextFrame());
     expect(map.scrollLeft).toBe(120);
     expect(fireEvent.wheel(map, { deltaY: -40 })).toBe(false);
+    act(() => vi.advanceTimersToNextFrame());
     expect(map.scrollLeft).toBe(80);
     expect(fireEvent.wheel(map, { deltaY: 1, deltaMode: 2 })).toBe(false);
+    act(() => vi.advanceTimersToNextFrame());
     expect(map.scrollLeft).toBe(880);
     expect(fireEvent.wheel(map, { deltaX: 50 })).toBe(true);
     expect(fireEvent.wheel(map, { deltaY: 80, ctrlKey: true })).toBe(true);

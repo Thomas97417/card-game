@@ -1,3 +1,4 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/legal-page";
 import legalCss from "@/legal.css?url";
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/(legal)/mentions-legales")({
       { title: "Mentions légales — Sylve" },
       { name: "description", content: "L’éditeur du jeu Sylve." },
     ],
-    links: [{ rel: "stylesheet", href: legalCss }],
+    links: [stylesheet(legalCss)],
   }),
   component: LegalNoticesPage,
 });

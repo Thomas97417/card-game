@@ -5,7 +5,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { FRIENDS_UNLOCK_RANK, rankBenefits, rankSoulbindUnlocks } from "@sylve/game/ranks";
-import { heroDefinition } from "@sylve/game";
+import { heroDefinition } from "@sylve/game/hero-metadata";
 import { useGameAuth } from "@/hooks/use-game-auth";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { EmeraldAmount } from "./emerald-balance";

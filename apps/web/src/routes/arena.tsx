@@ -1,5 +1,9 @@
+import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import lobbyCss from "@/play-lobby.css?url";
+import { useMutation, useQuery as useConvexQuery } from "convex/react";
+import { useQuery } from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -25,6 +29,7 @@ import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { useDuelTransition } from "@/components/game/duel-transition";
 import { shouldShowDuelIntro } from "@/components/game/duel-intro";
+import { PLAYER_QUERY_OPTIONS } from "@/hooks/use-player-query-cache";
 
 export const Route = createFileRoute("/arena")({
   validateSearch: (search: Record<string, unknown>): { invite?: string } => ({
@@ -38,6 +43,7 @@ export const Route = createFileRoute("/arena")({
   head: () => ({
     meta: [{ title: "L’arène des gardiens — Sylve" }],
     links: [
+      stylesheet(lobbyCss),
       { rel: "preload", as: "image", href: "/art/play-lobby.webp" },
       { rel: "prefetch", as: "image", href: "/art/heroes/hero-amber.webp" },
       { rel: "prefetch", as: "image", href: "/art/duel-arena-overhead.webp" },
@@ -51,18 +57,33 @@ function ArenaPage() {
   const navigate = useNavigate();
   const transition = useDuelTransition();
   const { invite } = Route.useSearch();
-  const decks = useQuery(api.decks.list);
-  const activity = useQuery(api.games.activity);
-  const user = useQuery(api.auth.getCurrentUser);
-  const hero = useQuery(api.collection.hero);
+  const { data: decks } = useQuery({
+    ...convexQuery(api.decks.list, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const { data: activity } = useQuery({
+    ...convexQuery(api.games.activity, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const user = useConvexQuery(api.auth.getCurrentUser);
+  const { data: hero } = useQuery({
+    ...convexQuery(api.collection.hero, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const openingGameId = activity?.status === "active" ? activity.gameId : null;
   // The presentation already covers the arena while the live duel loads.
-  const openingGame = useQuery(
+  const openingGame = useConvexQuery(
     api.games.get,
     openingGameId ? { gameId: openingGameId } : "skip",
   );
-  const treasures = useQuery(api.chests.list);
-  const league = useQuery(api.collection.league);
+  const { data: treasures, dataUpdatedAt: treasuresUpdatedAt } = useQuery({
+    ...convexQuery(api.chests.list, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const { data: league } = useQuery({
+    ...convexQuery(api.collection.league, {}),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const ensureStarter = useMutation(api.decks.ensureStarter);
   const createSolo = useMutation(api.games.createSolo);
   const createPrivate = useMutation(api.games.createPrivate);
@@ -75,28 +96,26 @@ function ArenaPage() {
   const openVictory = useMutation(api.chests.openVictory);
   const [code, setCode] = useState(invite ?? "");
   const [busy, setBusy] = useState(false);
-  const [initialized, setInitialized] = useState(false);
   const [copied, setCopied] = useState(false);
   const [privateOpen, setPrivateOpen] = useState(!!invite);
   const [reward, setReward] = useState<ChestReveal | null>(null);
-  const collection = useQuery(api.collection.list, reward ? {} : "skip");
+  const { data: collection } = useQuery({
+    ...convexQuery(api.collection.list, reward ? {} : "skip"),
+    ...PLAYER_QUERY_OPTIONS,
+  });
   const upgrade = useMutation(api.collection.upgrade);
   const [selectedChest, setSelectedChest] = useState<LobbyChest | null>(null);
   const actionLock = useRef(false);
   const opening = useRef<string | null>(null);
   const cancelSearch = useCallback(() => cancelQueue(), [cancelQueue]);
-  const [now, setNow] = useState(0);
+  const [clock, setClock] = useState(Date.now);
+  const starterRequested = useRef(false);
+  const needsStarter = decks?.length === 0;
   useEffect(() => {
-    let mounted = true;
-    void ensureStarter()
-      .then(() => {
-        if (mounted) setInitialized(true);
-      })
-      .catch(showGameError);
-    return () => {
-      mounted = false;
-    };
-  }, [ensureStarter]);
+    if (!needsStarter || starterRequested.current) return;
+    starterRequested.current = true;
+    void ensureStarter().catch(showGameError);
+  }, [needsStarter, ensureStarter]);
   useEffect(() => {
     if (invite) {
       setCode(invite);
@@ -173,17 +192,19 @@ function ArenaPage() {
     return () => window.clearInterval(interval);
   }, [activity?.queued, heartbeat]);
   useEffect(() => {
-    if (!treasures) return;
-    const serverTime = treasures.serverNow;
-    const started = Date.now();
-    const tick = () => setNow(serverTime + Date.now() - started);
+    if (!treasuresUpdatedAt) return;
+    const tick = () => setClock(Date.now());
     tick();
     const interval = window.setInterval(tick, 1000);
     return () => window.clearInterval(interval);
-  }, [treasures?.serverNow]);
+  }, [treasuresUpdatedAt]);
+  // Keep counting from when Convex updated the cache, including time away.
+  const now = treasures
+    ? treasures.serverNow + Math.max(0, clock - treasuresUpdatedAt)
+    : 0;
   const deck = decks?.[0];
   const locked = busy || !!activity?.gameId || !!activity?.queued;
-  const ready = initialized && !!deck && !!activity && !!treasures && !!league;
+  const ready = !!deck && !!activity && !!treasures && !!league;
   const deckComplete =
     !!deck && !!league && deck.cardIds.length === league.deckCapacity;
   async function action(fn: () => Promise<unknown>) {

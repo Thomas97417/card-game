@@ -8,7 +8,7 @@ import type {
   MissionTrack,
   MissionView,
 } from "@sylve/game/missions";
-import { chestName } from "@sylve/game/progression";
+import { chestName } from "@sylve/game/chest-types";
 import { EmeraldIcon } from "@/components/emerald-balance";
 import { MissionCheck, MissionSeal } from "./mission-icons";
 import { HubPanel } from "./hub-panel";

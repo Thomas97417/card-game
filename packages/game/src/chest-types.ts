@@ -8,6 +8,21 @@ export const CHEST_TYPES = [
 ] as const;
 export type ChestType = (typeof CHEST_TYPES)[number];
 
+/** Shared display metadata stays independent of reward rolls and combat data. */
+export const CHEST_LABELS: Record<ChestType, string> = {
+  common: "Commun",
+  rare: "Rare",
+  bigRare: "grand coffre rare",
+  epic: "Épique",
+  legendary: "Légendaire",
+};
+
+export function chestName(type: ChestType) {
+  return type === "bigRare"
+    ? "Grand coffre rare"
+    : `Coffre ${CHEST_LABELS[type].toLowerCase()}`;
+}
+
 /** Bump when changing pool weights or league availability, to replace saved pools. */
 export const CHEST_POOL_VERSION = 1;
 

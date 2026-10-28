@@ -4,7 +4,7 @@ import {
   type DailyGift,
   type DailyRewardsBoard,
 } from "@sylve/game/daily-rewards";
-import { chestName } from "@sylve/game/progression";
+import { chestName } from "@sylve/game/chest-types";
 import { GameIcon } from "@/components/game/game-icon";
 import { HubPanel } from "./hub-panel";
 import { MissionCheck } from "./mission-icons";
