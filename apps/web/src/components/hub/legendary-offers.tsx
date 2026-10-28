@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import {
-  Check,
-  Crown,
-  LoaderCircle,
-  ShieldCheck,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Check, Crown, LoaderCircle, ShieldCheck, X } from "lucide-react";
 import { resolveCard, RARITY_LABELS } from "@sylve/game";
 import {
   LEGENDARY_OFFERS,
@@ -20,12 +13,7 @@ import {
   type LegendaryPaymentStatus,
 } from "@sylve/game/legendary-offers";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export interface HubLegendaryOffersProps {
   board?: LegendaryOfferBoard;
@@ -80,13 +68,7 @@ export function LegendaryOffersDialog({
     >
       <DialogContent className="legendary-offers-dialog" appearance="game">
         <header className="legendary-offers-heading">
-          <span className="legendary-offers-kicker">
-            <Sparkles size={13} /> Les trésors du refuge
-          </span>
           <DialogTitle>Le pouvoir des légendes</DialogTitle>
-          <DialogDescription>
-            Deux alliances. Une nouvelle puissance pour ton armée.
-          </DialogDescription>
           <span className="legendary-offers-rank">
             <Crown size={14} /> Jusqu’au rang {LEGENDARY_OFFER_MAX_RANK} inclus{" "}
             <span>· Ton rang : {board?.rank ?? "…"}</span>
@@ -105,7 +87,6 @@ export function LegendaryOffersDialog({
               >
                 <div className="legendary-offer-topline">
                   <span>Pack légendaire</span>
-                  <span>Contenu garanti</span>
                 </div>
                 <h3 id={`offer-${offer.id}`}>{offer.name}</h3>
                 <p className="legendary-offer-subtitle">{offer.subtitle}</p>
@@ -169,10 +150,6 @@ export function LegendaryOffersDialog({
             {error}
           </p>
         )}
-        <p className="legendary-offers-footer">
-          <ShieldCheck size={14} /> Les cartes affichées sont celles que tu
-          reçois. Chaque lot contient une seule et même carte par rareté.
-        </p>
       </DialogContent>
     </Dialog>
   );
