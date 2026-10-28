@@ -1,6 +1,6 @@
 # Sons des cartes
 
-30 enregistrements Freesound utilisés ; 44 originaux archivés dans `originals/`.
+30 enregistrements Freesound utilisés ; leurs originaux sont conservés dans `originals/`.
 La galerie `index.html` fait écouter les 46 extraits du jeu et isole les 4 sons révisés.
 
 Les profils de `combat-audio-profile.ts` distinguent le corps à corps, la distance, les rôles et les éléments.
@@ -8,7 +8,7 @@ Les invocations utilisent des montées magiques superposées, sans contacts de p
 Le tonnerre est naturel, l’eau provient de vagues et les conclusions sont orchestrales. Aucun son ne boucle.
 
 Les compositions CC BY 4.0 sont attribuées dans `credits.html` et les mentions légales du jeu.
-Les autres sources actives sont sous CC0. Les anciens fichiers écartés restent archivés et ne sont pas joués.
+Les autres sources actives sont sous CC0. Seuls les originaux utilisés par les recettes actuelles sont conservés pour reconstruire le sprite.
 
 Reconstruction : `FFMPEG=/chemin/vers/ffmpeg bun scripts/generate-combat-audio.mjs`.
 Les recettes figurent dans `scripts/combat-audio-edits.json` ; les sources et empreintes dans `docs/combat-audio-sources.json`.
