@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { writeAudioGallery } from "./combat-audio-gallery.mjs";
 
 // Rebuild the combat sprite from the downloaded CC0 originals. Requires FFmpeg.
 // Run with: FFMPEG=/path/to/ffmpeg bun scripts/generate-combat-audio.mjs
@@ -19,9 +20,10 @@ function render(edit) {
   if (!source?.isOriginal || source.license !== "CC0-1.0") throw new Error(`Missing CC0 original: ${edit.source}`);
   const original = originalBuffers.get(source.freesoundId);
   if (createHash("sha256").update(original).digest("hex") !== source.sha256) throw new Error(`Source checksum mismatch: ${source.file}`);
+  const speed = edit.speed ?? 1;
   const decoded = spawnSync(ffmpeg, [
     "-v", "error", "-i", fileURLToPath(new URL(source.file, root)),
-    "-ss", String(edit.start), "-t", String(edit.duration),
+    "-af", `atrim=start=${edit.start}:duration=${edit.duration * speed},asetpts=PTS-STARTPTS,aresample=${rate},asetrate=${Math.round(rate * speed)},aresample=${rate}`,
     "-ar", String(rate), "-ac", "1", "-f", "f32le", "pipe:1",
   ], { maxBuffer: 8 * 1024 * 1024 });
   if (decoded.error) throw new Error(`FFmpeg is required to rebuild combat audio: ${decoded.error.message}`);
@@ -75,7 +77,7 @@ for (const edit of edits) {
   const { samples, gain } = render(edit);
   sprite[edit.name] = [length / rate * 1000, samples.length / rate * 1000];
   (sounds[edit.sound] ??= []).push(edit.name);
-  processed.push({ ...edit, gain, duration: samples.length / rate });
+  processed.push({ ...edit, gain, at: length / rate * 1000, duration: samples.length / rate });
   const silence = new Float32Array(Math.round(rate * 0.12));
   chunks.push(samples, silence);
   length += samples.length + silence.length;
@@ -91,9 +93,11 @@ await mkdir(output, { recursive: true });
 await writeFile(new URL(filename, output), audio);
 await writeFile(runtimeManifest, `${JSON.stringify({ src: `/audio/combat/${filename}`, sounds, sprite }, null, 2)}\n`);
 sources.status = "active-in-combat";
-sources.note = "CC0 originals are used for combat effects after trimming, fades, resampling and level balancing. Public HQ MP3 previews are retained only for the listening gallery.";
+sources.note = "CC0 originals are used for card-specific combat effects after trimming, fades, resampling, pitch adjustment and level balancing. The listening gallery plays the same processed excerpts as the game.";
 sources.combat = { file: `apps/web/public/audio/combat/${filename}`, sha256, sampleRate: rate, channels: 1, bitDepth: 16, clips: processed };
+for (const source of sources.sounds) source.usedInCombat = edits.some((edit) => edit.source === source.freesoundId);
 await writeFile(sourcesPath, `${JSON.stringify(sources, null, 2)}\n`);
+await writeAudioGallery(output, filename, sources.sounds, processed);
 for (const old of await readdir(output)) {
   if (old === "effects.wav" || (/^freesound-effects-[a-f0-9]{12}\.wav$/.test(old) && old !== filename)) {
     await unlink(new URL(old, output));

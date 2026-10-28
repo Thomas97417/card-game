@@ -1,8 +1,8 @@
 {
-  "collection": "Sylve combat — Freesound candidate selection",
+  "collection": "Sylve — sons de cartes Freesound CC0",
   "retrievedAt": "2026-10-28",
   "status": "active-in-combat",
-  "note": "CC0 originals are used for combat effects after trimming, fades, resampling and level balancing. Public HQ MP3 previews are retained only for the listening gallery.",
+  "note": "CC0 originals are used for card-specific combat effects after trimming, fades, resampling, pitch adjustment and level balancing. The listening gallery plays the same processed excerpts as the game.",
   "sounds": [
     {
       "role": "swing",
@@ -34,7 +34,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "lpcm (0x0000000C) 24-bit little-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": true
     },
     {
       "role": "swing",
@@ -66,7 +67,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "lpcm (0x0000000C) 24-bit little-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": true
     },
     {
       "role": "swing",
@@ -98,7 +100,8 @@
       "channels": 2,
       "sampleRate": 48000,
       "encoding": "lpcm (0x0000000E) 24-bit big-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": true
     },
     {
       "role": "shot",
@@ -130,7 +133,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
     },
     {
       "role": "strike",
@@ -162,7 +166,8 @@
       "channels": 2,
       "sampleRate": 192000,
       "encoding": "lpcm (0x0000000C) 24-bit little-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": true
     },
     {
       "role": "shield",
@@ -194,7 +199,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
     },
     {
       "role": "magic",
@@ -226,7 +232,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
     },
     {
       "role": "heal",
@@ -258,7 +265,8 @@
       "channels": 2,
       "sampleRate": 96000,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
     },
     {
       "role": "poison",
@@ -289,7 +297,8 @@
       },
       "channels": 2,
       "sampleRate": 44100,
-      "encoding": "Vorbis"
+      "encoding": "Vorbis",
+      "usedInCombat": true
     },
     {
       "role": "freeze",
@@ -321,7 +330,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
     },
     {
       "role": "summon",
@@ -353,7 +363,8 @@
       "channels": 2,
       "sampleRate": 48000,
       "encoding": "lpcm (0x0000000C) 24-bit little-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": false
     },
     {
       "role": "death",
@@ -385,7 +396,8 @@
       "channels": 1,
       "sampleRate": 192000,
       "encoding": "lpcm (0x0000000C) 24-bit little-endian signed integer",
-      "bitDepth": 24
+      "bitDepth": 24,
+      "usedInCombat": true
     },
     {
       "role": "hero",
@@ -417,7 +429,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Int32, interleaved",
-      "bitDepth": 32
+      "bitDepth": 32,
+      "usedInCombat": true
     },
     {
       "role": "victory",
@@ -449,7 +462,8 @@
       "channels": 2,
       "sampleRate": 44100,
       "encoding": "Float32, interleaved",
-      "bitDepth": 32
+      "bitDepth": 32,
+      "usedInCombat": true
     },
     {
       "role": "defeat",
@@ -481,12 +495,444 @@
       "channels": 2,
       "sampleRate": 96000,
       "encoding": "Int16, interleaved",
-      "bitDepth": 16
+      "bitDepth": 16,
+      "usedInCombat": true
+    },
+    {
+      "role": "placement",
+      "freesoundId": 801349,
+      "title": "Chess piece setting 1",
+      "author": "Alnotreally",
+      "source": "https://freesound.org/people/Alnotreally/sounds/801349/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/placement-801349.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Alnotreally/sounds/801349/download/801349__alnotreally__chess-piece-setting-1.wav",
+      "sizeBytes": 698924,
+      "sha256": "fc355c1fef9da39f4944b7cea581212a0db357cf203308e1045b41382b320182",
+      "durationSeconds": 3.64,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "placement",
+      "freesoundId": 556387,
+      "title": "Moving piece on a boardgame",
+      "author": "zachrau",
+      "source": "https://freesound.org/people/zachrau/sounds/556387/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/placement-556387.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/zachrau/sounds/556387/download/556387__zachrau__moving-piece-on-a-boardgame.wav",
+      "sizeBytes": 1422408,
+      "sha256": "64fda695721b98aba6c88d077e43e880a03ea2a77e081a49ad96ae6c2af6301b",
+      "durationSeconds": 7.992,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "fire-cast",
+      "freesoundId": 105016,
+      "title": "JM_FX_Fireball 01.wav",
+      "author": "Julien_Matthey",
+      "source": "https://freesound.org/people/Julien_Matthey/sounds/105016/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/fire-cast-105016.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Julien_Matthey/sounds/105016/download/105016__julien_matthey__jm_fx_fireball-01.wav",
+      "sizeBytes": 346694,
+      "sha256": "3992598c814de25c318780e506aeda673a7e410b7b3c4f0793883483ff9766b8",
+      "durationSeconds": 1.962,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "fire-hit",
+      "freesoundId": 431174,
+      "title": "Fireball Explosion.wav",
+      "author": "Blankened",
+      "source": "https://freesound.org/people/Blankened/sounds/431174/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/fire-hit-431174.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Blankened/sounds/431174/download/431174__blankened__fireball-explosion.wav",
+      "sizeBytes": 190892,
+      "sha256": "c3f4a57c548bf56493ad3fb8163080c5f070f3b8c0a58c2ff8894503cc8b56a6",
+      "durationSeconds": 1.081,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "water-cast",
+      "freesoundId": 737235,
+      "title": "Water Squirt",
+      "author": "qubodup",
+      "source": "https://freesound.org/people/qubodup/sounds/737235/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/water-cast-737235.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/qubodup/sounds/737235/download/737235__qubodup__water-squirt.wav",
+      "sizeBytes": 149342,
+      "sha256": "842fcd33cd672a02729e1f9568e022c1164b33673b957301dc0555a22143142d",
+      "durationSeconds": 0.518,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "water-hit",
+      "freesoundId": 737234,
+      "title": "Water Splash",
+      "author": "qubodup",
+      "source": "https://freesound.org/people/qubodup/sounds/737234/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/water-hit-737234.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/qubodup/sounds/737234/download/737234__qubodup__water-splash.wav",
+      "sizeBytes": 164180,
+      "sha256": "648879d804252d40c9fe348867f2b89cc8c144ceb39fbe9f2fd6adff0b1dd3db",
+      "durationSeconds": 0.569,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "storm",
+      "freesoundId": 512471,
+      "title": "Electric zap.wav",
+      "author": "michael_grinnell",
+      "source": "https://freesound.org/people/michael_grinnell/sounds/512471/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/storm-512471.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/michael_grinnell/sounds/512471/download/512471__michael_grinnell__electric-zap.wav",
+      "sizeBytes": 39728,
+      "sha256": "a272bcd18a2776d927b6dd5d40ff05dcb8ab9dbb880f0601dafc81d480e3a0b8",
+      "durationSeconds": 0.224,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "nature",
+      "freesoundId": 594400,
+      "title": "Rustling leaves.wav",
+      "author": "Elandre01",
+      "source": "https://freesound.org/people/Elandre01/sounds/594400/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/nature-594400.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Elandre01/sounds/594400/download/594400__elandre01__rustling-leaves.wav",
+      "sizeBytes": 2592736,
+      "sha256": "28670e134f25499e47afc82975eae83bc395177de1b4b8a0317ac1be1bc0bd93",
+      "durationSeconds": 9,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "light",
+      "freesoundId": 825852,
+      "title": "Magic - Supernatural Drum hit",
+      "author": "Vrymaa",
+      "source": "https://freesound.org/people/Vrymaa/sounds/825852/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/light-825852.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Vrymaa/sounds/825852/download/825852__vrymaa__magic-supernatural-drum-hit.wav",
+      "sizeBytes": 1394906,
+      "sha256": "20096c7dc3d2e9cba39fc925c3d5492c697f6da0c9bf88304b8b9efa7d5d4ec4",
+      "durationSeconds": 7.906,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "arcane",
+      "freesoundId": 529024,
+      "title": "Anime_magician_spell_15.wav",
+      "author": "Euphrosyyn",
+      "source": "https://freesound.org/people/Euphrosyyn/sounds/529024/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/arcane-529024.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Euphrosyyn/sounds/529024/download/529024__euphrosyyn__anime_magician_spell_15.wav",
+      "sizeBytes": 805968,
+      "sha256": "577d4a50960a1f155fdf5475f7e25c3256242a8d397d413c70164326cdc8f45c",
+      "durationSeconds": 2.796,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "shadow",
+      "freesoundId": 683627,
+      "title": "Dark spell-1.wav",
+      "author": "DneproMan",
+      "source": "https://freesound.org/people/DneproMan/sounds/683627/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/shadow-683627.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/DneproMan/sounds/683627/download/683627__dneproman__dark-spell-1.wav",
+      "sizeBytes": 1059550,
+      "sha256": "a8c8dcf8db47c373c8488e0a5b64e0c720165859d4a76906fb2da07ce57f2786",
+      "durationSeconds": 6,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "ice-hit",
+      "freesoundId": 262635,
+      "title": "Ice Crack 1",
+      "author": "j_p_higgins",
+      "source": "https://freesound.org/people/j_p_higgins/sounds/262635/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/ice-hit-262635.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/j_p_higgins/sounds/262635/download/262635__j_p_higgins__ice-crack-1.wav",
+      "sizeBytes": 96886,
+      "sha256": "90938516bc3c479e542dc73d57bc77b58d78968bddcfdc719e6edd62948edb02",
+      "durationSeconds": 1.097,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "beast",
+      "freesoundId": 483713,
+      "title": "Creature Short Growl 1_10",
+      "author": "Joao_Janz",
+      "source": "https://freesound.org/people/Joao_Janz/sounds/483713/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/beast-483713.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Joao_Janz/sounds/483713/download/483713__joao_janz__creature-short-growl-1_10.wav",
+      "sizeBytes": 324896,
+      "sha256": "53c25393541fe1647b83c662312206ba47ee0d74eabcf6a8c149018e8b4bd56b",
+      "durationSeconds": 1.127,
+      "sampleRate": 48000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "blunt-hit",
+      "freesoundId": 434147,
+      "title": "Punch",
+      "author": "NeoSpica",
+      "source": "https://freesound.org/people/NeoSpica/sounds/434147/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/blunt-hit-434147.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/NeoSpica/sounds/434147/download/434147__neospica__punch.wav",
+      "sizeBytes": 103964,
+      "sha256": "247fd1dc6cbae5def9dfcfdfa76a9d909fa3358887807152a1ebd8f0c881d094",
+      "durationSeconds": 0.294,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 32,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "arrow-hit",
+      "freesoundId": 410751,
+      "title": "Arrow strike.mp3",
+      "author": "plantmonkey",
+      "source": "https://freesound.org/people/plantmonkey/sounds/410751/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/arrow-hit-410751.mp3",
+      "format": "mp3",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/plantmonkey/sounds/410751/download/410751__plantmonkey__arrow-strike.mp3",
+      "sizeBytes": 47999,
+      "sha256": "2027ef1195551761db9c0398dae1b04e851ab853b07034fc09a387820eb96c97",
+      "durationSeconds": 2.678,
+      "sampleRate": 44100,
+      "channels": 2,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "earth",
+      "freesoundId": 202098,
+      "title": "Falling Rock.wav",
+      "author": "spookymodem",
+      "source": "https://freesound.org/people/spookymodem/sounds/202098/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/earth-202098.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/spookymodem/sounds/202098/download/202098__spookymodem__falling-rock.wav",
+      "sizeBytes": 889672,
+      "sha256": "58cbe51ec034e1dc520c8d9e5f02501b77ee34de77e711573a5f9fbc91c7d816",
+      "durationSeconds": 5.042,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "bard",
+      "freesoundId": 436128,
+      "title": "Harp Glissando Up.aiff",
+      "author": "Cunningar0807",
+      "source": "https://freesound.org/people/Cunningar0807/sounds/436128/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/bard-436128.aiff",
+      "format": "aiff",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/Cunningar0807/sounds/436128/download/436128__cunningar0807__harp-glissando-up.aiff",
+      "sizeBytes": 3026998,
+      "sha256": "9958dd818eef61f197733bcc7d655fb579d82b5a18b83a39c392ba5726f6e7a8",
+      "durationSeconds": 17.159,
+      "sampleRate": 44100,
+      "channels": 2,
+      "bitDepth": 16,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
+    },
+    {
+      "role": "hammer",
+      "freesoundId": 434339,
+      "title": "Hammer hitting an anvil",
+      "author": "draftcraft",
+      "source": "https://freesound.org/people/draftcraft/sounds/434339/",
+      "variant": "main",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "retrievedAt": "2026-10-28",
+      "file": "apps/web/public/audio/combat/freesound/originals/hammer-434339.wav",
+      "format": "wav",
+      "quality": "original",
+      "isOriginal": true,
+      "originalDownloadUrl": "https://freesound.org/people/draftcraft/sounds/434339/download/434339__draftcraft__hammer-hitting-an-anvil.wav",
+      "sizeBytes": 11353994,
+      "sha256": "0e005bd42d7553423e9f48b45026a53ffc452342d8ad881a73c9556d3355ea8e",
+      "durationSeconds": 19.642,
+      "sampleRate": 96000,
+      "channels": 2,
+      "bitDepth": 24,
+      "licenseVerifiedAt": "2026-10-28",
+      "usedInCombat": true
     }
   ],
   "combat": {
-    "file": "apps/web/public/audio/combat/freesound-effects-cc45646d981e.wav",
-    "sha256": "cc45646d981e851492406893ea1e911c0268a258d4b78e9203ce0bb7af153cc8",
+    "file": "apps/web/public/audio/combat/freesound-effects-877a05901026.wav",
+    "sha256": "877a0590102664063f36be2caeaa4c11659ec0a83179f2b5bc89c9e55f25dc74",
     "sampleRate": 44100,
     "channels": 1,
     "bitDepth": 16,
@@ -498,7 +944,8 @@
         "start": 0,
         "duration": 0.34,
         "fadeOut": 0.035,
-        "gain": 0.49420949419175486
+        "gain": 0.49420949419175486,
+        "at": 0
       },
       {
         "name": "swing-2",
@@ -507,7 +954,8 @@
         "start": 0,
         "duration": 0.46,
         "fadeOut": 0.06,
-        "gain": 0.5012062633674264
+        "gain": 0.5012062633674264,
+        "at": 460
       },
       {
         "name": "swing-3",
@@ -516,7 +964,8 @@
         "start": 0.22,
         "duration": 0.43,
         "fadeOut": 0.06,
-        "gain": 0.4551084717053881
+        "gain": 0.4551084717053881,
+        "at": 1040
       },
       {
         "name": "shot",
@@ -525,7 +974,8 @@
         "start": 0.2,
         "duration": 0.28,
         "fadeOut": 0.04,
-        "gain": 1.2667429141835311
+        "gain": 1.2667429141835311,
+        "at": 1590
       },
       {
         "name": "strike",
@@ -534,7 +984,8 @@
         "start": 0.025,
         "duration": 0.38,
         "fadeOut": 0.04,
-        "gain": 1.0064233463099408
+        "gain": 0.99212848627787,
+        "at": 1990
       },
       {
         "name": "shield",
@@ -543,7 +994,8 @@
         "start": 0.02,
         "duration": 0.26,
         "fadeOut": 0.04,
-        "gain": 0.41113823794203086
+        "gain": 0.41113823794203086,
+        "at": 2490
       },
       {
         "name": "magic",
@@ -552,7 +1004,8 @@
         "start": 0,
         "duration": 0.68,
         "fadeOut": 0.08,
-        "gain": 0.22285122862724108
+        "gain": 0.22285122862724108,
+        "at": 2870
       },
       {
         "name": "heal",
@@ -561,7 +1014,8 @@
         "start": 0,
         "duration": 0.95,
         "fadeOut": 0.07,
-        "gain": 0.6835632415888317
+        "gain": 0.6835689839195516,
+        "at": 3670
       },
       {
         "name": "poison",
@@ -570,7 +1024,8 @@
         "start": 0.045,
         "duration": 0.62,
         "fadeOut": 0.06,
-        "gain": 3.807567930304826
+        "gain": 3.807567930304826,
+        "at": 4740
       },
       {
         "name": "freeze",
@@ -579,16 +1034,8 @@
         "start": 0,
         "duration": 0.6,
         "fadeOut": 0.04,
-        "gain": 0.5369750777585324
-      },
-      {
-        "name": "summon",
-        "sound": "summon",
-        "source": 735062,
-        "start": 0.09,
-        "duration": 0.8,
-        "fadeOut": 0.07,
-        "gain": 0.39926651182558226
+        "gain": 0.5369750777585324,
+        "at": 5480
       },
       {
         "name": "death",
@@ -597,7 +1044,8 @@
         "start": 0.004,
         "duration": 0.2,
         "fadeOut": 0.035,
-        "gain": 0.5808000307506709
+        "gain": 0.5808580676525056,
+        "at": 6200
       },
       {
         "name": "hero",
@@ -606,7 +1054,8 @@
         "start": 1.05,
         "duration": 1.1,
         "fadeOut": 0.16,
-        "gain": 0.5720659108316664
+        "gain": 0.5720659108316664,
+        "at": 6520
       },
       {
         "name": "victory",
@@ -615,7 +1064,8 @@
         "start": 0,
         "duration": 2,
         "fadeOut": 0.1,
-        "gain": 0.6043391798166741
+        "gain": 0.6043391798166741,
+        "at": 7740
       },
       {
         "name": "defeat",
@@ -624,7 +1074,347 @@
         "start": 0.025,
         "duration": 3.1,
         "fadeOut": 0.12,
-        "gain": 1.3192450908456304
+        "gain": 1.319244319458205,
+        "at": 9860
+      },
+      {
+        "name": "summon",
+        "sound": "summon",
+        "source": 556387,
+        "start": 0.034,
+        "duration": 0.19,
+        "fadeOut": 0.04,
+        "gain": 1.6336079878830652,
+        "at": 13080
+      },
+      {
+        "name": "summon-2",
+        "sound": "summon",
+        "source": 556387,
+        "start": 3.654,
+        "duration": 0.2,
+        "fadeOut": 0.04,
+        "gain": 1.1507364745864452,
+        "at": 13390
+      },
+      {
+        "name": "summon-3",
+        "sound": "summon",
+        "source": 801349,
+        "start": 2.635,
+        "duration": 0.2,
+        "fadeOut": 0.04,
+        "gain": 6.488880127415928,
+        "at": 13710
+      },
+      {
+        "name": "summon-heavy",
+        "sound": "summon-heavy",
+        "source": 556387,
+        "start": 4.61,
+        "duration": 0.25,
+        "fadeOut": 0.04,
+        "speed": 0.76,
+        "gain": 0.530274848755802,
+        "at": 14030
+      },
+      {
+        "name": "heavy-swing",
+        "sound": "heavy-swing",
+        "source": 507466,
+        "start": 0.225,
+        "duration": 0.36,
+        "fadeOut": 0.04,
+        "speed": 0.72,
+        "gain": 0.43385526472309244,
+        "at": 14400
+      },
+      {
+        "name": "claw-swing",
+        "sound": "claw-swing",
+        "source": 733889,
+        "start": 0.001,
+        "duration": 0.22,
+        "fadeOut": 0.04,
+        "speed": 1.2,
+        "gain": 0.49689647474018955,
+        "at": 14880
+      },
+      {
+        "name": "hammer-hit",
+        "sound": "hammer-hit",
+        "source": 434339,
+        "start": 0.215,
+        "duration": 0.46,
+        "fadeOut": 0.08,
+        "speed": 0.85,
+        "gain": 0.5915191916986342,
+        "at": 15220
+      },
+      {
+        "name": "hit-blunt",
+        "sound": "hit-blunt",
+        "source": 434147,
+        "start": 0,
+        "duration": 0.27,
+        "fadeOut": 0.04,
+        "gain": 0.3832888860346047,
+        "at": 15800
+      },
+      {
+        "name": "hit-arrow",
+        "sound": "hit-arrow",
+        "source": 410751,
+        "start": 0.8,
+        "duration": 0.43,
+        "fadeOut": 0.055,
+        "gain": 0.5409272896745855,
+        "at": 16190.000000000002
+      },
+      {
+        "name": "bard-cast",
+        "sound": "bard-cast",
+        "source": 436128,
+        "start": 1.05,
+        "duration": 0.56,
+        "fadeOut": 0.09,
+        "speed": 1.25,
+        "gain": 1.36220047220616,
+        "at": 16740
+      },
+      {
+        "name": "beast-arrival",
+        "sound": "beast-arrival",
+        "source": 483713,
+        "start": 0.055,
+        "duration": 0.52,
+        "fadeOut": 0.07,
+        "speed": 0.9,
+        "gain": 0.826194665981085,
+        "at": 17420
+      },
+      {
+        "name": "arrival-metal",
+        "sound": "arrival-metal",
+        "source": 410364,
+        "start": 0.024,
+        "duration": 0.22,
+        "fadeOut": 0.04,
+        "gain": 0.41113823794203086,
+        "at": 18060
+      },
+      {
+        "name": "cast-fire",
+        "sound": "cast-fire",
+        "source": 105016,
+        "start": 0.35,
+        "duration": 0.37,
+        "fadeOut": 0.055,
+        "speed": 1.28,
+        "gain": 0.2742691891247613,
+        "at": 18400
+      },
+      {
+        "name": "hit-fire",
+        "sound": "hit-fire",
+        "source": 431174,
+        "start": 0.008,
+        "duration": 0.5,
+        "fadeOut": 0.09,
+        "gain": 0.35118293285495344,
+        "at": 18890
+      },
+      {
+        "name": "cast-water",
+        "sound": "cast-water",
+        "source": 737235,
+        "start": 0.035,
+        "duration": 0.35,
+        "fadeOut": 0.04,
+        "gain": 0.45309884729407734,
+        "at": 19510
+      },
+      {
+        "name": "hit-water",
+        "sound": "hit-water",
+        "source": 737234,
+        "start": 0.015,
+        "duration": 0.4,
+        "fadeOut": 0.055,
+        "gain": 0.5046728666404029,
+        "at": 19980
+      },
+      {
+        "name": "cast-storm",
+        "sound": "cast-storm",
+        "source": 512471,
+        "start": 0,
+        "duration": 0.17,
+        "fadeOut": 0.025,
+        "speed": 1.3,
+        "gain": 0.5456908415679455,
+        "at": 20500
+      },
+      {
+        "name": "hit-storm",
+        "sound": "hit-storm",
+        "source": 512471,
+        "start": 0,
+        "duration": 0.27,
+        "fadeOut": 0.035,
+        "speed": 0.8,
+        "gain": 0.5138180709119434,
+        "at": 20790
+      },
+      {
+        "name": "cast-nature",
+        "sound": "cast-nature",
+        "source": 594400,
+        "start": 1.4,
+        "duration": 0.34,
+        "fadeOut": 0.055,
+        "speed": 1.15,
+        "gain": 1.210979207995153,
+        "at": 21180
+      },
+      {
+        "name": "hit-nature",
+        "sound": "hit-nature",
+        "source": 594400,
+        "start": 2.07,
+        "duration": 0.37,
+        "fadeOut": 0.06,
+        "gain": 1.6984246645816534,
+        "at": 21640
+      },
+      {
+        "name": "cast-light",
+        "sound": "cast-light",
+        "source": 825852,
+        "start": 0.12,
+        "duration": 0.42,
+        "fadeOut": 0.075,
+        "speed": 1.6,
+        "gain": 0.7192018595884769,
+        "at": 22130
+      },
+      {
+        "name": "hit-light",
+        "sound": "hit-light",
+        "source": 825852,
+        "start": 0.46,
+        "duration": 0.4,
+        "fadeOut": 0.08,
+        "speed": 1.1,
+        "gain": 0.7660493921685909,
+        "at": 22670
+      },
+      {
+        "name": "cast-arcane",
+        "sound": "cast-arcane",
+        "source": 529024,
+        "start": 0.43,
+        "duration": 0.34,
+        "fadeOut": 0.06,
+        "speed": 1.3,
+        "gain": 0.22571929056399181,
+        "at": 23190
+      },
+      {
+        "name": "hit-arcane",
+        "sound": "hit-arcane",
+        "source": 529024,
+        "start": 0.68,
+        "duration": 0.42,
+        "fadeOut": 0.08,
+        "gain": 0.23837029668883206,
+        "at": 23650
+      },
+      {
+        "name": "cast-shadow",
+        "sound": "cast-shadow",
+        "source": 683627,
+        "start": 0.7,
+        "duration": 0.35,
+        "fadeOut": 0.06,
+        "speed": 1.3,
+        "gain": 0.3735270067776629,
+        "at": 24190
+      },
+      {
+        "name": "hit-shadow",
+        "sound": "hit-shadow",
+        "source": 683627,
+        "start": 1.2,
+        "duration": 0.46,
+        "fadeOut": 0.08,
+        "speed": 0.9,
+        "gain": 0.3690945009566246,
+        "at": 24660
+      },
+      {
+        "name": "cast-ice",
+        "sound": "cast-ice",
+        "source": 160420,
+        "start": 0,
+        "duration": 0.32,
+        "fadeOut": 0.05,
+        "speed": 1.15,
+        "gain": 0.6081928579544893,
+        "at": 25240
+      },
+      {
+        "name": "hit-ice",
+        "sound": "hit-ice",
+        "source": 262635,
+        "start": 0.51,
+        "duration": 0.34,
+        "fadeOut": 0.06,
+        "gain": 0.9015435700393719,
+        "at": 25680
+      },
+      {
+        "name": "cast-poison",
+        "sound": "cast-poison",
+        "source": 773909,
+        "start": 0.045,
+        "duration": 0.32,
+        "fadeOut": 0.045,
+        "speed": 1.1,
+        "gain": 4.015431663786525,
+        "at": 26140
+      },
+      {
+        "name": "hit-poison",
+        "sound": "hit-poison",
+        "source": 773909,
+        "start": 0.08,
+        "duration": 0.42,
+        "fadeOut": 0.06,
+        "gain": 13.159411569560023,
+        "at": 26580
+      },
+      {
+        "name": "cast-earth",
+        "sound": "cast-earth",
+        "source": 202098,
+        "start": 1.28,
+        "duration": 0.3,
+        "fadeOut": 0.055,
+        "speed": 0.82,
+        "gain": 0.40894559890692156,
+        "at": 27120
+      },
+      {
+        "name": "hit-earth",
+        "sound": "hit-earth",
+        "source": 202098,
+        "start": 1.9,
+        "duration": 0.47,
+        "fadeOut": 0.09,
+        "speed": 0.9,
+        "gain": 0.3322117131447683,
+        "at": 27540
       }
     ]
   }

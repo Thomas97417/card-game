@@ -1,5 +1,5 @@
 {
-  "src": "/audio/combat/freesound-effects-cc45646d981e.wav",
+  "src": "/audio/combat/freesound-effects-877a05901026.wav",
   "sounds": {
     "swing": [
       "swing",
@@ -27,9 +27,6 @@
     "freeze": [
       "freeze"
     ],
-    "summon": [
-      "summon"
-    ],
     "death": [
       "death"
     ],
@@ -41,6 +38,98 @@
     ],
     "defeat": [
       "defeat"
+    ],
+    "summon": [
+      "summon",
+      "summon-2",
+      "summon-3"
+    ],
+    "summon-heavy": [
+      "summon-heavy"
+    ],
+    "heavy-swing": [
+      "heavy-swing"
+    ],
+    "claw-swing": [
+      "claw-swing"
+    ],
+    "hammer-hit": [
+      "hammer-hit"
+    ],
+    "hit-blunt": [
+      "hit-blunt"
+    ],
+    "hit-arrow": [
+      "hit-arrow"
+    ],
+    "bard-cast": [
+      "bard-cast"
+    ],
+    "beast-arrival": [
+      "beast-arrival"
+    ],
+    "arrival-metal": [
+      "arrival-metal"
+    ],
+    "cast-fire": [
+      "cast-fire"
+    ],
+    "hit-fire": [
+      "hit-fire"
+    ],
+    "cast-water": [
+      "cast-water"
+    ],
+    "hit-water": [
+      "hit-water"
+    ],
+    "cast-storm": [
+      "cast-storm"
+    ],
+    "hit-storm": [
+      "hit-storm"
+    ],
+    "cast-nature": [
+      "cast-nature"
+    ],
+    "hit-nature": [
+      "hit-nature"
+    ],
+    "cast-light": [
+      "cast-light"
+    ],
+    "hit-light": [
+      "hit-light"
+    ],
+    "cast-arcane": [
+      "cast-arcane"
+    ],
+    "hit-arcane": [
+      "hit-arcane"
+    ],
+    "cast-shadow": [
+      "cast-shadow"
+    ],
+    "hit-shadow": [
+      "hit-shadow"
+    ],
+    "cast-ice": [
+      "cast-ice"
+    ],
+    "hit-ice": [
+      "hit-ice"
+    ],
+    "cast-poison": [
+      "cast-poison"
+    ],
+    "hit-poison": [
+      "hit-poison"
+    ],
+    "cast-earth": [
+      "cast-earth"
+    ],
+    "hit-earth": [
+      "hit-earth"
     ]
   },
   "sprite": {
@@ -84,25 +173,149 @@
       5480,
       600
     ],
-    "summon": [
-      6200,
-      800
-    ],
     "death": [
-      7120,
+      6200,
       200
     ],
     "hero": [
-      7440,
+      6520,
       1100
     ],
     "victory": [
-      8660,
+      7740,
       2000
     ],
     "defeat": [
-      10780,
+      9860,
       3100
+    ],
+    "summon": [
+      13080,
+      190
+    ],
+    "summon-2": [
+      13390,
+      200
+    ],
+    "summon-3": [
+      13710,
+      200
+    ],
+    "summon-heavy": [
+      14030,
+      250
+    ],
+    "heavy-swing": [
+      14400,
+      360
+    ],
+    "claw-swing": [
+      14880,
+      220
+    ],
+    "hammer-hit": [
+      15220,
+      460
+    ],
+    "hit-blunt": [
+      15800,
+      270
+    ],
+    "hit-arrow": [
+      16190.000000000002,
+      430
+    ],
+    "bard-cast": [
+      16740,
+      560
+    ],
+    "beast-arrival": [
+      17420,
+      520
+    ],
+    "arrival-metal": [
+      18060,
+      220
+    ],
+    "cast-fire": [
+      18400,
+      370
+    ],
+    "hit-fire": [
+      18890,
+      500
+    ],
+    "cast-water": [
+      19510,
+      350
+    ],
+    "hit-water": [
+      19980,
+      400
+    ],
+    "cast-storm": [
+      20500,
+      170
+    ],
+    "hit-storm": [
+      20790,
+      270
+    ],
+    "cast-nature": [
+      21180,
+      340
+    ],
+    "hit-nature": [
+      21640,
+      370
+    ],
+    "cast-light": [
+      22130,
+      420
+    ],
+    "hit-light": [
+      22670,
+      400
+    ],
+    "cast-arcane": [
+      23190,
+      340
+    ],
+    "hit-arcane": [
+      23650,
+      420
+    ],
+    "cast-shadow": [
+      24190,
+      350
+    ],
+    "hit-shadow": [
+      24660,
+      460
+    ],
+    "cast-ice": [
+      25240,
+      320
+    ],
+    "hit-ice": [
+      25680,
+      340
+    ],
+    "cast-poison": [
+      26140,
+      320
+    ],
+    "hit-poison": [
+      26580,
+      420
+    ],
+    "cast-earth": [
+      27120,
+      300
+    ],
+    "hit-earth": [
+      27540,
+      470
     ]
   }
 }

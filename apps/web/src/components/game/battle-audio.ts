@@ -3,6 +3,7 @@ import type { GameEvent } from "@sylve/game";
 import sprite from "./combat-audio-sprite.json";
 import { combatAudioCues, type CombatAudioCue } from "./combat-audio-cues";
 import { combatActorKey } from "./combat-visuals";
+import { parseAudioProfile } from "./combat-audio-profile";
 
 export interface BattleAudioPreferences { enabled: boolean; volume: number }
 const maxVoices = 8;
@@ -39,7 +40,7 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
     voices.set(id, cue.gain);
     effects.volume(preferences.volume * cue.gain, id);
     effects.stereo(cue.pan, id);
-    effects.rate(cue.sound === "victory" || cue.sound === "defeat" ? 1 : 0.97 + Math.abs(cue.seed % 5) * 0.015, id);
+    effects.rate(cue.sound === "victory" || cue.sound === "defeat" ? 1 : (cue.pitch ?? 1) * (0.97 + Math.abs(cue.seed % 5) * 0.015), id);
   };
   const cancelFrame = () => {
     for (const timer of scheduled) window.clearTimeout(timer);
@@ -73,8 +74,8 @@ export function createBattleAudio(root: HTMLElement, initial: BattleAudioPrefere
       if (seen.size > 128) seen.delete(seen.values().next().value!);
       if (!audible() || finished !== null) return;
       const actors = new Map([...root.querySelectorAll<HTMLElement>("[data-combat-actor]")]
-        .map((actor) => [actor.dataset.combatActor, actor.dataset.combatType]));
-      const cues = combatAudioCues(events, viewer, (actor) => actors.get(combatActorKey(actor)) === "ranged");
+        .map((actor) => [actor.dataset.combatActor, parseAudioProfile(actor.dataset.combatAudio)]));
+      const cues = combatAudioCues(events, viewer, (actor) => actors.get(combatActorKey(actor)));
       const started = performance.now() - elapsed;
       for (const cue of cues) {
         if (elapsed > cue.at + 60) continue;

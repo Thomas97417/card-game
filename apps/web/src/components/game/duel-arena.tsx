@@ -31,6 +31,7 @@ import { FieldMark, type FieldMarkKind } from "./field-mark";
 import { COMBAT_TIMING } from "./combat-timing";
 import { useBattleAnimations } from "./use-battle-animations";
 import { cardRigProfile } from "./combat-rig-profile";
+import { audioProfileKey, cardAudioProfile, heroAudioProfile } from "./combat-audio-profile";
 import { abilityOrigins, abilitySource, combatActorKey, combatFrameTiming, sealActivation } from "./combat-visuals";
 import {
   AbilityIcon,
@@ -153,6 +154,7 @@ export function DuelArena({
           type="button"
           data-combat-actor={combatActorKey({ player: index, cardId: "hero" })}
           data-combat-profile="humanoid"
+          data-combat-audio={audioProfileKey(heroAudioProfile(player.heroId))}
           className={`hero-figure ${hit ? "hero-hit" : ""} ${casting ? "ability-casting" : ""}`}
           aria-label={`Voir ${player.name}, ${player.heroHp} PV`}
           aria-haspopup="dialog"
@@ -300,6 +302,7 @@ export function DuelArena({
                   data-combat-type={getCombatType(unit.card)}
                   data-combat-profile={cardRigProfile(unit.card)}
                   data-combat-faction={unit.card.faction}
+                  data-combat-audio={audioProfileKey(cardAudioProfile(unit.card))}
                   data-combat-static={!!unit.fieldObject}
                   style={cell.unit}
                   aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}

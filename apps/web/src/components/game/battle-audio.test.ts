@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { combatActorKey } from "./combat-visuals";
 
 const mocks = vi.hoisted(() => {
   const make = (options: HowlOptions) => ({
@@ -29,16 +30,18 @@ vi.mock("howler", () => ({
 }));
 
 const attack: GameEvent = {
-  seq: 1, type: "attack", player: 0, cardId: "fox", row: 0, depth: 0,
+  seq: 1, type: "attack", player: 0, cardId: "knight", row: 0, depth: 0,
   targetPlayer: 1, targetCardId: "bear", targetRow: 0, targetDepth: 0, damage: 3,
 };
 let audio: ReturnType<typeof createBattleAudio>;
+let root: HTMLElement;
 const effects = () => mocks.sounds[0]!;
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "performance"] });
   mocks.sounds.length = 0;
-  audio = createBattleAudio(document.createElement("main"), { enabled: true, volume: 0.6 });
+  root = document.createElement("main");
+  audio = createBattleAudio(root, { enabled: true, volume: 0.6 });
 });
 afterEach(() => { audio.destroy(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -137,6 +140,22 @@ describe("Howler combat clock and lifecycle", () => {
     audio.setPreferences({ enabled: true, volume: 0.3 });
     expect(effects().volume.mock.calls).toEqual(volumes.map(([volume, id]) => [volume / 2, id]));
   });
+
+  it("reads the exact unit's voice from the board, including independent copies and elemental spirits", () => {
+    for (const [row, profile] of ["ranged:mage:fire", "ranged:spirit:water"].entries()) {
+      const actor = document.createElement("button");
+      actor.dataset.combatActor = combatActorKey({ player: 0, cardId: "token-custom", row, depth: 0 });
+      actor.dataset.combatAudio = profile;
+      root.append(actor);
+    }
+    audio.unlock();
+    audio.play([{ ...attack, seq: 10, cardId: "token-custom", row: 0 }], 0, 0);
+    audio.play([{ ...attack, seq: 11, cardId: "token-custom", row: 1 }], 0, 0);
+    expect(effects().play.mock.calls.map(([name]) => name)).toEqual(["cast-fire", "cast-water"]);
+    expect(effects().rate).toHaveBeenLastCalledWith(1.12 * 0.985, expect.any(Number));
+    vi.advanceTimersByTime(COMBAT_TIMING.impact);
+    expect(effects().play).toHaveBeenLastCalledWith("hit-water");
+  });
 });
 
 describe("sound selection", () => {
@@ -145,11 +164,11 @@ describe("sound selection", () => {
       seq: row + 1, type: "ability", player: 0, cardId: "hero", targetPlayer: 1,
       targetCardId: "fox", targetRow: row, targetDepth: 0, ability: "Dégâts magiques", amount: -3,
     }));
-    const cues = combatAudioCues(area, 0, () => false);
+    const cues = combatAudioCues(area, 0);
     expect(cues).toHaveLength(1);
-    expect(cues[0]).toMatchObject({ sound: "magic", at: COMBAT_TIMING.abilityImpact, pan: 0.55 });
-    expect(combatAudioCues(area, 1, () => false)[0]?.pan).toBe(-0.55);
-    expect(combatAudioCues([{ ...attack, damage: 0 }], 0, () => true).map((cue) => cue.sound)).toEqual(["shot", "shield"]);
-    expect(combatAudioCues([{ ...area[0]!, ability: "Fin du gel" }], 0, () => false)).toEqual([]);
+    expect(cues[0]).toMatchObject({ sound: "hit-nature", at: COMBAT_TIMING.abilityImpact, pan: 0.55 });
+    expect(combatAudioCues(area, 1)[0]?.pan).toBe(-0.55);
+    expect(combatAudioCues([{ ...attack, damage: 0, cardId: "fox" }], 0).map((cue) => cue.sound)).toEqual(["shot", "shield"]);
+    expect(combatAudioCues([{ ...area[0]!, ability: "Fin du gel" }], 0)).toEqual([]);
   });
 });
