@@ -71,10 +71,6 @@ export function LegendaryOffersDialog({
       <DialogContent className="legendary-offers-dialog" appearance="game">
         <header className="legendary-offers-heading">
           <DialogTitle>Le pouvoir des légendes</DialogTitle>
-          <span className="legendary-offers-rank">
-            <GameIcon kind="guardian" size={24} /> Jusqu’au rang{" "}
-            {LEGENDARY_OFFER_MAX_RANK} inclus
-          </span>
         </header>
         <div className="legendary-offers-grid" aria-busy={busy !== null}>
           {LEGENDARY_OFFERS.map((offer) => {
@@ -89,11 +85,12 @@ export function LegendaryOffersDialog({
               >
                 <div className="legendary-offer-topline">
                   <span>Pack légendaire</span>
+                  <span className="legendary-offers-rank">
+                    <GameIcon kind="guardian" size={16} /> Jusqu’au rang{" "}
+                    {LEGENDARY_OFFER_MAX_RANK} inclus
+                  </span>
                 </div>
                 <h3 id={`offer-${offer.id}`}>{offer.name}</h3>
-                {offer.subtitle && (
-                  <p className="legendary-offer-subtitle">{offer.subtitle}</p>
-                )}
                 <OfferCards offer={offer} />
                 <p className="legendary-offer-description">
                   {offer.description}
@@ -161,11 +158,10 @@ function OfferCurrencies({
               ? "/art/treasures/emerald-leather-satchel.webp"
               : "/art/treasures/emerald-small-pouch.webp"
           }
-          alt={received ? "Émeraudes" : ""}
+          alt="Émeraudes"
         />
         <span>
           <strong>{emeralds.toLocaleString("fr-FR")}</strong>
-          {!received && <small>Émeraudes</small>}
         </span>
       </span>
       <span data-currency="gold">
@@ -175,11 +171,10 @@ function OfferCurrencies({
               ? "/art/treasures/gold-chest.webp"
               : "/art/treasures/gold-pouch.webp"
           }
-          alt={received ? "Or" : ""}
+          alt="Or"
         />
         <span>
           <strong>{gold.toLocaleString("fr-FR")}</strong>
-          {!received && <small>Or</small>}
         </span>
       </span>
     </div>
@@ -288,9 +283,6 @@ export function LegendaryPaymentFeedback({
               <img src="/art/chests/legendary-open.webp" alt="" />
             </div>
             <DialogTitle>{offer.name}</DialogTitle>
-            {offer.subtitle && (
-              <p className="legendary-offer-subtitle">{offer.subtitle}</p>
-            )}
           </header>
           <OfferCards offer={offer} cards={status.cards} inspectable />
           <OfferCurrencies

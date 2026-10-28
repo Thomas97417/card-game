@@ -135,7 +135,7 @@
   text-align: center;
 }
 .legendary-offers-heading [data-slot="dialog-title"] {
-  margin: 0 0 14px;
+  margin: 0;
   padding: 0 12px;
   color: #f8e0a3;
   font-size: clamp(26px, 3.4vw, 38px);
@@ -144,17 +144,15 @@
 }
 .legendary-offers-rank {
   display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
   align-items: center;
-  gap: 7px;
-  padding: 6px 12px;
-  border: 1px solid #bd9e5266;
-  border-radius: 20px;
-  color: #eed39a;
-  background: #9273311a;
-  font-size: 10px;
-  font-weight: 650;
+  gap: 4px;
+  margin-left: auto;
+  color: #c4b894;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
 }
 .legendary-offers-rank > .game-icon {
   flex-shrink: 0;
@@ -193,6 +191,8 @@
 }
 .legendary-offer-topline {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   color: var(--offer-accent);
@@ -207,12 +207,6 @@
   font:
     28px/1.1 Georgia,
     serif;
-  text-align: center;
-}
-.legendary-offer-subtitle {
-  margin: 0;
-  color: var(--offer-accent);
-  font-size: 11px;
   text-align: center;
 }
 .legendary-offer-showcase {
@@ -477,12 +471,6 @@
   font-size: 20px;
   line-height: 1.1;
 }
-.legendary-offer-currencies small {
-  display: block;
-  margin-top: 3px;
-  color: #b4b9a4;
-  font-size: 10px;
-}
 .legendary-offer-buy {
   display: flex;
   align-items: center;
@@ -616,9 +604,6 @@
   font-size: clamp(32px, 4.5vw, 44px);
   line-height: 1.1;
   text-shadow: 0 2px 22px color-mix(in srgb, var(--offer-glow), transparent 60%);
-}
-.legendary-received-dialog .legendary-offer-subtitle {
-  font-size: 12px;
 }
 .legendary-received-dialog .legendary-offer-showcase {
   height: 334px;

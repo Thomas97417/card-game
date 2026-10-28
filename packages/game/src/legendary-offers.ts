@@ -8,7 +8,6 @@ export const LEGENDARY_OFFERS = [
   {
     id: "solar-oath",
     name: "Serment solaire",
-    subtitle: null,
     description:
       "Le Dragon du soleil éternel prend son envol. Rassemble sa garde et fais rayonner ton armée.",
     theme: "solar",
@@ -21,7 +20,6 @@ export const LEGENDARY_OFFERS = [
   {
     id: "abyssal-pact",
     name: "Pacte des abysses",
-    subtitle: "Libère la puissance des ombres",
     description:
       "Le Monarque des abysses sort de l’ombre. Scelle un pacte avec ses alliées et impose ton règne.",
     theme: "abyssal",

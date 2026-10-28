@@ -61,9 +61,9 @@ describe("offres légendaires du hub", () => {
     const dialog = await screen.findByRole("dialog", {
       name: "Le pouvoir des légendes",
     });
-    expect(within(dialog).getByText(/Jusqu’au rang 25 inclus/)).toBeTruthy();
     for (const offer of LEGENDARY_OFFERS) {
       const article = within(dialog).getByRole("article", { name: offer.name });
+      expect(within(article).getByText(/Jusqu’au rang 25 inclus/)).toBeTruthy();
       expect(within(article).getByText(/^1\s500$/)).toBeTruthy();
       expect(within(article).getByText(/^40\s000$/)).toBeTruthy();
       for (const card of offer.cards) {
