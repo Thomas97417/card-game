@@ -160,21 +160,26 @@ export function DuelArena({
           {player.heroLevel !== undefined && (
             <span className="hero-level-badge">Niv. {player.heroLevel}</span>
           )}
-          <img
+          <span
             data-combat-sprite=""
             key={casting ? current!.seq : "idle"}
-            src={heroPortrait(player.heroId, !own)}
-            alt={
-              player.heroId
-                ? heroDefinition(player.heroId).name
-                : own
-                  ? "Gardien de la Sylve"
-                  : "Gardien mécanique d’ambre"
-            }
-            width={320}
-            height={400}
-            draggable={false}
-          />
+            className="hero-body"
+          >
+            <img
+              data-combat-rig=""
+              src={heroPortrait(player.heroId, !own)}
+              alt={
+                player.heroId
+                  ? heroDefinition(player.heroId).name
+                  : own
+                    ? "Gardien de la Sylve"
+                    : "Gardien mécanique d’ambre"
+              }
+              width={320}
+              height={400}
+              draggable={false}
+            />
+          </span>
           <StatBadge
             kind="health"
             value={player.heroHp}
@@ -293,6 +298,7 @@ export function DuelArena({
                   data-combat-actor={combatActorKey({ player: playerIndex, cardId: unit.cardId, row, depth })}
                   data-combat-type={getCombatType(unit.card)}
                   data-combat-faction={unit.card.faction}
+                  data-combat-static={!!unit.fieldObject}
                   style={cell.unit}
                   aria-label={`${unit.card.name}, ${unit.fieldObject ? "bâtiment neutre" : combatTypeLabel(unit.card)}, puissance ${unit.card.attack}, ${unit.hp} PV${blocked ? ", bloquée par un allié devant elle" : ""}, voir les informations`}
                   aria-haspopup="dialog"
@@ -304,7 +310,9 @@ export function DuelArena({
                     data-field-object={unit.fieldObject}
                     className={`board-unit ${unit.fieldObject ? "neutral-building" : ""} ${blocked ? "blocked" : ""} ${casting ? "ability-casting" : ""} ${acting?.type === "attack" ? "attacking" : ""} ${hit ? "taking-hit" : ""} ${acting?.type === "summon" ? "spawning" : ""} ${acting?.type === "death" || acting?.type === "withdraw" ? "dying" : ""}`}
                   >
-                    <CreaturePortrait card={unit.card} />
+                    <span className="combat-body" data-combat-rig="">
+                      <CreaturePortrait card={unit.card} />
+                    </span>
                     <div className="unit-stats">
                       {!unit.fieldObject && (
                         <StatBadge

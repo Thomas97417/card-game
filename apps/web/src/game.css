@@ -1237,7 +1237,14 @@ button:disabled {
   place-items: center;
   pointer-events: none;
 }
-.board-unit > .creature-portrait {
+.combat-body {
+  position: absolute;
+  inset: 0;
+  display: block;
+  z-index: 1;
+  transform-origin: center 85%;
+}
+.combat-body > .creature-portrait {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -1246,10 +1253,10 @@ button:disabled {
   object-position: center bottom;
   z-index: 1;
 }
-.board-half.enemy .board-unit > .creature-portrait {
+.board-half.enemy .combat-body > .creature-portrait {
   transform: scaleX(-1);
 }
-.board-unit.blocked > .creature-portrait {
+.board-unit.blocked .creature-portrait {
   opacity: 0.6;
 }
 .unit-stats {
@@ -1309,15 +1316,21 @@ button:disabled {
 .hero-figure:hover {
   filter: drop-shadow(0 0 7px #fff2a8);
 }
-.hero-figure > img {
+.hero-body {
   position: relative;
   z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.hero-body > img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
   filter: drop-shadow(0 4px 3px #19352760);
+  transform-origin: center 85%;
 }
 .hero-figure > .stat-badge {
   position: absolute;
@@ -2301,13 +2314,48 @@ button:disabled {
   height: 100%;
   pointer-events: none;
 }
+.battle-audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.battle-audio-controls input {
+  width: 58px;
+  height: 28px;
+  margin-right: 6px;
+  accent-color: #d4be88;
+  cursor: pointer;
+}
+.battle-audio-controls input:disabled {
+  opacity: 0.35;
+}
+.battle-audio-controls input:focus-visible {
+  outline: 2px solid #eddb9d;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+@media (max-width: 900px) {
+  .battle-audio-controls {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    padding-right: 5px;
+    border: 1px solid #e3d1a140;
+    border-radius: 24px;
+    background: #15352bd9;
+  }
+  .battle-audio-controls .icon-button {
+    border: 0;
+    background: transparent;
+  }
+}
 [data-combat-sprite] {
   transform-origin: center 85%;
 }
 /* GSAP owns sprite transforms; CSS remains the fallback before loading. */
 .arena[data-combat-motion="enhanced"] .board-unit,
 .arena[data-combat-motion="enhanced"] .hero-figure,
-.arena[data-combat-motion="enhanced"] .hero-figure > img {
+.arena[data-combat-motion="enhanced"] .hero-figure .hero-body {
   animation: none;
 }
 .arena[data-combat-renderer="webgl"] .ability-trail,
@@ -2315,11 +2363,11 @@ button:disabled {
   visibility: hidden;
 }
 .board-unit.ability-casting,
-.hero-figure.ability-casting > img {
+.hero-figure.ability-casting .hero-body {
   transform-origin: center bottom;
   animation: ability-cast var(--cast-duration) ease-out both;
 }
-.hero-figure.ability-casting > img {
+.hero-figure.ability-casting .hero-body {
   animation-name: hero-ability-cast;
 }
 .ability-trail {
@@ -2775,7 +2823,7 @@ button:disabled {
     display: none;
   }
   .board-unit.ability-casting,
-  .hero-figure.ability-casting > img {
+  .hero-figure.ability-casting .hero-body {
     animation: none !important;
     filter: drop-shadow(0 0 10px #ffe49b);
   }
@@ -2944,9 +2992,10 @@ button:disabled {
   z-index: 1;
   width: clamp(22px, 2.4vw, 33px);
 }
-.neutral-building > .creature-portrait {
+.neutral-building .combat-body > .creature-portrait {
   width: 91%;
   height: 91%;
+  left: 4.5%;
 }
 .neutral-building .unit-stats {
   justify-content: flex-end;

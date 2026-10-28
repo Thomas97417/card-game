@@ -10,6 +10,7 @@ import {
   createPixiBattleEffects,
   type BattleEffectFrame, type BattlePoint, type ImpactStyle, type PixiBattleEffects,
 } from "./pixi-battle-effects";
+import { createSpineBattleRig, type BattlePose, type SpineBattleRig } from "./spine-battle-rig";
 
 const motionProperties = "transform,opacity,filter";
 const factionColors: Record<string, number> = {
@@ -36,10 +37,17 @@ export function createBattleFrame(
   arena: HTMLElement,
   events: readonly GameEvent[],
   effects?: Pick<PixiBattleEffects, "frame"> | null,
+  rig?: Pick<SpineBattleRig, "pose"> | null,
+  elapsed = 0,
 ) {
   const { duration, impact } = combatFrameTiming(events);
   const end = duration / 1000;
   const at = impact / 1000;
+  function pose(actor: CombatActor, name: Exclude<BattlePose, "idle">, when = 0, length?: number) {
+    if (!rig) return;
+    if (elapsed / 1000 >= when) rig.pose(actor, name, elapsed / 1000 - when, length);
+    else timeline.call(() => rig.pose(actor, name, 0, length), [], when);
+  }
   const timeline = gsap.timeline({ paused: true }).addLabel("impact", at);
   timeline.to({}, { duration: end }, 0);
   const frame: BattleEffectFrame | undefined = effects?.frame(timeline);
@@ -90,6 +98,7 @@ export function createBattleFrame(
 
   for (const event of abilityOrigins(events)) {
     const source = abilitySource(event)!;
+    pose(source, "cast", 0, end);
     const sprite = spriteFor(source);
     const color = factionColors[elementFor(source)?.dataset.combatFaction ?? ""] ?? 0xffdfa0;
     frame?.impact(pointFor(source), color, 0, "magic");
@@ -118,6 +127,7 @@ export function createBattleFrame(
       const sprite = spriteFor(actor);
       const direction = Math.sign(targetPoint.x - sourcePoint.x) || (event.player === viewer ? 1 : -1);
       const ranged = source?.dataset.combatType === "ranged";
+      pose(actor, ranged ? "ranged" : "melee");
       if (sprite) {
         const width = source?.clientWidth || 80;
         const lunge = ranged ? direction * 3 : direction * Math.min(width * 0.65,
@@ -135,7 +145,10 @@ export function createBattleFrame(
         frame?.projectile(sourcePoint, targetPoint, color, 0.08, Math.max(0.01, at - 0.08));
       }
       frame?.impact(targetPoint, appearance.color, at, appearance.style);
-      if ((event.damage ?? 0) > 0) recoil(target, appearance.color);
+      if ((event.damage ?? 0) > 0) {
+        pose(target, "hit", at);
+        recoil(target, appearance.color);
+      }
     } else if (event.type === "ability") {
       // Creating an empty field mark has no creature/hero target.
       if ((event.runes || event.pentagrams) && !event.unit) continue;
@@ -149,8 +162,12 @@ export function createBattleFrame(
       if (source?.cardId === "hero" && combatActorKey(source) !== combatActorKey(target))
         frame?.projectile(pointFor(source), pointFor(target), appearance.color, 0.02, Math.max(0.01, at - 0.02));
       frame?.impact(pointFor(target), appearance.color, at, appearance.style);
-      if ((event.amount ?? 0) < 0) recoil(target, appearance.color);
+      if ((event.amount ?? 0) < 0) {
+        pose(target, "hit", at);
+        recoil(target, appearance.color);
+      }
     } else if (event.type === "summon" || event.type === "death" || event.type === "withdraw") {
+      pose(actor, event.type === "summon" ? "summon" : "death", 0, end);
       const sprite = spriteFor(actor);
       frame?.impact(pointFor(actor), event.type === "summon" ? 0xc9ed9c : 0xe6c99b, 0,
         event.type === "summon" ? "summon" : "death");
@@ -178,6 +195,7 @@ export function createBattleFrame(
 export async function createBattleScene(arena: HTMLElement, host: HTMLElement, signal: AbortSignal) {
   let effects = await createPixiBattleEffects(host, signal);
   if (signal.aborted) { effects?.destroy(); return null; }
+  const rig = createSpineBattleRig(arena);
   const active = new Set<ReturnType<typeof createBattleFrame>>();
   const played = new Set<string>();
   let destroyed = false;
@@ -190,6 +208,7 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
     const sprites = arena.querySelectorAll<HTMLElement>("[data-combat-sprite]");
     if (sprites.length) gsap.set(sprites, { clearProps: motionProperties });
     effects?.stop();
+    rig.clear();
   };
   // Sprite height depends on width. Discard in-flight anchors on rotation or
   // resize; the next frame measures the new DOM positions before animating.
@@ -210,7 +229,8 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
       if (played.has(key) || !duration || elapsed >= duration) return;
       played.add(key);
       if (played.size > 128) played.delete(played.values().next().value!);
-      const frame = createBattleFrame(arena, events, effects);
+      rig.sync();
+      const frame = createBattleFrame(arena, events, effects, rig, Math.max(0, elapsed));
       active.add(frame);
       effects?.start();
       frame.timeline.eventCallback("onComplete", () => {
@@ -227,6 +247,7 @@ export async function createBattleScene(arena: HTMLElement, host: HTMLElement, s
       clear();
       canvas?.removeEventListener("webglcontextlost", contextLost);
       effects?.destroy();
+      rig.destroy();
       delete arena.dataset.combatMotion;
       delete arena.dataset.combatRenderer;
     },
