@@ -479,13 +479,16 @@ describe("l’atelier et la collection", () => {
     );
     expect(onSave).not.toHaveBeenCalled();
   });
-  it("resets all three filter groups from an empty result", () => {
+  it("resets every filter group from an empty result", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "Chaos" }));
     fireEvent.click(screen.getByRole("button", { name: "À distance" }));
     expect(collection().getAllByRole("button")).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Épique" }));
     fireEvent.click(screen.getByRole("button", { name: "Légendaire" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Cartes améliorables" }),
+    );
     expect(
       screen.getByRole("heading", { name: "Aucune carte avec ces filtres" }),
     ).toBeTruthy();
@@ -500,7 +503,12 @@ describe("l’atelier et la collection", () => {
         .getByRole("button", { name: "Toutes" })
         .getAttribute("aria-pressed"),
     ).toBe("true");
-    for (const name of ["Épique", "Légendaire", "Chaos"]) {
+    for (const name of [
+      "Épique",
+      "Légendaire",
+      "Chaos",
+      "Cartes améliorables",
+    ]) {
       expect(
         screen.getByRole("button", { name }).getAttribute("aria-pressed"),
       ).toBe("false");
@@ -608,7 +616,7 @@ describe("l’atelier et la collection", () => {
     }
   });
   it.each(["common", "rare", "epic", "legendary"] as const)(
-    "marks %s cards beside their level at the copy threshold, regardless of gold",
+    "marks and filters %s cards at the copy threshold, excluding maximum levels regardless of gold",
     (rarity) => {
       const ready = variantCard("guardian", rarity, 3);
       const readyReserve = variantCard("mushroom", rarity, 3);
@@ -624,7 +632,7 @@ describe("l’atelier et la collection", () => {
         { card: missing, copies: upgradeCost(3, rarity) - 1 },
         { card: maximum, copies: 100_000 },
       ];
-      setup({ ...savedDeck, cardIds: [ready.id] }, owned, 0);
+      const { onSave } = setup({ ...savedDeck, cardIds: [ready.id] }, owned, 0);
       const indicator = within(card(deckRow(), ready.name)).getByRole("img", {
         name: "Assez de cartes pour améliorer",
       });
@@ -641,6 +649,30 @@ describe("l’atelier et la collection", () => {
           }),
         ).toBeNull();
       }
+      const upgrade = screen.getByRole("button", {
+        name: "Cartes améliorables",
+      });
+      const all = screen.getByRole("button", { name: "Toutes" });
+      fireEvent.click(upgrade);
+      expect(upgrade.getAttribute("aria-pressed")).toBe("true");
+      expect(all.getAttribute("aria-pressed")).toBe("false");
+      expect(collection().getAllByRole("button")).toHaveLength(1);
+      expect(card(collection(), readyReserve.name)).toBeTruthy();
+      expect(card(deckRow(), ready.name)).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Corps à corps" }));
+      expect(
+        screen.getByRole("heading", { name: "Aucune carte avec ces filtres" }),
+      ).toBeTruthy();
+      fireEvent.click(all);
+      expect(upgrade.getAttribute("aria-pressed")).toBe("false");
+      expect(collection().getAllByRole("button")).toHaveLength(3);
+
+      fireEvent.click(upgrade);
+      fireEvent.click(upgrade);
+      expect(all.getAttribute("aria-pressed")).toBe("true");
+      expect(collection().getAllByRole("button")).toHaveLength(3);
+      expect(onSave).not.toHaveBeenCalled();
     },
   );
   it("keeps improvement disabled when there are not enough copies", async () => {

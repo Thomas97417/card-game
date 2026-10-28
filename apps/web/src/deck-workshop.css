@@ -615,15 +615,6 @@
   padding-left: 14px;
   border-left: 1px solid #bb9c5a44;
 }
-.workshop-filter-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: #c5b38f;
-  font-size: 8px;
-  letter-spacing: 2px;
-  margin-right: 9px;
-}
 .workshop-filters button {
   display: inline-flex;
   align-items: center;
@@ -643,6 +634,11 @@
 .workshop-filters button:hover:not(:disabled) {
   border-color: #dfbf78;
   color: #f6e9cc;
+}
+.workshop-filters > button {
+  flex: 0 0 48px;
+  width: 48px;
+  padding: 7px;
 }
 .workshop-filters button.is-active {
   background: linear-gradient(#5d603b, #3a482e);
@@ -781,9 +777,6 @@
     margin-left: 0;
     justify-content: flex-start;
   }
-  .workshop-filter-label span {
-    display: none;
-  }
 }
 @media (max-width: 760px) {
   .deck-workshop {
@@ -840,9 +833,6 @@
     gap: 7px;
     width: 100%;
   }
-  .workshop-filter-label {
-    display: none;
-  }
   .workshop-filters button {
     flex: 1;
     gap: 7px;
@@ -855,6 +845,10 @@
   .workshop-filters button .game-icon {
     width: 17px;
     height: 17px;
+  }
+  .workshop-filters > button > .game-icon {
+    width: 28px;
+    height: 28px;
   }
   .workshop-rarity-filters {
     justify-content: center;

@@ -4,6 +4,7 @@ const ICON_ARTWORK = {
   ranged: "ranged-bow",
   building: "building-tower",
   all: "all-cards",
+  cardUpgrade: "card-level-up",
   refuge: "refuge-map",
   sanctuary: "sanctuary-crystal",
   arena: "arena-swords",
