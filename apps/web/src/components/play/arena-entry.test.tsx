@@ -1,13 +1,18 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ConvexQueryClient, convexQuery } from "@convex-dev/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ConvexReactClient } from "convex/react";
 import { getFunctionName } from "convex/server";
+import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { leagueProgress } from "@sylve/game/leagues";
 import type { PlayLobby } from "./play-lobby";
 import { Route } from "@/routes/arena";
@@ -30,6 +35,7 @@ const mocks = vi.hoisted(() => ({
   enqueue: vi.fn(),
   joinPrivate: vi.fn(),
   mutate: vi.fn(),
+  lobby: vi.fn(),
 }));
 
 vi.mock("convex/react", () => ({
@@ -55,25 +61,27 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("./play-lobby", () => ({
   DeckCompletionNotice: () => <p>Complète ton deck avant le combat.</p>,
-  PlayLobby: ({
-    ready,
-    locked,
-    onSolo,
-    onPublic,
-    onPrivate,
-    children,
-  }: ComponentProps<typeof PlayLobby>) => (
-    <main aria-label="Arène">
-      <button disabled={!ready || locked} onClick={onSolo}>
-        Combat solo
-      </button>
-      <button disabled={!ready || locked} onClick={onPublic}>
-        Duel public
-      </button>
-      <button onClick={onPrivate}>Défi amical</button>
-      {children}
-    </main>
-  ),
+  PlayLobby: (props: ComponentProps<typeof PlayLobby>) => {
+    mocks.lobby(props);
+    return (
+      <main aria-label="Arène" aria-busy={!props.ready}>
+        <div aria-label="Deck">{props.deckSize}</div>
+        <div aria-label="Coffres">
+          {props.chests.map((chest) => chest._id).join(",")}
+        </div>
+        <div aria-label="Horloge">{props.now}</div>
+        <div aria-label="Trophées">{props.league?.trophies}</div>
+        <button disabled={!props.ready || props.locked} onClick={props.onSolo}>
+          Combat solo
+        </button>
+        <button disabled={!props.ready || props.locked} onClick={props.onPublic}>
+          Duel public
+        </button>
+        <button onClick={props.onPrivate}>Défi amical</button>
+        {props.children}
+      </main>
+    );
+  },
 }));
 
 vi.mock("./chest-unlock-dialog", () => ({ ChestUnlockDialog: () => null }));
@@ -81,6 +89,52 @@ vi.mock("./chest-reveal-dialog", () => ({ ChestRevealDialog: () => null }));
 vi.mock("@/components/emerald-balance", () => ({ useEmeraldBalance: () => 0 }));
 
 const ArenaPage = Route.options.component!;
+const retainedQueries = [
+  api.decks.list,
+  api.games.activity,
+  api.collection.hero,
+  api.chests.list,
+  api.collection.league,
+];
+let client: QueryClient;
+let bridge: ConvexQueryClient;
+let values: Map<string, unknown>;
+let listeners: Map<string, Set<() => void>>;
+let pending: Map<string, ((value: unknown) => void)[]>;
+let request: ReturnType<typeof vi.fn>;
+
+function push(query: Parameters<typeof getFunctionName>[0], value: unknown) {
+  const name = getFunctionName(query);
+  values.set(name, value);
+  for (const resolve of pending.get(name) ?? []) resolve(value);
+  pending.delete(name);
+  for (const callback of listeners.get(name) ?? []) callback();
+}
+function syncFixtures() {
+  for (const query of retainedQueries) push(query, mocks.query(query));
+}
+function view(show = true) {
+  return (
+    <QueryClientProvider client={client}>
+      {show ? <ArenaPage /> : <div>Village</div>}
+    </QueryClientProvider>
+  );
+}
+function renderArena(children: ReactNode) {
+  syncFixtures();
+  const result = render(children, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    ),
+  });
+  return {
+    ...result,
+    rerender: (children: ReactNode) => act(() => {
+      syncFixtures();
+      result.rerender(children);
+    }),
+  };
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -109,6 +163,8 @@ beforeEach(() => {
         return mocks.activity;
       case "games:get":
         return mocks.game;
+      case "collection:hero":
+        return { heroId: "sylve", level: 1 };
       case "chests:list":
         return { serverNow: 1000, chests: [] };
       case "collection:league":
@@ -117,6 +173,48 @@ beforeEach(() => {
         return undefined;
     }
   });
+  values = new Map();
+  listeners = new Map();
+  pending = new Map();
+  request = vi.fn((query: Parameters<typeof getFunctionName>[0]) => {
+    const name = getFunctionName(query);
+    if (values.has(name)) return Promise.resolve(values.get(name));
+    return new Promise((resolve) => {
+      pending.set(name, [...(pending.get(name) ?? []), resolve]);
+    });
+  });
+  const convex = {
+    query: request,
+    watchQuery: (query: Parameters<typeof getFunctionName>[0]) => {
+      const name = getFunctionName(query);
+      return {
+        localQueryResult: () => values.get(name),
+        onUpdate: (callback: () => void) => {
+          const callbacks = listeners.get(name) ?? new Set();
+          callbacks.add(callback);
+          listeners.set(name, callbacks);
+          return () => callbacks.delete(callback);
+        },
+      };
+    },
+  };
+  bridge = new ConvexQueryClient(convex as unknown as ConvexReactClient);
+  client = new QueryClient({
+    defaultOptions: {
+      queries: {
+        queryFn: bridge.queryFn(),
+        queryKeyHashFn: bridge.hashFn(),
+        retry: false,
+      },
+    },
+  });
+  bridge.connect(client);
+});
+afterEach(() => {
+  cleanup();
+  client.clear();
+  bridge.unsubscribe?.();
+  vi.useRealTimers();
 });
 
 describe("ouverture directe du duel depuis l’arène", () => {
@@ -124,7 +222,7 @@ describe("ouverture directe du duel depuis l’arène", () => {
     "does not start a battle or its presentation with a %i-card deck instead of four",
     async (deckSize) => {
       mocks.deckSize = deckSize;
-      render(
+      renderArena(
         <DuelTransitionProvider>
           <ArenaPage />
         </DuelTransitionProvider>,
@@ -171,7 +269,7 @@ describe("ouverture directe du duel depuis l’arène", () => {
     const error = vi
       .spyOn(feedback, "showGameError")
       .mockImplementation(() => {});
-    render(
+    renderArena(
       <DuelTransitionProvider>
         <ArenaPage />
       </DuelTransitionProvider>,
@@ -211,7 +309,7 @@ describe("ouverture directe du duel depuis l’arène", () => {
         gameId: status === "waiting" ? "matched-game" : null,
         queued: status === "queued",
       };
-      const { rerender } = render(<ArenaPage />);
+      const { rerender } = renderArena(<ArenaPage />);
       await act(async () => {});
       expect(
         mocks.query.mock.calls.some(
@@ -250,7 +348,7 @@ describe("ouverture directe du duel depuis l’arène", () => {
   );
 
   it("does not navigate immediately after creating a solo match", async () => {
-    const { rerender } = render(<ArenaPage />);
+    const { rerender } = renderArena(<ArenaPage />);
     await waitFor(() =>
       expect(
         (
@@ -281,7 +379,7 @@ describe("ouverture directe du duel depuis l’arène", () => {
   });
 
   it("also waits for the live query when joining an invitation", async () => {
-    const { rerender } = render(<ArenaPage />);
+    const { rerender } = renderArena(<ArenaPage />);
     await act(async () =>
       fireEvent.click(screen.getByRole("button", { name: "Défi amical" })),
     );
@@ -308,5 +406,101 @@ describe("ouverture directe du duel depuis l’arène", () => {
     mocks.game = { status: "active", turn: 1, sequence: 0 };
     rerender(<ArenaPage />);
     expect(mocks.navigate).toHaveBeenCalledOnce();
+  });
+});
+
+describe("cache réactif de l’arène", () => {
+  it("shows live updates received while away on the first render of the next visit", async () => {
+    syncFixtures();
+    const { rerender } = render(view());
+    await waitFor(() =>
+      expect(screen.getByRole("main").getAttribute("aria-busy")).toBe("false"),
+    );
+    expect(request).toHaveBeenCalledTimes(retainedQueries.length);
+    expect(mocks.mutate).not.toHaveBeenCalled();
+
+    rerender(view(false));
+    for (const query of retainedQueries)
+      expect(listeners.get(getFunctionName(query))?.size).toBe(1);
+    act(() => {
+      push(api.decks.list, [{
+        _id: "updated-deck",
+        cardIds: ["fox:common", "bear:common", "owl:common"],
+      }]);
+      push(api.collection.league, leagueProgress(950));
+      push(api.chests.list, {
+        serverNow: 2000,
+        chests: [{ _id: "new-chest", slot: 0, rarity: "common", unlockAt: 3000 }],
+      });
+      push(api.games.activity, { status: null, gameId: null, queued: true });
+    });
+    mocks.lobby.mockClear();
+    rerender(view());
+    expect(mocks.lobby.mock.calls[0]?.[0]).toMatchObject({
+      ready: true,
+      deckSize: 3,
+      queued: true,
+    });
+    expect(screen.getByLabelText("Deck").textContent).toBe("3");
+    expect(screen.getByLabelText("Trophées").textContent).toBe("950");
+    expect(screen.getByLabelText("Coffres").textContent).toBe("new-chest");
+    const publicButton = () =>
+      screen.getByRole("button", { name: "Duel public" }) as HTMLButtonElement;
+    expect(publicButton().disabled).toBe(true);
+    expect(request).toHaveBeenCalledTimes(retainedQueries.length);
+
+    act(() => push(api.games.activity, { status: null, gameId: null, queued: false }));
+    await waitFor(() => expect(publicButton().disabled).toBe(false));
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it("waits for the first server snapshot and initializes an empty account only once", async () => {
+    mocks.mutate.mockReturnValue(new Promise(() => {}));
+    const { rerender } = render(view());
+    expect(screen.getByRole("main").getAttribute("aria-busy")).toBe("true");
+    expect(mocks.mutate).not.toHaveBeenCalled();
+    await act(async () => {
+      for (const query of retainedQueries)
+        push(
+          query,
+          getFunctionName(query) === "decks:list" ? [] : mocks.query(query),
+        );
+    });
+    await waitFor(() => expect(mocks.mutate).toHaveBeenCalledOnce());
+    expect(screen.getByRole("main").getAttribute("aria-busy")).toBe("true");
+    rerender(view());
+    expect(mocks.mutate).toHaveBeenCalledOnce();
+
+    act(() => push(api.decks.list, mocks.query(api.decks.list)));
+    await waitFor(() =>
+      expect(screen.getByRole("main").getAttribute("aria-busy")).toBe("false"),
+    );
+    // The ensureStarter promise is still pending; live data is enough to render.
+    expect(mocks.mutate).toHaveBeenCalledOnce();
+  });
+
+  it("includes time away in cached chest countdowns and follows new server timestamps", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(10_000);
+    for (const query of retainedQueries)
+      client.setQueryData(convexQuery(query, {}).queryKey, mocks.query(query));
+    const { rerender } = render(view());
+    expect(screen.getByLabelText("Horloge").textContent).toBe("1000");
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.getByLabelText("Horloge").textContent).toBe("3000");
+    rerender(view(false));
+    act(() => vi.advanceTimersByTime(5000));
+    mocks.lobby.mockClear();
+    rerender(view());
+    expect(mocks.lobby.mock.calls[0]?.[0].now).toBe(8000);
+    expect(screen.getByLabelText("Horloge").textContent).toBe("8000");
+
+    act(() => {
+      push(api.chests.list, { serverNow: 20_000, chests: [] });
+      vi.advanceTimersByTime(0);
+    });
+    expect(screen.getByLabelText("Horloge").textContent).toBe("20000");
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByLabelText("Horloge").textContent).toBe("21000");
   });
 });
