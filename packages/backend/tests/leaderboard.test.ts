@@ -58,25 +58,31 @@ describe("classement public des gardiens", () => {
     expect(await alice.client.query(api.collection.playerProfile, { ownerId: "unknown" })).toBeNull();
   });
 
-  it("orders current trophies with stable ties, skips deleted accounts and exposes only public scores", async () => {
+  it("orders current trophies with stable ties, skips deleted accounts and exposes public scores and the current guardian", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const bob = await player(t, "bob");
     const clara = await player(t, "clara");
-    await t.run(async (ctx) => {
+    const bobHero = await t.run(async (ctx) => {
       await ctx.db.insert("leagueProgress", { ownerId: alice.ownerId, trophies: 800, peakTrophies: 5000 });
       await ctx.db.insert("leagueProgress", { ownerId: bob.ownerId, trophies: 2400 });
       await ctx.db.insert("leagueProgress", { ownerId: clara.ownerId, trophies: 2400 });
       await ctx.db.insert("leagueProgress", { ownerId: "deleted-user", trophies: 9999 });
+      return ctx.db.insert("heroes", { ownerId: bob.ownerId, selectedHeroId: "moon", level: 1, peakMight: 0 });
     });
     const ranking = await alice.client.query(api.collection.leaderboard, {});
     expect(ranking.map((entry) => entry.trophies)).toEqual([2400, 2400, 800]);
     expect(ranking.map((entry) => entry.rank)).toEqual([1, 2, 3]);
     expect(ranking.filter((entry) => entry.isCurrentPlayer)).toEqual([
-      { ownerId: alice.ownerId, name: "alice", trophies: 800, rank: 3, isCurrentPlayer: true },
+      { ownerId: alice.ownerId, name: "alice", trophies: 800, rank: 3, isCurrentPlayer: true, profile: { heroId: "sylve" } },
     ]);
     expect(ranking).toEqual(await alice.client.query(api.collection.leaderboard, {}));
-    expect(Object.keys(ranking[0]!).sort()).toEqual(["isCurrentPlayer", "name", "ownerId", "rank", "trophies"]);
+    expect(Object.keys(ranking[0]!).sort()).toEqual(["isCurrentPlayer", "name", "ownerId", "profile", "rank", "trophies"]);
+    expect(ranking.find((entry) => entry.ownerId === bob.ownerId)!.profile).toEqual({ heroId: "moon" });
+    await t.run((ctx) => ctx.db.patch(bobHero, { selectedHeroId: "void" }));
+    const updated = await alice.client.query(api.collection.leaderboard, {});
+    expect(updated.find((entry) => entry.ownerId === bob.ownerId)!.profile).toEqual({ heroId: "void" });
+    expect(updated.map((entry) => entry.ownerId)).toEqual(ranking.map((entry) => entry.ownerId));
   });
 
   it("shows the current deck in order with owned levels, earned capacity and no private collection data", async () => {

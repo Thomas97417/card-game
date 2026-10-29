@@ -404,17 +404,31 @@
   align-items: flex-end;
   gap: 8px;
 }
-.hub-world-chat-avatar {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
-  border: 1px solid #91aa794d;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4b6845, #2b4432);
-  color: #d5dfbd;
-  font:
-    600 11px Georgia,
-    serif;
+.social-avatar,
+.hub-world-chat-avatar,
+.hub-ranking-avatar {
+  position: relative;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border: 2px solid #e1be70;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 55% 25%, #64806a, #233f33 65%, #10271e);
+  box-shadow: 0 0 0 1px #4d452c, 0 2px 5px #081c1980;
+}
+.social-avatar > img,
+.hub-world-chat-avatar > img,
+.hub-ranking-avatar > img {
+  position: absolute;
+  top: -2%;
+  left: 50%;
+  width: 200%;
+  max-width: none;
+  height: auto;
+  transform: translateX(-55%);
+  pointer-events: none;
+  user-select: none;
 }
 .hub-world-chat-avatar:empty {
   visibility: hidden;
@@ -424,20 +438,19 @@
   flex-shrink: 0;
   align-self: center;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid #c5a76b66;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #506145, #263d2c);
-  color: #f4e2b8;
-  font:
-    600 12px Georgia,
-    serif;
   cursor: pointer;
 }
 .hub-world-chat-message > .social-avatar {
+  width: 34px;
+  height: 34px;
   align-self: flex-end;
+}
+.social-avatar:focus-visible {
+  outline: 2px solid #ffe2a0;
+  outline-offset: 3px;
 }
 .social-avatar:hover {
   border-color: #f4d79a;
@@ -862,7 +875,7 @@
 .hub-world-chat-content {
   flex: 0 1 auto;
   width: fit-content;
-  max-width: calc(100% - 38px);
+  max-width: calc(100% - 42px);
   gap: 5px;
 }
 .hub-world-chat-meta {
@@ -897,11 +910,6 @@
   line-height: 1.6;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-}
-.hub-world-chat-message[data-align="end"] .hub-world-chat-avatar {
-  border-color: #d0b06c66;
-  background: linear-gradient(135deg, #75633d, #4d462d);
-  color: #f7e4af;
 }
 .hub-world-chat-message[data-align="end"] .hub-world-chat-bubble {
   border-color: #c7aa6559;
@@ -1103,6 +1111,10 @@
   min-width: 0;
   text-align: left;
 }
+.hub-ranking-avatar {
+  width: 42px;
+  height: 42px;
+}
 .hub-ranking-name {
   display: flex;
   align-items: center;
@@ -1125,7 +1137,9 @@
   font-weight: 500;
 }
 .hub-ranking-league {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-top: 3px;
   color: #acbdab;
   font-size: 10px;

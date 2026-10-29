@@ -37,6 +37,7 @@ import {
 import { mineAmount, type MineBoard } from "@sylve/game/mines";
 import { addRankExperience, readRank } from "./lib/ranks";
 import { heroIdValidator } from "./lib/validators";
+import { socialProfile } from "./lib/social";
 
 export const rank = query({
   args: {},
@@ -246,9 +247,11 @@ export const leaderboard = query({
       leaders.map(async (progress) => {
         const user = await authComponent.getAnyUserById(ctx, progress.ownerId);
         if (!user) return null;
+        const profile = await socialProfile(ctx, progress.ownerId);
         return {
           ownerId: progress.ownerId,
           name: user.name,
+          profile,
           trophies: progress.trophies,
           isCurrentPlayer: progress.ownerId === userId,
         };

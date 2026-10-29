@@ -13,6 +13,7 @@ import {
   MessageHeader,
 } from "@/components/ui/message";
 import { GameIcon } from "@/components/game/game-icon";
+import { GuardianAvatar } from "@/components/guardian-avatar";
 import { HubPanel } from "./hub-panel";
 import { PlayerMenu, type SocialPlayer } from "./player-menu";
 import { FriendConversations } from "./friends-panel";
@@ -88,11 +89,10 @@ export function WorldChat({
   const setDraft = (value: string) =>
     setDrafts((current) => ({ ...current, [draftKey]: value }));
   const showInbox = mode === "friends" && !conversation;
-  const friendAvailable =
-    mode === "world" ||
-    !!friends?.friends.some(
-      (friend) => friend.playerId === conversation?.playerId,
-    );
+  const selectedFriend = friends?.friends.find(
+    (friend) => friend.playerId === conversation?.playerId,
+  );
+  const friendAvailable = mode === "world" || !!selectedFriend;
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unseen, setUnseen] = useState(false);
@@ -293,7 +293,7 @@ export function WorldChat({
                 >
                   <ArrowLeft size={17} />
                 </button>
-                <PlayerMenu {...conversation} onMessage={openConversation} />
+                <PlayerMenu {...(selectedFriend ?? conversation)} onMessage={openConversation} />
                 <span>
                   <strong>{conversation.name}</strong>
                   <small>Conversation privée</small>
@@ -514,10 +514,6 @@ function ChatRow({
   onMessage: (player: SocialPlayer) => void;
 }) {
   const date = new Date(message.sentAt);
-  const initials = Array.from(message.senderName)
-    .slice(0, 2)
-    .join("")
-    .toLocaleUpperCase("fr-FR");
   const time = (
     <time
       className={first ? undefined : "sr-only"}
@@ -541,14 +537,13 @@ function ChatRow({
         <PlayerMenu
           playerId={message.playerId}
           name={message.senderName}
+          profile={message.profile}
           className="hub-world-chat-avatar"
           onMessage={onMessage}
-        >
-          {initials}
-        </PlayerMenu>
+        />
       ) : (
-        <MessageAvatar className="hub-world-chat-avatar" aria-hidden="true">
-          {last ? initials : null}
+        <MessageAvatar className="hub-world-chat-avatar" aria-hidden={!last}>
+          {last && <GuardianAvatar heroId={message.profile?.heroId} />}
         </MessageAvatar>
       )}
       <MessageContent className="hub-world-chat-content">

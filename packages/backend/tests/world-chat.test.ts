@@ -117,6 +117,26 @@ describe("le chat mondial", () => {
     );
   });
 
+  it("refreshes past messages with the author's current guardian without exposing rank or XP", async () => {
+    const t = setup();
+    const alice = await player(t, "Alice");
+    await alice.mutation(api.worldChat.send, { body: "Bonjour" });
+    const author = (await alice.query(api.worldChat.list, {}))[0]!.playerId;
+    const { heroId, walletId } = await t.run(async (ctx) => ({
+      heroId: await ctx.db.insert("heroes", { ownerId: author, selectedHeroId: "moon", level: 1, peakMight: 0 }),
+      walletId: await ctx.db.insert("wallets", { ownerId: author, gold: 999, diamonds: 77, experience: 175, rankRewardedThrough: 6 }),
+    }));
+    const profile = (await alice.query(api.worldChat.list, {}))[0]!.profile;
+    expect(profile).toEqual({ heroId: "moon" });
+    await t.run(async (ctx) => {
+      await ctx.db.patch(heroId, { selectedHeroId: "void" });
+      await ctx.db.patch(walletId, { experience: 200 });
+    });
+    expect((await alice.query(api.worldChat.list, {}))[0]!.profile).toEqual({
+      heroId: "void",
+    });
+  });
+
   it("marks consecutive messages by player identity even when players share a name", async () => {
     const t = setup();
     const alice = await player(t, "Gardien", "alice");
@@ -182,6 +202,7 @@ describe("le chat mondial", () => {
     expect(messages).toHaveLength(WORLD_CHAT_HISTORY_LIMIT);
     expect(messages[0]!.body).toBe("Message 5");
     expect(messages[0]!.continuesPrevious).toBe(false);
+    expect(messages[0]!.profile).toEqual({ heroId: "sylve" });
     expect(
       messages.slice(1).every((message) => message.continuesPrevious),
     ).toBe(true);

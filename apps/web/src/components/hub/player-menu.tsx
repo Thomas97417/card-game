@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import {
   Eye,
@@ -10,9 +10,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { CardDefinition } from "@sylve/game";
+import type { HeroId } from "@sylve/game/hero-metadata";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { showGameError } from "@/components/game/shared";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
+import { GuardianAvatar } from "@/components/guardian-avatar";
 import {
   Dialog,
   DialogContent,
@@ -27,16 +29,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RankedPlayerDetails } from "./hub-ranking";
 
-export type SocialPlayer = { playerId: string; name: string };
+export type SocialPlayer = { playerId: string; name: string; profile?: { heroId: HeroId } };
 
 export function PlayerMenu({
   playerId,
   name,
-  children,
+  profile,
   className = "",
   onMessage,
 }: SocialPlayer & {
-  children?: ReactNode;
   className?: string;
   onMessage: (player: SocialPlayer) => void;
 }) {
@@ -74,8 +75,7 @@ export function PlayerMenu({
           className={`social-avatar ${className}`}
           aria-label={`Actions pour ${name}`}
         >
-          {children ??
-            Array.from(name).slice(0, 2).join("").toLocaleUpperCase("fr-FR")}
+          <GuardianAvatar heroId={profile?.heroId} />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="social-player-menu"
@@ -112,7 +112,7 @@ export function PlayerMenu({
           )}
           {relation === "friend" && (
             <>
-              <DropdownMenuItem onClick={() => onMessage({ playerId, name })}>
+              <DropdownMenuItem onClick={() => onMessage({ playerId, name, profile })}>
                 <MessageCircle /> Envoyer un message
               </DropdownMenuItem>
               <DropdownMenuItem

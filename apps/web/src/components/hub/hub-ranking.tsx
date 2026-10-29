@@ -6,6 +6,7 @@ import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { getCombatType, RARITY_LABELS, type CardDefinition } from "@sylve/game";
 import { leagueAt } from "@sylve/game/leagues";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
+import { GuardianAvatar } from "@/components/guardian-avatar";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { FactionBackdrop } from "@/components/game/faction-artwork";
 import { GameIcon } from "@/components/game/game-icon";
@@ -92,8 +93,8 @@ export function HubRanking({
                         )}
                         <span>#{player.rank}</span>
                       </span>
-                      <span aria-hidden="true">
-                        <LeagueBadge league={league} size={42} />
+                      <span className="hub-ranking-avatar" aria-hidden="true">
+                        <GuardianAvatar heroId={player.profile?.heroId} />
                       </span>
                       <span className="hub-ranking-identity">
                         <span className="hub-ranking-name">
@@ -101,6 +102,7 @@ export function HubRanking({
                           {player.isCurrentPlayer && <small>Toi</small>}
                         </span>
                         <span className="hub-ranking-league">
+                          <span aria-hidden="true"><LeagueBadge league={league} size={16} /></span>
                           {league.label}
                         </span>
                       </span>
