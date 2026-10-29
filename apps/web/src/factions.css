@@ -192,14 +192,6 @@
   }
 }
 @media (max-width: 760px) {
-  .workshop-filters > button {
-    flex: 1 1 0;
-    min-width: 0;
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px;
-    line-height: 1.2;
-  }
   .workshop-secondary-filters {
     flex-basis: 100%;
     justify-content: center;

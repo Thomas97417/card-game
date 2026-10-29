@@ -84,16 +84,6 @@ export function FriendsPanel({
         </span>
         {data && <FriendshipAmount amount={data.tokens} />}
       </div>
-      {data && (
-        <p className="social-notice social-rank-info">
-          {data.limit === 0
-            ? `Les amis se débloquent au rang ${FRIENDS_UNLOCK_RANK}. Améliore tes cartes pour y accéder.`
-            : `Rang ${data.rank}`}
-          {data.limit > 0 && data.nextUnlock && (
-            <> · {data.nextUnlock.friends} places au rang {data.nextUnlock.rank}.</>
-          )}
-        </p>
-      )}
       <div className="social-friends-tabs" role="group" aria-label="Vue des amis">
         <button
           type="button"

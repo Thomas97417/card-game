@@ -439,8 +439,8 @@ export function DeckWorkshop({
                             height={512}
                             draggable={false}
                           />
-                          <span>
-                            {leagueAt(unlock.trophies).label}
+                          <span className="workshop-slot-unlock">
+                            <strong>{leagueAt(unlock.trophies).label}</strong>
                             <small>{unlock.trophies} trophées</small>
                           </span>
                         </div>
@@ -565,77 +565,103 @@ export function DeckWorkshop({
           role="group"
           aria-label="Filtrer la collection"
         >
-          {(
-            [
-              { type: null, label: "Toutes" },
-              { type: "melee", label: "Corps à corps" },
-              { type: "ranged", label: "À distance" },
-              { type: "building", label: "Bâtiments" },
-            ] as const
-          ).map(({ type, label }) => (
+          <div className="workshop-primary-filters">
             <button
-              key={type ?? "all"}
               type="button"
               className={
-                filter === type &&
-                (type !== null ||
-                  (rarityFilters.length === 0 &&
-                    factionFilters.length === 0 &&
-                    !upgradeOnly &&
-                    !evolutionOnly))
+                filter === null &&
+                rarityFilters.length === 0 &&
+                factionFilters.length === 0 &&
+                !upgradeOnly &&
+                !evolutionOnly
                   ? "is-active"
                   : ""
               }
+              aria-label="Toutes"
+              title="Toutes"
               aria-pressed={
-                filter === type &&
-                (type !== null ||
-                  (rarityFilters.length === 0 &&
-                    factionFilters.length === 0 &&
-                    !upgradeOnly &&
-                    !evolutionOnly))
+                filter === null &&
+                rarityFilters.length === 0 &&
+                factionFilters.length === 0 &&
+                !upgradeOnly &&
+                !evolutionOnly
               }
-              aria-label={label}
-              title={label}
               disabled={!ready}
               onClick={() => {
-                selectCombatType(type);
+                selectCombatType(null);
                 setPicked(null);
                 setMessage(instructions);
               }}
             >
-              <GameIcon kind={type ?? "all"} size={30} />
+              <GameIcon kind="all" size={30} />
             </button>
-          ))}
-          <button
-            type="button"
-            className={`workshop-upgrade-toggle ${upgradeOnly ? "is-active" : ""}`}
-            aria-label="Cartes améliorables"
-            title="Cartes améliorables"
-            aria-pressed={upgradeOnly}
-            disabled={!ready}
-            onClick={() => {
-              toggleUpgradeOnly();
-              setPicked(null);
-              setMessage(instructions);
-            }}
-          >
-            <GameIcon kind="cardUpgrade" size={34} />
-          </button>
-          <button
-            type="button"
-            className={evolutionOnly ? "is-active" : ""}
-            aria-label="Cartes évoluables"
-            title="Cartes évoluables"
-            aria-pressed={evolutionOnly}
-            disabled={!ready}
-            onClick={() => {
-              toggleEvolutionOnly();
-              setPicked(null);
-              setMessage(instructions);
-            }}
-          >
-            <GameIcon kind="sanctuary" size={34} />
-          </button>
+            <div
+              className="workshop-filter-group workshop-type-filters"
+              role="group"
+              aria-label="Filtrer par type"
+            >
+              {(
+                [
+                  { type: "melee", label: "Corps à corps" },
+                  { type: "ranged", label: "À distance" },
+                  { type: "building", label: "Bâtiments" },
+                ] as const
+              ).map(({ type, label }) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={filter === type ? "is-active" : ""}
+                  aria-pressed={filter === type}
+                  aria-label={label}
+                  title={label}
+                  disabled={!ready}
+                  onClick={() => {
+                    selectCombatType(type);
+                    setPicked(null);
+                    setMessage(instructions);
+                  }}
+                >
+                  <GameIcon kind={type} size={30} />
+                </button>
+              ))}
+            </div>
+            <div
+              className="workshop-filter-group workshop-progression-filters"
+              role="group"
+              aria-label="Filtrer par progression"
+            >
+              <button
+                type="button"
+                className={`workshop-upgrade-toggle ${upgradeOnly ? "is-active" : ""}`}
+                aria-label="Cartes améliorables"
+                title="Cartes améliorables"
+                aria-pressed={upgradeOnly}
+                disabled={!ready}
+                onClick={() => {
+                  toggleUpgradeOnly();
+                  setPicked(null);
+                  setMessage(instructions);
+                }}
+              >
+                <GameIcon kind="cardUpgrade" size={34} />
+              </button>
+              <button
+                type="button"
+                className={evolutionOnly ? "is-active" : ""}
+                aria-label="Cartes évoluables"
+                title="Cartes évoluables"
+                aria-pressed={evolutionOnly}
+                disabled={!ready}
+                onClick={() => {
+                  toggleEvolutionOnly();
+                  setPicked(null);
+                  setMessage(instructions);
+                }}
+              >
+                <GameIcon kind="sanctuary" size={34} />
+              </button>
+            </div>
+          </div>
           <div className="workshop-secondary-filters">
             <div
               className="workshop-rarity-filters"
@@ -669,10 +695,7 @@ export function DeckWorkshop({
                       draggable={false}
                     />
                     {active && (
-                      <span
-                        className="workshop-rarity-check"
-                        aria-hidden="true"
-                      >
+                      <span className="workshop-rarity-check" aria-hidden="true">
                         <Check size={10} strokeWidth={3} />
                       </span>
                     )}

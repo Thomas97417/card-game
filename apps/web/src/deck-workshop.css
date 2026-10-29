@@ -227,6 +227,46 @@
   background: #d7b77709;
   color: #d7b77744;
 }
+.deck-workshop .workshop-locked-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-color: #8b8468;
+  background: linear-gradient(145deg, #302c26ee, #14251eee);
+  box-shadow: inset 0 0 0 3px #d7b7770d;
+}
+.workshop-locked-slot > img {
+  position: absolute;
+  inset: 6% 0 auto;
+  width: 100%;
+  height: 66%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px #0008);
+  pointer-events: none;
+}
+.workshop-locked-slot .workshop-slot-unlock {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 6px;
+  border-top: 1px solid #d7b77733;
+  background: #0b1c17d9;
+  color: #ecdbb2;
+  text-align: center;
+  line-height: 1.35;
+}
+.workshop-slot-unlock strong {
+  font-size: clamp(11px, 8cqw, 14px);
+  font-weight: 600;
+}
+.workshop-slot-unlock small {
+  color: #c9bd9b;
+  font-size: clamp(9px, 6.5cqw, 11px);
+}
 .workshop-collection {
   margin-top: 0;
 }
@@ -398,6 +438,19 @@
   gap: 8px;
   flex-shrink: 0;
 }
+.workshop-primary-filters,
+.workshop-filter-group {
+  display: flex;
+  align-items: center;
+}
+.workshop-primary-filters {
+  gap: 12px;
+}
+.workshop-filter-group {
+  gap: 6px;
+  padding-left: 12px;
+  border-left: 1px solid #bb9c5a44;
+}
 .workshop-rarity-filters {
   display: flex;
   align-items: center;
@@ -426,7 +479,7 @@
   border-color: #dfbf78;
   color: #f6e9cc;
 }
-.workshop-filters > button {
+.workshop-primary-filters button {
   flex: 0 0 48px;
   width: 48px;
   padding: 7px;
@@ -633,7 +686,34 @@
     width: 17px;
     height: 17px;
   }
-  .workshop-filters > button > .game-icon {
+  .workshop-primary-filters {
+    width: 100%;
+    gap: 8px;
+  }
+  .workshop-filter-group {
+    min-width: 0;
+    gap: 4px;
+    padding-left: 8px;
+  }
+  .workshop-type-filters {
+    flex: 3 1 0;
+  }
+  .workshop-progression-filters {
+    flex: 2 1 0;
+  }
+  .workshop-primary-filters > button {
+    flex: 1 1 0;
+  }
+  .workshop-primary-filters button {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    line-height: 1.2;
+  }
+  .workshop-primary-filters button > .game-icon {
     width: 28px;
     height: 28px;
   }
