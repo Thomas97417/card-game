@@ -31,6 +31,39 @@ function expand(container: HTMLElement) {
 }
 
 describe("Soulbind card controls", () => {
+  it("shows the current rank, next rank and XP progress, including the maximum rank", () => {
+    const props = {
+      card: resolveCard("bear:epic"),
+      onSoulbind: vi.fn(),
+      presentation: "page" as const,
+    };
+    const { rerender } = render(
+      <CardSoulbind
+        {...props}
+        soulProgress={{ ...progress, rank: 9, earned: 10, required: 50 }}
+      />,
+    );
+    const wallet = within(screen.getByLabelText("Progression des liens d’âme"));
+    expect(wallet.getByText("Rang 9")).toBeTruthy();
+    expect(wallet.getByText("Vers le rang 10")).toBeTruthy();
+    expect(wallet.getByText("10 / 50 XP")).toBeTruthy();
+    const meter = wallet.getByRole("progressbar", { name: "Expérience de rang" });
+    expect(meter.getAttribute("value")).toBe("10");
+    expect(meter.getAttribute("max")).toBe("50");
+
+    rerender(
+      <CardSoulbind
+        {...props}
+        soulProgress={{ ...progress, earned: 0, required: 0 }}
+      />,
+    );
+    expect(wallet.getByText("Rang maximum")).toBeTruthy();
+    expect(wallet.getByText("MAX")).toBeTruthy();
+    expect(wallet.queryByText(/Vers le rang/)).toBeNull();
+    expect(meter.getAttribute("value")).toBe("1");
+    expect(meter.getAttribute("max")).toBe("1");
+  });
+
   it("labels required-level previews explicitly for undiscovered companions", () => {
     const card = resolveCard("guardian:legendary");
     render(

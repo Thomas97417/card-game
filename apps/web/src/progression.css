@@ -615,7 +615,7 @@
   place-items: center;
   width: 43px;
   height: 43px;
-  transform: translateY(-50%) rotate(4deg);
+  transform: translateY(-50%);
   border: 2px solid #e3cf91;
   border-radius: 9px 9px 15px 15px;
   background: linear-gradient(135deg, #75944a, #345b30);
