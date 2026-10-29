@@ -762,6 +762,11 @@
   margin-top: 3px;
   font-size: 10px;
 }
+.social-player-identity .social-player-league {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .social-conversation-link {
   padding: 0;
   border: 0;
@@ -1145,11 +1150,13 @@
   font-size: 10px;
   font-weight: 400;
 }
-.hub-ranking-league-icon {
+.hub-ranking-league-icon,
+.social-player-league-icon {
   display: inline-flex;
   flex: 0 0 20px;
 }
-.hub-ranking-league-label {
+.hub-ranking-league-label,
+.social-player-league-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
