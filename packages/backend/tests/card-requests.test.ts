@@ -219,6 +219,46 @@ describe("daily card requests and donations", () => {
     ).toHaveLength(1);
   });
 
+  it("blocks a serpent request after an enchantress request, even when the enchantress request is completed", async () => {
+    const t = setup();
+    const a = await player(t, "alice"),
+      b = await player(t, "bob");
+    await befriend(a, b);
+    await stock(t, a.id, "enchantress:rare", 0);
+    await stock(t, a.id, "serpent:rare", 0);
+    await stock(t, b.id, "enchantress:rare", 2);
+
+    const requestId = await a.client.mutation(api.social.requestCards, {
+      variantId: "enchantress:rare",
+    });
+    await expect(
+      a.client.mutation(api.social.requestCards, { variantId: "serpent:rare" }),
+    ).rejects.toThrow("Tu as déjà demandé des cartes aujourd’hui");
+    expect(
+      (await a.client.query(api.social.cardRequestStatus, {})).request,
+    ).toMatchObject({
+      id: requestId,
+      variantId: "enchantress:rare",
+      requested: 2,
+      received: 0,
+    });
+
+    await b.client.mutation(api.social.donateCards, {
+      requestId,
+      count: 2,
+      expectedDonated: 0,
+    });
+    expect(
+      (await a.client.query(api.social.cardRequestStatus, {})).request,
+    ).toMatchObject({ variantId: "enchantress:rare", received: 2 });
+    await expect(
+      a.client.mutation(api.social.requestCards, { variantId: "serpent:rare" }),
+    ).rejects.toThrow("Tu as déjà demandé des cartes aujourd’hui");
+    expect(
+      await t.run((ctx) => ctx.db.query("cardRequests").collect()),
+    ).toHaveLength(1);
+  });
+
   it("moves only reserve copies, preserves levels and credits sender rank XP once on retries", async () => {
     const t = setup();
     const a = await player(t, "alice"),

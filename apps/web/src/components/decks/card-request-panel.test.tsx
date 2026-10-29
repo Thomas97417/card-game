@@ -83,30 +83,42 @@ describe("requesting cards from the deck", () => {
     await act(async () => finish());
   });
 
-  it("shows today's request even on another card and prevents a second completed request", () => {
-    const request = vi.fn();
-    render(
-      <CardRequestPanel
-        entry={{ card: resolveCard("guardian:rare"), copies: 4 }}
-        status={status({
-          request: {
-            id: "request-1" as Id<"cardRequests">,
-            variantId: "guardian:common",
-            requested: 5,
-            received: 5,
-          },
-        })}
-        onRequest={request}
-      />,
-    );
-    expect(screen.getByText("Demande comblée")).toBeTruthy();
-    expect(screen.getByText(common.card.name)).toBeTruthy();
-    expect(screen.getByRole("progressbar").getAttribute("value")).toBe("5");
-    fireEvent.click(
-      screen.getByRole("button", { name: "Demande du jour utilisée" }),
-    );
-    expect(request).not.toHaveBeenCalled();
-  });
+  it.each([0, 1, 2])(
+    "blocks requesting the serpent after requesting the enchantress, with %i cards received",
+    (received) => {
+      const request = vi.fn();
+      const enchantress = resolveCard("enchantress:rare");
+      render(
+        <CardRequestPanel
+          entry={{ card: resolveCard("serpent:rare"), copies: 4 }}
+          status={status({
+            request: {
+              id: "request-1" as Id<"cardRequests">,
+              variantId: enchantress.id,
+              requested: 2,
+              received,
+            },
+          })}
+          onRequest={request}
+        />,
+      );
+      expect(
+        screen.getByText(
+          received === 2 ? "Demande comblée" : "Ta demande du jour",
+        ),
+      ).toBeTruthy();
+      expect(screen.getByRole("heading", { name: enchantress.name })).toBeTruthy();
+      expect(screen.getByRole("progressbar").getAttribute("value")).toBe(
+        String(received),
+      );
+      const button = screen.getByRole("button", {
+        name: "Demande du jour utilisée",
+      });
+      expect((button as HTMLButtonElement).disabled).toBe(true);
+      fireEvent.click(button);
+      expect(request).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(["epic", "legendary"] as const)(
     "explains why %s cards cannot be requested",
