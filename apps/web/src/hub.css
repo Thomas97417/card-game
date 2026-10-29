@@ -903,6 +903,19 @@
   font-size: 9px;
   font-weight: 400;
 }
+.social-chat-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+.social-chat-author-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .hub-world-chat-bubble {
   max-width: 100%;
   margin: 0;
@@ -1151,7 +1164,8 @@
   font-weight: 400;
 }
 .hub-ranking-league-icon,
-.social-player-league-icon {
+.social-player-league-icon,
+.social-chat-league-icon {
   display: inline-flex;
   flex: 0 0 20px;
 }

@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/message";
 import { GameIcon } from "@/components/game/game-icon";
 import { GuardianAvatar } from "@/components/guardian-avatar";
+import { LeagueBadge } from "@/components/leagues/league-progress";
+import { leagueAt } from "@sylve/game/leagues";
 import { HubPanel } from "./hub-panel";
 import { PlayerMenu, type SocialPlayer } from "./player-menu";
 import { FriendConversations } from "./friends-panel";
@@ -295,7 +297,9 @@ export function WorldChat({
                 </button>
                 <PlayerMenu {...(selectedFriend ?? conversation)} onMessage={openConversation} />
                 <span>
-                  <strong>{conversation.name}</strong>
+                  <strong>
+                    <ChatAuthor name={selectedFriend?.name ?? conversation.name} trophies={selectedFriend?.trophies} />
+                  </strong>
                   <small>Conversation privée</small>
                 </span>
               </div>
@@ -502,6 +506,20 @@ function ChatMessageGroup({
   );
 }
 
+function ChatAuthor({ name, trophies }: { name: string; trophies?: number }) {
+  const league = trophies === undefined ? null : leagueAt(trophies);
+  return (
+    <span className="social-chat-author">
+      {league && (
+        <span className="social-chat-league-icon" title={league.label}>
+          <LeagueBadge league={league} size={20} showDivision={false} />
+        </span>
+      )}
+      <span className="social-chat-author-name">{name}</span>
+    </span>
+  );
+}
+
 function ChatRow({
   message,
   first,
@@ -549,7 +567,7 @@ function ChatRow({
       <MessageContent className="hub-world-chat-content">
         {first ? (
           <MessageHeader className="hub-world-chat-meta">
-            <span>{message.isOwn ? "Toi" : message.senderName}</span>
+            <ChatAuthor name={message.isOwn ? "Toi" : message.senderName} trophies={message.trophies} />
             {time}
           </MessageHeader>
         ) : (

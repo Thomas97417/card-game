@@ -64,6 +64,8 @@ describe("amis et entraide", () => {
     const heroId = await t.run(async (ctx) => {
       const wallet = await ctx.db.query("wallets").withIndex("by_owner", (q) => q.eq("ownerId", b.id)).unique();
       await ctx.db.patch(wallet!._id, { experience: 175, diamonds: 99 });
+      await ctx.db.insert("leagueProgress", { ownerId: a.id, trophies: 1000 });
+      await ctx.db.insert("leagueProgress", { ownerId: b.id, trophies: 1800, peakTrophies: 2400 });
       return ctx.db.insert("heroes", { ownerId: b.id, selectedHeroId: "moon", level: 1, peakMight: 0 });
     });
     const bobProfile = { heroId: "moon" };
@@ -78,6 +80,7 @@ describe("amis et entraide", () => {
     await b.client.mutation(api.friendChat.send, { playerId: a.id, body: "Salut Alice" });
     const messages = await a.client.query(api.friendChat.list, { playerId: b.id });
     expect(messages.map((message) => message.profile.heroId)).toEqual(["sylve", "moon"]);
+    expect(messages.map((message) => message.trophies)).toEqual([1000, 1800]);
     expect(messages[1]!.profile).toEqual(bobProfile);
 
     await t.run((ctx) => ctx.db.patch(heroId, { selectedHeroId: "north" }));

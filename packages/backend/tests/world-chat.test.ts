@@ -117,24 +117,28 @@ describe("le chat mondial", () => {
     );
   });
 
-  it("refreshes past messages with the author's current guardian without exposing rank or XP", async () => {
+  it("refreshes past messages with the author's current guardian and trophies without exposing rank or XP", async () => {
     const t = setup();
     const alice = await player(t, "Alice");
     await alice.mutation(api.worldChat.send, { body: "Bonjour" });
     const author = (await alice.query(api.worldChat.list, {}))[0]!.playerId;
-    const { heroId, walletId } = await t.run(async (ctx) => ({
+    const { heroId, walletId, leagueId } = await t.run(async (ctx) => ({
       heroId: await ctx.db.insert("heroes", { ownerId: author, selectedHeroId: "moon", level: 1, peakMight: 0 }),
       walletId: await ctx.db.insert("wallets", { ownerId: author, gold: 999, diamonds: 77, experience: 175, rankRewardedThrough: 6 }),
+      leagueId: await ctx.db.insert("leagueProgress", { ownerId: author, trophies: 1000, peakTrophies: 2400 }),
     }));
     const profile = (await alice.query(api.worldChat.list, {}))[0]!.profile;
     expect(profile).toEqual({ heroId: "moon" });
+    expect((await alice.query(api.worldChat.list, {}))[0]!.trophies).toBe(1000);
     await t.run(async (ctx) => {
       await ctx.db.patch(heroId, { selectedHeroId: "void" });
       await ctx.db.patch(walletId, { experience: 200 });
+      await ctx.db.patch(leagueId, { trophies: 1800 });
     });
     expect((await alice.query(api.worldChat.list, {}))[0]!.profile).toEqual({
       heroId: "void",
     });
+    expect((await alice.query(api.worldChat.list, {}))[0]!.trophies).toBe(1800);
   });
 
   it("marks consecutive messages by player identity even when players share a name", async () => {
@@ -203,6 +207,7 @@ describe("le chat mondial", () => {
     expect(messages[0]!.body).toBe("Message 5");
     expect(messages[0]!.continuesPrevious).toBe(false);
     expect(messages[0]!.profile).toEqual({ heroId: "sylve" });
+    expect(messages[0]!.trophies).toBe(0);
     expect(
       messages.slice(1).every((message) => message.continuesPrevious),
     ).toBe(true);

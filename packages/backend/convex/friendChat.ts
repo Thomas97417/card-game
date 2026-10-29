@@ -29,7 +29,8 @@ export const list = query({
     return messages.reverse().map((message, index, history) => ({
       id: message._id,
       playerId: message.senderId,
-      profile: profiles.get(message.senderId)!,
+      profile: profiles.get(message.senderId)!.profile,
+      trophies: profiles.get(message.senderId)!.trophies,
       senderName:
         message.senderId === userId ? name : (other?.name ?? "Gardien"),
       sentAt: message._creationTime,

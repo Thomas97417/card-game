@@ -2,6 +2,7 @@ import { ConvexError } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { DEFAULT_HERO_ID } from "@sylve/game/hero-metadata";
 import { heroRecord } from "./heroes";
+import { playerLeague } from "./progression";
 
 export const FRIEND_HELP_TOKENS = 10;
 
@@ -13,9 +14,13 @@ export async function socialProfile(ctx: QueryCtx | MutationCtx, playerId: strin
 
 export async function socialProfiles(ctx: QueryCtx, playerIds: string[]) {
   return new Map(await Promise.all(
-    [...new Set(playerIds)].map(async (playerId) =>
-      [playerId, await socialProfile(ctx, playerId)] as const,
-    ),
+    [...new Set(playerIds)].map(async (playerId) => {
+      const [profile, league] = await Promise.all([
+        socialProfile(ctx, playerId),
+        playerLeague(ctx, playerId),
+      ]);
+      return [playerId, { profile, trophies: league.trophies }] as const;
+    }),
   ));
 }
 

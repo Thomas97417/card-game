@@ -23,6 +23,7 @@ type SocialMessage = {
   isOwn: boolean;
   continuesPrevious: boolean;
   profile: SocialPlayer["profile"];
+  trophies: number;
 };
 
 const state = vi.hoisted(() => ({
@@ -51,6 +52,7 @@ const state = vi.hoisted(() => ({
       isOwn: false,
       continuesPrevious: false,
       profile: { heroId: "thorn" },
+      trophies: 0,
     },
   ] as SocialMessage[],
   privateMessages: [] as SocialMessage[],
@@ -158,6 +160,7 @@ describe("la vie sociale du refuge", () => {
     fireEvent.click(screen.getByRole("button", { name: "Envoyer un message à Bob" }));
     const log = await screen.findByRole("log", { name: "Messages avec Bob" });
     expect(within(log).getByRole("img", { name: "Gardien des Ronces" })).toBeTruthy();
+    expect(within(log).getByRole("img", { name: "Fer" })).toBeTruthy();
     expect(within(log).queryByText(/Rang |XP|Gardien des Ronces/)).toBeNull();
 
     state.data.friends = state.data.friends.map((friend) => friend.playerId === "bob"
@@ -167,6 +170,7 @@ describe("la vie sociale du refuge", () => {
     const heading = screen.getByText("Conversation privée").closest(".social-conversation-heading")! as HTMLElement;
     expect(within(heading).getByRole("img", { name: "Gardien du Vide" })).toBeTruthy();
     expect(within(heading).getByText("Bob")).toBeTruthy();
+    expect(within(heading).getByRole("img", { name: "Fer" })).toBeTruthy();
     expect(within(heading).queryByText(/Rang |XP|Gardien du Vide/)).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Toutes les conversations" }));
@@ -175,6 +179,7 @@ describe("la vie sociale du refuge", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Mondial" }));
     const worldLog = screen.getByRole("log", { name: "Messages du chat mondial" });
     expect(within(worldLog).getByRole("img", { name: "Gardien des Ronces" })).toBeTruthy();
+    expect(within(worldLog).getByRole("img", { name: "Fer" })).toBeTruthy();
     expect(within(worldLog).queryByText(/Rang |XP|Gardien des Ronces/)).toBeNull();
   });
 

@@ -23,7 +23,8 @@ export const list = query({
       sentAt: message._creationTime,
       senderName: message.senderName,
       playerId: message.senderId,
-      profile: profiles.get(message.senderId)!,
+      profile: profiles.get(message.senderId)!.profile,
+      trophies: profiles.get(message.senderId)!.trophies,
       body: message.body,
       isOwn: message.senderId === userId,
       continuesPrevious:
