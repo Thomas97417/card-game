@@ -8,19 +8,34 @@ import {
   within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getFunctionName } from "convex/server";
+import { getFunctionName, type FunctionReturnType } from "convex/server";
+import { DEFAULT_DECK, MAX_RANK, resolveCard } from "@sylve/game";
+import type { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { HubDock } from "./hub-dock";
 import type { FriendCardRequests } from "./friend-card-requests";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
+import type { SocialPlayer } from "./player-menu";
+
+type SocialMessage = {
+  id: string;
+  playerId: string;
+  senderName: string;
+  body: string;
+  sentAt: number;
+  isOwn: boolean;
+  continuesPrevious: boolean;
+  profile: SocialPlayer["profile"];
+  trophies: number;
+};
 
 const state = vi.hoisted(() => ({
   data: {
     friends: [
-      { playerId: "bob", name: "Bob", trophies: 0, helpSent: false },
-      { playerId: "lea", name: "Léa", trophies: 200, helpSent: true },
+      { playerId: "bob", name: "Bob", trophies: 0, helpSent: false, profile: { heroId: "thorn" } as NonNullable<SocialPlayer["profile"]> },
+      { playerId: "lea", name: "Léa", trophies: 200, helpSent: true, profile: { heroId: "moon" } as NonNullable<SocialPlayer["profile"]> },
     ],
     incoming: [
-      { playerId: "clara", name: "Clara", trophies: 0, helpSent: false },
+      { playerId: "clara", name: "Clara", trophies: 0, helpSent: false, profile: { heroId: "sylve" } as NonNullable<SocialPlayer["profile"]> },
     ],
     outgoing: [],
     tokens: 310,
@@ -38,8 +53,12 @@ const state = vi.hoisted(() => ({
       sentAt: 1793000000000,
       isOwn: false,
       continuesPrevious: false,
+      profile: { heroId: "thorn" },
+      trophies: 0,
     },
-  ],
+  ] as SocialMessage[],
+  privateMessages: [] as SocialMessage[],
+  profile: undefined as FunctionReturnType<typeof api.collection.playerProfile> | undefined,
   send: vi.fn(),
   privateSend: vi.fn(),
   request: vi.fn(),
@@ -56,7 +75,7 @@ vi.mock("convex/react", () => ({
     if (name === "social:list") return state.data;
     if (name === "social:cardRequests") return state.cardRequests;
     if (name === "social:relationship") return state.relationship;
-    if (name === "friendChat:list") return [];
+    if (name === "friendChat:list") return state.privateMessages;
     if (name === "worldChat:list") return state.world;
   },
   useMutation: (mutation: Parameters<typeof getFunctionName>[0]) =>
@@ -73,7 +92,7 @@ vi.mock("convex/react", () => ({
 }));
 vi.mock("@tanstack/react-query", () => ({
   useQuery: () => ({
-    data: { peakTrophies: 400, deck: null },
+    data: state.profile,
     isPending: false,
     isError: false,
   }),
@@ -96,11 +115,11 @@ beforeEach(() => {
   );
   state.data = {
     friends: [
-      { playerId: "bob", name: "Bob", trophies: 0, helpSent: false },
-      { playerId: "lea", name: "Léa", trophies: 200, helpSent: true },
+      { playerId: "bob", name: "Bob", trophies: 0, helpSent: false, profile: { heroId: "thorn" } },
+      { playerId: "lea", name: "Léa", trophies: 200, helpSent: true, profile: { heroId: "moon" } },
     ],
     incoming: [
-      { playerId: "clara", name: "Clara", trophies: 0, helpSent: false },
+      { playerId: "clara", name: "Clara", trophies: 0, helpSent: false, profile: { heroId: "sylve" } },
     ],
     outgoing: [],
     tokens: 310,
@@ -109,7 +128,20 @@ beforeEach(() => {
     nextUnlock: { rank: 10, friends: 7 },
   };
   state.relationship = "none";
+  state.profile = {
+    rank: 5,
+    rankProgress: { earned: 12, required: 30 },
+    guardian: { heroId: "thorn", level: 7 },
+    trophies: 220,
+    peakTrophies: 400,
+    deckCapacity: 4,
+    deck: {
+      name: "Les sentinelles de Bob",
+      cards: DEFAULT_DECK.map((id) => resolveCard(id, 3)),
+    },
+  };
   state.cardRequests = [];
+  state.privateMessages = [];
   for (const mutation of [
     state.send,
     state.privateSend,
@@ -132,6 +164,40 @@ async function openFriends() {
 }
 
 describe("la vie sociale du refuge", () => {
+  it("shows only the active guardian portrait in friends and both chats, and refreshes the selected friend", async () => {
+    state.privateMessages = [{ ...state.world[0]!, body: "Salut en privé !" }];
+    const view = render(<HubDock />);
+    await openFriends();
+    const friendBadge = screen.getByRole("button", { name: "Actions pour Bob" });
+    expect(within(friendBadge).getByRole("img", { name: "Gardien des Ronces" })).toBeTruthy();
+    expect(friendBadge.textContent).toBe("");
+    expect(friendBadge.hasAttribute("aria-description")).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Envoyer un message à Bob" }));
+    const log = await screen.findByRole("log", { name: "Messages avec Bob" });
+    expect(within(log).getByRole("img", { name: "Gardien des Ronces" })).toBeTruthy();
+    expect(within(log).getByRole("img", { name: "Fer" })).toBeTruthy();
+    expect(within(log).queryByText(/Rang |XP|Gardien des Ronces/)).toBeNull();
+
+    state.data.friends = state.data.friends.map((friend) => friend.playerId === "bob"
+      ? { ...friend, profile: { heroId: "void" } }
+      : friend);
+    view.rerender(<HubDock />);
+    const heading = screen.getByText("Conversation privée").closest(".social-conversation-heading")! as HTMLElement;
+    expect(within(heading).getByRole("img", { name: "Gardien du Vide" })).toBeTruthy();
+    expect(within(heading).getByText("Bob")).toBeTruthy();
+    expect(within(heading).getByRole("img", { name: "Fer" })).toBeTruthy();
+    expect(within(heading).queryByText(/Rang |XP|Gardien du Vide/)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Toutes les conversations" }));
+    const conversation = screen.getByRole("button", { name: "Actions pour Bob" });
+    expect(within(conversation).getByRole("img", { name: "Gardien du Vide" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: "Mondial" }));
+    const worldLog = screen.getByRole("log", { name: "Messages du chat mondial" });
+    expect(within(worldLog).getByRole("img", { name: "Gardien des Ronces" })).toBeTruthy();
+    expect(within(worldLog).getByRole("img", { name: "Fer" })).toBeTruthy();
+    expect(within(worldLog).queryByText(/Rang |XP|Gardien des Ronces/)).toBeNull();
+  });
+
   it("opens friends' card requests, sends the available quantity and reports rank XP", async () => {
     state.cardRequests = [{
       id: "request-1" as Id<"cardRequests">, playerId: "bob", playerName: "Bob",
@@ -213,7 +279,56 @@ describe("la vie sociale du refuge", () => {
       await screen.findByRole("menuitem", { name: "Voir le profil" }),
     );
     const profile = await screen.findByRole("dialog", { name: "Bob" });
+    expect(within(profile).getByText("Rang 5")).toBeTruthy();
+    expect(within(profile).queryByText("Profil du joueur", { exact: true })).toBeNull();
+    expect(within(profile).getByText("12 / 30 XP")).toBeTruthy();
+    const experience = within(profile).getByRole("progressbar", { name: "Expérience du rang 5" });
+    expect(experience.getAttribute("value")).toBe("12");
+    expect(experience.getAttribute("max")).toBe("30");
+    expect(within(profile).getByText("Gardien actif · Niveau 7")).toBeTruthy();
+    expect(within(profile).getByRole("img", { name: "Gardien des Ronces" }).getAttribute("src")).toBe("/art/heroes/hero-thorn.webp");
+    expect(within(profile).getByText("220")).toBeTruthy();
     expect(within(profile).getByText("400")).toBeTruthy();
+    expect(profile.querySelectorAll(".league-badge img")).toHaveLength(2);
+    expect(profile.querySelector(".league-division")).toBeNull();
+    expect(within(profile).queryByText("Les sentinelles de Bob")).toBeNull();
+    expect(within(profile).queryByText(/4\/4 cartes/)).toBeNull();
+    expect(within(profile).getByRole("list", { name: "Deck du joueur" }).children).toHaveLength(4);
+
+    const card = within(profile).getByRole("button", { name: /Voir Gardien du rempart/ });
+    card.focus();
+    fireEvent.click(card);
+    const cardDialog = await screen.findByRole("dialog", { name: "Gardien du rempart" });
+    expect(within(cardDialog).queryByRole("button", { name: /Améliorer|Ajouter au deck/ })).toBeNull();
+    fireEvent.keyDown(cardDialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Gardien du rempart" })).toBeNull());
+    expect(screen.getByRole("dialog", { name: "Bob" })).toBe(profile);
+    await waitFor(() => expect(document.activeElement).toBe(card));
+  });
+
+  it("refreshes rank experience after a promotion and shows a full bar at maximum rank", async () => {
+    const view = render(<HubDock />);
+    await openWorld();
+    fireEvent.click(screen.getByRole("button", { name: "Actions pour Bob" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Voir le profil" }));
+    const profile = await screen.findByRole("dialog", { name: "Bob" });
+    expect(within(profile).getByText("Vers le rang 6")).toBeTruthy();
+
+    state.profile = { ...state.profile!, rank: 6, rankProgress: { earned: 4, required: 50 } };
+    view.rerender(<HubDock />);
+    expect(within(profile).getByText("Rang 6")).toBeTruthy();
+    expect(within(profile).getByText("4 / 50 XP")).toBeTruthy();
+    expect(within(profile).getByText("Vers le rang 7")).toBeTruthy();
+    expect(within(profile).queryByText("12 / 30 XP")).toBeNull();
+
+    state.profile = { ...state.profile!, rank: MAX_RANK, rankProgress: { earned: 0, required: 0 } };
+    view.rerender(<HubDock />);
+    const experience = within(profile).getByRole("progressbar", { name: `Expérience du rang ${MAX_RANK}` });
+    expect(within(profile).getByText("Rang maximum")).toBeTruthy();
+    expect(within(profile).getByText("MAX")).toBeTruthy();
+    expect(experience.getAttribute("value")).toBe("1");
+    expect(experience.getAttribute("max")).toBe("1");
+    expect(within(profile).queryByText(/Vers le rang|0 \/ 0 XP/)).toBeNull();
   });
 
   it("shows friends and requests, accepts an invitation, and sends help only to an eligible friend", async () => {

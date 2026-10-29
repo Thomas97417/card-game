@@ -16,6 +16,7 @@ import {
   playerFriendships,
   requireFriend,
   socialDay,
+  socialProfile,
 } from "./lib/social";
 
 export const balance = query({
@@ -50,10 +51,14 @@ export const list = query({
           relation.playerA === userId ? relation.playerB : relation.playerA;
         const user = await authComponent.getAnyUserById(ctx, playerId);
         if (!user) return null;
-        const league = await playerLeague(ctx, playerId);
+        const [league, profile] = await Promise.all([
+          playerLeague(ctx, playerId),
+          socialProfile(ctx, playerId),
+        ]);
         return {
           playerId,
           name: user.name,
+          profile,
           trophies: league.trophies,
           status: relation.status,
           incoming: relation.requestedBy !== userId,

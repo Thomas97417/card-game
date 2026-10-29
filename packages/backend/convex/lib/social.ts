@@ -1,7 +1,28 @@
 import { ConvexError } from "convex/values";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { DEFAULT_HERO_ID } from "@sylve/game/hero-metadata";
+import { heroRecord } from "./heroes";
+import { playerLeague } from "./progression";
 
 export const FRIEND_HELP_TOKENS = 10;
+
+/** Read the current guardian without exposing account progress. */
+export async function socialProfile(ctx: QueryCtx | MutationCtx, playerId: string) {
+  const hero = await heroRecord(ctx, playerId);
+  return { heroId: hero?.selectedHeroId ?? DEFAULT_HERO_ID };
+}
+
+export async function socialProfiles(ctx: QueryCtx, playerIds: string[]) {
+  return new Map(await Promise.all(
+    [...new Set(playerIds)].map(async (playerId) => {
+      const [profile, league] = await Promise.all([
+        socialProfile(ctx, playerId),
+        playerLeague(ctx, playerId),
+      ]);
+      return [playerId, { profile, trophies: league.trophies }] as const;
+    }),
+  ));
+}
 
 /** Daily help resets at midnight in the game's French timezone, including DST. */
 export function socialDay(now = Date.now()) {

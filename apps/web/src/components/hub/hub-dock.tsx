@@ -93,7 +93,7 @@ export function HubDock({
 
   function openConversation(player: SocialPlayer) {
     // A fresh selection also reopens this friend after switching to the world tab.
-    setConversation({ playerId: player.playerId, name: player.name });
+    setConversation({ ...player });
     setActivePanel("chat");
   }
 

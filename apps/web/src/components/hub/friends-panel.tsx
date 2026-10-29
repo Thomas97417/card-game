@@ -14,6 +14,7 @@ import {
   FriendshipIcon,
 } from "@/components/friendship-balance";
 import { GameIcon } from "@/components/game/game-icon";
+import { LeagueBadge } from "@/components/leagues/league-progress";
 import { HubPanel } from "./hub-panel";
 import { PlayerMenu, type SocialPlayer } from "./player-menu";
 import { useSocialDay } from "./use-social-day";
@@ -187,7 +188,7 @@ export function FriendsPanel({
                         onClick={() => onMessage(player)}
                       >
                         <strong>{player.name}</strong>
-                        <small>{leagueAt(player.trophies).label}</small>
+                        <FriendLeague trophies={player.trophies} />
                       </button>
                       <button
                         type="button"
@@ -310,7 +311,7 @@ export function FriendConversations({
                 onClick={() => onSelect(player)}
               >
                 <strong>{player.name}</strong>
-                <small>{leagueAt(player.trophies).label}</small>
+                <FriendLeague trophies={player.trophies} />
               </button>
               <button
                 type="button"
@@ -333,5 +334,17 @@ export function FriendConversations({
         </div>
       )}
     </div>
+  );
+}
+
+function FriendLeague({ trophies }: { trophies: number }) {
+  const league = leagueAt(trophies);
+  return (
+    <small className="social-player-league">
+      <span className="social-player-league-icon" aria-hidden="true">
+        <LeagueBadge league={league} size={20} showDivision={false} />
+      </span>
+      <span className="social-player-league-label">{league.label}</span>
+    </small>
   );
 }
