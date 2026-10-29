@@ -1139,11 +1139,21 @@
 .hub-ranking-league {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   margin-top: 3px;
   color: #acbdab;
   font-size: 10px;
   font-weight: 400;
+}
+.hub-ranking-league-icon {
+  display: inline-flex;
+  flex: 0 0 20px;
+}
+.hub-ranking-league-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .hub-ranking-trophies {
   display: flex;

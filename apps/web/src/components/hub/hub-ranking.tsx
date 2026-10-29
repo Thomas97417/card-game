@@ -102,8 +102,10 @@ export function HubRanking({
                           {player.isCurrentPlayer && <small>Toi</small>}
                         </span>
                         <span className="hub-ranking-league">
-                          <span aria-hidden="true"><LeagueBadge league={league} size={16} /></span>
-                          {league.label}
+                          <span className="hub-ranking-league-icon" aria-hidden="true">
+                            <LeagueBadge league={league} size={20} showDivision={false} />
+                          </span>
+                          <span className="hub-ranking-league-label">{league.label}</span>
                         </span>
                       </span>
                       <span className="hub-ranking-trophies">
