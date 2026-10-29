@@ -290,8 +290,7 @@
   margin-top: auto;
 }
 .emerald-shop > .sanctuary-error,
-.gold-shop > .sanctuary-error,
-.gold-shop > .sanctuary-feedback {
+.gold-shop > .sanctuary-error {
   position: fixed;
   z-index: 20;
   inset-inline: 16px;
@@ -300,18 +299,6 @@
   max-width: min(620px, calc(100vw - 32px));
   margin: 0 auto;
   white-space: normal;
-}
-.gold-purchase-feedback > svg {
-  flex-shrink: 0;
-}
-.gold-purchase-feedback button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 5px;
 }
 .sanctuary-feedback.emerald-payment-feedback {
   margin: 0 0 16px;
@@ -329,9 +316,130 @@
   height: 36px;
   border-radius: 5px;
 }
-.emerald-payment-feedback.is-paid {
-  color: #cef2b9;
-  border-color: #92c98b88;
+.emerald-received-dialog[data-slot="dialog-content"] {
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  border: 1px solid #d6bb79;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 40%, #2f795040, transparent 65%),
+    linear-gradient(150deg, #284936, #10281f 80%);
+  box-shadow:
+    0 25px 100px #000b,
+    0 0 60px #59d99726,
+    inset 0 0 0 5px #f1cd7a0c;
+}
+.emerald-received-dialog::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #d6bb7926;
+  border-radius: 16px;
+  pointer-events: none;
+}
+.emerald-received-dialog > [data-slot="dialog-body"] {
+  max-height: calc(100dvh - 24px);
+  padding: 34px 32px 28px;
+  text-align: center;
+}
+.emerald-received-heading .eyebrow {
+  margin: 0 20px 10px;
+}
+.emerald-received-heading [data-slot="dialog-title"] {
+  margin: 0;
+  padding: 0;
+  color: #fff0ce;
+  font-size: clamp(30px, 5vw, 40px);
+  text-shadow: 0 2px 22px #69b77555;
+}
+.emerald-received-treasure {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  isolation: isolate;
+  height: clamp(170px, 32dvh, 280px);
+  margin: 8px 0;
+  overflow: hidden;
+}
+.emerald-received-treasure::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #72e6a64d, transparent 65%);
+}
+.emerald-received-rays {
+  position: absolute;
+  z-index: -1;
+  width: min(380px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 15deg,
+    transparent 0deg 13deg,
+    #98e9a8 16deg,
+    transparent 19deg 30deg
+  );
+  opacity: 0.2;
+  mask-image: radial-gradient(circle, #000 5%, transparent 67%);
+  animation: emerald-received-rays-turn 36s linear infinite;
+}
+.emerald-received-treasure > img {
+  width: min(100%, 320px);
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 12px #001a16aa);
+  transform: scale(var(--treasure-art-scale));
+  animation: emerald-received-float 4s ease-in-out infinite;
+}
+.emerald-received-amount {
+  display: flex;
+  justify-content: center;
+  color: #d3f6c5;
+  font-size: clamp(36px, 7vw, 46px);
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  text-shadow: 0 2px 14px #69b77544;
+}
+.emerald-received-amount .emerald-icon {
+  width: 46px;
+  height: 46px;
+}
+.emerald-received-continue {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 24px;
+  padding: 12px 18px;
+  border: 1px solid #ebd18c;
+  border-radius: 7px;
+  color: #2b2515;
+  background: linear-gradient(100deg, #f4cf79, #f9e5aa 50%, #d8b35e);
+  box-shadow:
+    0 3px 0 #6d5325,
+    inset 0 1px #fff3ca;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.emerald-received-continue:hover {
+  filter: brightness(1.12);
+}
+@keyframes emerald-received-rays-turn {
+  to { transform: rotate(360deg); }
+}
+@keyframes emerald-received-float {
+  50% { transform: translateY(-6px) scale(var(--treasure-art-scale)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .emerald-received-rays,
+  .emerald-received-treasure > img {
+    animation: none;
+  }
 }
 .summon-packs {
   display: grid;

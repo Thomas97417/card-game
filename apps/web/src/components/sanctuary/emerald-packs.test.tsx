@@ -92,7 +92,7 @@ describe("packs d’émeraudes", () => {
     await waitFor(() => expect(onPurchase).toHaveBeenCalledTimes(2));
   });
 
-  it("reports confirmation only after the server credits the purchase and handles refund or unknown checkout", () => {
+  it("presents the credited emeralds in a dialog and handles refund or unknown checkout", () => {
     const dismiss = vi.fn();
     const { rerender } = render(
       <EmeraldPaymentFeedback
@@ -104,21 +104,35 @@ describe("packs d’émeraudes", () => {
       "Vérification du paiement",
     );
     expect(screen.queryByText(/Paiement confirmé/)).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
     rerender(
       <EmeraldPaymentFeedback
-        status={{ status: "paid", emeralds: 500 }}
+        status={{ status: "paid", emeralds: 7_000 }}
         onDismiss={dismiss}
       />,
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "500 émeraudes ont été ajoutées",
+    const dialog = screen.getByRole("dialog", { name: "Émeraudes reçues" });
+    expect(within(dialog).getByText(/^7\s000$/)).toBeTruthy();
+    expect(
+      dialog
+        .querySelector(".emerald-received-treasure img")
+        ?.getAttribute("src"),
+    ).toBe(
+      "/art/treasures/emerald-carved-coffer.webp",
     );
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByText(/Paiement confirmé/)).toBeNull();
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Continuer l’aventure" }),
+    );
+    expect(dismiss).toHaveBeenCalledOnce();
     rerender(
       <EmeraldPaymentFeedback
         status={{ status: "refunded", emeralds: 0 }}
         onDismiss={dismiss}
       />,
     );
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByRole("status").textContent).toContain("remboursé");
     rerender(<EmeraldPaymentFeedback status={null} onDismiss={dismiss} />);
     expect(screen.getByRole("status").textContent).toContain(
@@ -127,6 +141,6 @@ describe("packs d’émeraudes", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Fermer le suivi du paiement" }),
     );
-    expect(dismiss).toHaveBeenCalledOnce();
+    expect(dismiss).toHaveBeenCalledTimes(2);
   });
 });
