@@ -10,6 +10,8 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName } from "convex/server";
 import { HubDock } from "./hub-dock";
+import type { FriendCardRequests } from "./friend-card-requests";
+import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 
 const state = vi.hoisted(() => ({
   data: {
@@ -44,12 +46,15 @@ const state = vi.hoisted(() => ({
   accept: vi.fn(),
   remove: vi.fn(),
   help: vi.fn(),
+  cardRequests: [] as FriendCardRequests,
+  donate: vi.fn(),
 }));
 vi.mock("convex/react", () => ({
   useQuery: (query: Parameters<typeof getFunctionName>[0], args: unknown) => {
     if (args === "skip") return undefined;
     const name = getFunctionName(query);
     if (name === "social:list") return state.data;
+    if (name === "social:cardRequests") return state.cardRequests;
     if (name === "social:relationship") return state.relationship;
     if (name === "friendChat:list") return [];
     if (name === "worldChat:list") return state.world;
@@ -62,6 +67,7 @@ vi.mock("convex/react", () => ({
       "social:accept": state.accept,
       "social:remove": state.remove,
       "social:sendHelp": state.help,
+      "social:donateCards": state.donate,
     })[getFunctionName(mutation)] ?? vi.fn(),
   useConvexConnectionState: () => ({ isWebSocketConnected: true }),
 }));
@@ -103,6 +109,7 @@ beforeEach(() => {
     nextUnlock: { rank: 10, friends: 7 },
   };
   state.relationship = "none";
+  state.cardRequests = [];
   for (const mutation of [
     state.send,
     state.privateSend,
@@ -110,6 +117,7 @@ beforeEach(() => {
     state.accept,
     state.remove,
     state.help,
+    state.donate,
   ])
     mutation.mockReset().mockResolvedValue(undefined);
 });
@@ -124,6 +132,50 @@ async function openFriends() {
 }
 
 describe("la vie sociale du refuge", () => {
+  it("opens friends' card requests, sends the available quantity and reports rank XP", async () => {
+    state.cardRequests = [{
+      id: "request-1" as Id<"cardRequests">, playerId: "bob", playerName: "Bob",
+      variantId: "guardian:rare", requested: 4, received: 1,
+      donated: 0, copies: 10, donationLimit: 2, experiencePerCard: 3, sendable: 2,
+    }];
+    state.donate.mockResolvedValue({ sent: true, count: 2, experience: 6 });
+    const view = render(<HubDock />);
+    await openFriends();
+    fireEvent.click(screen.getByRole("button", { name: "Demandes de cartes" }));
+    expect(await screen.findByRole("region", { name: "Cartes demandées par mes amis" })).toBeTruthy();
+    expect(screen.getByText("Bob demande")).toBeTruthy();
+    expect(screen.getByText("10 en réserve", { exact: false })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Envoyer 2 cartes à Bob, +6 XP de Rang" }));
+    await waitFor(() => expect(state.donate).toHaveBeenCalledExactlyOnceWith({ requestId: "request-1", count: 2, expectedDonated: 0 }));
+    expect(await screen.findByRole("status")).toHaveProperty("textContent", expect.stringContaining("+6 XP de Rang"));
+    state.cardRequests = [{ ...state.cardRequests[0]!, donated: 2, received: 3, copies: 8, sendable: 0 }];
+    view.rerender(<HubDock />);
+    expect((screen.getByRole("button", { name: "Limite de don atteinte pour Bob" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("explains empty card requests and links back to the deck", async () => {
+    render(<HubDock />);
+    await openFriends();
+    fireEvent.click(screen.getByRole("button", { name: "Demandes de cartes" }));
+    expect(await screen.findByText("Aucune carte demandée aujourd’hui")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Faire ma demande depuis le deck" }).getAttribute("href")).toBe("/decks");
+  });
+
+  it("reports a failed card donation and never announces XP that was not awarded", async () => {
+    state.cardRequests = [{
+      id: "request-1" as Id<"cardRequests">, playerId: "bob", playerName: "Bob",
+      variantId: "guardian:common", requested: 5, received: 0,
+      donated: 0, copies: 3, donationLimit: 12, experiencePerCard: 1, sendable: 3,
+    }];
+    state.donate.mockRejectedValue(new Error("offline"));
+    render(<HubDock />);
+    await openFriends();
+    fireEvent.click(screen.getByRole("button", { name: "Demandes de cartes" }));
+    fireEvent.click(screen.getByRole("button", { name: "Envoyer 3 cartes à Bob, +3 XP de Rang" }));
+    expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Le don a échoué. Réessaie.");
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   it("shows the rank allowance and blocks pending acceptances while friends are locked", async () => {
     state.data.friends = [];
     state.data.rank = 1;

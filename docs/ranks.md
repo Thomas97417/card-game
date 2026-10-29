@@ -1,6 +1,6 @@
 # Rang du compte
 
-Le rang progresse automatiquement avec l’expérience gagnée en améliorant les cartes et en envoyant l’aide quotidienne à ses amis. Il reste indépendant du niveau du Gardien, déterminé par la puissance du deck, et des ligues, déterminées par les trophées.
+Le rang progresse automatiquement avec l’expérience gagnée en améliorant les cartes, en envoyant l’aide quotidienne et en donnant des cartes à ses amis. Il reste indépendant du niveau du Gardien, déterminé par la puissance du deck, et des ligues, déterminées par les trophées.
 
 Les **1 000 paliers CW** proviennent du [relevé Rank du 25 octobre 2026](references/cunt-wars/rules.json), lui-même issu de la [fiche historique du wiki](https://cwars.miraheze.org/wiki/Rank) révisée le 19 novembre 2020. `python3 scripts/import-cwars.py` reconstruit les coûts et bénéfices de chaque rang dans `packages/game/src/data/cunt-wars.json`. Il ne s’agit pas d’une vérification du client CW actuel.
 
@@ -24,6 +24,7 @@ Les valeurs sont importées ligne par ligne, y compris leurs exceptions : la ré
 ## Sources d’expérience et effets
 
 - Les améliorations utilisent les gains d’XP CW déjà associés à la rareté et au niveau de la carte.
+- Les [dons de cartes demandées par les amis](social.md#demandes-et-dons-de-cartes) rapportent **1 XP par commune** et **3 XP par rare**, selon le barème CW. L’XP est créditée à l’expéditeur dans la même transaction que le transfert ; une relance ou un double clic ne la crédite pas une seconde fois.
 - Chaque aide quotidienne envoyée rapporte **1 XP à l’expéditeur** et **10 jetons au destinataire**. Le gain de 1 XP est une adaptation Sylve à l’aide par jetons ; le relevé CW ne chiffre pas cette action. Retirer et rajouter un ami, rejouer une demande ou cliquer dans deux onglets ne donne pas d’aide ni d’XP supplémentaire pour le même ami et jour de Paris.
 - Les places d’amis suivent exactement le barème. Les invitations et acceptations vérifient la capacité propre à chaque joueur. Les amitiés existantes restent acquises même au-dessus du nouveau plafond.
 - Les deux mines suivent le niveau « Gold Mine Level » du barème. L’application de ce niveau à la mine d’émeraudes est une adaptation demandée pour Sylve ; les rendements restent de 6 or/h et 2 émeraudes/h par niveau, avec huit heures de réserve. Les [règles des mines](mines.md) précisent la migration et le calcul prospectif.
@@ -31,7 +32,7 @@ Les valeurs sont importées ligne par ligne, y compris leurs exceptions : la ré
 
 ## Récompenses et panneau
 
-L’XP, les émeraudes de tous les rangs franchis et le nouveau rendement des mines sont enregistrés dans la transaction d’amélioration ou d’aide. Aucun montant de récompense ni d’XP n’est fourni par le client.
+L’XP, les émeraudes de tous les rangs franchis et le nouveau rendement des mines sont enregistrés dans la transaction d’amélioration, d’aide ou de don de cartes. Aucun montant de récompense ni d’XP n’est fourni par le client.
 
 `wallets.rankRewardedThrough` conserve le dernier rang récompensé. La reprise initialise ce suivi et crédite une seule fois les émeraudes des rangs déjà atteints, à partir du rang 2. L’XP historique est conservée ou reconstruite par la migration du catalogue. Un solde d’émeraudes dépensé à zéro n’est jamais remplacé par le bonus de bienvenue.
 

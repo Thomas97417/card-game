@@ -15,6 +15,7 @@
     "./gold-packs": "./src/gold-packs.ts",
     "./mines": "./src/mines.ts",
     "./ranks": "./src/ranks.ts",
+    "./card-requests": "./src/card-requests.ts",
     "./hero-metadata": "./src/hero-metadata.ts",
     "./card-ids": "./src/card-ids.ts",
     "./chest-types": "./src/chest-types.ts"

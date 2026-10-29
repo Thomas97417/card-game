@@ -37,6 +37,8 @@ import {
   CardEvolutionResources,
   type CardProgressionActions,
 } from "./card-soulbind";
+import { CardRequestPanel, type CardRequestActions } from "./card-request-panel";
+import { isRequestableRarity } from "@sylve/game/card-requests";
 
 type DeckActions =
   | {
@@ -69,6 +71,8 @@ export function CardUpgradeDialog({
   onSoulbind,
   onSacrifice,
   onEvolve,
+  cardRequestStatus,
+  onRequestCards,
   readOnly = false,
   finalFocus,
   returnToSoulbind = false,
@@ -79,7 +83,8 @@ export function CardUpgradeDialog({
   returnToSoulbind?: boolean;
 } & UpgradeActions &
   DeckActions &
-  CardProgressionActions) {
+  CardProgressionActions &
+  CardRequestActions) {
   const [busy, setBusy] = useState(false);
   const [compactNavigation, setCompactNavigation] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
@@ -268,6 +273,21 @@ export function CardUpgradeDialog({
                     )}
                   </Tabs.Tab>
                 )}
+                {!readOnly && onRequestCards && (
+                  <Tabs.Tab value="request" className="upgrade-nav-tab">
+                    <GameIcon kind="friends" size={34} />
+                    <span>
+                      <strong>Demander des cartes</strong>
+                      <small>
+                        {cardRequestStatus?.request
+                          ? "Demande du jour utilisée"
+                          : isRequestableRarity(card.rarity)
+                            ? "Une demande par jour"
+                            : "Communes et rares"}
+                      </small>
+                    </span>
+                  </Tabs.Tab>
+                )}
               </Tabs.List>
             </aside>
             <div className="upgrade-main" ref={panels}>
@@ -452,6 +472,20 @@ export function CardUpgradeDialog({
                     onSacrifice={onSacrifice}
                     onEvolve={onEvolve}
                     presentation="page"
+                  />
+                </Tabs.Panel>
+              )}
+              {!readOnly && onRequestCards && (
+                <Tabs.Panel
+                  value="request"
+                  className="upgrade-panel"
+                  keepMounted
+                >
+                  <CardRequestPanel
+                    key={`${card.id}:${cardRequestStatus?.day ?? ""}`}
+                    entry={entry}
+                    status={cardRequestStatus}
+                    onRequest={onRequestCards}
                   />
                 </Tabs.Panel>
               )}

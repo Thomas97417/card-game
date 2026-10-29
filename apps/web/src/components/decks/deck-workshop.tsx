@@ -23,6 +23,7 @@ import { CardArtwork } from "./card-artwork";
 import { HeroProgressSummary } from "@/components/guardian/hero-progress-summary";
 import type { HeroProgress } from "@/components/guardian/guardian-house";
 import type { CardProgressionActions } from "./card-soulbind";
+import type { CardRequestActions } from "./card-request-panel";
 import {
   ArrowRight,
   ArrowRightLeft,
@@ -48,7 +49,7 @@ import {
 
 export type { WorkshopDeck } from "@/stores/deck-workshop-store";
 
-interface DeckWorkshopProps extends CardProgressionActions {
+interface DeckWorkshopProps extends CardProgressionActions, CardRequestActions {
   inspectedCardId?: string;
   onInspectCard?: (variantId: string | undefined) => void;
   hero?: HeroProgress;
@@ -76,6 +77,8 @@ export function DeckWorkshop({
   onSoulbind,
   onSacrifice,
   onEvolve,
+  cardRequestStatus,
+  onRequestCards,
   hero,
   inspectedCardId,
   onInspectCard,
@@ -750,6 +753,8 @@ export function DeckWorkshop({
         onSoulbind={onSoulbind}
         onSacrifice={onSacrifice}
         onEvolve={onEvolve}
+        cardRequestStatus={cardRequestStatus}
+        onRequestCards={onRequestCards}
         onMove={() => {
           setPicked(inspected);
           setInspected(null);

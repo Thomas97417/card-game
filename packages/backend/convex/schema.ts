@@ -67,6 +67,18 @@ export default defineSchema({
     recipientId: v.string(),
     day: v.string(),
   }).index("by_sender_day_recipient", ["senderId", "day", "recipientId"]),
+  cardRequests: defineTable({
+    ownerId: v.string(),
+    day: v.string(),
+    variantId: v.string(),
+    requested: v.number(),
+    received: v.number(),
+  }).index("by_owner_day", ["ownerId", "day"]),
+  cardDonations: defineTable({
+    requestId: v.id("cardRequests"),
+    senderId: v.string(),
+    count: v.number(),
+  }).index("by_request_sender", ["requestId", "senderId"]),
   friendMessages: defineTable({
     playerA: v.string(),
     playerB: v.string(),
