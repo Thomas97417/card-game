@@ -13,6 +13,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `field/` | Bâtiments neutres, petites orbes de rune v2 et glyphes plats de pentagramme v2 |
 | `chests/` | Cinq types de coffres, fermés et ouverts |
 | `leagues/` | Écussons des dix ligues |
+| `guilds/` | Dragon de braise, Loup lunaire, Phénix solaire et Kraken des abysses, générés avec ImageGen intégré |
 | `results/` | Emblèmes de victoire et de défaite, générés avec ImageGen intégré |
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
@@ -24,6 +25,8 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `deck-workshop.webp`, `guardian-house.webp`, `play-lobby.webp`, `sanctuary.webp` | Décors des pages du jeu |
 
 Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par faction et un accent par lignée. Les personnages conservent une identité commune entre les raretés, avec des poses, silhouettes et équipements progressifs. Les sprites restent transparents ; les statistiques et commandes sont rendues par l’interface.
+
+Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 

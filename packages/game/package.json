@@ -16,6 +16,7 @@
     "./mines": "./src/mines.ts",
     "./ranks": "./src/ranks.ts",
     "./card-requests": "./src/card-requests.ts",
+    "./guilds": "./src/guilds.ts",
     "./hero-metadata": "./src/hero-metadata.ts",
     "./card-ids": "./src/card-ids.ts",
     "./chest-types": "./src/chest-types.ts"

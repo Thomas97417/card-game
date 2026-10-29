@@ -18,6 +18,7 @@ import type * as decks from "../decks.js";
 import type * as env from "../env.js";
 import type * as friendChat from "../friendChat.js";
 import type * as games from "../games.js";
+import type * as guilds from "../guilds.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_authEmail from "../lib/authEmail.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   env: typeof env;
   friendChat: typeof friendChat;
   games: typeof games;
+  guilds: typeof guilds;
   healthCheck: typeof healthCheck;
   http: typeof http;
   "lib/authEmail": typeof lib_authEmail;

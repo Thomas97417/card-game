@@ -18,6 +18,7 @@ const ICON_ARTWORK = {
   logout: "logout-door",
   ranking: "ranking-trophy",
   friends: "friends-handshake",
+  guild: "guild-banner",
   missions: "missions-scroll",
   rewards: "rewards-gift",
   rewardLock: "rewards-lock",

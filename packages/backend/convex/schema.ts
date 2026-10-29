@@ -24,6 +24,19 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  guilds: defineTable({
+    name: v.string(),
+    nameKey: v.string(),
+    description: v.string(),
+    emblemId: v.string(),
+    leaderId: v.string(),
+  }).index("by_name", ["nameKey"]),
+  guildMemberships: defineTable({
+    guildId: v.id("guilds"),
+    playerId: v.string(),
+  })
+    .index("by_player", ["playerId"])
+    .index("by_guild", ["guildId"]),
   heroes: defineTable({
     ownerId: v.string(),
     level: v.number(),

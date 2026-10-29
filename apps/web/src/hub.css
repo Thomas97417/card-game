@@ -189,8 +189,8 @@
 }
 .hub-dock-shortcuts {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(280px, 100%);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(360px, 100%);
   margin-inline: auto;
   padding-bottom: 2px;
 }
@@ -1589,8 +1589,12 @@
     max-width: 524px;
   }
   .hub-dock-shortcuts {
-    width: min(252px, 100%);
+    position: relative;
+    left: 50%;
+    width: min(300px, calc(100vw - 24px));
+    margin-inline: 0;
     padding-bottom: 0;
+    transform: translateX(-50%);
   }
   .hub-dock-shortcut {
     min-height: 58px;
