@@ -15,12 +15,12 @@ import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import type { HubLegendaryOffersProps } from "./legendary-offers";
 
-type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena";
+type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry";
 type Place = {
   id: PlaceId;
   name: string;
   purpose: string;
-  to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena";
+  to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena" | "/foundry";
   icon: GameIconKind;
   area: CSSProperties;
 };
@@ -28,6 +28,14 @@ type Place = {
 // Coordinates are percentages of the complete illustration. The map keeps its
 // original ratio at every viewport size so buildings and hit areas stay aligned.
 const PLACES: readonly Place[] = [
+  {
+    id: "foundry",
+    name: "Fonderie des Échos",
+    purpose: "Façonner les reliques du refuge",
+    to: "/foundry",
+    icon: "goldMine",
+    area: { left: "78.5%", top: "61%", width: "12%", height: "34%" },
+  },
   {
     id: "archives",
     name: "Les archives",
@@ -149,7 +157,7 @@ export function VillageHub({
         <div className="relative mx-auto aspect-[3/1] w-[max(100%,1440px,calc(100svh*3))] shrink-0 bg-[#35553b]">
           <img
             src="/art/guardian-village-mines.webp"
-            alt="Un vaste refuge forestier : la mine d’or à l’ouest, les archives, la maison des gardiens, le sanctuaire, l’atelier et l’arène au centre, puis la mine d’émeraudes à l’est. Des clairières accueillent de futurs bâtiments."
+            alt="Un vaste refuge forestier : la mine d’or à l’ouest, les archives, la maison des gardiens, le sanctuaire, l’atelier et l’arène au centre, puis la Fonderie des Échos et la mine d’émeraudes à l’est."
             width={2172}
             height={724}
             fetchPriority="high"
@@ -169,6 +177,17 @@ export function VillageHub({
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#12291f]/40 via-transparent to-transparent"
+          />
+
+          <img
+            src="/art/foundry-building.webp"
+            alt=""
+            aria-hidden="true"
+            width={640}
+            height={640}
+            draggable={false}
+            className="pointer-events-none absolute object-contain drop-shadow-[0_7px_5px_#162b2370]"
+            style={{ left: "78.5%", top: "56%", width: "12%", height: "36%" }}
           />
 
           <nav aria-label="Bâtiments du refuge">

@@ -125,6 +125,7 @@ function RootDocument() {
           "/play",
           "/settings",
           "/guardian",
+          "/foundry",
           "/practice",
         ].includes(pathname) || pathname.startsWith("/game/")
       );

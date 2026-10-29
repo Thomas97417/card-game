@@ -61,6 +61,7 @@ export const Route = createFileRoute("/hub")({
       stylesheet(dailyRewardsCss),
       stylesheet(legendaryOffersCss),
       { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
+      { rel: "preload", as: "image", href: "/art/foundry-building.webp" },
     ],
   }),
   component: HubPage,

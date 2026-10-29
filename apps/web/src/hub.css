@@ -24,6 +24,7 @@
 }
 .hub-mine-label {
   position: absolute;
+  z-index: 2;
   bottom: 0;
   left: 50%;
   display: flex;

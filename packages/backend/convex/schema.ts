@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { missionStateFields } from "./lib/missions";
+import { foundryCycle, foundryRound, foundrySummary } from "./lib/foundry";
 
 const mineState = v.object({
   amount: v.number(),
@@ -37,6 +38,19 @@ export default defineSchema({
   })
     .index("by_player", ["playerId"])
     .index("by_guild", ["guildId"]),
+  foundryProgress: defineTable({
+    ownerId: v.string(), revision: v.number(), mastery: v.number(), cycle: foundryCycle,
+    activeRoundId: v.optional(v.id("foundryRounds")), lastSummary: v.optional(foundrySummary),
+  }).index("by_owner", ["ownerId"]),
+  foundryRounds: defineTable({
+    ownerId: v.string(), cycleNumber: v.number(), requestId: v.string(), startedAt: v.number(),
+    finished: v.boolean(), state: foundryRound,
+    batches: v.array(v.object({ startTick: v.number(), endTick: v.number(), digest: v.number() })),
+  }).index("by_owner_request", ["ownerId", "requestId"]),
+  foundryDaily: defineTable({
+    ownerId: v.string(), day: v.string(), delivered: v.number(), seen: v.boolean(),
+    receipt: v.optional(v.object({ rarity: v.literal("common"), gold: v.number(), reveals: v.array(revealValidator), awardedAt: v.number() })),
+  }).index("by_owner_day", ["ownerId", "day"]).index("by_owner_seen", ["ownerId", "seen"]),
   heroes: defineTable({
     ownerId: v.string(),
     level: v.number(),

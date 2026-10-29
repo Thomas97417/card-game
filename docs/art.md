@@ -19,6 +19,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
+| `foundry-building.webp` | Bâtiment transparent de la Fonderie des Échos, superposé au panorama |
 | `duel-arena-overhead.webp` | Terrain de combat |
 | `forest-arena.png` | Fond de la page d’accueil |
 | `screenshots/duel-in-progress.jpg` | Capture d’une vraie partie au tour 13, présentée sur l’accueil public |
@@ -29,6 +30,8 @@ Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par fa
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
 Les trois premières places du classement des joueurs et des guildes partagent les médailles `ui/podium-gold.webp`, `ui/podium-silver.webp` et `ui/podium-bronze.webp`, générées avec ImageGen intégré. Le chiffre est intégré à chaque médaille ; un libellé de rang reste accessible aux lecteurs d’écran. À partir de la quatrième place, le rang est affiché en texte.
+
+Le bâtiment de la Fonderie des Échos a été généré avec ImageGen intégré, en prenant le panorama comme référence de style et de perspective. Le WebP de 640 × 640 conserve sa transparence ; son prompt exact figure dans le manifeste. L’intérieur, les trois marteaux et les cinq reliques sont des modèles 3D procéduraux Three.js.
 
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 
