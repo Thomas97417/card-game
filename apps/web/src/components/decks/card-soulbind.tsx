@@ -15,13 +15,16 @@ import {
   SOUL_DUST_PER_CONVERSION,
   RARITY_LABELS,
   evolutionOptions,
+  EVOLUTION_LEAGUE_INDEX,
   type CardDefinition,
   type OwnedCard,
   type SoulbindProgress,
 } from "@sylve/game";
+import { LEAGUES } from "@sylve/game/leagues";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { GameIcon } from "@/components/game/game-icon";
 import { showGameError } from "@/components/game/shared";
+import { LeagueBadge } from "@/components/leagues/league-progress";
 import { CardArtwork } from "./card-artwork";
 import "@/soulbind.css";
 
@@ -39,6 +42,7 @@ export interface CardProgressionActions {
 }
 
 type Presentation = "disclosure" | "page";
+const EVOLUTION_LEAGUE = LEAGUES[EVOLUTION_LEAGUE_INDEX]!;
 
 function ProgressionPanel({
   title,
@@ -158,16 +162,17 @@ export function CardSoulbind({
       {onSoulbind && (
         <>
           <div
-            className="progression-wallet"
+            className="soulbind-progression"
             aria-label="Progression des liens d’âme"
           >
-            <div>
-              <GameIcon kind="ranking" size={34} />
-              <span>
-                Ton rang<strong>{soulProgress?.rank ?? "…"}</strong>
-              </span>
+            <div className="soulbind-rank-summary">
+              <GameIcon kind="guardian" size={52} />
+              <div>
+                <strong>Rang {soulProgress?.rank ?? "…"}</strong>
+                {soulProgress?.required === 0 && <span>Rang maximum</span>}
+              </div>
             </div>
-            <div>
+            <div className="soulbind-dust-balance">
               <GameIcon kind="soulDust" size={32} />
               <span>
                 Poussières d’âme
@@ -177,16 +182,23 @@ export function CardSoulbind({
               </span>
             </div>
             {soulProgress && (
-              <label className="soulbind-rank-progress">
+              <div className="soulbind-rank-progress">
                 <span>Expérience de rang</span>
-                <span>
-                  {soulProgress.earned} / {soulProgress.required || "MAX"} XP
-                </span>
+                <strong>
+                  {soulProgress.required
+                    ? `${soulProgress.earned.toLocaleString("fr-FR")} / ${soulProgress.required.toLocaleString("fr-FR")} XP`
+                    : "MAX"}
+                </strong>
                 <progress
-                  value={Math.min(soulProgress.earned, soulProgress.required)}
+                  aria-label="Expérience de rang"
+                  value={
+                    soulProgress.required
+                      ? Math.min(soulProgress.earned, soulProgress.required)
+                      : 1
+                  }
                   max={Math.max(1, soulProgress.required)}
                 />
-              </label>
+              </div>
             )}
           </div>
           {soulProgress && !soulProgress.unlocked && (
@@ -317,10 +329,13 @@ export function CardSoulbind({
               </h3>
               <ul>
                 {link.requirements.map((requirement) => {
-                  const companion = resolveCard(
-                    requirement.variantId,
-                    requirement.level,
+                  const ownedCompanion = collection?.find(
+                    (entry) => entry.card.id === requirement.variantId,
                   );
+                  const companion =
+                    ownedCompanion?.card ??
+                    resolveCard(requirement.variantId, requirement.level);
+                  const currentLevel = ownedCompanion?.card.level ?? 1;
                   const own = status?.requirements.find(
                     (r) => r.variantId === requirement.variantId,
                   );
@@ -334,12 +349,18 @@ export function CardSoulbind({
                         { "--creature-color": companion.color } as CSSProperties
                       }
                       role="img"
-                      aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, niveau ${requirement.level} requis`}
+                      aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, ${ownedCompanion ? `niveau actuel ${currentLevel}, ` : ""}niveau ${requirement.level} requis`}
                     >
                       <CardArtwork
                         card={companion}
                         showCopies={false}
                         appearance="deck"
+                        showUpgradeIndicator={false}
+                        levelLabel={
+                          ownedCompanion
+                            ? undefined
+                            : `Requis : niv. ${requirement.level}`
+                        }
                       />
                     </div>
                   );
@@ -383,23 +404,37 @@ export function CardSoulbind({
                         )}
                         <small>
                           {RARITY_LABELS[companion.rarity ?? "common"]}
-                          {own && !ready && own.ownedLevel === 0
-                            ? " · À découvrir"
-                            : ""}
                         </small>
                       </div>
-                      <div className="soulbind-companion-level">
-                        {ready ? (
-                          <Check size={15} aria-hidden="true" />
-                        ) : (
-                          <LockKeyhole size={14} aria-hidden="true" />
+                      <dl
+                        className="soulbind-companion-levels"
+                        aria-label={`Niveaux de ${companion.name}`}
+                        data-ready={
+                          !!ownedCompanion && currentLevel >= requirement.level
+                        }
+                      >
+                        {collection !== undefined && (
+                          <div className="soulbind-level-current">
+                            <dt>Niveau actuel</dt>
+                            <dd>
+                              {ownedCompanion
+                                ? `Niv. ${currentLevel}`
+                                : "À découvrir"}
+                            </dd>
+                          </div>
                         )}
-                        <span>
-                          {own && !isActive
-                            ? `Niv. ${own.ownedLevel} / ${requirement.level}`
-                            : `Niv. ${requirement.level} requis`}
-                        </span>
-                      </div>
+                        <div>
+                          <dt>Niveau requis</dt>
+                          <dd>
+                            {ready ? (
+                              <Check size={14} aria-hidden="true" />
+                            ) : (
+                              <LockKeyhole size={13} aria-hidden="true" />
+                            )}
+                            Niv. {requirement.level}
+                          </dd>
+                        </div>
+                      </dl>
                     </li>
                   );
                 })}
@@ -485,6 +520,7 @@ export function CardEvolutionResources({
   const spent = valid ? batches * cost : 0;
   const gained = valid ? batches * SOUL_DUST_PER_CONVERSION : 0;
   const options = evolutionOptions(card.id);
+  const evolutionLocked = soulProgress?.evolutionUnlocked === false;
 
   useEffect(() => {
     setBatches((current) =>
@@ -568,16 +604,41 @@ export function CardEvolutionResources({
             className="soulbind-evolution"
             aria-label="Évoluer des exemplaires"
           >
-            <header className="progression-section-heading">
-              <GameIcon kind="sanctuary" size={32} />
-              <div>
-                <h3>Évoluer des exemplaires</h3>
-                <p>
-                  Obtiens des exemplaires d’une forme supérieure déjà
-                  découverte.
-                </p>
+            {evolutionLocked && options.length > 0 ? (
+              <div
+                className="soulbind-evolution-lock"
+                role="note"
+                aria-label="Évolutions verrouillées"
+              >
+                <span className="soulbind-evolution-lock-icon">
+                  <LockKeyhole size={28} aria-hidden="true" />
+                </span>
+                <div className="soulbind-evolution-lock-copy">
+                  <h3>Évolutions verrouillées</h3>
+                  <p>
+                    Atteins la ligue {EVOLUTION_LEAGUE.label} pour faire évoluer
+                    tes exemplaires.
+                  </p>
+                </div>
+                <div className="soulbind-evolution-unlock-league">
+                  <LeagueBadge league={EVOLUTION_LEAGUE} size={52} />
+                  <span>
+                    Ligue requise<strong>{EVOLUTION_LEAGUE.label}</strong>
+                  </span>
+                </div>
               </div>
-            </header>
+            ) : (
+              <header className="progression-section-heading">
+                <GameIcon kind="sanctuary" size={32} />
+                <div>
+                  <h3>Évoluer des exemplaires</h3>
+                  <p>
+                    Obtiens des exemplaires d’une forme supérieure déjà
+                    découverte.
+                  </p>
+                </div>
+              </header>
+            )}
             {options.length === 0 ? (
               <div className="progression-terminal">
                 <Check size={20} aria-hidden="true" />
@@ -592,15 +653,6 @@ export function CardEvolutionResources({
               </div>
             ) : (
               <>
-                {soulProgress && !soulProgress.evolutionUnlocked && (
-                  <div className="progression-notice">
-                    <LockKeyhole size={18} aria-hidden="true" />
-                    <span>
-                      <strong>Débloqué en ligue Or IV</strong>Atteins Or IV pour
-                      échanger tes exemplaires contre une forme supérieure.
-                    </span>
-                  </div>
-                )}
                 {options.map((option) => {
                   const target = resolveCard(option.variantId);
                   const owned = collection?.some(
@@ -614,17 +666,22 @@ export function CardEvolutionResources({
                       ? "Chargement des prérequis…"
                       : !owned
                         ? "Découvre cette forme dans ta collection pour l’obtenir par évolution."
-                        : !soulProgress.evolutionUnlocked
-                          ? "Atteins la ligue Or IV pour débloquer cette évolution."
-                          : !enough
-                            ? `Encore ${option.cost - entry.copies} exemplaires en réserve nécessaires.`
-                            : "Cette forme est découverte et tes réserves sont suffisantes.";
+                        : !enough
+                          ? `Encore ${option.cost - entry.copies} exemplaires en réserve nécessaires.`
+                          : "Cette forme est découverte et tes réserves sont suffisantes.";
                   return (
                     <article
                       className="soulbind-evolution-option"
                       key={option.variantId}
                       data-rarity={target.rarity ?? "common"}
+                      data-locked={evolutionLocked}
                     >
+                      {evolutionLocked && (
+                        <p className="soulbind-evolution-preview">
+                          <LockKeyhole size={13} aria-hidden="true" />
+                          Aperçu après déblocage
+                        </p>
+                      )}
                       <div className="soulbind-evolution-target">
                         <div className="soulbind-evolution-art">
                           <CreaturePortrait card={target} />
@@ -676,24 +733,31 @@ export function CardEvolutionResources({
                           </small>
                         </span>
                       </div>
-                      <p className="progression-action-hint" data-ready={ready}>
-                        {hint}
-                      </p>
-                      <button
-                        type="button"
-                        className="sylve-button progression-primary"
-                        disabled={busy !== null || !ready}
-                        onClick={() =>
-                          void perform(option.variantId, () =>
-                            onEvolve(card.id, option.variantId),
-                          )
-                        }
-                      >
-                        {busy === option.variantId
-                          ? "Évolution…"
-                          : `Évoluer vers ${target.name}`}
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </button>
+                      {!evolutionLocked && (
+                        <>
+                          <p
+                            className="progression-action-hint"
+                            data-ready={ready}
+                          >
+                            {hint}
+                          </p>
+                          <button
+                            type="button"
+                            className="sylve-button progression-primary"
+                            disabled={busy !== null || !ready}
+                            onClick={() =>
+                              void perform(option.variantId, () =>
+                                onEvolve(card.id, option.variantId),
+                              )
+                            }
+                          >
+                            {busy === option.variantId
+                              ? "Évolution…"
+                              : `Évoluer vers ${target.name}`}
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </button>
+                        </>
+                      )}
                     </article>
                   );
                 })}
@@ -717,15 +781,6 @@ export function CardEvolutionResources({
               </div>
             </header>
             <div className="soulbind-conversion-body">
-              <p>
-                Un lot de{" "}
-                <strong>
-                  {cost} exemplaire{cost > 1 ? "s" : ""}
-                </strong>{" "}
-                donne{" "}
-                <strong>{SOUL_DUST_PER_CONVERSION} poussières d’âme</strong>. Le
-                compagnon reste dans ta collection.
-              </p>
               <div className="soulbind-quantity-heading">
                 <label htmlFor={quantityId}>Nombre de lots</label>
                 <span>
@@ -790,13 +845,13 @@ export function CardEvolutionResources({
                   <small>poussières obtenues</small>
                 </span>
               </div>
-              <p className="progression-action-hint" aria-live="polite">
-                {maxBatches === 0
-                  ? `Encore ${cost - entry.copies} exemplaire${cost - entry.copies > 1 ? "s" : ""} nécessaire${cost - entry.copies > 1 ? "s" : ""} pour convertir un lot.`
-                  : !valid
-                    ? `Choisis un nombre entier de lots entre 1 et ${maxBatches}.`
-                    : `Après conversion : ${entry.copies - spent} exemplaire${entry.copies - spent === 1 ? "" : "s"} en réserve${soulProgress ? ` · ${soulProgress.soulDust + gained} poussières d’âme` : ""}.`}
-              </p>
+              {(maxBatches === 0 || !valid) && (
+                <p className="progression-action-hint" aria-live="polite">
+                  {maxBatches === 0
+                    ? `Encore ${cost - entry.copies} exemplaire${cost - entry.copies > 1 ? "s" : ""} nécessaire${cost - entry.copies > 1 ? "s" : ""} pour convertir un lot.`
+                    : `Choisis un nombre entier de lots entre 1 et ${maxBatches}.`}
+                </p>
+              )}
               <button
                 type="button"
                 className="sylve-button progression-primary"

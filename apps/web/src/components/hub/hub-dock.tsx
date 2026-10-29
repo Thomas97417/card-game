@@ -93,7 +93,7 @@ export function HubDock({
 
   function openConversation(player: SocialPlayer) {
     // A fresh selection also reopens this friend after switching to the world tab.
-    setConversation({ playerId: player.playerId, name: player.name });
+    setConversation({ ...player });
     setActivePanel("chat");
   }
 
@@ -128,7 +128,6 @@ export function HubDock({
               draggable={false}
             />
             <span className="hub-offers-new">NEW</span>
-            <span className="hub-offers-ribbon">OFFRE</span>
           </button>
           <DeferredContent
             active={offersOpen}

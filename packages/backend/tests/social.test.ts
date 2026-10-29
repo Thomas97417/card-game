@@ -58,6 +58,36 @@ afterEach(() => {
 });
 
 describe("amis et entraide", () => {
+  it("returns only the active guardian for invitations, friends and both private message authors", async () => {
+    const t = setup();
+    const a = await player(t, "alice"), b = await player(t, "bob");
+    const heroId = await t.run(async (ctx) => {
+      const wallet = await ctx.db.query("wallets").withIndex("by_owner", (q) => q.eq("ownerId", b.id)).unique();
+      await ctx.db.patch(wallet!._id, { experience: 175, diamonds: 99 });
+      await ctx.db.insert("leagueProgress", { ownerId: a.id, trophies: 1000 });
+      await ctx.db.insert("leagueProgress", { ownerId: b.id, trophies: 1800, peakTrophies: 2400 });
+      return ctx.db.insert("heroes", { ownerId: b.id, selectedHeroId: "moon", level: 1, peakMight: 0 });
+    });
+    const bobProfile = { heroId: "moon" };
+    await a.client.mutation(api.social.request, { playerId: b.id });
+    expect((await a.client.query(api.social.list, {})).outgoing[0]!.profile).toEqual(bobProfile);
+    expect((await b.client.query(api.social.list, {})).incoming[0]!.profile).toEqual({
+      heroId: "sylve",
+    });
+    await b.client.mutation(api.social.accept, { playerId: a.id });
+    expect((await a.client.query(api.social.list, {})).friends[0]!.profile).toEqual(bobProfile);
+    await a.client.mutation(api.friendChat.send, { playerId: b.id, body: "Salut Bob" });
+    await b.client.mutation(api.friendChat.send, { playerId: a.id, body: "Salut Alice" });
+    const messages = await a.client.query(api.friendChat.list, { playerId: b.id });
+    expect(messages.map((message) => message.profile.heroId)).toEqual(["sylve", "moon"]);
+    expect(messages.map((message) => message.trophies)).toEqual([1000, 1800]);
+    expect(messages[1]!.profile).toEqual(bobProfile);
+
+    await t.run((ctx) => ctx.db.patch(heroId, { selectedHeroId: "north" }));
+    expect((await a.client.query(api.social.list, {})).friends[0]!.profile.heroId).toBe("north");
+    expect((await a.client.query(api.friendChat.list, { playerId: b.id }))[1]!.profile.heroId).toBe("north");
+  });
+
   it("authenticates reads, invitations, private chat and help", async () => {
     const t = setup();
     for (const query of [api.social.list, api.social.balance])

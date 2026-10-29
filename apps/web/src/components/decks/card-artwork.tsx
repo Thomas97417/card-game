@@ -21,6 +21,7 @@ export function CardArtwork({
   showCombatType = true,
   appearance = "default",
   showUpgradeIndicator = appearance === "deck",
+  levelLabel,
 }: {
   card: CardDefinition;
   copies?: number;
@@ -28,6 +29,7 @@ export function CardArtwork({
   showCombatType?: boolean;
   appearance?: "default" | "deck";
   showUpgradeIndicator?: boolean;
+  levelLabel?: string;
 }) {
   const type = getCombatType(card);
   const level = card.level ?? 1;
@@ -43,7 +45,7 @@ export function CardArtwork({
         <CreaturePortrait card={card} />
       </span>
       <span className="card-level">
-        Niv. {level}
+        {levelLabel ?? `Niv. ${level}`}
         {canUpgrade && (
           <span
             className="card-upgrade-indicator"

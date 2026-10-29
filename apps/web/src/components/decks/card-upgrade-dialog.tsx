@@ -3,7 +3,6 @@ import { Tabs } from "@base-ui/react/tabs";
 import {
   ArrowRight,
   ArrowLeft,
-  ArrowRightLeft,
   Crown,
   LockKeyhole,
 } from "lucide-react";
@@ -37,16 +36,8 @@ import {
   CardEvolutionResources,
   type CardProgressionActions,
 } from "./card-soulbind";
-
-type DeckActions =
-  | {
-      inDeck: boolean;
-      onMove: () => void;
-    }
-  | {
-      inDeck?: never;
-      onMove?: never;
-    };
+import { CardRequestPanel, type CardRequestActions } from "./card-request-panel";
+import { isRequestableRarity } from "@sylve/game/card-requests";
 
 type UpgradeActions =
   | {
@@ -60,15 +51,15 @@ type UpgradeActions =
 
 export function CardUpgradeDialog({
   entry,
-  inDeck,
   onClose,
   onUpgrade,
-  onMove,
   collection,
   soulProgress,
   onSoulbind,
   onSacrifice,
   onEvolve,
+  cardRequestStatus,
+  onRequestCards,
   readOnly = false,
   finalFocus,
   returnToSoulbind = false,
@@ -78,8 +69,8 @@ export function CardUpgradeDialog({
   finalFocus?: ComponentProps<typeof DialogContent>["finalFocus"];
   returnToSoulbind?: boolean;
 } & UpgradeActions &
-  DeckActions &
-  CardProgressionActions) {
+  CardProgressionActions &
+  CardRequestActions) {
   const [busy, setBusy] = useState(false);
   const [compactNavigation, setCompactNavigation] = useState(false);
   const popup = useRef<HTMLDivElement>(null);
@@ -189,18 +180,6 @@ export function CardUpgradeDialog({
                     {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
                   </span>
                 </div>
-                {!readOnly && onMove && inDeck && (
-                  <div className="upgrade-deck-actions">
-                    <button
-                      type="button"
-                      className="sylve-button secondary"
-                      onClick={onMove}
-                    >
-                      <ArrowRightLeft size={18} aria-hidden="true" />
-                      Déplacer dans le deck
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
             <aside className="upgrade-navigation">
@@ -266,6 +245,21 @@ export function CardUpgradeDialog({
                         aria-hidden="true"
                       />
                     )}
+                  </Tabs.Tab>
+                )}
+                {!readOnly && onRequestCards && (
+                  <Tabs.Tab value="request" className="upgrade-nav-tab">
+                    <GameIcon kind="friends" size={34} />
+                    <span>
+                      <strong>Demander des cartes</strong>
+                      <small>
+                        {cardRequestStatus?.request
+                          ? "Demande du jour utilisée"
+                          : isRequestableRarity(card.rarity)
+                            ? "Une demande par jour"
+                            : "Communes et rares"}
+                      </small>
+                    </span>
                   </Tabs.Tab>
                 )}
               </Tabs.List>
@@ -452,6 +446,20 @@ export function CardUpgradeDialog({
                     onSacrifice={onSacrifice}
                     onEvolve={onEvolve}
                     presentation="page"
+                  />
+                </Tabs.Panel>
+              )}
+              {!readOnly && onRequestCards && (
+                <Tabs.Panel
+                  value="request"
+                  className="upgrade-panel"
+                  keepMounted
+                >
+                  <CardRequestPanel
+                    key={`${card.id}:${cardRequestStatus?.day ?? ""}`}
+                    entry={entry}
+                    status={cardRequestStatus}
+                    onRequest={onRequestCards}
                   />
                 </Tabs.Panel>
               )}

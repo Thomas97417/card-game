@@ -10,6 +10,7 @@ import { DeckWorkshop } from "@/components/decks/deck-workshop";
 import { showGameError } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { PLAYER_QUERY_OPTIONS } from "@/hooks/use-player-query-cache";
+import { useSocialDay } from "@/components/hub/use-social-day";
 import workshopCss from "@/deck-workshop.css?url";
 
 export const Route = createFileRoute("/decks")({
@@ -60,6 +61,12 @@ function DecksPage() {
   const soulbind = useMutation(api.collection.soulbind);
   const sacrifice = useMutation(api.collection.sacrifice);
   const evolve = useMutation(api.collection.evolve);
+  const refreshDay = useSocialDay();
+  const { data: cardRequestStatus } = useQuery({
+    ...convexQuery(api.social.cardRequestStatus, { refreshDay }),
+    ...PLAYER_QUERY_OPTIONS,
+  });
+  const requestCards = useMutation(api.social.requestCards);
   const starterRequested = useRef(false);
   const needsStarter = decks?.length === 0 || collection?.length === 0;
 
@@ -85,6 +92,8 @@ function DecksPage() {
       onSoulbind={(variantId, tier) => soulbind({ variantId, tier })}
       onSacrifice={(variantId, batches) => sacrifice({ variantId, batches })}
       onEvolve={(variantId, targetId) => evolve({ variantId, targetId })}
+      cardRequestStatus={cardRequestStatus}
+      onRequestCards={(variantId) => requestCards({ variantId })}
     />
   );
 }

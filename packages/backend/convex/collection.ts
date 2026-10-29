@@ -37,6 +37,7 @@ import {
 import { mineAmount, type MineBoard } from "@sylve/game/mines";
 import { addRankExperience, readRank } from "./lib/ranks";
 import { heroIdValidator } from "./lib/validators";
+import { socialProfile } from "./lib/social";
 
 export const rank = query({
   args: {},
@@ -246,9 +247,11 @@ export const leaderboard = query({
       leaders.map(async (progress) => {
         const user = await authComponent.getAnyUserById(ctx, progress.ownerId);
         if (!user) return null;
+        const profile = await socialProfile(ctx, progress.ownerId);
         return {
           ownerId: progress.ownerId,
           name: user.name,
+          profile,
           trophies: progress.trophies,
           isCurrentPlayer: progress.ownerId === userId,
         };
@@ -287,7 +290,14 @@ export const playerProfile = query({
       const entry = owned.get(id);
       return entry ? [resolveCard(id, entry.level, entry.soulbinds)] : [];
     });
+    const [rank, guardian] = await Promise.all([
+      readRank(ctx, ownerId),
+      readHeroProgress(ctx, ownerId, cards),
+    ]);
     return {
+      rank: rank.rank,
+      rankProgress: { earned: rank.earned, required: rank.required },
+      guardian: { heroId: guardian.heroId, level: guardian.level },
       trophies: league.trophies,
       peakTrophies: league.peakTrophies,
       deckCapacity: league.deckCapacity,

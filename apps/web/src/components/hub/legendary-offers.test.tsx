@@ -53,7 +53,7 @@ describe("offres légendaires du hub", () => {
     render(<HubDock legendaryOffers={{ board, onPurchase }} />);
     const trigger = screen.getByRole("button", { name: "Offres légendaires" });
     expect(within(trigger).getByText("NEW")).toBeTruthy();
-    expect(within(trigger).getByText("OFFRE")).toBeTruthy();
+    expect(within(trigger).queryByText("OFFRE")).toBeNull();
     expect(trigger.querySelector("img")?.getAttribute("src")).toBe(
       "/art/chests/legendary.webp",
     );

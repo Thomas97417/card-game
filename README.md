@@ -6,9 +6,9 @@ Jeu de cartes tactique en français, avec combats solo et multijoueurs, collecti
 
 | Route | Fonction |
 | --- | --- |
-| `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, chat et missions |
+| `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, dons de cartes, chat et missions |
 | `/arena` | Combats solo, matchmaking public, invitations amicales et coffres |
-| `/decks` | Deck, collection, améliorations, évolutions et liens d’âme |
+| `/decks` | Deck, collection, améliorations, évolutions, liens d’âme et demande quotidienne de cartes |
 | `/guardian` | Onze héros, déblocage en émeraudes, sélection, progression et pouvoirs |
 | `/sanctuary` | Invocations, bestiaire, packs de monnaies et clés de coffres |
 | `/settings` | Profil, email, mot de passe, sessions et suppression du compte |

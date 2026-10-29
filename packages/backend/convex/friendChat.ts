@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requirePlayer } from "./lib/game_service";
-import { friendship, friendshipPair, requireFriend } from "./lib/social";
+import { friendship, friendshipPair, requireFriend, socialProfiles } from "./lib/social";
 import {
   WORLD_CHAT_HISTORY_LIMIT,
   WORLD_CHAT_MESSAGE_LIMIT,
@@ -25,9 +25,12 @@ export const list = query({
       )
       .order("desc")
       .take(WORLD_CHAT_HISTORY_LIMIT);
+    const profiles = await socialProfiles(ctx, messages.map((message) => message.senderId));
     return messages.reverse().map((message, index, history) => ({
       id: message._id,
       playerId: message.senderId,
+      profile: profiles.get(message.senderId)!.profile,
+      trophies: profiles.get(message.senderId)!.trophies,
       senderName:
         message.senderId === userId ? name : (other?.name ?? "Gardien"),
       sentAt: message._creationTime,

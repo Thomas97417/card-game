@@ -21,10 +21,13 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 const players: FunctionReturnType<typeof api.collection.leaderboard> = [
-  { ownerId: "alice", name: "Aëlys", trophies: 2860, rank: 1, isCurrentPlayer: false },
-  { ownerId: "bob", name: "Sylvar", trophies: 1640, rank: 2, isCurrentPlayer: true },
+  { ownerId: "alice", name: "Aëlys", trophies: 2860, rank: 1, isCurrentPlayer: false, profile: { heroId: "moon" } },
+  { ownerId: "bob", name: "Sylvar", trophies: 1640, rank: 2, isCurrentPlayer: true, profile: { heroId: "north" } },
 ];
 const profile: FunctionReturnType<typeof api.collection.playerProfile> = {
+  rank: 12,
+  rankProgress: { earned: 18, required: 50 },
+  guardian: { heroId: "moon", level: 5 },
   trophies: 2860,
   peakTrophies: 3200,
   deckCapacity: 8,
@@ -56,14 +59,32 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 async function openRanking() {
-  render(<HubDock />);
+  const view = render(<HubDock />);
   const trigger = screen.getByRole("button", { name: "Classement" });
   await act(async () => fireEvent.click(trigger));
-  await waitFor(() => expect(useQuery).toHaveBeenCalled());
-  return { trigger, panel: screen.getByRole("region", { name: "Classement mondial" }) };
+  await waitFor(() => expect(screen.getByRole("region", { name: "Classement mondial" }).querySelector(".hub-ranking-scroll")).toBeTruthy());
+  return { trigger, panel: screen.getByRole("region", { name: "Classement mondial" }), rerender: view.rerender };
 }
 
 describe("le classement du refuge", () => {
+  it("shows each active guardian by the player name and refreshes it without changing scores or opening profiles", async () => {
+    const { panel, rerender } = await openRanking();
+    const alice = within(panel).getByRole("button", { name: /#1.*Aëlys/ });
+    const bob = within(panel).getByRole("button", { name: /#2.*Sylvar/ });
+    expect(alice.querySelector(".hub-ranking-avatar img")?.getAttribute("src")).toBe("/art/heroes/hero-moon.webp");
+    expect(bob.querySelector(".hub-ranking-avatar img")?.getAttribute("src")).toBe("/art/heroes/hero-north.webp");
+    expect(within(panel).queryByText(/XP|Souveraine Carmin|Gardien du Givre/)).toBeNull();
+
+    rankingState = { data: players.map((player) => player.ownerId === "alice"
+      ? { ...player, profile: { heroId: "void" } }
+      : player) };
+    rerender(<HubDock />);
+    expect(alice.querySelector(".hub-ranking-avatar img")?.getAttribute("src")).toBe("/art/heroes/hero-void.webp");
+    expect(alice.getAttribute("aria-expanded")).toBe("false");
+    expect(within(alice).getByText(/2\s860/)).toBeTruthy();
+    expect(useQuery.mock.calls.every(([options]) => getFunctionName(options.queryKey[1]) === "collection:leaderboard")).toBe(true);
+  });
+
   it("opens above the shortcuts, closes with Escape and restores focus", async () => {
     const { trigger, panel } = await openRanking();
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
@@ -87,7 +108,9 @@ describe("le classement du refuge", () => {
     expect(screen.getByText("Meilleure ligue")).toBeDefined();
     expect(screen.getByRole("list", { name: "Deck du joueur" }).children).toHaveLength(4);
     expect(screen.getAllByText("Niv. 5")).toHaveLength(4);
-    expect(first.parentElement?.nextElementSibling?.contains(screen.getByText("La garde de l’aube"))).toBe(true);
+    expect(first.parentElement?.nextElementSibling?.contains(screen.getByText("Cartes équipées"))).toBe(true);
+    expect(screen.queryByText("La garde de l’aube")).toBeNull();
+    expect(screen.queryByText(/4\/8 cartes/)).toBeNull();
     fireEvent.click(second);
     expect(first.getAttribute("aria-expanded")).toBe("false");
     expect(second.getAttribute("aria-expanded")).toBe("true");

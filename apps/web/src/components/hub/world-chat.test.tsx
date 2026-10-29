@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConvexError } from "convex/values";
 import { useQuery } from "convex/react";
 import { HubDock } from "./hub-dock";
+import type { SocialPlayer } from "./player-menu";
 
 type Message = {
   id: string;
@@ -19,6 +20,8 @@ type Message = {
   body: string;
   isOwn: boolean;
   continuesPrevious?: boolean;
+  profile?: SocialPlayer["profile"];
+  trophies?: number;
 };
 const state = vi.hoisted(() => ({
   messages: [] as Message[] | undefined,
@@ -303,7 +306,7 @@ describe("le chat mondial du refuge", () => {
     expect(log.scrollTop).toBe(100);
   });
 
-  it("groups consecutive messages with one header and an avatar on the last row, on both sides", async () => {
+  it("groups consecutive messages with one guardian portrait on the last row on both sides", async () => {
     const sentAt = new Date(2026, 9, 25, 14).getTime();
     state.messages = [
       {
@@ -346,7 +349,11 @@ describe("le chat mondial du refuge", () => {
         isOwn: false,
         continuesPrevious: false,
       },
-    ];
+    ].map((message) => ({
+      ...message,
+      trophies: message.isOwn ? 1000 : 1800,
+      profile: { heroId: message.isOwn ? "sylve" as const : "moon" as const },
+    }));
     render(<HubDock />);
     await openChat();
 
@@ -361,12 +368,21 @@ describe("le chat mondial du refuge", () => {
     expect(screen.getAllByText("Léa")).toHaveLength(2);
     expect(screen.getAllByText("Toi")).toHaveLength(1);
     for (const group of [received[0]!, own]) {
+      expect(within(group).queryByText(/Rang |XP|Souveraine Carmin|Gardien de la Sylve/)).toBeNull();
+      expect(within(group).getAllByRole("img")).toHaveLength(2);
+      expect(group.querySelectorAll('[data-slot="message-header"]')).toHaveLength(1);
+      expect(group.querySelectorAll(".social-chat-league-icon")).toHaveLength(1);
+      expect(group.querySelector(".league-division")).toBeNull();
+      expect(group.querySelectorAll("time")).toHaveLength(2);
       const avatars = group.querySelectorAll('[data-slot="message-avatar"]');
       expect(avatars).toHaveLength(2);
-      expect(avatars[0]!.textContent).toBe("");
-      expect(avatars[1]!.textContent).not.toBe("");
-      expect(group.querySelectorAll("time")).toHaveLength(2);
+      expect(avatars[0]!.querySelector("img")).toBeNull();
+      expect(avatars[1]!.querySelector("img")).toBeTruthy();
     }
+    expect(within(received[0]!).getByRole("img", { name: "Souveraine Carmin" }).getAttribute("src")).toBe("/art/heroes/hero-moon.webp");
+    expect(within(own).getByRole("img", { name: "Gardien de la Sylve" })).toBeTruthy();
+    expect(within(received[0]!).getByRole("img", { name: "Argent" })).toBeTruthy();
+    expect(within(own).getByRole("img", { name: "Bronze" })).toBeTruthy();
   });
 
   it("starts another group at a day boundary even when the sender continues", async () => {
@@ -397,7 +413,7 @@ describe("le chat mondial du refuge", () => {
     expect(screen.getByText("25 octobre")).toBeTruthy();
   });
 
-  it("extends a live group and moves the avatar to the new last message", async () => {
+  it("moves the guardian portrait to the new last message and refreshes the active guardian", async () => {
     state.messages = [
       {
         id: "one",
@@ -406,17 +422,21 @@ describe("le chat mondial du refuge", () => {
         body: "Bonjour !",
         isOwn: false,
         continuesPrevious: false,
+        profile: { heroId: "moon" },
+        trophies: 1000,
       },
     ];
     const view = render(<HubDock />);
     await openChat();
-    const firstAvatar = screen
-      .getByRole("group", { name: "Messages de Léa" })
-      .querySelector('[data-slot="message-avatar"]');
-    expect(firstAvatar!.textContent).toBe("LÉ");
+    expect(screen.getByRole("img", { name: "Souveraine Carmin" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Bronze" })).toBeTruthy();
 
     state.messages = [
-      ...state.messages!,
+      ...state.messages!.map((message) => ({
+        ...message,
+        profile: { heroId: "void" as const },
+        trophies: 1800,
+      })),
       {
         id: "two",
         sentAt: Date.now(),
@@ -424,6 +444,8 @@ describe("le chat mondial du refuge", () => {
         body: "Encore moi !",
         isOwn: false,
         continuesPrevious: true,
+        profile: { heroId: "void" },
+        trophies: 1800,
       },
     ];
     view.rerender(<HubDock />);
@@ -431,9 +453,14 @@ describe("le chat mondial du refuge", () => {
     expect(within(group).getByText("Bonjour !")).toBeTruthy();
     expect(within(group).getByText("Encore moi !")).toBeTruthy();
     expect(screen.getAllByText("Léa")).toHaveLength(1);
-    expect(firstAvatar!.textContent).toBe("");
-    expect(
-      group.querySelectorAll('[data-slot="message-avatar"]')[1]!.textContent,
-    ).toBe("LÉ");
+    expect(within(group).getAllByRole("img")).toHaveLength(2);
+    expect(within(group).getByRole("img", { name: "Gardien du Vide" })).toBeTruthy();
+    expect(within(group).getByRole("img", { name: "Argent" })).toBeTruthy();
+    expect(screen.queryByRole("img", { name: "Bronze" })).toBeNull();
+    expect(within(group).queryByText(/Rang |XP|Gardien du Vide/)).toBeNull();
+    const avatars = group.querySelectorAll('[data-slot="message-avatar"]');
+    expect(avatars[0]!.querySelector("img")).toBeNull();
+    expect(avatars[1]!.querySelector("img")).toBeTruthy();
+    expect(screen.queryByRole("img", { name: "Souveraine Carmin" })).toBeNull();
   });
 });
