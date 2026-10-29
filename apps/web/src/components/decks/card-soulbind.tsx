@@ -317,10 +317,13 @@ export function CardSoulbind({
               </h3>
               <ul>
                 {link.requirements.map((requirement) => {
-                  const companion = resolveCard(
-                    requirement.variantId,
-                    requirement.level,
+                  const ownedCompanion = collection?.find(
+                    (entry) => entry.card.id === requirement.variantId,
                   );
+                  const companion =
+                    ownedCompanion?.card ??
+                    resolveCard(requirement.variantId, requirement.level);
+                  const currentLevel = ownedCompanion?.card.level ?? 1;
                   const own = status?.requirements.find(
                     (r) => r.variantId === requirement.variantId,
                   );
@@ -334,12 +337,18 @@ export function CardSoulbind({
                         { "--creature-color": companion.color } as CSSProperties
                       }
                       role="img"
-                      aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, niveau ${requirement.level} requis`}
+                      aria-label={`${companion.name}, ${RARITY_LABELS[companion.rarity ?? "common"]}, ${ownedCompanion ? `niveau actuel ${currentLevel}, ` : ""}niveau ${requirement.level} requis`}
                     >
                       <CardArtwork
                         card={companion}
                         showCopies={false}
                         appearance="deck"
+                        showUpgradeIndicator={false}
+                        levelLabel={
+                          ownedCompanion
+                            ? undefined
+                            : `Requis : niv. ${requirement.level}`
+                        }
                       />
                     </div>
                   );
@@ -383,23 +392,37 @@ export function CardSoulbind({
                         )}
                         <small>
                           {RARITY_LABELS[companion.rarity ?? "common"]}
-                          {own && !ready && own.ownedLevel === 0
-                            ? " · À découvrir"
-                            : ""}
                         </small>
                       </div>
-                      <div className="soulbind-companion-level">
-                        {ready ? (
-                          <Check size={15} aria-hidden="true" />
-                        ) : (
-                          <LockKeyhole size={14} aria-hidden="true" />
+                      <dl
+                        className="soulbind-companion-levels"
+                        aria-label={`Niveaux de ${companion.name}`}
+                        data-ready={
+                          !!ownedCompanion && currentLevel >= requirement.level
+                        }
+                      >
+                        {collection !== undefined && (
+                          <div className="soulbind-level-current">
+                            <dt>Niveau actuel</dt>
+                            <dd>
+                              {ownedCompanion
+                                ? `Niv. ${currentLevel}`
+                                : "À découvrir"}
+                            </dd>
+                          </div>
                         )}
-                        <span>
-                          {own && !isActive
-                            ? `Niv. ${own.ownedLevel} / ${requirement.level}`
-                            : `Niv. ${requirement.level} requis`}
-                        </span>
-                      </div>
+                        <div>
+                          <dt>Niveau requis</dt>
+                          <dd>
+                            {ready ? (
+                              <Check size={14} aria-hidden="true" />
+                            ) : (
+                              <LockKeyhole size={13} aria-hidden="true" />
+                            )}
+                            Niv. {requirement.level}
+                          </dd>
+                        </div>
+                      </dl>
                     </li>
                   );
                 })}

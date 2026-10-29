@@ -31,7 +31,7 @@ function expand(container: HTMLElement) {
 }
 
 describe("Soulbind card controls", () => {
-  it("previews required companions at their required level in the selected link", () => {
+  it("labels required-level previews explicitly for undiscovered companions", () => {
     const card = resolveCard("guardian:legendary");
     render(
       <CardSoulbind
@@ -57,10 +57,67 @@ describe("Soulbind card controls", () => {
         ),
       });
       expect(
-        within(preview).getByText(`Niv. ${requirement.level}`),
+        within(preview).getByText(`Requis : niv. ${requirement.level}`),
       ).toBeTruthy();
     }
     expect(fourth.getByText("Aucune carte consommée")).toBeTruthy();
+  });
+
+  it("shows owned companions at their actual levels and separates current and required levels", () => {
+    const card = resolveCard("bear:epic");
+    const requirements = soulbindDefinitions(card.id)[2]!.requirements;
+    const first = resolveCard(requirements[0]!.variantId, 3);
+    const second = resolveCard(requirements[1]!.variantId, 1);
+    const owned = [card, first, second].map((card) => ({ card, copies: 0 }));
+    const view = (collection: OwnedCard[]) => (
+      <CardSoulbind
+        card={card}
+        collection={collection}
+        soulProgress={progress}
+        presentation="page"
+      />
+    );
+    const { rerender } = render(view(owned));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Afficher le lien d’âme III" }),
+    );
+    for (const [companion, requirement] of [
+      [first, requirements[0]!],
+      [second, requirements[1]!],
+    ] as const) {
+      const preview = screen.getByRole("img", {
+        name: `${companion.name}, Épique, niveau actuel ${companion.level}, niveau ${requirement.level} requis`,
+      });
+      expect(within(preview).getByText(`Niv. ${companion.level}`)).toBeTruthy();
+      expect(within(preview).queryByText(`Niv. ${requirement.level}`)).toBeNull();
+      expect(
+        within(preview).getByLabelText(`${companion.health} points de vie`),
+      ).toBeTruthy();
+      const levels = within(screen.getByLabelText(`Niveaux de ${companion.name}`));
+      expect(levels.getByText("Niveau actuel")).toBeTruthy();
+      expect(levels.getByText(`Niv. ${companion.level}`)).toBeTruthy();
+      expect(levels.getByText("Niveau requis")).toBeTruthy();
+      expect(levels.getByText(`Niv. ${requirement.level}`)).toBeTruthy();
+    }
+    const upgraded = resolveCard(first.id, requirements[0]!.level);
+    rerender(
+      view(
+        owned.map((entry) =>
+          entry.card.id === first.id ? { ...entry, card: upgraded } : entry,
+        ),
+      ),
+    );
+    expect(
+      screen
+        .getByRole("button", { name: "Afficher le lien d’âme III" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    const levels = screen.getByLabelText(`Niveaux de ${first.name}`);
+    expect(within(levels).queryByText("Niv. 3")).toBeNull();
+    expect(
+      within(levels).getAllByText(`Niv. ${requirements[0]!.level}`),
+    ).toHaveLength(2);
+    expect(levels.getAttribute("data-ready")).toBe("true");
   });
 
   it("shows the four links, their actual bonuses and the available activation action", async () => {
@@ -104,7 +161,8 @@ describe("Soulbind card controls", () => {
         .getAllByRole("button")
         .every((b) => (b as HTMLButtonElement).disabled),
     ).toBe(true);
-    expect(screen.getByText("Niv. 0 / 6")).toBeTruthy();
+    expect(screen.getAllByText("À découvrir").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Niv. 0 / 6")).toBeNull();
   });
   it("explains prerequisites in the bestiary without offering an owned-card mutation", () => {
     const { container } = render(
@@ -113,6 +171,8 @@ describe("Soulbind card controls", () => {
     expand(container);
     expect(screen.queryByRole("button")).toBeNull();
     expect(screen.getByText("Activation gratuite")).toBeTruthy();
+    expect(screen.queryByText("Niveau actuel")).toBeNull();
+    expect(screen.getAllByText("Niveau requis").length).toBeGreaterThan(0);
   });
   it("converts an explicit reserve quantity into dust", async () => {
     const onSacrifice = vi.fn().mockResolvedValue(undefined);

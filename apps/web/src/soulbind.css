@@ -344,15 +344,41 @@
   color: #b6c4ad;
   font-size: 10px;
 }
-.soulbind-companion-level {
+.soulbind-companion-levels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid #cbb78333;
+  border-radius: 8px;
+  background: #0b211a66;
+}
+.soulbind-companion-levels > div + div {
+  padding-left: 8px;
+  border-left: 1px solid #cbb78333;
+}
+.soulbind-companion-levels dt {
+  color: #aebfa7;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.soulbind-companion-levels dd {
   display: flex;
   align-items: center;
-  gap: 5px;
-  color: #d9c8a4;
-  font-size: 10px;
-  white-space: nowrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 5px 0 0;
+  color: #ece0bb;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
 }
-li[data-ready="true"] .soulbind-companion-level {
+.soulbind-level-current dd {
+  color: #e5bf85;
+}
+.soulbind-companion-levels[data-ready="true"] .soulbind-level-current dd {
   color: #c6e6af;
 }
 .is-page .soulbind-bonuses {
@@ -382,8 +408,10 @@ li[data-ready="true"] .soulbind-companion-level {
   touch-action: pan-y pinch-zoom;
 }
 .soulbind-required-card .workshop-card-caption {
+  inset: auto 3px 3px;
   min-height: 22%;
   padding: 16px 8px 10px;
+  border-radius: 0 0 4px 4px;
 }
 .soulbind-required-card .workshop-card-name {
   font-size: 16px;
@@ -428,17 +456,9 @@ li[data-ready="true"] .soulbind-companion-level {
   margin-top: 0;
   font-size: 11px;
 }
-.is-page .soulbind-companion-level {
-  justify-content: center;
-  padding: 5px 10px;
-  border: 1px solid #cbb78344;
-  border-radius: 20px;
-  background: #0b211a66;
-  font-size: 11px;
-}
-.is-page li[data-ready="true"] .soulbind-companion-level {
-  border-color: #a3cf9266;
-  background: #a3cf9210;
+.is-page .soulbind-companion-levels {
+  width: min(100%, 190px);
+  text-align: center;
 }
 .soulbind-activation {
   display: grid;
@@ -794,7 +814,7 @@ li[data-ready="true"] .soulbind-companion-level {
     width: 38px;
     height: 48px;
   }
-  .soulbind-companion-level {
+  .soulbind-companion-levels {
     grid-column: 2;
   }
   .soulbind-companion-info strong {
