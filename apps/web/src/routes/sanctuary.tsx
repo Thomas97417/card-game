@@ -6,6 +6,7 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { Sanctuary } from "@/components/sanctuary/sanctuary";
+import { CurrencyGainProvider } from "@/components/currency-gain";
 import { useEmeraldBalance } from "@/components/emerald-balance";
 import { useFriendshipBalance } from "@/components/friendship-balance";
 import { showGameError } from "@/components/game/shared";
@@ -34,6 +35,14 @@ export const Route = createFileRoute("/sanctuary")({
 });
 
 function SanctuaryPage() {
+  return (
+    <CurrencyGainProvider>
+      <SanctuaryContent />
+    </CurrencyGainProvider>
+  );
+}
+
+function SanctuaryContent() {
   const { checkout } = Route.useSearch();
   const navigate = Route.useNavigate();
   const emeraldOffers = useQuery(api.payments.offers);

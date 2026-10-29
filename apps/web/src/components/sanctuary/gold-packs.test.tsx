@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import {
   act,
   fireEvent,
@@ -9,7 +10,22 @@ import {
 import { ConvexError } from "convex/values";
 import { describe, expect, it, vi } from "vitest";
 import type { GoldPurchaseResult } from "@sylve/game/gold-packs";
+import { CurrencyGain, CurrencyGainProvider } from "@/components/currency-gain";
+import { GoldIcon } from "@/components/gold-balance";
 import { GoldPacks } from "./gold-packs";
+
+function renderShop(ui: ReactElement) {
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <CurrencyGainProvider>
+        <CurrencyGain currency="gold">
+          <GoldIcon />
+        </CurrencyGain>
+        {children}
+      </CurrencyGainProvider>
+    ),
+  });
+}
 
 const purchase = (gold: string) =>
   screen.getByRole("button", {
@@ -23,7 +39,7 @@ const result: GoldPurchaseResult = {
 
 describe("packs d’or du sanctuaire", () => {
   it("shows both illustrated packs with their exact emerald prices", () => {
-    render(<GoldPacks emeralds={500} ready onPurchase={vi.fn()} />);
+    renderShop(<GoldPacks emeralds={500} ready onPurchase={vi.fn()} />);
     const shop = screen.getByRole("region", { name: "Packs d’or" });
     expect(within(shop).getAllByRole("article")).toHaveLength(2);
     expect(purchase("25.*000").getAttribute("aria-label")).toContain(
@@ -51,7 +67,7 @@ describe("packs d’or du sanctuaire", () => {
     [500, true, true],
   ])("checks affordability with %s emeralds", (emeralds, small, large) => {
     const onPurchase = vi.fn();
-    const { rerender } = render(
+    const { rerender } = renderShop(
       <GoldPacks emeralds={emeralds} ready onPurchase={onPurchase} />,
     );
     expect(purchase("25.*000").disabled).toBe(!small);
@@ -64,7 +80,7 @@ describe("packs d’or du sanctuaire", () => {
     expect(onPurchase).not.toHaveBeenCalled();
   });
 
-  it("submits only one purchase while pending and confirms after the server responds", async () => {
+  it("submits only one purchase while pending and animates gold after the server responds", async () => {
     let resolve!: (result: GoldPurchaseResult) => void;
     const onPurchase = vi.fn(
       () =>
@@ -72,7 +88,7 @@ describe("packs d’or du sanctuaire", () => {
           resolve = done;
         }),
     );
-    render(<GoldPacks emeralds={500} ready onPurchase={onPurchase} />);
+    renderShop(<GoldPacks emeralds={500} ready onPurchase={onPurchase} />);
     fireEvent.click(purchase("25.*000"));
     fireEvent.click(purchase("25.*000"));
     fireEvent.click(purchase("100.*000"));
@@ -87,22 +103,30 @@ describe("packs d’or du sanctuaire", () => {
         .every((button) => (button as HTMLButtonElement).disabled),
     ).toBe(true);
     await act(async () => resolve(result));
-    expect(screen.getByRole("status").textContent).toMatch(
-      /25.*000 pièces d’or ajoutées.*150 émeraudes/,
+    const gain = screen.getByRole("status", { name: "Or récupéré" });
+    expect(gain.classList.contains("currency-gain")).toBe(true);
+    expect(gain.getAttribute("data-currency")).toBe("gold");
+    expect(gain.textContent).toContain(`+ ${result.gold.toLocaleString("fr-FR")}`);
+    expect(gain.querySelector("img")?.getAttribute("src")).toBe(
+      "/art/ui/gold-coins.webp",
     );
-    fireEvent.click(
-      screen.getByRole("button", {
+    expect(
+      screen.queryByRole("button", {
         name: "Fermer la confirmation d’achat d’or",
       }),
-    );
-    expect(screen.queryByRole("status")).toBeNull();
+    ).toBeNull();
+    expect(
+      within(screen.getByRole("region", { name: "Packs d’or" })).queryByRole(
+        "status",
+      ),
+    ).toBeNull();
   });
 
   it("shows server rejections without confirming the purchase", async () => {
     const onPurchase = vi
       .fn()
       .mockRejectedValue(new ConvexError("Solde insuffisant."));
-    render(<GoldPacks emeralds={500} ready onPurchase={onPurchase} />);
+    renderShop(<GoldPacks emeralds={500} ready onPurchase={onPurchase} />);
     fireEvent.click(purchase("25.*000"));
     await waitFor(() =>
       expect(screen.getByRole("alert").textContent).toBe("Solde insuffisant."),
@@ -116,7 +140,7 @@ describe("packs d’or du sanctuaire", () => {
       .fn()
       .mockRejectedValueOnce(new Error("Network error"))
       .mockResolvedValue(result);
-    const { rerender } = render(
+    const { rerender } = renderShop(
       <GoldPacks emeralds={150} ready onPurchase={onPurchase} />,
     );
     fireEvent.click(purchase("25.*000"));

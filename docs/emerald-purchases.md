@@ -72,7 +72,7 @@ Tant que la configuration ou les produits sont absents, les cinq trésors resten
 
 ### 3. Vérifier puis activer les paiements réels
 
-Effectuer un achat avec les [moyens de test Polar](https://polar.sh/docs/integrate/sandbox). Vérifier le retour sur `/sanctuary?checkout=…`, le passage du message de vérification à la confirmation et l’augmentation du solde. Renvoyer le webhook dans Polar et vérifier que le solde ne change plus. Tester aussi un remboursement.
+Effectuer un achat avec les [moyens de test Polar](https://polar.sh/docs/integrate/sandbox). Vérifier le retour sur `/sanctuary?checkout=…`, le remplacement du message de vérification par la fenêtre « Émeraudes reçues » et l’augmentation du solde. La fenêtre présente le trésor et la quantité créditée par le serveur ; « Continuer l’aventure », la croix ou Échap ferment la présentation et retirent le paramètre de suivi de l’URL. Renvoyer le webhook dans Polar et vérifier que le solde ne change plus. Tester aussi un remboursement.
 
 Pour encaisser réellement, créer les produits et le webhook dans l’organisation de production, remplacer les cinq identifiants, le jeton et le secret, puis définir `POLAR_SERVER=production`. Les identifiants et secrets sandbox sont distincts de ceux de production. Resynchroniser les produits de production.
 

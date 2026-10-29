@@ -302,19 +302,19 @@ export function LegendaryPaymentFeedback({
     );
   }
   return (
-    <div className="legendary-payment-feedback" role="status">
+    <div className="payment-feedback" role="status">
       {pending ? (
-        <LoaderCircle size={20} className="animate-spin" />
+        <LoaderCircle size={17} className="animate-spin" />
       ) : status?.status === "paid" ? (
-        <Check size={20} />
+        <Check size={17} />
       ) : (
-        <ShieldCheck size={20} />
+        <ShieldCheck size={17} />
       )}
       <span>
         {pending
           ? delayed
             ? "La confirmation prend un peu de temps. Ton pack sera ajouté dès réception du paiement, même si tu quittes le refuge."
-            : "Vérification du paiement… Ton pack arrive dès sa confirmation."
+            : "Vérification du paiement…"
           : status?.status === "paid"
             ? `${offer?.name ?? "Pack légendaire"} reçu : ${status.emeralds.toLocaleString("fr-FR")} émeraudes, ${status.gold.toLocaleString("fr-FR")} or et tes ${status.cards.reduce((sum, card) => sum + card.count, 0)} cartes ont rejoint ta collection.`
             : status?.status === "refunded"
@@ -326,7 +326,7 @@ export function LegendaryPaymentFeedback({
         aria-label="Fermer le suivi du paiement"
         onClick={onDismiss}
       >
-        <X size={18} />
+        <X size={16} />
       </button>
     </div>
   );

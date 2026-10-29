@@ -299,10 +299,10 @@ export function Sanctuary({
         <div className="sanctuary-shade" />
       </div>
       <GameHeader />
+      {paymentFeedback}
       <h1 className="sr-only">Le sanctuaire</h1>
       <div className="sanctuary-content">
         <div className="sanctuary-offers">
-          {paymentFeedback}
           <div
             ref={offersRow}
             className={`sanctuary-offer-row ${isDragging ? "is-dragging" : ""}`}

@@ -687,38 +687,6 @@
 .legendary-received-continue > span {
   font-size: 14px;
 }
-.legendary-payment-feedback {
-  position: fixed;
-  z-index: 45;
-  top: max(100px, env(safe-area-inset-top));
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: min(600px, calc(100% - 32px));
-  padding: 15px 18px;
-  border: 1px solid #e3bd72;
-  border-radius: 12px;
-  color: #fff0cb;
-  background: #1b342bf5;
-  box-shadow: 0 8px 30px #001b18aa;
-  transform: translateX(-50%);
-  font-size: 13px;
-}
-.legendary-payment-feedback > svg {
-  flex-shrink: 0;
-  color: #f2ce81;
-}
-.legendary-payment-feedback > span {
-  flex: 1;
-}
-.legendary-payment-feedback > button {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-}
 @keyframes offer-crest-glow {
   to {
     opacity: 0.55;

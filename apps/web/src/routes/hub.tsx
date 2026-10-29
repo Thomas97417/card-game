@@ -2,6 +2,7 @@ import { stylesheet } from "@/lib/stylesheet";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import {
   missionPeriod,
   type MissionPeriodKind,
@@ -245,7 +246,10 @@ function HubContent() {
       />
       {offerCheckout && (
         <Suspense fallback={
-          <p role="status" className="legendary-payment-feedback">Vérification du paiement…</p>
+          <p role="status" className="payment-feedback">
+            <LoaderCircle size={17} className="animate-spin" />
+            <span>Vérification du paiement…</span>
+          </p>
         }>
           <LegendaryPaymentFeedback
             key={offerCheckout}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import { Check, LoaderCircle, ShieldCheck, X } from "lucide-react";
+import { LoaderCircle, ShieldCheck, X } from "lucide-react";
 import {
   EMERALD_PACKS,
   type EmeraldPackId,
@@ -8,6 +8,12 @@ import {
   type EmeraldPaymentStatus,
 } from "@sylve/game/emerald-packs";
 import { EmeraldAmount } from "@/components/emerald-balance";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function EmeraldPacks({
   offers,
@@ -135,15 +141,56 @@ export function EmeraldPaymentFeedback({
     return () => window.clearTimeout(timeout);
   }, []);
   const pending = status === undefined || status?.status === "pending";
+  if (status?.status === "paid") {
+    const treasure = EMERALD_PACKS.find(
+      (pack) => pack.emeralds === status.emeralds,
+    );
+    return (
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open) onDismiss();
+        }}
+      >
+        <DialogContent className="emerald-received-dialog" appearance="game">
+          <header className="emerald-received-heading">
+            <p className="eyebrow">Ton trésor est arrivé</p>
+            <DialogTitle>Émeraudes reçues</DialogTitle>
+          </header>
+          <div className="emerald-received-treasure" aria-hidden="true">
+            <span className="emerald-received-rays" />
+            <img
+              src={treasure?.image ?? "/art/treasures/emerald-ancient-chest.webp"}
+              width={512}
+              height={512}
+              alt=""
+              draggable={false}
+              style={
+                {
+                  "--treasure-art-scale": treasure?.artScale ?? 1,
+                } as CSSProperties
+              }
+            />
+          </div>
+          <div className="emerald-received-amount">
+            <EmeraldAmount amount={status.emeralds} />
+          </div>
+          <DialogDescription>Émeraudes ajoutées à ton solde.</DialogDescription>
+          <button
+            type="button"
+            className="emerald-received-continue"
+            onClick={onDismiss}
+          >
+            Continuer l’aventure
+          </button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   return (
-    <div
-      className={`sanctuary-feedback emerald-payment-feedback ${status?.status === "paid" ? "is-paid" : ""}`}
-      role="status"
-    >
+    <div className="payment-feedback" role="status">
       {pending ? (
         <LoaderCircle size={17} className="animate-spin" />
-      ) : status?.status === "paid" ? (
-        <Check size={17} />
       ) : (
         <ShieldCheck size={17} />
       )}
@@ -151,12 +198,10 @@ export function EmeraldPaymentFeedback({
         {pending
           ? delayed
             ? "La confirmation prend un peu de temps. Tes émeraudes seront ajoutées dès réception du paiement, même si tu quittes cette page."
-            : "Vérification du paiement… Tes émeraudes apparaîtront dès sa confirmation."
-          : status?.status === "paid"
-            ? `Paiement confirmé : ${status.emeralds.toLocaleString("fr-FR")} émeraudes ont été ajoutées à ton solde.`
-            : status?.status === "refunded"
-              ? "Cet achat a été remboursé. Les émeraudes correspondantes ont été retirées."
-              : "Cet achat n’a pas été retrouvé sur ton compte. Si tu as été débité, conserve ton reçu et contacte l’assistance."}
+            : "Vérification du paiement…"
+          : status?.status === "refunded"
+            ? "Cet achat a été remboursé. Les émeraudes correspondantes ont été retirées."
+            : "Cet achat n’a pas été retrouvé sur ton compte. Si tu as été débité, conserve ton reçu et contacte l’assistance."}
       </span>
       <button
         type="button"

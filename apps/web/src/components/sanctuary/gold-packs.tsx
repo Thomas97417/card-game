@@ -1,12 +1,12 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { ConvexError } from "convex/values";
-import { Check, X } from "lucide-react";
 import {
   GOLD_PACKS,
   type GoldPackId,
   type GoldPurchaseRequest,
   type GoldPurchaseResult,
 } from "@sylve/game/gold-packs";
+import { useCurrencyGain } from "@/components/currency-gain";
 import { EmeraldAmount } from "@/components/emerald-balance";
 import { GoldAmount } from "@/components/gold-balance";
 
@@ -21,7 +21,7 @@ export function GoldPacks({
 }) {
   const [busy, setBusy] = useState<GoldPackId | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [purchased, setPurchased] = useState<GoldPurchaseResult | null>(null);
+  const showGain = useCurrencyGain();
   const lock = useRef(false);
   const pending = useRef<GoldPurchaseRequest | null>(null);
 
@@ -39,12 +39,11 @@ export function GoldPacks({
     lock.current = true;
     setBusy(packId);
     setError(null);
-    setPurchased(null);
     pending.current ??= { packId, requestId: crypto.randomUUID() };
     try {
       const result = await onPurchase(pending.current);
       pending.current = null;
-      setPurchased(result);
+      showGain("gold", result.gold);
     } catch (cause) {
       if (cause instanceof ConvexError) pending.current = null;
       setError(
@@ -128,25 +127,6 @@ export function GoldPacks({
           );
         })}
       </div>
-      {purchased && (
-        <div
-          className="sanctuary-feedback gold-purchase-feedback"
-          role="status"
-        >
-          <Check size={17} />
-          <span>
-            {purchased.gold.toLocaleString("fr-FR")} pièces d’or ajoutées à ton
-            solde pour {purchased.cost} émeraudes.
-          </span>
-          <button
-            type="button"
-            onClick={() => setPurchased(null)}
-            aria-label="Fermer la confirmation d’achat d’or"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
       {error && (
         <p className="sanctuary-error" role="alert">
           {error}
