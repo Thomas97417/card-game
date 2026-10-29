@@ -76,25 +76,6 @@
   text-shadow: 1px 2px #7e230e;
   transform: rotate(13deg);
 }
-.hub-offers-ribbon {
-  position: absolute;
-  right: 1px;
-  bottom: 3px;
-  left: 1px;
-  padding: 4px 5px;
-  border: 2px solid #fff2b4;
-  border-radius: 3px 3px 40% 40%;
-  color: #fffbe1;
-  background: linear-gradient(#68ae2e, #26751f 60%, #194a15);
-  box-shadow:
-    0 3px 0 #123711,
-    0 4px 5px #071c15;
-  font:
-    900 12px/1 "Avenir Next",
-    sans-serif;
-  letter-spacing: 0.06em;
-  text-shadow: 0 2px #174c13;
-}
 .hub-offers-trigger:hover,
 .hub-offers-trigger[aria-expanded="true"] {
   transform: translateY(-3px) scale(1.05);
@@ -879,10 +860,6 @@
     width: 29px;
     height: 24px;
     font-size: 9px;
-  }
-  .hub-offers-ribbon {
-    padding-block: 3px;
-    font-size: 10px;
   }
   .legendary-offer-card-slot:not([data-rarity="legendary"]) {
     width: 98px;

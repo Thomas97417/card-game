@@ -153,12 +153,18 @@ describe("la vie sociale du refuge", () => {
     expect((screen.getByRole("button", { name: "Limite de don atteinte pour Bob" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("explains empty card requests and links back to the deck", async () => {
+  it("keeps empty card requests to one icon, one message and one deck link", async () => {
     render(<HubDock />);
     await openFriends();
     fireEvent.click(screen.getByRole("button", { name: "Demandes de cartes" }));
     expect(await screen.findByText("Aucune carte demandée aujourd’hui")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Faire ma demande depuis le deck" }).getAttribute("href")).toBe("/decks");
+    const requests = screen.getByRole("region", { name: "Cartes demandées par mes amis" });
+    const empty = requests.querySelector(".social-friends-empty")!;
+    expect(empty.children).toHaveLength(3);
+    expect(empty.querySelectorAll("img")).toHaveLength(1);
+    expect(requests.querySelector("p")).toBeNull();
+    expect(screen.queryByText(/Chaque aide envoyée te rapporte/)).toBeNull();
   });
 
   it("reports a failed card donation and never announces XP that was not awarded", async () => {

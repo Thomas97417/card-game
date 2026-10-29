@@ -59,10 +59,6 @@ export function FriendCardRequests({
       aria-label="Cartes demandées par mes amis"
       aria-busy={!requests}
     >
-      <p className="social-card-intro">
-        Partage tes exemplaires en réserve et gagne de l’XP de Rang :{" "}
-        <strong>1 XP</strong> par commune, <strong>3 XP</strong> par rare.
-      </p>
       {error && (
         <p className="social-notice social-error" role="alert">
           {error}
@@ -82,10 +78,6 @@ export function FriendCardRequests({
         <div className="hub-world-chat-empty social-friends-empty">
           <GameIcon kind="friends" size={60} />
           <strong>Aucune carte demandée aujourd’hui</strong>
-          <p>
-            Tes amis peuvent demander une carte commune ou rare depuis leur
-            deck, une fois par jour.
-          </p>
           <Link className="social-deck-link" to="/decks">
             Faire ma demande depuis le deck
           </Link>
@@ -139,7 +131,6 @@ export function FriendCardRequests({
                 <div className="social-card-request-footer">
                   <small>
                     Tes dons : {request.donated} / {request.donationLimit}
-                    <span>Limite selon ta meilleure ligue</span>
                   </small>
                   <button
                     type="button"
@@ -176,10 +167,6 @@ export function FriendCardRequests({
           })}
         </ul>
       )}
-      <p className="social-card-reset">
-        Les demandes expirent à minuit, heure de Paris. Les dons arrivent
-        directement dans la collection de ton ami.
-      </p>
     </section>
   );
 }

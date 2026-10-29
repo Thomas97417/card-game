@@ -13,6 +13,7 @@ import {
   getCombatType,
   maxCardLevel,
   upgradeCost,
+  evolutionOptions,
 } from "@sylve/game";
 import type {
   CardDefinition,
@@ -89,6 +90,7 @@ export function DeckWorkshop({
   const rarityFilters = useDeckWorkshopState((state) => state.rarityFilters);
   const factionFilters = useDeckWorkshopState((state) => state.factionFilters);
   const upgradeOnly = useDeckWorkshopState((state) => state.upgradeOnly);
+  const evolutionOnly = useDeckWorkshopState((state) => state.evolutionOnly);
   const {
     syncDeck,
     setDraft,
@@ -97,6 +99,7 @@ export function DeckWorkshop({
     toggleRarity,
     toggleFaction,
     toggleUpgradeOnly,
+    toggleEvolutionOnly,
     resetFilters,
   } = store.getState();
   const [picked, setPicked] = useState<string | null>(null);
@@ -176,7 +179,14 @@ export function DeckWorkshop({
         (!upgradeOnly ||
           ((card.level ?? 1) < maxCardLevel(card.rarity, card.baseId) &&
             (entries.get(card.id)?.copies ?? 0) >=
-              upgradeCost(card.level ?? 1, card.rarity))),
+              upgradeCost(card.level ?? 1, card.rarity))) &&
+        (!evolutionOnly ||
+          (soulProgress?.evolutionUnlocked === true &&
+            evolutionOptions(card.id).some(
+              (option) =>
+                entries.has(option.variantId) &&
+                (entries.get(card.id)?.copies ?? 0) >= option.cost,
+            ))),
     )
     .sort(
       (a, b) =>
@@ -571,7 +581,8 @@ export function DeckWorkshop({
                 (type !== null ||
                   (rarityFilters.length === 0 &&
                     factionFilters.length === 0 &&
-                    !upgradeOnly))
+                    !upgradeOnly &&
+                    !evolutionOnly))
                   ? "is-active"
                   : ""
               }
@@ -580,7 +591,8 @@ export function DeckWorkshop({
                 (type !== null ||
                   (rarityFilters.length === 0 &&
                     factionFilters.length === 0 &&
-                    !upgradeOnly))
+                    !upgradeOnly &&
+                    !evolutionOnly))
               }
               aria-label={label}
               title={label}
@@ -608,6 +620,21 @@ export function DeckWorkshop({
             }}
           >
             <GameIcon kind="cardUpgrade" size={34} />
+          </button>
+          <button
+            type="button"
+            className={evolutionOnly ? "is-active" : ""}
+            aria-label="Cartes évoluables"
+            title="Cartes évoluables"
+            aria-pressed={evolutionOnly}
+            disabled={!ready}
+            onClick={() => {
+              toggleEvolutionOnly();
+              setPicked(null);
+              setMessage(instructions);
+            }}
+          >
+            <GameIcon kind="sanctuary" size={34} />
           </button>
           <div className="workshop-secondary-filters">
             <div
