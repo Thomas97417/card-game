@@ -154,10 +154,13 @@ function PlayerProfileDialog({
         }}
       >
         <DialogContent appearance="game" className="social-profile-dialog">
-          <DialogTitle>{name}</DialogTitle>
-          <DialogDescription>Profil du gardien</DialogDescription>
+          <DialogTitle className="sr-only">{name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Profil du joueur, gardien actif et cartes équipées.
+          </DialogDescription>
           <RankedPlayerDetails
             ownerId={playerId}
+            playerName={name}
             onInspect={(selected, trigger) => {
               cardTrigger.current = trigger;
               setCard(selected);

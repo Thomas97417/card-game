@@ -290,7 +290,13 @@ export const playerProfile = query({
       const entry = owned.get(id);
       return entry ? [resolveCard(id, entry.level, entry.soulbinds)] : [];
     });
+    const [rank, guardian] = await Promise.all([
+      readRank(ctx, ownerId),
+      readHeroProgress(ctx, ownerId, cards),
+    ]);
     return {
+      rank: rank.rank,
+      guardian: { heroId: guardian.heroId, level: guardian.level },
       trophies: league.trophies,
       peakTrophies: league.peakTrophies,
       deckCapacity: league.deckCapacity,

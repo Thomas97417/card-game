@@ -25,6 +25,8 @@ const players: FunctionReturnType<typeof api.collection.leaderboard> = [
   { ownerId: "bob", name: "Sylvar", trophies: 1640, rank: 2, isCurrentPlayer: true, profile: { heroId: "north" } },
 ];
 const profile: FunctionReturnType<typeof api.collection.playerProfile> = {
+  rank: 12,
+  guardian: { heroId: "moon", level: 5 },
   trophies: 2860,
   peakTrophies: 3200,
   deckCapacity: 8,
@@ -105,7 +107,9 @@ describe("le classement du refuge", () => {
     expect(screen.getByText("Meilleure ligue")).toBeDefined();
     expect(screen.getByRole("list", { name: "Deck du joueur" }).children).toHaveLength(4);
     expect(screen.getAllByText("Niv. 5")).toHaveLength(4);
-    expect(first.parentElement?.nextElementSibling?.contains(screen.getByText("La garde de l’aube"))).toBe(true);
+    expect(first.parentElement?.nextElementSibling?.contains(screen.getByText("Cartes équipées"))).toBe(true);
+    expect(screen.queryByText("La garde de l’aube")).toBeNull();
+    expect(screen.queryByText(/4\/8 cartes/)).toBeNull();
     fireEvent.click(second);
     expect(first.getAttribute("aria-expanded")).toBe("false");
     expect(second.getAttribute("aria-expanded")).toBe("true");

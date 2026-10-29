@@ -8,7 +8,9 @@ import {
   within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getFunctionName } from "convex/server";
+import { getFunctionName, type FunctionReturnType } from "convex/server";
+import { DEFAULT_DECK, resolveCard } from "@sylve/game";
+import type { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { HubDock } from "./hub-dock";
 import type { FriendCardRequests } from "./friend-card-requests";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -56,6 +58,7 @@ const state = vi.hoisted(() => ({
     },
   ] as SocialMessage[],
   privateMessages: [] as SocialMessage[],
+  profile: undefined as FunctionReturnType<typeof api.collection.playerProfile> | undefined,
   send: vi.fn(),
   privateSend: vi.fn(),
   request: vi.fn(),
@@ -89,7 +92,7 @@ vi.mock("convex/react", () => ({
 }));
 vi.mock("@tanstack/react-query", () => ({
   useQuery: () => ({
-    data: { peakTrophies: 400, deck: null },
+    data: state.profile,
     isPending: false,
     isError: false,
   }),
@@ -125,6 +128,17 @@ beforeEach(() => {
     nextUnlock: { rank: 10, friends: 7 },
   };
   state.relationship = "none";
+  state.profile = {
+    rank: 5,
+    guardian: { heroId: "thorn", level: 7 },
+    trophies: 220,
+    peakTrophies: 400,
+    deckCapacity: 4,
+    deck: {
+      name: "Les sentinelles de Bob",
+      cards: DEFAULT_DECK.map((id) => resolveCard(id, 3)),
+    },
+  };
   state.cardRequests = [];
   state.privateMessages = [];
   for (const mutation of [
@@ -264,7 +278,26 @@ describe("la vie sociale du refuge", () => {
       await screen.findByRole("menuitem", { name: "Voir le profil" }),
     );
     const profile = await screen.findByRole("dialog", { name: "Bob" });
+    expect(within(profile).getByText("Rang 5")).toBeTruthy();
+    expect(within(profile).getByText("Gardien actif · Niveau 7")).toBeTruthy();
+    expect(within(profile).getByRole("img", { name: "Gardien des Ronces" }).getAttribute("src")).toBe("/art/heroes/hero-thorn.webp");
+    expect(within(profile).getByText("220")).toBeTruthy();
     expect(within(profile).getByText("400")).toBeTruthy();
+    expect(profile.querySelectorAll(".league-badge img")).toHaveLength(2);
+    expect(profile.querySelector(".league-division")).toBeNull();
+    expect(within(profile).queryByText("Les sentinelles de Bob")).toBeNull();
+    expect(within(profile).queryByText(/4\/4 cartes/)).toBeNull();
+    expect(within(profile).getByRole("list", { name: "Deck du joueur" }).children).toHaveLength(4);
+
+    const card = within(profile).getByRole("button", { name: /Voir Gardien du rempart/ });
+    card.focus();
+    fireEvent.click(card);
+    const cardDialog = await screen.findByRole("dialog", { name: "Gardien du rempart" });
+    expect(within(cardDialog).queryByRole("button", { name: /Améliorer|Ajouter au deck/ })).toBeNull();
+    fireEvent.keyDown(cardDialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Gardien du rempart" })).toBeNull());
+    expect(screen.getByRole("dialog", { name: "Bob" })).toBe(profile);
+    await waitFor(() => expect(document.activeElement).toBe(card));
   });
 
   it("shows friends and requests, accepts an invitation, and sends help only to an eligible friend", async () => {

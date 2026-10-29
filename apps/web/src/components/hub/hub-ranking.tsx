@@ -4,6 +4,7 @@ import { convexQuery } from "@convex-dev/react-query";
 import { Crown, RefreshCw } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { getCombatType, RARITY_LABELS, type CardDefinition } from "@sylve/game";
+import { heroDefinition } from "@sylve/game/hero-metadata";
 import { leagueAt } from "@sylve/game/leagues";
 import { CardUpgradeDialog } from "@/components/decks/card-upgrade-dialog";
 import { GuardianAvatar } from "@/components/guardian-avatar";
@@ -144,9 +145,11 @@ export function HubRanking({
 
 export function RankedPlayerDetails({
   ownerId,
+  playerName,
   onInspect,
 }: {
   ownerId: string;
+  playerName?: string;
   onInspect: (card: CardDefinition, trigger: HTMLButtonElement) => void;
 }) {
   const {
@@ -174,25 +177,65 @@ export function RankedPlayerDetails({
         </p>
       ) : (
         <>
-          <dl className="hub-ranking-records">
+          {playerName !== undefined && (
+            <header className="social-profile-hero">
+              <div className="social-profile-portrait">
+                <GuardianAvatar heroId={profile.guardian?.heroId} />
+              </div>
+              <div className="social-profile-identity">
+                <p className="social-profile-eyebrow">Profil du joueur</p>
+                <div className="social-profile-name">
+                  <h2>{playerName}</h2>
+                  {profile.rank !== undefined && (
+                    <span className="social-profile-rank">
+                      <Crown size={13} aria-hidden="true" /> Rang {profile.rank}
+                    </span>
+                  )}
+                </div>
+                <p className="social-profile-guardian-label">
+                  Gardien actif
+                  {profile.guardian && ` · Niveau ${profile.guardian.level}`}
+                </p>
+                <p className="social-profile-guardian-name">
+                  {heroDefinition(profile.guardian?.heroId).name}
+                </p>
+              </div>
+            </header>
+          )}
+          <dl className={`hub-ranking-records${playerName !== undefined ? " social-profile-stats" : ""}`}>
+            {playerName !== undefined && (
+              <div>
+                <dt>Trophées actuels</dt>
+                <dd><TrophyIcon />{profile.trophies.toLocaleString("fr-FR")}</dd>
+              </div>
+            )}
             <div>
               <dt>Record de trophées</dt>
-              <dd>{profile.peakTrophies.toLocaleString("fr-FR")}</dd>
+              <dd><TrophyIcon />{profile.peakTrophies.toLocaleString("fr-FR")}</dd>
             </div>
+            {playerName !== undefined && (
+              <div>
+                <dt>Ligue actuelle</dt>
+                <dd>
+                  <span aria-hidden="true"><LeagueBadge league={leagueAt(profile.trophies)} size={32} showDivision={false} /></span>
+                  {leagueAt(profile.trophies).label}
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Meilleure ligue</dt>
-              <dd>{leagueAt(profile.peakTrophies).label}</dd>
+              <dd>
+                <span aria-hidden="true"><LeagueBadge league={leagueAt(profile.peakTrophies)} size={32} showDivision={false} /></span>
+                {leagueAt(profile.peakTrophies).label}
+              </dd>
             </div>
           </dl>
           {profile.deck?.cards.length ? (
             <>
               <div className="hub-ranking-deck-heading">
                 <h4>
-                  <GameIcon kind="all" size={18} /> {profile.deck.name}
+                  <GameIcon kind="all" size={18} /> Cartes équipées
                 </h4>
-                <span>
-                  {profile.deck.cards.length}/{profile.deckCapacity} cartes
-                </span>
               </div>
               <ul className="hub-ranking-deck" aria-label="Deck du joueur">
                 {profile.deck.cards.map((card) => (

@@ -56,6 +56,42 @@ describe("classement public des gardiens", () => {
     const alice = await player(t, "alice");
     expect(await alice.client.query(api.collection.leaderboard, {})).toEqual([]);
     expect(await alice.client.query(api.collection.playerProfile, { ownerId: "unknown" })).toBeNull();
+    expect(await alice.client.query(api.collection.playerProfile, { ownerId: alice.ownerId })).toMatchObject({
+      rank: 1,
+      guardian: { heroId: "sylve", level: 1 },
+      trophies: 0,
+      deck: null,
+    });
+  });
+
+  it("shows live public rank and active guardian without exposing experience, rewards or currency", async () => {
+    const t = setup();
+    const alice = await player(t, "alice");
+    const bob = await player(t, "bob");
+    const [walletId, heroId] = await t.run(async (ctx) => Promise.all([
+      ctx.db.insert("wallets", {
+        ownerId: bob.ownerId, gold: 999, diamonds: 50, experience: 24,
+        rankRewardedThrough: 2, rankAcknowledgedThrough: 1,
+      }),
+      ctx.db.insert("heroes", {
+        ownerId: bob.ownerId, selectedHeroId: "moon", level: 5, peakMight: 100,
+        unlockedHeroIds: ["sylve", "moon", "thorn"],
+      }),
+    ]));
+    const profile = await alice.client.query(api.collection.playerProfile, { ownerId: bob.ownerId });
+    expect(profile).toEqual({
+      rank: 2,
+      guardian: { heroId: "moon", level: 5 },
+      trophies: 0, peakTrophies: 0, deckCapacity: 4, deck: null,
+    });
+    await t.run(async (ctx) => {
+      await ctx.db.patch(walletId, { experience: 150 });
+      await ctx.db.patch(heroId, { selectedHeroId: "thorn", level: 8 });
+    });
+    expect(await alice.client.query(api.collection.playerProfile, { ownerId: bob.ownerId })).toMatchObject({
+      rank: 6,
+      guardian: { heroId: "thorn", level: 8 },
+    });
   });
 
   it("orders current trophies with stable ties, skips deleted accounts and exposes public scores and the current guardian", async () => {
@@ -111,6 +147,6 @@ describe("classement public des gardiens", () => {
     expect(profile?.deck?.cards.map((card) => card.id)).toEqual(cardIds);
     expect(profile?.deck?.cards[0]).toEqual(resolveCard(cardIds[0]!, 7));
     expect(profile?.deck?.cards).toHaveLength(4);
-    expect(Object.keys(profile!).sort()).toEqual(["deck", "deckCapacity", "peakTrophies", "trophies"]);
+    expect(Object.keys(profile!).sort()).toEqual(["deck", "deckCapacity", "guardian", "peakTrophies", "rank", "trophies"]);
   });
 });
