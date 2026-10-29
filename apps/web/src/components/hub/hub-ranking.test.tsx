@@ -67,6 +67,18 @@ async function openRanking() {
 }
 
 describe("le classement du refuge", () => {
+  it("uses gold, silver and bronze podium medals while keeping other positions numbered", async () => {
+    rankingState = { data: [1, 2, 3, 4].map((rank) => ({ ...players[0]!, ownerId: `player-${rank}`, name: `Gardien ${rank}`, rank })) };
+    const { panel } = await openRanking();
+    for (const [rank, medal] of [[1, "gold"], [2, "silver"], [3, "bronze"]] as const) {
+      const player = within(panel).getByRole("button", { name: new RegExp(`#${rank}.*Gardien ${rank}`) });
+      expect(player.querySelector(".ranking-podium-icon")?.getAttribute("src")).toBe(`/art/ui/podium-${medal}.webp`);
+    }
+    const fourth = within(panel).getByRole("button", { name: /#4.*Gardien 4/ });
+    expect(fourth.querySelector(".ranking-podium-icon")).toBeNull();
+    expect(within(fourth).getByText("#4")).toBeTruthy();
+  });
+
   it("shows each active guardian by the player name and refreshes it without changing scores or opening profiles", async () => {
     const { panel, rerender } = await openRanking();
     const alice = within(panel).getByRole("button", { name: /#1.*Aëlys/ });

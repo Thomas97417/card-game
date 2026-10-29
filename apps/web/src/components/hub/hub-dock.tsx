@@ -27,16 +27,19 @@ import type { HubLegendaryOffersProps } from "./legendary-offers";
 const loadChat = () => import("./world-chat").then((module) => ({ default: module.WorldChat }));
 const loadRanking = () => import("./hub-ranking").then((module) => ({ default: module.HubRanking }));
 const loadFriends = () => import("./friends-panel").then((module) => ({ default: module.FriendsPanel }));
+const loadGuilds = () => import("./guilds-panel").then((module) => ({ default: module.GuildsPanel }));
 const loadOffers = () => import("./legendary-offers").then((module) => ({ default: module.LegendaryOffersDialog }));
 const WorldChat = lazy(loadChat);
 const HubRanking = lazy(loadRanking);
 const FriendsPanel = lazy(loadFriends);
+const GuildsPanel = lazy(loadGuilds);
 const LegendaryOffersDialog = lazy(loadOffers);
 
 // Hover/focus expresses intent; closed panels are never prefetched on a timer.
 const preloadChat = () => { void loadChat().catch(() => {}); };
 const preloadRanking = () => { void loadRanking().catch(() => {}); };
 const preloadFriends = () => { void loadFriends().catch(() => {}); };
+const preloadGuilds = () => { void loadGuilds().catch(() => {}); };
 const preloadOffers = () => { void loadOffers().catch(() => {}); };
 
 export function HubDock({
@@ -51,12 +54,15 @@ export function HubDock({
   children?: ReactNode;
 }) {
   const [activePanel, setActivePanel] = useState<
-    "ranking" | "missions" | "rewards" | "offers" | "chat" | "friends" | null
+    "ranking" | "missions" | "rewards" | "offers" | "chat" | "friends" | "guilds" | null
   >(null);
   const [conversation, setConversation] = useState<SocialPlayer | null>(null);
   const friendsOpen = activePanel === "friends";
   const friendsId = useId();
   const friendsTrigger = useRef<HTMLButtonElement>(null);
+  const guildsOpen = activePanel === "guilds";
+  const guildsId = useId();
+  const guildsTrigger = useRef<HTMLButtonElement>(null);
   const chatOpen = activePanel === "chat";
   const rankingOpen = activePanel === "ranking";
   const missionsOpen = activePanel === "missions";
@@ -81,13 +87,15 @@ export function HubDock({
         ? chatTrigger
         : activePanel === "friends"
           ? friendsTrigger
-          : activePanel === "missions"
-            ? missionsTrigger
-            : activePanel === "offers"
-              ? offersTrigger
-              : activePanel === "rewards"
-                ? rewardsTrigger
-                : rankingTrigger;
+          : activePanel === "guilds"
+            ? guildsTrigger
+            : activePanel === "missions"
+              ? missionsTrigger
+              : activePanel === "offers"
+                ? offersTrigger
+                : activePanel === "rewards"
+                  ? rewardsTrigger
+                  : rankingTrigger;
     trigger.current?.focus({ preventScroll: true });
   }
 
@@ -176,6 +184,20 @@ export function HubDock({
               <HubRanking id={rankingId} onClose={closePanel} />
             </Suspense>
           )}
+          {guildsOpen && (
+            <Suspense fallback={
+              <PanelLoading
+                id={guildsId}
+                title="Guildes"
+                icon="guild"
+                closeLabel="Fermer les guildes"
+                className="hub-guilds"
+                onClose={closePanel}
+              />
+            }>
+              <GuildsPanel id={guildsId} onClose={closePanel} />
+            </Suspense>
+          )}
           {rewardsOpen && (
             <RewardsPanel
               {...dailyRewards}
@@ -243,6 +265,19 @@ export function HubDock({
             >
               <GameIcon kind="friends" size={52} />
               <span>Amis</span>
+            </button>
+            <button
+              ref={guildsTrigger}
+              type="button"
+              className="hub-dock-shortcut"
+              aria-expanded={guildsOpen}
+              aria-controls={guildsOpen ? guildsId : undefined}
+              onPointerEnter={preloadGuilds}
+              onFocus={preloadGuilds}
+              onClick={() => setActivePanel(guildsOpen ? null : "guilds")}
+            >
+              <GameIcon kind="guild" size={52} />
+              <span>Guilde</span>
             </button>
             <button
               ref={missionsTrigger}

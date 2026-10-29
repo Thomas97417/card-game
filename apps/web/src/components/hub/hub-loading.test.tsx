@@ -5,6 +5,7 @@ import { HubDock } from "./hub-dock";
 const loaded = vi.hoisted(() => ({
   ranking: vi.fn(),
   friends: vi.fn(),
+  guilds: vi.fn(),
   chat: vi.fn(),
   offers: vi.fn(),
 }));
@@ -15,6 +16,10 @@ vi.mock("./hub-ranking", () => {
 vi.mock("./friends-panel", () => {
   loaded.friends();
   return { FriendsPanel: () => null };
+});
+vi.mock("./guilds-panel", () => {
+  loaded.guilds();
+  return { GuildsPanel: () => <section aria-label="Guildes" /> };
 });
 vi.mock("./world-chat", () => {
   loaded.chat();
@@ -34,12 +39,22 @@ describe("village optional modules", () => {
     fireEvent.pointerEnter(ranking);
     await waitFor(() => expect(loaded.ranking).toHaveBeenCalledOnce());
     expect(screen.queryByRole("region", { name: "Classement mondial" })).toBeNull();
-    for (const loader of [loaded.friends, loaded.chat, loaded.offers]) {
+    for (const loader of [loaded.friends, loaded.guilds, loaded.chat, loaded.offers]) {
       expect(loader).not.toHaveBeenCalled();
     }
 
     fireEvent.click(ranking);
     await screen.findByRole("region", { name: "Classement mondial" });
     expect(loaded.ranking).toHaveBeenCalledOnce();
+  });
+
+  it("preloads guilds only when the shortcut is focused", async () => {
+    render(<HubDock />);
+    expect(loaded.guilds).not.toHaveBeenCalled();
+    fireEvent.focus(screen.getByRole("button", { name: "Guilde" }));
+    await waitFor(() => expect(loaded.guilds).toHaveBeenCalledOnce());
+    expect(screen.queryByRole("region", { name: "Guildes" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Guilde" }));
+    await screen.findByRole("region", { name: "Guildes" });
   });
 });
