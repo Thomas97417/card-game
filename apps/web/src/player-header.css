@@ -185,6 +185,46 @@
   pointer-events: none;
   background: linear-gradient(#112a2299, transparent);
 }
+.payment-feedback {
+  position: fixed;
+  z-index: 40;
+  top: calc(var(--game-header-height, 100px) - 12px);
+  inset-inline-end: max(16px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: min(520px, calc(100% - 32px));
+  min-height: 50px;
+  margin: 0;
+  padding: 6px 8px 6px 14px;
+  border: 1px solid #b7ac7444;
+  border-radius: 14px;
+  background: #102d25f5;
+  color: #eadcbb;
+  box-shadow: 0 8px 28px #051c1580;
+  backdrop-filter: blur(8px);
+  font: 12px/1.5 "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  text-align: left;
+}
+.payment-feedback > svg {
+  flex-shrink: 0;
+}
+.payment-feedback > span {
+  flex: 1;
+  min-width: 0;
+}
+.payment-feedback > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
 .header-account-actions,
 .player-header-actions {

@@ -300,37 +300,6 @@
   margin: 0 auto;
   white-space: normal;
 }
-.sanctuary-feedback.emerald-payment-feedback {
-  position: absolute;
-  z-index: 40;
-  top: calc(var(--game-header-height, 100px) - 12px);
-  inset-inline-end: max(16px, env(safe-area-inset-right));
-  width: fit-content;
-  max-width: min(520px, calc(100% - 32px));
-  margin: 0;
-  padding: 6px 8px 6px 14px;
-  border-radius: 14px;
-  background: #102d25f5;
-  box-shadow: 0 8px 28px #051c1580;
-  backdrop-filter: blur(8px);
-  text-align: left;
-}
-.emerald-payment-feedback > span {
-  flex: 1;
-  min-width: 0;
-}
-.emerald-payment-feedback > svg {
-  flex-shrink: 0;
-}
-.emerald-payment-feedback button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 5px;
-}
 .emerald-received-dialog[data-slot="dialog-content"] {
   width: min(520px, calc(100% - 24px));
   max-height: calc(100dvh - 24px);

@@ -188,10 +188,7 @@ export function EmeraldPaymentFeedback({
     );
   }
   return (
-    <div
-      className="sanctuary-feedback emerald-payment-feedback"
-      role="status"
-    >
+    <div className="payment-feedback" role="status">
       {pending ? (
         <LoaderCircle size={17} className="animate-spin" />
       ) : (
