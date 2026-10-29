@@ -93,13 +93,13 @@ describe("la fonderie à l’écran", () => {
     const before = sceneOptions.state().tick;
     act(() => sceneOptions.frame(4000)); expect(sceneOptions.state().tick).toBe(before);
   });
-  it("opens the real skill tree, explains prerequisites and buys with the displayed revision", async () => {
+  it("opens the unified tree, hides distant skills and buys with the displayed revision", async () => {
     board.progress!.revision = 8; board.progress!.cycle.shards = 100;
     render(<FoundryPage />); await ready();
     fireEvent.click(screen.getByRole("button", { name: /Ouvrir l’arbre de compétences/ }));
     expect(screen.getByRole("dialog", { name: "Les voies de l’Écho" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: /Cœur du forgeron, 240 éclats/ }));
-    expect(disabled(screen.getByRole("button", { name: "Apprendre Cœur du forgeron" }))).toBe(true);
+    expect(screen.getByRole("region", { name: "Grand arbre de compétences" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Cœur du forgeron,/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Poigne de cuivre, 30 éclats/ }));
     fireEvent.click(screen.getByRole("button", { name: "Apprendre Poigne de cuivre" }));
     await waitFor(() => expect(mutations.get("foundry:purchaseSkill")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 8, skill: "forge-grip" }));
