@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FOUNDRY, TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound, deliverFoundryOrder,
-  foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
+  RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryInput, type FoundryRound } from "./foundry";
 
 const aim: FoundryInput = { x: 0, z: 0, active: true };
@@ -29,10 +29,44 @@ describe("la fonderie déterministe", () => {
     while (!long.ended) stepFoundry(long, { ...aim, active: false });
     expect(long.tick).toBe(FOUNDRY.maxTicks);
   });
-  it("keeps runners inside the board and sixteen live relics after destruction", () => {
+  it("keeps all relics inside the board and sixteen live relics after destruction", () => {
     const state = harvest(round()); expect(state.targets).toHaveLength(16);
     expect(state.targets.every((target) => Math.abs(target.x) < FOUNDRY.width / 2 && Math.abs(target.z) < FOUNDRY.depth / 2)).toBe(true);
     expect(state.broken).toBeGreaterThan(20);
+  });
+  it("moves every relic kind with the runner fastest and bounces at the board edges", () => {
+    const state = round();
+    for (let seed = 1; seed <= 100 && new Set(state.targets.map((t) => t.kind)).size < RELIC_KINDS.length; seed++) {
+      state.targets = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith").targets;
+    }
+    expect(new Set(state.targets.map((t) => t.kind)).size).toBe(RELIC_KINDS.length);
+    const before = structuredClone(state.targets);
+    for (let tick = 0; tick < 80; tick++) stepFoundry(state, { ...aim, active: false });
+    expect(state.version).toBe(2);
+    for (const relic of state.targets) {
+      const original = before.find((t) => t.id === relic.id)!;
+      expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
+      expect(Math.abs(relic.x)).toBeLessThanOrEqual(FOUNDRY.width / 2 - 0.55);
+      expect(Math.abs(relic.z)).toBeLessThanOrEqual(FOUNDRY.depth / 2 - 0.55);
+    }
+    const runner = state.targets.find((t) => t.kind === "runner")!;
+    const geode = state.targets.find((t) => t.kind === "geode")!;
+    expect(Math.hypot(runner.vx, runner.vz)).toBeGreaterThan(Math.hypot(geode.vx, geode.vz) * 3);
+    const target = state.targets[0]!; target.x = FOUNDRY.width / 2 - 0.551; target.vx = 0.012;
+    target.z = FOUNDRY.depth / 2 - 0.551; target.vz = 0.012;
+    stepFoundry(state, { ...aim, active: false });
+    expect(target.vx).toBeLessThan(0); expect(target.vz).toBeLessThan(0);
+  });
+  it("keeps saved V1 rounds and their replacement relics on the original movement rules", () => {
+    const state = round(); state.version = 1;
+    for (const t of state.targets) if (t.kind !== "runner") { t.vx = 0; t.vz = 0; }
+    const stationary = state.targets.find((t) => t.kind !== "runner")!;
+    const position = { x: stationary.x, z: stationary.z };
+    for (let tick = 0; tick < 20; tick++) stepFoundry(state, { ...aim, active: false });
+    expect(stationary).toMatchObject(position);
+    stationary.hp = 1;
+    stepFoundry(state, { ...position, active: true });
+    expect(state.targets.filter((t) => t.kind !== "runner").every((t) => t.vx === 0 && t.vz === 0)).toBe(true);
   });
   it("applies area damage, bounded chaos chains, spring recovery, and the tool cooldown", () => {
     const state = createFoundryRound(7, newFoundryCycle(), "resonance", "smith");

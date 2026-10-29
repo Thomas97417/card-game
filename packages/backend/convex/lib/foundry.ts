@@ -12,7 +12,7 @@ export const foundryCycle = v.object({
 });
 export const foundrySummary = v.object({ shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), seconds: v.number() });
 export const foundryRound = v.object({
-  version: v.literal(1), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
+  version: v.union(v.literal(1), v.literal(2)), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
   stats: v.object({ damage: v.number(), interval: v.number(), radius: v.number(), critical: v.number(), loot: v.number(), concentration: v.number() }),
   tool: foundryTool, assistant: foundryAssistant, nextStrike: v.number(), shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), ended: v.boolean(),
   targets: v.array(v.object({ id: v.number(), kind: v.union(v.literal("urn"), v.literal("geode"), v.literal("runner"), v.literal("spring"), v.literal("chaos")),

@@ -2,7 +2,7 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY } from "@sylve/game/foundry";
+import { FOUNDRY, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -58,6 +58,24 @@ describe("la fonderie connectée", () => {
     await expect(bob.client.mutation(api.foundry.submitInputs, { ...args, expectedOwnerId: bob.ownerId })).rejects.toThrow("introuvable");
     await expect(alice.client.mutation(api.foundry.finishRound, { expectedOwnerId: alice.ownerId, roundId: round._id })).rejects.toThrow("terminée");
     expect((await alice.client.query(api.foundry.board, {})).round?.state).toEqual(results[0]);
+  });
+  it("replays moving relics exactly and can resume a persisted V1 round", async () => {
+    const t = setup(); const alice = await player(t, "alice");
+    const round = await begin(alice);
+    expect(round.state.version).toBe(2);
+    expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
+    const inputs = Array.from({ length: 40 }, (_, i) => ({ x: Math.sin(i / 8) * 4, z: Math.cos(i / 9) * 2, active: true }));
+    const expected = structuredClone(round.state); inputs.forEach((input) => stepFoundry(expected, input));
+    vi.setSystemTime(Date.now() + 2000);
+    const args = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick: 0, inputs };
+    expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    const legacy = structuredClone(expected); legacy.version = 1;
+    legacy.targets.forEach((relic) => { if (relic.kind !== "runner") { relic.vx = 0; relic.vz = 0; } });
+    await t.run((ctx) => ctx.db.patch(round._id, { state: legacy }));
+    const resumed = structuredClone(legacy); inputs.forEach((input) => stepFoundry(resumed, input));
+    vi.setSystemTime(Date.now() + 2000);
+    expect(await alice.client.mutation(api.foundry.submitInputs, { ...args, startTick: 40 })).toEqual(resumed);
   });
   it("settles each round once, closes an unfunded chantier, and preserves permanent mastery on restart", async () => {
     const t = setup(); const alice = await player(t, "alice");

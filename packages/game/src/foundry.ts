@@ -1,6 +1,6 @@
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 1, stepMs: 50, maxTicks: 1500, batchTicks: 40, maxBatchTicks: 100,
+  version: 2, stepMs: 50, maxTicks: 1500, batchTicks: 40, maxBatchTicks: 100,
   maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1,
   upgradeCosts: [50, 100, 200], orderCosts: [100, 200, 350, 550, 850],
   orders: ["Rallumer la balise", "Renforcer les portes", "Accorder le sanctuaire", "Réparer les sentinelles", "Éveiller le cœur du refuge"],
@@ -39,11 +39,11 @@ export const BLESSINGS: Record<FoundryBlessing, { name: string; detail: string; 
 export const RELIC_KINDS = ["urn", "geode", "runner", "spring", "chaos"] as const;
 export type RelicKind = (typeof RELIC_KINDS)[number];
 export const RELICS = {
-  urn: { name: "Urne d’ambre", hp: 4, loot: [3, 6], weight: 48, color: 0xc68a49, detail: "Fragile et généreuse" },
-  geode: { name: "Géode ancienne", hp: 14, loot: [14, 23], weight: 20, color: 0x75c9cf, detail: "Résistante, riche en éclats" },
-  runner: { name: "Relique fuyante", hp: 3, loot: [5, 10], weight: 13, color: 0xe3b44e, detail: "Se déplace sur l’établi" },
-  spring: { name: "Source vivante", hp: 5, loot: [1, 3], weight: 12, color: 0x6ab889, detail: "Rend 8 points de concentration" },
-  chaos: { name: "Cœur du Chaos", hp: 6, loot: [6, 12], weight: 7, color: 0xbc7cd7, detail: "Explose sur les objets voisins" },
+  urn: { name: "Urne d’ambre", hp: 4, loot: [3, 6], weight: 48, color: 0xc68a49, speed: 0.012, detail: "Fragile et généreuse" },
+  geode: { name: "Géode ancienne", hp: 14, loot: [14, 23], weight: 20, color: 0x75c9cf, speed: 0.008, detail: "Résistante, riche en éclats" },
+  runner: { name: "Relique fuyante", hp: 3, loot: [5, 10], weight: 13, color: 0xe3b44e, speed: 0.033, detail: "Se déplace sur l’établi" },
+  spring: { name: "Source vivante", hp: 5, loot: [1, 3], weight: 12, color: 0x6ab889, speed: 0.015, detail: "Rend 8 points de concentration" },
+  chaos: { name: "Cœur du Chaos", hp: 6, loot: [6, 12], weight: 7, color: 0xbc7cd7, speed: 0.018, detail: "Explose sur les objets voisins" },
 } as const;
 export interface FoundryCycle {
   number: number; shards: number; orderIndex: number; roundsLeft: number;
@@ -54,7 +54,7 @@ export interface FoundryStats { damage: number; interval: number; radius: number
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
@@ -95,13 +95,17 @@ function spawn(state: FoundryRound): FoundryRelic {
     if (state.targets.every((t) => Math.hypot(t.x - x, t.z - z) > 0.95)) break;
   }
   const angle = random(state) * Math.PI * 2;
+  // Persist velocities so pauses, retries and server replays use the same path.
+  // V1 rounds finish with their original rules, including newly spawned relics.
+  const speed = state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
   return { id: state.nextId++, kind, x, z, hp: RELICS[kind].hp, maxHp: RELICS[kind].hp,
-    vx: kind === "runner" ? Math.cos(angle) * 0.033 : 0,
-    vz: kind === "runner" ? Math.sin(angle) * 0.027 : 0, phase: random(state) * Math.PI * 2 };
+    vx: Math.cos(angle) * speed,
+    vz: state.version === 1 ? kind === "runner" ? Math.sin(angle) * 0.027 : 0 : Math.sin(angle) * speed * (0.027 / 0.033),
+    phase: random(state) * Math.PI * 2 };
 }
 export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant): FoundryRound {
   const stats = foundryStats(cycle, tool, assistant);
-  const state: FoundryRound = { version: 1, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: FOUNDRY.version, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, assistant, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [] };
   for (let i = 0; i < FOUNDRY.maxTargets; i++) state.targets.push(spawn(state));
   return state;
