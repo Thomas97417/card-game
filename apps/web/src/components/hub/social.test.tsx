@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
-import { DEFAULT_DECK, resolveCard } from "@sylve/game";
+import { DEFAULT_DECK, MAX_RANK, resolveCard } from "@sylve/game";
 import type { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { HubDock } from "./hub-dock";
 import type { FriendCardRequests } from "./friend-card-requests";
@@ -130,6 +130,7 @@ beforeEach(() => {
   state.relationship = "none";
   state.profile = {
     rank: 5,
+    rankProgress: { earned: 12, required: 30 },
     guardian: { heroId: "thorn", level: 7 },
     trophies: 220,
     peakTrophies: 400,
@@ -279,6 +280,11 @@ describe("la vie sociale du refuge", () => {
     );
     const profile = await screen.findByRole("dialog", { name: "Bob" });
     expect(within(profile).getByText("Rang 5")).toBeTruthy();
+    expect(within(profile).queryByText("Profil du joueur", { exact: true })).toBeNull();
+    expect(within(profile).getByText("12 / 30 XP")).toBeTruthy();
+    const experience = within(profile).getByRole("progressbar", { name: "Expérience du rang 5" });
+    expect(experience.getAttribute("value")).toBe("12");
+    expect(experience.getAttribute("max")).toBe("30");
     expect(within(profile).getByText("Gardien actif · Niveau 7")).toBeTruthy();
     expect(within(profile).getByRole("img", { name: "Gardien des Ronces" }).getAttribute("src")).toBe("/art/heroes/hero-thorn.webp");
     expect(within(profile).getByText("220")).toBeTruthy();
@@ -298,6 +304,31 @@ describe("la vie sociale du refuge", () => {
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Gardien du rempart" })).toBeNull());
     expect(screen.getByRole("dialog", { name: "Bob" })).toBe(profile);
     await waitFor(() => expect(document.activeElement).toBe(card));
+  });
+
+  it("refreshes rank experience after a promotion and shows a full bar at maximum rank", async () => {
+    const view = render(<HubDock />);
+    await openWorld();
+    fireEvent.click(screen.getByRole("button", { name: "Actions pour Bob" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Voir le profil" }));
+    const profile = await screen.findByRole("dialog", { name: "Bob" });
+    expect(within(profile).getByText("Vers le rang 6")).toBeTruthy();
+
+    state.profile = { ...state.profile!, rank: 6, rankProgress: { earned: 4, required: 50 } };
+    view.rerender(<HubDock />);
+    expect(within(profile).getByText("Rang 6")).toBeTruthy();
+    expect(within(profile).getByText("4 / 50 XP")).toBeTruthy();
+    expect(within(profile).getByText("Vers le rang 7")).toBeTruthy();
+    expect(within(profile).queryByText("12 / 30 XP")).toBeNull();
+
+    state.profile = { ...state.profile!, rank: MAX_RANK, rankProgress: { earned: 0, required: 0 } };
+    view.rerender(<HubDock />);
+    const experience = within(profile).getByRole("progressbar", { name: `Expérience du rang ${MAX_RANK}` });
+    expect(within(profile).getByText("Rang maximum")).toBeTruthy();
+    expect(within(profile).getByText("MAX")).toBeTruthy();
+    expect(experience.getAttribute("value")).toBe("1");
+    expect(experience.getAttribute("max")).toBe("1");
+    expect(within(profile).queryByText(/Vers le rang|0 \/ 0 XP/)).toBeNull();
   });
 
   it("shows friends and requests, accepts an invitation, and sends help only to an eligible friend", async () => {

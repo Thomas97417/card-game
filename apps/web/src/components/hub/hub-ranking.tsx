@@ -183,7 +183,6 @@ export function RankedPlayerDetails({
                 <GuardianAvatar heroId={profile.guardian?.heroId} />
               </div>
               <div className="social-profile-identity">
-                <p className="social-profile-eyebrow">Profil du joueur</p>
                 <div className="social-profile-name">
                   <h2>{playerName}</h2>
                   {profile.rank !== undefined && (
@@ -192,6 +191,30 @@ export function RankedPlayerDetails({
                     </span>
                   )}
                 </div>
+                {profile.rankProgress && (
+                  <div className="social-profile-experience">
+                    <div>
+                      <span>
+                        {profile.rankProgress.required > 0
+                          ? `Vers le rang ${profile.rank + 1}`
+                          : "Rang maximum"}
+                      </span>
+                      <strong>
+                        {profile.rankProgress.required > 0
+                          ? `${profile.rankProgress.earned.toLocaleString("fr-FR")} / ${profile.rankProgress.required.toLocaleString("fr-FR")} XP`
+                          : "MAX"}
+                      </strong>
+                    </div>
+                    <progress
+                      aria-label={`Expérience du rang ${profile.rank}`}
+                      aria-valuetext={profile.rankProgress.required > 0
+                        ? `${profile.rankProgress.earned} sur ${profile.rankProgress.required} XP`
+                        : "Rang maximum"}
+                      value={profile.rankProgress.required > 0 ? profile.rankProgress.earned : 1}
+                      max={profile.rankProgress.required || 1}
+                    />
+                  </div>
+                )}
                 <p className="social-profile-guardian-label">
                   Gardien actif
                   {profile.guardian && ` · Niveau ${profile.guardian.level}`}

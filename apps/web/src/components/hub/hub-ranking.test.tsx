@@ -26,6 +26,7 @@ const players: FunctionReturnType<typeof api.collection.leaderboard> = [
 ];
 const profile: FunctionReturnType<typeof api.collection.playerProfile> = {
   rank: 12,
+  rankProgress: { earned: 18, required: 50 },
   guardian: { heroId: "moon", level: 5 },
   trophies: 2860,
   peakTrophies: 3200,

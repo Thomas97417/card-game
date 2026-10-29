@@ -58,13 +58,14 @@ describe("classement public des gardiens", () => {
     expect(await alice.client.query(api.collection.playerProfile, { ownerId: "unknown" })).toBeNull();
     expect(await alice.client.query(api.collection.playerProfile, { ownerId: alice.ownerId })).toMatchObject({
       rank: 1,
+      rankProgress: { earned: 0, required: 15 },
       guardian: { heroId: "sylve", level: 1 },
       trophies: 0,
       deck: null,
     });
   });
 
-  it("shows live public rank and active guardian without exposing experience, rewards or currency", async () => {
+  it("shows live rank progress and the active guardian without exposing total experience, rewards or currency", async () => {
     const t = setup();
     const alice = await player(t, "alice");
     const bob = await player(t, "bob");
@@ -81,6 +82,7 @@ describe("classement public des gardiens", () => {
     const profile = await alice.client.query(api.collection.playerProfile, { ownerId: bob.ownerId });
     expect(profile).toEqual({
       rank: 2,
+      rankProgress: { earned: 9, required: 45 },
       guardian: { heroId: "moon", level: 5 },
       trophies: 0, peakTrophies: 0, deckCapacity: 4, deck: null,
     });
@@ -90,6 +92,7 @@ describe("classement public des gardiens", () => {
     });
     expect(await alice.client.query(api.collection.playerProfile, { ownerId: bob.ownerId })).toMatchObject({
       rank: 6,
+      rankProgress: { earned: 0, required: 50 },
       guardian: { heroId: "thorn", level: 8 },
     });
   });
@@ -147,6 +150,6 @@ describe("classement public des gardiens", () => {
     expect(profile?.deck?.cards.map((card) => card.id)).toEqual(cardIds);
     expect(profile?.deck?.cards[0]).toEqual(resolveCard(cardIds[0]!, 7));
     expect(profile?.deck?.cards).toHaveLength(4);
-    expect(Object.keys(profile!).sort()).toEqual(["deck", "deckCapacity", "guardian", "peakTrophies", "rank", "trophies"]);
+    expect(Object.keys(profile!).sort()).toEqual(["deck", "deckCapacity", "guardian", "peakTrophies", "rank", "rankProgress", "trophies"]);
   });
 });

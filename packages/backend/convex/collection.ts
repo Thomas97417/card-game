@@ -296,6 +296,7 @@ export const playerProfile = query({
     ]);
     return {
       rank: rank.rank,
+      rankProgress: { earned: rank.earned, required: rank.required },
       guardian: { heroId: guardian.heroId, level: guardian.level },
       trophies: league.trophies,
       peakTrophies: league.peakTrophies,

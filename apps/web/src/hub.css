@@ -882,14 +882,8 @@
   box-shadow: 0 0 0 4px #c5a76b12, 0 8px 24px #081c1966;
 }
 .social-profile-identity {
+  flex: 1;
   min-width: 0;
-}
-.social-profile-eyebrow {
-  margin-bottom: 9px;
-  color: #c7b789;
-  font-size: 10px;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
 }
 .social-profile-name {
   display: flex;
@@ -914,6 +908,45 @@
   background: #c9a45414;
   color: #edce8c;
   font-size: 12px;
+}
+.social-profile-experience {
+  width: min(300px, 100%);
+  margin-top: 12px;
+}
+.social-profile-experience > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 10px;
+  margin-bottom: 5px;
+  color: #a9bba6;
+  font-size: 10px;
+}
+.social-profile-experience strong {
+  color: #a4e1d2;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.social-profile-experience progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  appearance: none;
+  border: 1px solid #8abdb94d;
+  border-radius: 5px;
+  background: #071c18;
+}
+.social-profile-experience progress::-webkit-progress-bar {
+  background: #071c18;
+}
+.social-profile-experience progress::-webkit-progress-value {
+  border-radius: 4px;
+  background: linear-gradient(#6dd4c6, #239c9d);
+}
+.social-profile-experience progress::-moz-progress-bar {
+  border-radius: 4px;
+  background: linear-gradient(#6dd4c6, #239c9d);
 }
 .social-profile-guardian-label {
   margin-top: 12px;
@@ -964,10 +997,6 @@
   }
   .social-profile-dialog .social-profile-name h2 {
     font-size: 28px;
-  }
-  .social-profile-eyebrow {
-    font-size: 8px;
-    letter-spacing: 1.2px;
   }
   .social-profile-guardian-label {
     margin-top: 9px;
