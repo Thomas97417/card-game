@@ -24,8 +24,9 @@ export default function NotFound() {
           aria-hidden="true"
           className="pointer-events-none relative mb-5 flex h-52 w-full max-w-[340px] items-center justify-center select-none sm:h-64 sm:max-w-[420px]"
         >
-          <span className="font-serif text-[10.5rem] leading-none tracking-[-0.06em] text-[#e1c183]/40 sm:text-[14rem]">
-            404
+          <span className="flex gap-[0.5em] font-serif text-[10.5rem] leading-none tracking-[-0.06em] text-[#e1c183]/40 sm:text-[14rem]">
+            <span>4</span>
+            <span>4</span>
           </span>
           <div className="absolute inset-x-[20%] inset-y-[10%] rounded-full bg-[#7edbce]/15 blur-3xl" />
           <img
@@ -33,7 +34,7 @@ export default function NotFound() {
             alt=""
             width={512}
             height={512}
-            className="absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 object-contain drop-shadow-[0_12px_32px_#0d211b] sm:h-72 sm:w-72"
+            className="absolute -bottom-4 left-1/2 h-56 w-56 -translate-x-1/2 object-contain drop-shadow-[0_12px_32px_#0d211b] sm:-bottom-5 sm:h-72 sm:w-72"
           />
         </div>
 
