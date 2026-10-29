@@ -20,6 +20,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
 | `foundry-building.webp` | Bâtiment transparent de la Fonderie des Échos, superposé au panorama |
+| `foundry-interior-v1.webp` | Intérieur peint de la fonderie, grand établi accueillant les objets 3D |
 | `duel-arena-overhead.webp` | Terrain de combat |
 | `forest-arena.png` | Fond de la page d’accueil |
 | `screenshots/duel-in-progress.jpg` | Capture d’une vraie partie au tour 13, présentée sur l’accueil public |
@@ -31,7 +32,7 @@ Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit 
 
 Les trois premières places du classement des joueurs et des guildes partagent les médailles `ui/podium-gold.webp`, `ui/podium-silver.webp` et `ui/podium-bronze.webp`, générées avec ImageGen intégré. Le chiffre est intégré à chaque médaille ; un libellé de rang reste accessible aux lecteurs d’écran. À partir de la quatrième place, le rang est affiché en texte.
 
-Le bâtiment de la Fonderie des Échos a été généré avec ImageGen intégré, en prenant le panorama comme référence de style et de perspective. Le WebP de 640 × 640 conserve sa transparence ; son prompt exact figure dans le manifeste. L’intérieur, les trois marteaux et les cinq reliques sont des modèles 3D procéduraux Three.js.
+Le bâtiment de la Fonderie des Échos a été généré avec ImageGen intégré, en prenant le panorama comme référence de style et de perspective. Le WebP de 640 × 640 conserve sa transparence ; son prompt exact figure dans le manifeste. Le décor intérieur `foundry-interior-v1.webp` (1672 × 941) a aussi été généré avec ImageGen intégré, avec les intérieurs de l’atelier et de la maison des gardiens comme références de style et le bâtiment comme référence architecturale. Son prompt exact figure dans le manifeste. Son établi volontairement vide accueille les trois marteaux, les cinq reliques, leurs ombres et les fragments en 3D procédurale Three.js, dans un canvas transparent.
 
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 

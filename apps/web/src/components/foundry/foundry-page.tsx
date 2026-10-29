@@ -47,9 +47,11 @@ export function FoundryPage() {
   const [notice, setNotice] = useState("");
   const [sound, setSound] = useState(true);
   const [help, setHelp] = useState(false);
+  const [equipment, setEquipment] = useState(false);
   const [, tick] = useState(0);
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const sidebar = useRef<HTMLElement>(null);
   const scene = useRef<FoundryScene | null>(null);
   const audio = useRef<Audio | null>(null);
   const session = useRef<FoundrySession | null>(null);
@@ -165,6 +167,7 @@ export function FoundryPage() {
   const endState = cycle?.status === "failed" || (cycle?.status === "completed" && !cycle.choices.length);
   function revision(current: Board) { return { expectedOwnerId: current.ownerId, revision: current.progress!.revision }; }
   function move(event: React.PointerEvent<HTMLDivElement>) {
+    if (event.target !== host.current && !(event.target instanceof HTMLCanvasElement) && !event.currentTarget.hasPointerCapture?.(event.pointerId)) { aim.current.active = false; return; }
     if (event.pointerType !== "mouse" && !event.buttons) return;
     const next = scene.current?.aim(event.clientX, event.clientY); if (next) aim.current = next;
   }
@@ -172,16 +175,18 @@ export function FoundryPage() {
     if (event.key === "Escape") { event.preventDefault(); pause(); return; }
     const directions: Record<string, [number, number]> = { ArrowLeft: [-0.28, 0], ArrowRight: [0.28, 0], ArrowUp: [0, -0.28], ArrowDown: [0, 0.28] };
     const direction = directions[event.key]; if (!direction || !runtime?.running) return;
-    event.preventDefault(); aim.current = { x: Math.max(-5.6, Math.min(5.6, aim.current.x + direction[0])), z: Math.max(-3.4, Math.min(3.4, aim.current.z + direction[1])), active: true };
+    event.preventDefault(); aim.current = scene.current?.nudge(aim.current, direction[0], direction[1]) ?? aim.current;
   }
   return (
-    <main className="foundry-page">
+    <main className="foundry-page" data-phase={phase}>
+      <img className="foundry-background" src="/art/foundry-interior-v1.webp" alt="" aria-hidden="true" draggable={false} />
+      <div className="foundry-background-shade" aria-hidden="true" />
       <GameHeader />
       <div className="foundry-heading">
         <div><span className="foundry-eyebrow">L’art du feu et du vivant</span><h1>La Fonderie des Échos</h1><p>Brise les reliques. Honore les commandes. Fais vibrer le refuge.</p></div>
-        <div className="foundry-meta"><span><Sparkles size={15} /><strong>{progress?.mastery ?? 0}</strong> maîtrise</span><button type="button" onClick={() => { pause(); setHelp(!help); }} aria-expanded={help}><BookOpen size={16} /> Guide</button></div>
+        <div className="foundry-meta"><span><Sparkles size={15} /><strong>{progress?.mastery ?? 0}</strong> maîtrise</span><button type="button" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={16} /> Guide</button></div>
       </div>
-      {help && <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Déplace la souris : le marteau frappe tout seul.</strong> Sur mobile, maintiens le doigt sur l’établi. Les flèches déplacent aussi la visée. Échap met en pause.</p><p>Chaque commande doit être livrée en deux manches. Dépense tes éclats en améliorations ou garde-les pour la livraison. Les bénédictions durent tout le chantier ; la maîtrise et les outils restent acquis.</p><div>{RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>}
+
       <div className="foundry-layout">
         <section className="foundry-play-column" aria-label="Établi de la fonderie">
           <div className="foundry-viewport" ref={stage} tabIndex={0} role="application" aria-label="Établi en trois dimensions. Déplace la souris ou les flèches pour frapper. Échap pour mettre en pause."
@@ -199,16 +204,11 @@ export function FoundryPage() {
             {phase === "idle" && ready && <div className="foundry-viewport-caption">Pierre ancienne, cuivre vivant, savoir oublié.</div>}
           </div>
           <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : inRound ? "Manche sauvegardée au fil des frappes" : "Progression sauvegardée"}</span><span>{live ? `${live.broken} reliques · ${live.criticals} critiques · ${Math.floor(live.tick / 20)} s` : "Des manches courtes, des choix qui comptent"}</span></div>
-          {progress?.lastSummary && !inRound && <div className="foundry-summary" role="status"><Sparkles size={22} /><div><strong>Dernière récolte</strong><span>{progress.lastSummary.broken} reliques · {progress.lastSummary.criticals} critiques · {Math.round(progress.lastSummary.seconds)} secondes</span></div><b>+{progress.lastSummary.shards}<small> éclats</small></b></div>}
-          <section className="foundry-equipment" aria-label="Préparer la manche"><div className="foundry-section-title"><h2>Les outils de l’artisan</h2><span>Acquis pour toujours</span></div><div className="foundry-tools">{TOOL_IDS.map((id) => {
-            const item = TOOLS[id]; const unlocked = (progress?.mastery ?? 0) >= item.mastery;
-            return <button key={id} type="button" className={`foundry-tool ${tool === id ? "is-selected" : ""}`} disabled={inRound || !unlocked || busy} onClick={() => setTool(id)} aria-pressed={tool === id}><span className={`foundry-tool-art tool-${id}`}><Hammer size={29} /></span><strong>{item.name}</strong><span>{unlocked ? item.detail : `${item.mastery} commande${item.mastery > 1 ? "s" : ""} à livrer`}</span>{!unlocked ? <LockKeyhole className="foundry-choice-check" size={14} /> : tool === id ? <Check className="foundry-choice-check" size={15} /> : null}</button>;
-          })}</div><div className="foundry-section-title"><h2>Un compagnon à tes côtés</h2><span>Un talent, à chaque manche</span></div><div className="foundry-assistants">{ASSISTANT_IDS.map((id) => {
-            const item = ASSISTANTS[id]; const unlocked = board?.availableAssistants.includes(id);
-            return <button key={id} type="button" className={assistant === id ? "is-selected" : ""} disabled={inRound || !unlocked || busy} onClick={() => setAssistant(id)} aria-pressed={assistant === id}><img src={`/art/characters/${item.art}.webp`} alt="" /><div><strong>{item.short}</strong><span>{unlocked ? item.detail : "À découvrir dans la collection"}</span></div>{!unlocked ? <LockKeyhole size={14} /> : assistant === id ? <Check size={15} /> : null}</button>;
-          })}</div></section>
+
+          <div className="foundry-preparation"><button type="button" aria-label="Choisir les outils et compagnons" disabled={inRound || busy} onClick={() => setEquipment(true)}><Hammer size={17} /><span><strong>{TOOLS[tool].name}</strong><small>Outils et compagnons</small></span><img src={`/art/characters/${ASSISTANTS[assistant].art}.webp`} alt={ASSISTANTS[assistant].short} /><ArrowUpRight size={15} /></button></div>
+          <button type="button" className="foundry-mobile-orders" onClick={() => { pause(); sidebar.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }}>Commandes et améliorations <ArrowUpRight size={14} /></button>
         </section>
-        <aside className="foundry-sidebar">
+        <aside className="foundry-sidebar" ref={sidebar} aria-label="Commandes et améliorations">
           <section className="foundry-order"><div className="foundry-section-title"><span>Chantier {cycle?.number ?? 1}</span><span>{Math.min(5, cycle?.orderIndex ?? 0)} / 5 livrées</span></div><div className="foundry-shard-total"><Gem size={23} /><strong>{cycle?.shards ?? 0}</strong><span>éclats disponibles</span></div>
             <div className="foundry-order-divider" />
             <span className="foundry-eyebrow">Une commande du refuge</span><h2>{endState ? cycle?.status === "completed" ? "Le cœur du refuge s’éveille" : "Le feu s’est assoupi" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
@@ -216,12 +216,30 @@ export function FoundryPage() {
             {orderCost !== undefined && <><div className="foundry-order-price"><span>À livrer</span><b>{orderCost}<Gem size={15} /></b></div><div className="foundry-order-track"><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div><div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Échéance atteinte · livre avant de continuer" : `${cycle?.roundsLeft ?? 2} manches avant l’échéance`}</div></>}
             {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
           </section>
+          {progress?.lastSummary && !inRound && <div className="foundry-summary" role="status"><Sparkles size={22} /><div><strong>Dernière récolte</strong><span>{progress.lastSummary.broken} reliques · {progress.lastSummary.criticals} critiques · {Math.round(progress.lastSummary.seconds)} secondes</span></div><b>+{progress.lastSummary.shards}<small> éclats</small></b></div>}
           <section className="foundry-daily"><img src="/art/chests/common.webp" onError={(e) => { e.currentTarget.src = "/art/ui/rewards-gift.webp"; }} alt="" /><div><span className="foundry-eyebrow">Le présent du refuge</span><h2>{board?.daily.claimed ? "Ton coffre est reçu" : "Un coffre, chaque jour"}</h2><p>{board?.daily.claimed ? "La forge reste ouverte pour ta maîtrise." : `${dailyProgress} / 3 commandes livrées aujourd’hui`}</p><div className="foundry-daily-dots" aria-label={`${dailyProgress} commandes sur trois`}>{[1, 2, 3].map((n) => <i key={n} className={dailyProgress >= n ? "is-complete" : ""}>{dailyProgress >= n && <Check size={11} />}</i>)}</div><small>Réinitialisation à minuit · heure de Paris</small></div></section>
           <section className="foundry-upgrades"><div className="foundry-section-title"><h2>Façonner son savoir</h2><span>Ce chantier</span></div>{UPGRADE_IDS.map((id) => { const level = cycle?.upgrades[id] ?? 0; const cost = FOUNDRY.upgradeCosts[level]; return <div key={id} className="foundry-upgrade"><div><strong>{UPGRADES[id].name}</strong><span>{UPGRADES[id].detail}</span><div className="foundry-upgrade-level">{[1, 2, 3].map((n) => <i key={n} className={level >= n ? "is-complete" : ""} />)}</div></div><button type="button" disabled={locked || !cycle?.roundsLeft || cost === undefined || (cycle?.shards ?? 0) < cost} onClick={() => action((b) => purchase({ ...revision(b), upgrade: id }))} aria-label={`Améliorer ${UPGRADES[id].name}${cost === undefined ? ", maximum atteint" : ` pour ${cost} éclats`}`}>{cost === undefined ? <Check size={15} /> : <>{cost}<Gem size={12} /></>}</button></div>; })}</section>
           {!!cycle?.blessings.length && <section className="foundry-blessings"><h2>Les échos qui t’accompagnent</h2><div>{cycle.blessings.map((id, i) => <span key={`${id}-${i}`} title={BLESSINGS[id].detail}>{BLESSINGS[id].symbol}<small>{BLESSINGS[id].name}</small></span>)}</div></section>}
           <p className="foundry-lore">« Chaque relique porte un souvenir. À toi de lui rendre sa voix. »<span>— Le Forgeron de la citadelle</span></p>
         </aside>
       </div>
+      <Dialog open={help} onOpenChange={setHelp}>
+        <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les gestes de l’artisan</DialogTitle>
+          <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Déplace la souris : le marteau frappe tout seul.</strong> Sur mobile, maintiens le doigt sur l’établi. Les flèches déplacent aussi la visée. Échap met en pause.</p><p>Chaque commande doit être livrée en deux manches. Dépense tes éclats en améliorations ou garde-les pour la livraison. Les bénédictions durent tout le chantier ; la maîtrise et les outils restent acquis.</p><div>{RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={equipment} onOpenChange={setEquipment}>
+        <DialogContent className="foundry-preparation-dialog"><DialogTitle>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Un outil et un compagnon, pour faire résonner l’établi.</p>
+          <section className="foundry-equipment" aria-label="Préparer la manche"><div className="foundry-section-title"><h2>Les outils de l’artisan</h2><span>Acquis pour toujours</span></div><div className="foundry-tools">{TOOL_IDS.map((id) => {
+            const item = TOOLS[id]; const unlocked = (progress?.mastery ?? 0) >= item.mastery;
+            return <button key={id} type="button" className={`foundry-tool ${tool === id ? "is-selected" : ""}`} disabled={inRound || !unlocked || busy} onClick={() => setTool(id)} aria-pressed={tool === id}><span className={`foundry-tool-art tool-${id}`}><Hammer size={29} /></span><strong>{item.name}</strong><span>{unlocked ? item.detail : `${item.mastery} commande${item.mastery > 1 ? "s" : ""} à livrer`}</span>{!unlocked ? <LockKeyhole className="foundry-choice-check" size={14} /> : tool === id ? <Check className="foundry-choice-check" size={15} /> : null}</button>;
+          })}</div><div className="foundry-section-title"><h2>Un compagnon à tes côtés</h2><span>Un talent, à chaque manche</span></div><div className="foundry-assistants">{ASSISTANT_IDS.map((id) => {
+            const item = ASSISTANTS[id]; const unlocked = board?.availableAssistants.includes(id);
+            return <button key={id} type="button" className={assistant === id ? "is-selected" : ""} disabled={inRound || !unlocked || busy} onClick={() => setAssistant(id)} aria-pressed={assistant === id}><img src={`/art/characters/${item.art}.webp`} alt="" /><div><strong>{item.short}</strong><span>{unlocked ? item.detail : "À découvrir dans la collection"}</span></div>{!unlocked ? <LockKeyhole size={14} /> : assistant === id ? <Check size={15} /> : null}</button>;
+          })}</div></section>
+          <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour la forge <Check size={16} /></button>
+        </DialogContent>
+      </Dialog>
       {notice && phase !== "paused" && <p className="foundry-notice" role="status">{notice}</p>}
       <Dialog open={!!cycle?.choices.length && !board?.pendingReward} onOpenChange={() => {}}>
         <DialogContent className="foundry-blessing-popup" showCloseButton={false}>

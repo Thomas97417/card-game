@@ -29,7 +29,7 @@ beforeEach(() => {
     return mutations.get(name)! as unknown as ReturnType<typeof useMutation>;
   });
   vi.mocked(createFoundryScene).mockImplementation((_host, options) => {
-    sceneOptions = options; return { aim: () => ({ x: 1, z: 1, active: true }), impact: vi.fn(), destroy: vi.fn() };
+    sceneOptions = options; return { aim: () => ({ x: 1, z: 1, active: true }), nudge: (input, dx, dz) => ({ x: input.x + dx, z: input.z + dz, active: true }), impact: vi.fn(), destroy: vi.fn() };
   });
 });
 afterEach(() => { vi.useRealTimers(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
@@ -38,11 +38,15 @@ async function ready() { await waitFor(() => expect(disabled(screen.getByRole("b
 describe("la fonderie à l’écran", () => {
   it("shows locked permanent tools, owned assistants and the daily contract counter", async () => {
     render(<FoundryPage />); await ready();
+    expect(screen.getByText("0 / 3 commandes livrées aujourd’hui")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    expect(screen.getByRole("dialog", { name: "Préparer la manche" })).toBeTruthy();
     expect(disabled(screen.getByRole("button", { name: /Martelet vif/ }))).toBe(true);
     expect(disabled(screen.getByRole("button", { name: /Marteau de résonance/ }))).toBe(true);
     expect(disabled(screen.getByRole("button", { name: /La Dryade/ }))).toBe(false);
     expect(disabled(screen.getByRole("button", { name: /La Féline/ }))).toBe(true);
-    expect(screen.getByText("0 / 3 commandes livrées aujourd’hui")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
   it("never starts a round when WebGL is unavailable", async () => {
     vi.mocked(createFoundryScene).mockImplementation(() => { throw new Error("WebGL 2"); });
@@ -55,6 +59,7 @@ describe("la fonderie à l’écran", () => {
     const view = render(<FoundryPage />); await ready();
     vi.mocked(useQuery).mockReturnValue(undefined); view.rerender(<FoundryPage />);
     expect(screen.getByText("2 / 3 commandes livrées aujourd’hui")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
     expect(disabled(screen.getByRole("button", { name: /Marteau de résonance/ }))).toBe(false);
   });
   it("aims by mouse hover and requires a held finger for touch input", async () => {
@@ -69,6 +74,8 @@ describe("la fonderie à l’écran", () => {
     fireEvent.pointerDown(canvas, { pointerType: "touch", buttons: 1, pointerId: 1 }); expect(sceneOptions.input().active).toBe(true);
     fireEvent.pointerUp(canvas, { pointerType: "touch", buttons: 0 }); expect(sceneOptions.input().active).toBe(false);
     fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 }); expect(sceneOptions.input().active).toBe(true);
+    fireEvent.pointerMove(screen.getByRole("button", { name: "Couper le son" }), { pointerType: "mouse", buttons: 0 }); expect(sceneOptions.input().active).toBe(false);
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
     fireEvent.pointerLeave(stage, { pointerType: "mouse" }); expect(sceneOptions.input().active).toBe(false);
   });
   it("starts after a countdown, aims with the keyboard, and pauses with Escape and page visibility", async () => {

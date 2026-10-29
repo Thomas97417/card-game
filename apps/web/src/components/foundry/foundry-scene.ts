@@ -1,8 +1,11 @@
 import * as THREE from "three";
-import { FOUNDRY, RELICS, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound, type RelicKind } from "@sylve/game/foundry";
+import { RELICS, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound, type RelicKind } from "@sylve/game/foundry";
+
+import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim } from "./foundry-projection";
 
 export interface FoundryScene {
   aim(clientX: number, clientY: number): FoundryInput;
+  nudge(input: FoundryInput, dx: number, dz: number): FoundryInput;
   impact(frame: FoundryFrame): void;
   destroy(): void;
 }
@@ -18,7 +21,7 @@ interface Particle { life: number; total: number; x: number; y: number; z: numbe
 
 /** Rendering is cosmetic. Only the shared, fixed-step engine resolves collisions. */
 export function createFoundryScene(host: HTMLElement, options: SceneOptions): FoundryScene {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   const mobile = window.matchMedia("(pointer: coarse)").matches;
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.4 : 1.8));
@@ -26,18 +29,18 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.24;
+  renderer.setClearColor(0x000000, 0);
+  renderer.autoClear = false;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.append(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111c1c);
-  scene.fog = new THREE.Fog(0x111c1c, 21, 43);
-  const camera = new THREE.PerspectiveCamera(39, 1, 0.1, 70);
+  const camera = new THREE.PerspectiveCamera(39, 1, 0.1, 100);
   const cameraBase = new THREE.Vector3();
   const target = new THREE.Vector3(0, 0, 0);
-  const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2();
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  const intersection = new THREE.Vector3();
+  let viewport = foundryViewport(1, 1);
+  let canvasWidth = 1;
+  let canvasHeight = 1;
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const geometry = <T extends THREE.BufferGeometry>(g: T) => { geometries.add(g); return g; };
@@ -45,12 +48,10 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     const m = new THREE.MeshStandardMaterial({ color, metalness, roughness, emissive, emissiveIntensity: emissive ? 0.7 : 0 });
     materials.add(m); return m;
   };
-  const oak = material(0x65432f); const paleOak = material(0x8c6040); const darkOak = material(0x322c25);
+  const darkOak = material(0x322c25);
   const copper = material(0xb58349, 0.72, 0.3); const copperDark = material(0x536965, 0.65, 0.55);
   const stone = material(0x626963); const darkStone = material(0x333e3c);
   const crystal = material(0x79ddd1, 0.25, 0.18, 0x27796f);
-  const ember = material(0xff9d3e, 0.1, 0.5, 0xff611b);
-  const voidMaterial = material(0x191e21);
   const cube = geometry(new THREE.BoxGeometry(1, 1, 1));
   const cylinder = geometry(new THREE.CylinderGeometry(1, 1, 1, 12));
   const sphere = geometry(new THREE.IcosahedronGeometry(1, 1));
@@ -68,46 +69,11 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   sun.shadow.camera.top = 9; sun.shadow.camera.bottom = -9; sun.shadow.normalBias = 0.04; scene.add(sun);
   const rim = new THREE.DirectionalLight(0x75c7c6, 1.7); rim.position.set(5, 5, -7); scene.add(rim);
 
-  // A complete little workshop in volume, with a generous readable playing surface.
-  mesh(cube, darkStone, scene, 0, -2.65, 0, 28, 0.35, 25);
-  for (let x = -12; x <= 12; x += 2.1) for (let z = -10; z <= 9; z += 2.1)
-    mesh(cube, (Math.round(x + z) % 3 === 0) ? stone : darkStone, scene, x, -2.44, z, 2, 0.1, 2);
-  const table = new THREE.Group(); scene.add(table);
-  mesh(cube, darkOak, table, 0, -0.45, 0, 12.1, 0.65, 7.8);
-  for (let i = 0; i < 10; i++) mesh(cube, i % 3 ? oak : paleOak, table, -5.4 + i * 1.2, -0.09, 0, 1.17, 0.17, 7.55);
-  for (const z of [-3.85, 3.85]) mesh(cube, copperDark, table, 0, 0.04, z, 12.3, 0.16, 0.2);
-  for (const x of [-6, 6]) mesh(cube, copperDark, table, x, 0.04, 0, 0.18, 0.16, 7.8);
-  for (const x of [-5.4, 5.4]) for (const z of [-3.25, 3.25]) {
-    mesh(cube, darkOak, table, x, -1.5, z, 0.6, 2.3, 0.6);
-    mesh(cube, copper, table, x, -0.42, z, 0.74, 0.2, 0.74);
-    mesh(sphere, copper, table, x, 0.1, z, 0.09, 0.08, 0.09);
-  }
-  // Rear masonry, furnace and chimney.
-  for (let row = 0; row < 4; row++) for (let col = 0; col < 10; col++)
-    mesh(cube, (col + row) % 3 ? stone : darkStone, scene, -8.8 + col * 1.95 + (row % 2 ? 0.4 : 0), -1.6 + row * 0.87, -6.1, 1.9, 0.8, 0.75);
-  const forge = new THREE.Group(); forge.position.set(-6.6, -2.3, -3.6); scene.add(forge);
-  mesh(cube, darkStone, forge, 0, 1.25, 0, 2.7, 2.5, 2);
-  mesh(cube, voidMaterial, forge, 0, 1.25, 1.02, 1.8, 1.45, 0.05);
-  mesh(cube, ember, forge, 0, 0.8, 1.08, 1.5, 0.5, 0.06);
-  for (const x of [-1.1, 1.1]) mesh(cube, stone, forge, x, 1.25, 1, 0.35, 2.15, 0.4);
-  mesh(cube, copper, forge, 0, 2.5, 0.2, 3, 0.25, 2.4);
-  mesh(cylinder, darkStone, forge, 0, 4, -0.3, 0.65, 3.2, 0.65);
-  mesh(cylinder, copper, forge, 0, 5.55, -0.3, 0.83, 0.16, 0.83);
-  const fire = new THREE.PointLight(0xff8e35, 35, 12, 2); fire.position.set(-6.6, 0, -1.9); scene.add(fire);
-  const hanging: THREE.Object3D[] = [];
-  for (let i = 0; i < 5; i++) {
-    const x = -3.9 + i * 2.05; const y = 2.9 + (i % 2) * 0.65;
-    mesh(cylinder, copper, scene, x, y + 0.8, -5, 0.018, 1.5, 0.018);
-    const jewel = mesh(geometry(new THREE.OctahedronGeometry(0.32)), crystal, scene, x, y, -5, 0.8, 1.6, 0.8);
-    const hoop = mesh(ringGeo, copper, jewel, 0, 0, 0, 1.4, 1.4, 1.4); hoop.rotation.y = Math.PI / 2;
-    hanging.push(jewel);
-  }
-  // Barrels and mineral baskets help the room frame the board.
-  for (const [x, z] of [[7, -3.4], [7.8, -1.8], [-7.2, 2]]) {
-    mesh(cylinder, oak, scene, x!, -1.45, z!, 0.66, 1.8, 0.66);
-    for (const y of [-2, -0.9]) mesh(cylinder, copperDark, scene, x!, y, z!, 0.7, 0.12, 0.7);
-    for (let j = 0; j < 4; j++) mesh(spike, crystal, scene, x! + Math.cos(j * 2) * 0.25, -0.42, z! + Math.sin(j * 2) * 0.25, 0.18, 0.7 + j * 0.08, 0.18);
-  }
+  // Only relics, tools and their shadows sit over the illustrated worktop.
+  const contactMaterial = new THREE.ShadowMaterial({ opacity: 0.24 }); materials.add(contactMaterial);
+  const worktop = new THREE.Mesh(geometry(new THREE.PlaneGeometry(30, 30)), contactMaterial);
+  worktop.rotation.x = -Math.PI / 2; worktop.position.y = -0.025;
+  worktop.receiveShadow = true; scene.add(worktop);
 
   const urnGeo = geometry(new THREE.LatheGeometry([
     new THREE.Vector2(0.2, 0), new THREE.Vector2(0.23, 0.08), new THREE.Vector2(0.45, 0.24),
@@ -182,10 +148,10 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   const queued: { frame: FoundryFrame; at: number }[] = [];
   let strikeAt = -1000; let shakeAt = -1000; let destroyed = false; let lastTime = 0;
   const resize = () => {
-    const w = Math.max(1, host.clientWidth); const h = Math.max(1, host.clientHeight);
-    renderer.setSize(w, h, false); camera.aspect = w / h;
-    const factor = Math.max(1, 1.3 / camera.aspect);
-    cameraBase.set(0, 10.4 * factor, 11.3 * factor); camera.position.copy(cameraBase); camera.lookAt(target); camera.updateProjectionMatrix();
+    canvasWidth = Math.max(1, host.clientWidth); canvasHeight = Math.max(1, host.clientHeight);
+    renderer.setSize(canvasWidth, canvasHeight, false);
+    viewport = foundryViewport(canvasWidth, canvasHeight);
+    cameraBase.copy(fitFoundryCamera(camera, viewport));
   };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const onContextLost = (event: Event) => { event.preventDefault(); options.contextLost(); };
@@ -245,11 +211,12 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       }
       particleMesh.instanceMatrix.needsUpdate = true;
       if (particleMesh.instanceColor) particleMesh.instanceColor.needsUpdate = true;
-      fire.intensity = motion.matches ? 35 : 32 + Math.sin(time * 0.007) * 3;
-      if (!motion.matches) hanging.forEach((jewel, i) => { jewel.rotation.y = Math.sin(time * 0.0005 + i) * 0.25; });
       camera.position.copy(cameraBase);
       if (!motion.matches && time - shakeAt < 160) camera.position.x += Math.sin((time - shakeAt) * 0.1) * 0.035;
-      camera.lookAt(target); renderer.render(scene, camera);
+      camera.lookAt(target);
+      renderer.setViewport(0, 0, canvasWidth, canvasHeight); renderer.clear();
+      renderer.setViewport(viewport.left, canvasHeight - viewport.top - viewport.height, viewport.width, viewport.height);
+      renderer.render(scene, camera);
     });
   } catch (error) {
     renderer.dispose(); observer.disconnect(); host.replaceChildren();
@@ -257,12 +224,9 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   }
   return {
     aim(clientX, clientY) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      pointer.set((clientX - rect.left) / rect.width * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
-      raycaster.setFromCamera(pointer, camera);
-      const point = raycaster.ray.intersectPlane(plane, intersection);
-      return { x: Math.max(-FOUNDRY.width / 2, Math.min(FOUNDRY.width / 2, point?.x ?? 0)), z: Math.max(-FOUNDRY.depth / 2, Math.min(FOUNDRY.depth / 2, point?.z ?? 0)), active: !!point };
+      return aimAtFoundry(clientX, clientY, host.getBoundingClientRect(), viewport, camera);
     },
+    nudge(input, dx, dz) { return nudgeFoundryAim(input, dx, dz, viewport.portrait); },
     impact(frame) { if (!frame.strike) return; strikeAt = performance.now(); queued.push({ frame, at: strikeAt + 80 }); },
     destroy() {
       if (destroyed) return; destroyed = true;
