@@ -201,7 +201,7 @@ export function EmeraldPaymentFeedback({
         {pending
           ? delayed
             ? "La confirmation prend un peu de temps. Tes émeraudes seront ajoutées dès réception du paiement, même si tu quittes cette page."
-            : "Vérification du paiement… Tes émeraudes apparaîtront dès sa confirmation."
+            : "Vérification du paiement…"
           : status?.status === "refunded"
             ? "Cet achat a été remboursé. Les émeraudes correspondantes ont été retirées."
             : "Cet achat n’a pas été retrouvé sur ton compte. Si tu as été débité, conserve ton reçu et contacte l’assistance."}
