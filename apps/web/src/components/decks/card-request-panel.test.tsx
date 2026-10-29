@@ -120,7 +120,7 @@ describe("requesting cards from the deck", () => {
         />,
       );
       expect(
-        screen.getByText(/Seules les cartes communes et rares/),
+        screen.getByRole("heading", { name: "Communes et rares uniquement" }),
       ).toBeTruthy();
       expect((screen.getByRole("button") as HTMLButtonElement).disabled).toBe(
         true,
@@ -166,7 +166,7 @@ describe("requesting cards from the deck", () => {
         onRequest={vi.fn()}
       />,
     );
-    expect(screen.getByText(/avec les amis au rang 5/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Rang 5 requis" })).toBeTruthy();
     expect((screen.getByRole("button") as HTMLButtonElement).disabled).toBe(
       true,
     );

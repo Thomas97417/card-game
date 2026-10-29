@@ -867,9 +867,6 @@
 .soulbind-conversion-body > p {
   font-size: 12px;
 }
-.soulbind-conversion-body > p strong {
-  color: #e5dbbf;
-}
 .soulbind-quantity-heading {
   display: flex;
   flex-wrap: wrap;

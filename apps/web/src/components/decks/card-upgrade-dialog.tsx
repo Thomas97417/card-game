@@ -3,7 +3,6 @@ import { Tabs } from "@base-ui/react/tabs";
 import {
   ArrowRight,
   ArrowLeft,
-  ArrowRightLeft,
   Crown,
   LockKeyhole,
 } from "lucide-react";
@@ -40,16 +39,6 @@ import {
 import { CardRequestPanel, type CardRequestActions } from "./card-request-panel";
 import { isRequestableRarity } from "@sylve/game/card-requests";
 
-type DeckActions =
-  | {
-      inDeck: boolean;
-      onMove: () => void;
-    }
-  | {
-      inDeck?: never;
-      onMove?: never;
-    };
-
 type UpgradeActions =
   | {
       readOnly: true;
@@ -62,10 +51,8 @@ type UpgradeActions =
 
 export function CardUpgradeDialog({
   entry,
-  inDeck,
   onClose,
   onUpgrade,
-  onMove,
   collection,
   soulProgress,
   onSoulbind,
@@ -82,7 +69,6 @@ export function CardUpgradeDialog({
   finalFocus?: ComponentProps<typeof DialogContent>["finalFocus"];
   returnToSoulbind?: boolean;
 } & UpgradeActions &
-  DeckActions &
   CardProgressionActions &
   CardRequestActions) {
   const [busy, setBusy] = useState(false);
@@ -194,18 +180,6 @@ export function CardUpgradeDialog({
                     {RARITY_LABELS[card.rarity ?? "common"]} · Niveau {level}
                   </span>
                 </div>
-                {!readOnly && onMove && inDeck && (
-                  <div className="upgrade-deck-actions">
-                    <button
-                      type="button"
-                      className="sylve-button secondary"
-                      onClick={onMove}
-                    >
-                      <ArrowRightLeft size={18} aria-hidden="true" />
-                      Déplacer dans le deck
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
             <aside className="upgrade-navigation">

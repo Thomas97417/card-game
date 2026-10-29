@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { FunctionReturnType } from "convex/server";
 import { ConvexError } from "convex/values";
-import { Check, Clock3, LoaderCircle, Send } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { resolveCard, type OwnedCard } from "@sylve/game";
 import { isRequestableRarity } from "@sylve/game/card-requests";
 import { FRIENDS_UNLOCK_RANK } from "@sylve/game/ranks";
@@ -62,81 +62,70 @@ export function CardRequestPanel({
     <section className="card-request-panel" aria-label="Demander des cartes">
       <header className="upgrade-view-heading">
         <h2>Demander des cartes</h2>
-        <p>Tes amis peuvent t’aider à faire grandir ta collection.</p>
       </header>
       {!status ? (
         <p className="card-request-note" role="status">
-          <LoaderCircle size={18} className="animate-spin" /> Chargement de ta
-          demande…
+          <LoaderCircle size={18} className="animate-spin" /> Chargement…
         </p>
       ) : (
-        <>
-          {request && requestedCard ? (
-            <div className="card-request-summary" data-complete={complete}>
-              <GameIcon kind={complete ? "rewards" : "friends"} size={58} />
-              <div>
+        <div className="card-request-card" data-complete={complete}>
+          {(request || (eligible && status.unlocked)) && (
+            <span className="card-request-daily">
+              <GameIcon kind="rewardClock" size={22} />
+              {request || posted ? "Demain" : "1 / jour"}
+            </span>
+          )}
+          <div className="card-request-summary">
+            <GameIcon
+              kind={
+                request
+                  ? complete
+                    ? "rewards"
+                    : "friends"
+                  : !eligible || !status.unlocked
+                    ? "rewardLock"
+                    : "friends"
+              }
+              size={80}
+            />
+            {request && requestedCard ? (
+              <>
                 <span className="card-request-eyebrow">
                   {complete ? "Demande comblée" : "Ta demande du jour"}
                 </span>
                 <h3>{requestedCard.name}</h3>
-                <p>
-                  {request.received} / {request.requested} cartes reçues
+                <p className="card-request-received">
+                  <strong>
+                    {request.received} / {request.requested}
+                  </strong>
+                  cartes reçues
                 </p>
-              </div>
-              <progress
-                max={request.requested}
-                value={request.received}
-                aria-label="Cartes reçues aujourd’hui"
-              />
-              <p className="card-request-summary-note">
-                Les cartes reçues rejoignent directement ta réserve.
-              </p>
-            </div>
-          ) : eligible ? (
-            <div className="card-request-summary">
-              <GameIcon kind="friends" size={58} />
-              <div>
-                <span className="card-request-eyebrow">
-                  {status.leagueLabel} · Meilleure ligue
+                <progress
+                  max={request.requested}
+                  value={request.received}
+                  aria-label="Cartes reçues aujourd’hui"
+                />
+              </>
+            ) : !status.unlocked ? (
+              <h3>Rang {FRIENDS_UNLOCK_RANK} requis</h3>
+            ) : !eligible ? (
+              <h3>Communes et rares uniquement</h3>
+            ) : (
+              <h3 className="card-request-count" data-rarity={rarity}>
+                <img
+                  src={`/art/ui/rarity-${rarity}.webp`}
+                  alt=""
+                  aria-hidden="true"
+                  width={30}
+                  height={42}
+                  draggable={false}
+                />
+                <span>
+                  <strong>{count}</strong> cartes{" "}
+                  {rarity === "common" ? "communes" : "rares"}
                 </span>
-                <h3>
-                  {count} cartes {rarity === "common" ? "communes" : "rares"}
-                </h3>
-                <p>{entry.card.name} · Demande à tous tes amis</p>
-              </div>
-            </div>
-          ) : null}
-          {!eligible && (
-            <p className="card-request-note">
-              Seules les cartes communes et rares peuvent être demandées.
-              Choisis une de ces cartes dans ta collection.
-            </p>
-          )}
-          {!status.unlocked && (
-            <p className="card-request-note">
-              Les demandes se débloquent avec les amis au rang{" "}
-              {FRIENDS_UNLOCK_RANK}. Améliore tes cartes pour gagner de l’XP.
-            </p>
-          )}
-          {status.unlocked && status.friendCount === 0 && !request && (
-            <p className="card-request-note">
-              Ajoute des gardiens à tes amis depuis le hub pour qu’ils puissent
-              répondre à ta demande.
-            </p>
-          )}
-          <div className="card-request-rules">
-            <p>
-              <Clock3 size={17} aria-hidden="true" />
-              <span>
-                Une demande par jour. Nouvelle demande à minuit, heure de Paris.
-              </span>
-            </p>
-            <p>
-              <GameIcon kind="all" size={19} />
-              <span>
-                Les quantités augmentent avec ta meilleure ligue atteinte.
-              </span>
-            </p>
+              </h3>
+            )}
           </div>
           {error && (
             <p className="card-request-note is-error" role="alert">
@@ -144,8 +133,8 @@ export function CardRequestPanel({
             </p>
           )}
           {posted && (
-            <p className="card-request-note" role="status">
-              <Check size={18} /> Demande envoyée à tes amis.
+            <p className="sr-only" role="status">
+              Demande envoyée à tes amis.
             </p>
           )}
           <button
@@ -158,22 +147,23 @@ export function CardRequestPanel({
           >
             {busy ? (
               <LoaderCircle size={18} className="animate-spin" />
-            ) : request || posted ? (
-              <Check size={18} />
             ) : (
-              <Send size={18} />
+              <GameIcon
+                kind={request || posted ? "rewards" : "friends"}
+                size={28}
+              />
             )}
             {busy
               ? "Envoi de la demande…"
               : request || posted
                 ? "Demande du jour utilisée"
-                : `Demander ${count} cartes`}
+                : !status.unlocked
+                  ? `Rang ${FRIENDS_UNLOCK_RANK} requis`
+                  : !eligible
+                    ? "Indisponible pour cette rareté"
+                    : `Demander ${count} cartes`}
           </button>
-          <p className="card-request-footnote">
-            Retrouve les demandes de tes amis dans le hub, menu Amis. Chaque don
-            leur rapporte de l’XP de Rang.
-          </p>
-        </>
+        </div>
       )}
     </section>
   );

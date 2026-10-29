@@ -603,21 +603,20 @@ describe("l’atelier et la collection", () => {
   it("keeps keyboard movement and cancellation for cards already in the deck", async () => {
     const { onSave } = setup();
     fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
-    );
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Déplacer dans le deck" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: " " });
     fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: "Escape" });
     expect(
       screen.getByRole("status", { name: "Conseils pour ton deck" })
         .textContent,
     ).not.toContain("Choisis une carte");
     expect(onSave).not.toHaveBeenCalled();
-    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
-    );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: " " });
     const targetId = savedDeck.cardIds[1]!;
     const target = fullCollection.find(
       (entry) => entry.card.id === targetId,

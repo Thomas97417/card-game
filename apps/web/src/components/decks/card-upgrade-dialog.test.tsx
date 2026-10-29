@@ -399,11 +399,9 @@ describe("resource exchange preview", () => {
     openTab(/^Évolution et poussière/);
     chooseDust();
     fireEvent.click(screen.getByRole("button", { name: "Maximum" }));
-    expect(
-      screen.getByText(
-        "Après conversion : 25 exemplaires en réserve · 10020 poussières d’âme.",
-      ),
-    ).toBeTruthy();
+    const preview = within(screen.getByLabelText("Aperçu de la conversion"));
+    expect(preview.getByText("100")).toBeTruthy();
+    expect(preview.getByText("20")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
         name: "Convertir 100 exemplaires en 20 poussières",

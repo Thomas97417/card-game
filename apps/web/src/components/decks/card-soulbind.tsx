@@ -169,13 +169,7 @@ export function CardSoulbind({
               <GameIcon kind="guardian" size={52} />
               <div>
                 <strong>Rang {soulProgress?.rank ?? "…"}</strong>
-                {soulProgress && (
-                  <span>
-                    {soulProgress.required
-                      ? `Vers le rang ${soulProgress.rank + 1}`
-                      : "Rang maximum"}
-                  </span>
-                )}
+                {soulProgress?.required === 0 && <span>Rang maximum</span>}
               </div>
             </div>
             <div className="soulbind-dust-balance">
@@ -787,15 +781,6 @@ export function CardEvolutionResources({
               </div>
             </header>
             <div className="soulbind-conversion-body">
-              <p>
-                Un lot de{" "}
-                <strong>
-                  {cost} exemplaire{cost > 1 ? "s" : ""}
-                </strong>{" "}
-                donne{" "}
-                <strong>{SOUL_DUST_PER_CONVERSION} poussières d’âme</strong>. Le
-                compagnon reste dans ta collection.
-              </p>
               <div className="soulbind-quantity-heading">
                 <label htmlFor={quantityId}>Nombre de lots</label>
                 <span>
@@ -860,13 +845,13 @@ export function CardEvolutionResources({
                   <small>poussières obtenues</small>
                 </span>
               </div>
-              <p className="progression-action-hint" aria-live="polite">
-                {maxBatches === 0
-                  ? `Encore ${cost - entry.copies} exemplaire${cost - entry.copies > 1 ? "s" : ""} nécessaire${cost - entry.copies > 1 ? "s" : ""} pour convertir un lot.`
-                  : !valid
-                    ? `Choisis un nombre entier de lots entre 1 et ${maxBatches}.`
-                    : `Après conversion : ${entry.copies - spent} exemplaire${entry.copies - spent === 1 ? "" : "s"} en réserve${soulProgress ? ` · ${soulProgress.soulDust + gained} poussières d’âme` : ""}.`}
-              </p>
+              {(maxBatches === 0 || !valid) && (
+                <p className="progression-action-hint" aria-live="polite">
+                  {maxBatches === 0
+                    ? `Encore ${cost - entry.copies} exemplaire${cost - entry.copies > 1 ? "s" : ""} nécessaire${cost - entry.copies > 1 ? "s" : ""} pour convertir un lot.`
+                    : `Choisis un nombre entier de lots entre 1 et ${maxBatches}.`}
+                </p>
+              )}
               <button
                 type="button"
                 className="sylve-button progression-primary"

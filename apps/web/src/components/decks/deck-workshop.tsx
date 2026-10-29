@@ -344,8 +344,20 @@ export function DeckWorkshop({
           aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
           aria-haspopup={picked ? undefined : "dialog"}
           aria-describedby="workshop-instructions"
+          aria-keyshortcuts={slot === undefined ? undefined : "Space"}
           onPointerDown={(event) => pointerDown(event, card)}
           onClick={() => chooseCard(card, slot)}
+          onKeyDown={(event) => {
+            if (event.key !== " " || slot === undefined) return;
+            event.preventDefault();
+            if (picked) chooseCard(card, slot);
+            else {
+              setPicked(card.id);
+              setMessage(
+                "Choisis une carte du deck à échanger. Échap pour annuler.",
+              );
+            }
+          }}
           onDragStart={(event) => event.preventDefault()}
         >
           <CardArtwork
@@ -795,7 +807,6 @@ export function DeckWorkshop({
       )}
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
-        inDeck={!!inspected && cards.includes(inspected)}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         collection={collection}
@@ -805,13 +816,6 @@ export function DeckWorkshop({
         onEvolve={onEvolve}
         cardRequestStatus={cardRequestStatus}
         onRequestCards={onRequestCards}
-        onMove={() => {
-          setPicked(inspected);
-          setInspected(null);
-          setMessage(
-            "Choisis une carte du deck à remplacer ou à échanger. Échap pour annuler.",
-          );
-        }}
       />
     </main>
   );
