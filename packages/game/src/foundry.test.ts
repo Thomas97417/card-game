@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FOUNDRY, TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound, deliverFoundryOrder,
-  RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
+  RELICS, RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryInput, type FoundryRound } from "./foundry";
 
 const aim: FoundryInput = { x: 0, z: 0, active: true };
@@ -30,7 +30,7 @@ describe("la fonderie déterministe", () => {
     expect(long.tick).toBe(FOUNDRY.maxTicks);
   });
   it("keeps all relics inside the board and sixteen live relics after destruction", () => {
-    const state = harvest(round()); expect(state.targets).toHaveLength(16);
+    const state = harvest(round()); expect(state.targets).toHaveLength(state.rogue?.capacity ?? 16);
     expect(state.targets.every((target) => Math.abs(target.x) < FOUNDRY.width / 2 && Math.abs(target.z) < FOUNDRY.depth / 2)).toBe(true);
     expect(state.broken).toBeGreaterThan(20);
   });
@@ -42,15 +42,15 @@ describe("la fonderie déterministe", () => {
     expect(new Set(state.targets.map((t) => t.kind)).size).toBe(RELIC_KINDS.length);
     const before = structuredClone(state.targets);
     for (let tick = 0; tick < 80; tick++) stepFoundry(state, { ...aim, active: false });
-    expect(state.version).toBe(2);
+    expect(state.version).toBe(4);
     for (const relic of state.targets) {
       const original = before.find((t) => t.id === relic.id)!;
       expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
       expect(Math.abs(relic.x)).toBeLessThanOrEqual(FOUNDRY.width / 2 - 0.55);
       expect(Math.abs(relic.z)).toBeLessThanOrEqual(FOUNDRY.depth / 2 - 0.55);
     }
-    const runner = state.targets.find((t) => t.kind === "runner")!;
-    const geode = state.targets.find((t) => t.kind === "geode")!;
+    const runner = before.find((t) => t.kind === "runner")!;
+    const geode = before.find((t) => t.kind === "geode")!;
     expect(Math.hypot(runner.vx, runner.vz)).toBeGreaterThan(Math.hypot(geode.vx, geode.vz) * 3);
     const target = state.targets[0]!; target.x = FOUNDRY.width / 2 - 0.551; target.vx = 0.012;
     target.z = FOUNDRY.depth / 2 - 0.551; target.vz = 0.012;
@@ -71,7 +71,8 @@ describe("la fonderie déterministe", () => {
   it("applies area damage, bounded chaos chains, spring recovery, and the tool cooldown", () => {
     const state = createFoundryRound(7, newFoundryCycle(), "resonance", "smith");
     state.concentration = 40;
-    state.targets.forEach((target, i) => { target.x = i < 4 ? i * 0.1 : 4; target.z = i < 4 ? 0 : 2; target.vx = 0; target.vz = 0; });
+    state.targets = state.targets.slice(0, 4);
+    state.targets.forEach((target, i) => { target.x = [0, 1.31, 0, -1.31][i]!; target.z = i === 2 ? 1.24 : 0; target.vx = 0; target.vz = 0; });
     state.targets[0]!.kind = "chaos"; state.targets[0]!.hp = 1;
     state.targets[1]!.kind = "chaos"; state.targets[1]!.hp = 4;
     state.targets[2]!.kind = "spring"; state.targets[2]!.hp = 4;
@@ -101,6 +102,73 @@ describe("la fonderie déterministe", () => {
     expect(cycle.status).toBe("active"); expect(cycle.shards).toBeGreaterThanOrEqual(100);
   });
 });
+describe("les collisions des reliques", () => {
+  function pair() {
+    const state = round();
+    state.targets = state.targets.slice(0, 2).map((t, i) => ({ ...t, kind: "urn" as const, x: i ? 0.56 : -0.56, z: 0, vx: i ? -0.03 : 0.03, vz: 0 }));
+    return state;
+  }
+  const idle = { ...aim, active: false };
+  it("rebounds head-on without crossing or consuming loot randomness", () => {
+    const state = pair(); const rng = state.rng;
+    stepFoundry(state, idle);
+    expect(state.targets[0]!.vx).toBeCloseTo(-0.03, 10); expect(state.targets[1]!.vx).toBeCloseTo(0.03, 10);
+    for (let tick = 0; tick < 40; tick++) stepFoundry(state, idle);
+    expect(state.targets[0]!.x).toBeLessThan(state.targets[1]!.x - RELICS.urn.radius * 2);
+    expect(state.rng).toBe(rng);
+  });
+  it("preserves momentum and energy on oblique contacts between different masses", () => {
+    const state = pair();
+    Object.assign(state.targets[0]!, { x: -0.56, z: 0.1, vx: 0.03, vz: 0.005 });
+    Object.assign(state.targets[1]!, { kind: "geode", x: 0.68, z: -0.1, vx: -0.012, vz: 0 });
+    const totals = () => state.targets.reduce((sum, t) => {
+      const mass = RELICS[t.kind].mass;
+      return { x: sum.x + mass * t.vx, z: sum.z + mass * t.vz, energy: sum.energy + mass * (t.vx * t.vx + t.vz * t.vz) };
+    }, { x: 0, z: 0, energy: 0 });
+    const before = totals(); stepFoundry(state, idle); const after = totals();
+    expect(after.x).toBeCloseTo(before.x, 10); expect(after.z).toBeCloseTo(before.z, 10); expect(after.energy).toBeCloseTo(before.energy, 10);
+    expect(state.targets[0]!.vz).not.toBe(0.005);
+    expect(Math.hypot(state.targets[1]!.x - state.targets[0]!.x, state.targets[1]!.z - state.targets[0]!.z)).toBeGreaterThanOrEqual(RELICS.urn.radius + RELICS.geode.radius);
+  });
+  it("separates coincident centers at a corner and never pushes a body off the worktop", () => {
+    const state = pair();
+    for (const t of state.targets) Object.assign(t, { x: FOUNDRY.width / 2 - RELICS.urn.radius, z: FOUNDRY.depth / 2 - RELICS.urn.radius, vx: 0, vz: 0 });
+    stepFoundry(state, idle);
+    for (const t of state.targets) {
+      expect(Number.isFinite(t.x + t.z + t.vx + t.vz)).toBe(true);
+      expect(Math.abs(t.x) + RELICS[t.kind].radius).toBeLessThanOrEqual(FOUNDRY.width / 2 + 1e-9);
+      expect(Math.abs(t.z) + RELICS[t.kind].radius).toBeLessThanOrEqual(FOUNDRY.depth / 2 + 1e-9);
+    }
+    expect(Math.hypot(state.targets[1]!.x - state.targets[0]!.x, state.targets[1]!.z - state.targets[0]!.z)).toBeGreaterThanOrEqual(RELICS.urn.radius * 2 - 1e-6);
+  });
+  it("does not bounce an already separating pair a second time", () => {
+    const state = pair(); Object.assign(state.targets[0]!, { x: -0.53, vx: -0.01 }); Object.assign(state.targets[1]!, { x: 0.53, vx: 0.01 });
+    stepFoundry(state, idle);
+    expect(state.targets[0]!.vx).toBe(-0.01); expect(state.targets[1]!.vx).toBe(0.01);
+    expect(state.targets[1]!.x - state.targets[0]!.x).toBeGreaterThanOrEqual(RELICS.urn.radius * 2);
+  });
+  it("keeps new spawns and moving groups separated throughout harvested rounds", () => {
+    let minimumGap = Infinity;
+    for (let seed = 1; seed <= 8; seed++) {
+      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith");
+      while (!state.ended) {
+        for (let i = 0; i < state.targets.length; i++) for (let j = i + 1; j < state.targets.length; j++) {
+          const a = state.targets[i]!, b = state.targets[j]!;
+          minimumGap = Math.min(minimumGap, Math.hypot(a.x - b.x, a.z - b.z) - RELICS[a.kind].radius - RELICS[b.kind].radius);
+        }
+        const target = state.targets[state.tick % state.targets.length]!;
+        stepFoundry(state, { x: target.x, z: target.z, active: true });
+      }
+    }
+    expect(minimumGap).toBeGreaterThanOrEqual(-1e-5);
+  });
+  it("retains the original non-colliding paths of persisted V2 rounds", () => {
+    const state = pair(); state.version = 2;
+    for (let tick = 0; tick < 40; tick++) stepFoundry(state, idle);
+    expect(state.targets[0]!.x).toBeGreaterThan(state.targets[1]!.x);
+    expect(state.targets[0]!.vx).toBe(0.03); expect(state.targets[1]!.vx).toBe(-0.03);
+  });
+});
 describe("commandes et savoir", () => {
   it("allows the last round's loot to pay the deadline, but closes an unfunded chantier", () => {
     const state = { ...round(), ended: true, shards: 50 };
@@ -118,7 +186,7 @@ describe("commandes et savoir", () => {
       expect(new Set(cycle.choices).size).toBe(3);
       expect(() => buyFoundryUpgrade(cycle, "focus")).toThrow();
       const offered = cycle.choices[0]!; cycle = chooseFoundryBlessing(cycle, offered);
-      expect(cycle.blessings).toHaveLength(i + 1); expect(cycle.roundsLeft).toBe(2);
+      expect(cycle.blessings).toHaveLength(i + 1); expect(cycle.roundsLeft).toBe(FOUNDRY.roundsPerOrder);
     }
     expect(cycle.status).toBe("completed");
     expect(newFoundryCycle(cycle.number + 1)).toMatchObject({ number: 2, shards: 0, orderIndex: 0, blessings: [], upgrades: { power: 0, focus: 0, fortune: 0 } });

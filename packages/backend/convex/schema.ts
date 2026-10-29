@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { missionStateFields } from "./lib/missions";
-import { foundryCycle, foundryRound, foundrySummary } from "./lib/foundry";
+import { foundryCycle, foundryRound, foundrySummary, foundryCharm } from "./lib/foundry";
 
 const mineState = v.object({
   amount: v.number(),
@@ -40,6 +40,7 @@ export default defineSchema({
     .index("by_guild", ["guildId"]),
   foundryProgress: defineTable({
     ownerId: v.string(), revision: v.number(), mastery: v.number(), cycle: foundryCycle,
+    masterySpent: v.optional(v.number()), charms: v.optional(v.array(foundryCharm)),
     activeRoundId: v.optional(v.id("foundryRounds")), lastSummary: v.optional(foundrySummary),
   }).index("by_owner", ["ownerId"]),
   foundryRounds: defineTable({

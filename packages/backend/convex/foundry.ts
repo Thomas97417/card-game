@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound,
+import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, TOOLS, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
   deliverFoundryOrder, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryAssistant } from "@sylve/game/foundry";
 import { chestGold, chestLoot } from "@sylve/game/progression";
@@ -10,7 +10,7 @@ import { ensureStarterDeck } from "./decks";
 import { grantGold, grantLoot, playerLeague } from "./lib/progression";
 import { socialDay } from "./lib/social";
 import { recordMissionProgress } from "./lib/missions";
-import { foundryAssistant, foundryBlessing, foundryInput, foundryTool, foundryUpgrade } from "./lib/foundry";
+import { foundryAssistant, foundryBlessing, foundryInput, foundryTool, foundryUpgrade, foundrySkill, foundryCharm } from "./lib/foundry";
 
 const ownerArg = { expectedOwnerId: v.string() };
 const revisionArgs = { ...ownerArg, revision: v.number() };
@@ -56,7 +56,7 @@ export const ensure = mutation({
     const userId = await owner(ctx, args.expectedOwnerId); await ensureStarterDeck(ctx, userId);
     const saved = await progressFor(ctx, userId);
     if (saved) return saved._id;
-    return ctx.db.insert("foundryProgress", { ownerId: userId, revision: 0, mastery: 0, cycle: newFoundryCycle() });
+    return ctx.db.insert("foundryProgress", { ownerId: userId, revision: 0, mastery: 0, masterySpent: 0, charms: [], cycle: newFoundryCycle(1, Math.floor(Math.random() * 4294967295) + 1) });
   },
 });
 export const startRound = mutation({
@@ -70,7 +70,7 @@ export const startRound = mutation({
     if (saved.cycle.status !== "active" || saved.cycle.choices.length || saved.cycle.roundsLeft <= 0) throw new ConvexError("Livre ta commande et choisis ta bénédiction avant de jouer.");
     if (saved.mastery < TOOLS[args.tool].mastery) throw new ConvexError("Cet outil n’est pas encore débloqué.");
     if (!(await assistants(ctx, userId)).includes(args.assistant)) throw new ConvexError("Découvre ce compagnon dans ta collection pour l’inviter.");
-    const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, saved.cycle, args.tool, args.assistant);
+    const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, saved.cycle, args.tool, args.assistant, saved.charms ?? []);
     const id = await ctx.db.insert("foundryRounds", { ownerId: userId, cycleNumber: saved.cycle.number, requestId: args.requestId, startedAt: Date.now(), finished: false, state, batches: [] });
     await ctx.db.patch(saved._id, { activeRoundId: id, revision: saved.revision + 1 });
     return (await ctx.db.get(id))!;
@@ -121,6 +121,30 @@ export const purchaseUpgrade = mutation({
     await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
   },
 });
+export const purchaseSkill = mutation({
+  args: { ...revisionArgs, skill: foundrySkill },
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
+    const cycle = rules(() => buyFoundrySkill(saved.cycle, args.skill));
+    await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
+  },
+});
+export const purchaseCharm = mutation({
+  args: { ...revisionArgs, charm: foundryCharm },
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
+    const changes = rules(() => buyFoundryCharm(saved.mastery, saved.masterySpent ?? 0, saved.charms ?? [], args.charm));
+    await ctx.db.patch(saved._id, { ...changes, revision: saved.revision + 1 });
+  },
+});
+export const abandonChantier = mutation({
+  args: revisionArgs,
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
+    if (saved.cycle.status !== "active" || saved.cycle.choices.length) throw new ConvexError("Choisis ta bénédiction ou ouvre le chantier suivant.");
+    await ctx.db.patch(saved._id, { cycle: { ...saved.cycle, status: "abandoned" }, revision: saved.revision + 1 });
+  },
+});
 export const payOrder = mutation({
   args: { ...revisionArgs, cycleNumber: v.number(), orderIndex: v.number() },
   handler: async (ctx, args) => {
@@ -160,7 +184,7 @@ export const newChantier = mutation({
   handler: async (ctx, args) => {
     const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
     if (saved.cycle.status === "active" || saved.cycle.choices.length) throw new ConvexError("Termine d’abord le chantier en cours.");
-    await ctx.db.patch(saved._id, { cycle: newFoundryCycle(saved.cycle.number + 1), revision: saved.revision + 1, lastSummary: undefined });
+    await ctx.db.patch(saved._id, { cycle: newFoundryCycle(saved.cycle.number + 1, Math.floor(Math.random() * 4294967295) + 1), revision: saved.revision + 1, lastSummary: undefined });
   },
 });
 export const acknowledgeReward = mutation({

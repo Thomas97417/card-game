@@ -7,7 +7,7 @@ Jeu de cartes tactique en français, avec combats solo et multijoueurs, collecti
 | Route | Fonction |
 | --- | --- |
 | `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, guildes, dons de cartes, chat et missions |
-| `/foundry` | Fonderie des Échos : mini-jeu 3D, commandes, outils, maîtrise et coffre quotidien |
+| `/foundry` | Fonderie des Échos : mini-jeu 3D roguelite, arbre de compétences, bénédictions, talismans et coffre quotidien |
 | `/arena` | Combats solo, matchmaking public, invitations amicales et coffres |
 | `/decks` | Deck, collection, améliorations, évolutions, liens d’âme et demande quotidienne de cartes |
 | `/guardian` | Onze héros, déblocage en émeraudes, sélection, progression et pouvoirs |

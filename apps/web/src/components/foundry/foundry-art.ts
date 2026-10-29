@@ -189,7 +189,7 @@ export function createFoundryArt(mobile: boolean) {
     return { root, damage, animate(seconds) { motions.forEach((animate) => animate(seconds)); } };
   }
   function hammer() {
-    const root = new THREE.Group(); const head = new THREE.Group(); head.position.y = 1.15; root.add(head);
+    const root = new THREE.Group(); const head = new THREE.Group(); head.position.y = 1.15; head.rotation.y = Math.PI / 2; root.add(head);
     const handle = lathe("hammer-handle", [[0.07, -0.8], [0.12, -0.74], [0.105, -0.3], [0.08, 0.4], [0.11, 1.15]]);
     mesh(handle, oak, root);
     mesh(ball, gold, root, 0, -0.79, 0, 0.12, 0.075, 0.12);
@@ -212,10 +212,11 @@ export function createFoundryArt(mobile: boolean) {
         const leaf = mesh(leafGeo, gold, head, side * 0.3, -0.09, z * 0.9, 0.09, 0.14, 0.08); leaf.rotation.z = side * -0.5;
       }
     }
+    const strikeFace = new THREE.Object3D(); strikeFace.position.x = 0.5955; head.add(strikeFace);
     const resonance = new THREE.Group(); head.add(resonance);
     const halo = mesh(ring, crystal, resonance, 0, 0, 0, 0.45, 0.45, 0.45); halo.rotation.y = Math.PI / 2;
     for (const side of [-1, 1]) mesh(crystalGeo, crystalLight, resonance, side * 0.32, 0.3, 0, 0.12, 0.25, 0.12);
-    return { root, tool(tool: FoundryTool) { head.scale.x = tool === "swift" ? 0.72 : tool === "resonance" ? 1.2 : 1; resonance.visible = tool === "resonance"; } };
+    return { root, strikeFace, tool(tool: FoundryTool) { head.scale.x = tool === "swift" ? 0.72 : tool === "resonance" ? 1.2 : 1; resonance.visible = tool === "resonance"; } };
   }
   const shadowSize = 64; const shadowPixels = new Uint8Array(shadowSize * shadowSize * 4);
   for (let y = 0; y < shadowSize; y++) for (let x = 0; x < shadowSize; x++) {

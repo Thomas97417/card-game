@@ -2,7 +2,7 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -62,7 +62,7 @@ describe("la fonderie connectée", () => {
   it("replays moving relics exactly and can resume a persisted V1 round", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const round = await begin(alice);
-    expect(round.state.version).toBe(2);
+    expect(round.state.version).toBe(4);
     expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
     const inputs = Array.from({ length: 40 }, (_, i) => ({ x: Math.sin(i / 8) * 4, z: Math.cos(i / 9) * 2, active: true }));
     const expected = structuredClone(round.state); inputs.forEach((input) => stepFoundry(expected, input));
@@ -77,14 +77,77 @@ describe("la fonderie connectée", () => {
     vi.setSystemTime(Date.now() + 2000);
     expect(await alice.client.mutation(api.foundry.submitInputs, { ...args, startTick: 40 })).toEqual(resumed);
   });
+  it("confirms head-on rebounds identically to the client, including retried batches", async () => {
+    const t = setup(); const alice = await player(t, "alice"); const round = await begin(alice);
+    const initial = structuredClone(round.state);
+    initial.targets = initial.targets.slice(0, 2).map((relic, i) => ({ ...relic, kind: "urn", x: i ? 0.56 : -0.56, z: 0, vx: i ? -0.03 : 0.03, vz: 0 }));
+    await t.run((ctx) => ctx.db.patch(round._id, { state: initial }));
+    const inputs = Array.from({ length: 40 }, () => ({ x: 0, z: 0, active: false }));
+    const expected = structuredClone(initial); inputs.forEach((input) => stepFoundry(expected, input));
+    vi.setSystemTime(Date.now() + 2000);
+    const args = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick: 0, inputs };
+    expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    expect(expected.targets[0]!.vx).toBeLessThan(0); expect(expected.targets[1]!.vx).toBeGreaterThan(0);
+    const legacy = structuredClone(initial); legacy.version = 2; legacy.tick = 40;
+    await t.run((ctx) => ctx.db.patch(round._id, { state: legacy }));
+    const resumed = structuredClone(legacy); inputs.forEach((input) => stepFoundry(resumed, input));
+    vi.setSystemTime(Date.now() + 2000);
+    expect(await alice.client.mutation(api.foundry.submitInputs, { ...args, startTick: 40 })).toEqual(resumed);
+    expect(resumed.targets[0]!.x).toBeGreaterThan(resumed.targets[1]!.x);
+  });
+  it("serializes skill purchases, validates prerequisites, and retains charms and lifetime mastery after abandoning", async () => {
+    const t = setup(); const alice = await player(t, "alice"); const bob = await player(t, "bob");
+    let board = await alice.client.query(api.foundry.board, {});
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 4, cycle: { ...board.progress!.cycle, shards: 500 } }));
+    const purchase = { expectedOwnerId: alice.ownerId, revision: 0, skill: "forge-grip" as const };
+    const results = await Promise.allSettled([alice.client.mutation(api.foundry.purchaseSkill, purchase), alice.client.mutation(api.foundry.purchaseSkill, purchase)]);
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    board = await alice.client.query(api.foundry.board, {}); expect(board.progress!.cycle.shards).toBe(470); expect(board.progress!.cycle.skills).toEqual(["forge-grip"]);
+    await expect(alice.client.mutation(api.foundry.purchaseSkill, { ...purchase, revision: board.progress!.revision, skill: "forge-mastery" })).rejects.toThrow("reliés");
+    await expect(bob.client.mutation(api.foundry.purchaseCharm, { expectedOwnerId: alice.ownerId, revision: 1, charm: "ember" })).rejects.toThrow("autre compte");
+    await alice.client.mutation(api.foundry.purchaseCharm, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, charm: "ember" });
+    board = await alice.client.query(api.foundry.board, {}); expect(board.progress).toMatchObject({ mastery: 4, masterySpent: 1, charms: ["ember"] });
+    await expect(alice.client.mutation(api.foundry.purchaseCharm, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, charm: "ember" })).rejects.toThrow("déjà");
+    await alice.client.mutation(api.foundry.abandonChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });
+    board = await alice.client.query(api.foundry.board, {}); expect(board.progress!.cycle.status).toBe("abandoned");
+    await alice.client.mutation(api.foundry.newChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });
+    board = await alice.client.query(api.foundry.board, {});
+    expect(board.progress).toMatchObject({ mastery: 4, masterySpent: 1, charms: ["ember"], cycle: { shards: 0, skills: [], blessings: [] } });
+    const fresh = await begin(alice, "next-build"); expect(fresh.state.stats.damage).toBeGreaterThan(foundryStats(newFoundryCycle(), "mallet", "smith").damage);
+    await expect(alice.client.mutation(api.foundry.purchaseSkill, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision + 1, skill: "forge-grip" })).rejects.toThrow("manche");
+  });
+  it("replays combined techniques and their timers exactly across checkpoints and retries", async () => {
+    const t = setup(); const alice = await player(t, "alice"); const board = await alice.client.query(api.foundry.board, {});
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { charms: FOUNDRY_CHARM_IDS, mastery: 50, masterySpent: 18,
+      cycle: { ...board.progress!.cycle, skills: FOUNDRY_SKILL_IDS, blessings: ["deepFreeze", "wildfire", "lightning", "berserk"] } }));
+    const round = await begin(alice); const initial = structuredClone(round.state);
+    Object.assign(initial.rogue!.modifiers, { freezeChance: 1, burnChance: 1, berserkChance: 1, lightningChance: 1 });
+    await t.run((ctx) => ctx.db.patch(round._id, { state: initial }));
+    const expected = structuredClone(initial); const effects = new Set<string>();
+    for (let batch = 0; batch < 8; batch++) {
+      const startTick = expected.tick; const inputs = [];
+      for (let tick = 0; tick < 40; tick++) {
+        const target = expected.targets.reduce((a, b) => a.hp < b.hp ? a : b);
+        const input = { x: target.x, z: target.z, active: true }; inputs.push(input);
+        stepFoundry(expected, input).effects?.forEach((effect) => effects.add(effect.kind));
+      }
+      vi.setSystemTime(round.startedAt + (batch + 1) * 2000);
+      const args = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick, inputs };
+      expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+      expect(await alice.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    }
+    expect([...effects]).toEqual(expect.arrayContaining(["freeze", "burn", "frenzy", "lightning", "shockwave"]));
+  });
   it("settles each round once, closes an unfunded chantier, and preserves permanent mastery on restart", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const first = await emptyRound(alice, "first");
     const args = { expectedOwnerId: alice.ownerId, roundId: first._id };
     await Promise.all([alice.client.mutation(api.foundry.finishRound, args), alice.client.mutation(api.foundry.finishRound, args)]);
     let board = await alice.client.query(api.foundry.board, {});
-    expect(board.progress?.cycle.roundsLeft).toBe(1); expect(board.round).toBeNull();
+    expect(board.progress?.cycle.roundsLeft).toBe(2); expect(board.round).toBeNull();
     const second = await emptyRound(alice, "second"); await alice.client.mutation(api.foundry.finishRound, { ...args, roundId: second._id });
+    const third = await emptyRound(alice, "third"); await alice.client.mutation(api.foundry.finishRound, { ...args, roundId: third._id });
     board = await alice.client.query(api.foundry.board, {}); expect(board.progress?.cycle.status).toBe("failed");
     await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 3 }));
     await alice.client.mutation(api.foundry.newChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });

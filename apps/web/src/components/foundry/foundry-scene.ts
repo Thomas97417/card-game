@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import { RELICS, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound } from "@sylve/game/foundry";
+import { RELICS, type FoundryEffect, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound } from "@sylve/game/foundry";
 
 import { createFoundryArt, type FoundryRelicArt } from "./foundry-art";
+import { FOUNDRY_IMPACT_DELAY_MS, poseFoundryHammer } from "./foundry-hammer";
 import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim } from "./foundry-projection";
 
 export interface FoundryScene {
@@ -59,11 +60,17 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   worktop.rotation.x = -Math.PI / 2; worktop.position.y = -0.025;
   worktop.receiveShadow = true; scene.add(worktop);
 
-  const relics = new Map<number, { group: THREE.Group; model: FoundryRelicArt; kick: number }>();
+  const iceMaterial = new THREE.MeshBasicMaterial({ color: 0xa2e0e0, transparent: true, opacity: 0.48, depthWrite: false });
+  const burnMaterial = new THREE.MeshBasicMaterial({ color: 0xffaf62, transparent: true, opacity: 0.6, depthWrite: false });
+  materials.add(iceMaterial); materials.add(burnMaterial);
+  const relics = new Map<number, { group: THREE.Group; model: FoundryRelicArt; ice: THREE.Mesh; burn: THREE.Mesh; kick: number }>();
   function makeRelic(t: FoundryRelic) {
     const group = new THREE.Group(); const model = art.relic(t.kind);
-    group.position.set(t.x, 0, t.z); group.add(art.shadow(), model.root);
-    scene.add(group); const item = { group, model, kick: -1000 }; relics.set(t.id, item); return item;
+    const ice = new THREE.Mesh(ringGeo, iceMaterial); const burn = new THREE.Mesh(ringGeo, burnMaterial);
+    ice.rotation.x = burn.rotation.x = -Math.PI / 2; ice.position.y = 0.04; burn.position.y = 0.07;
+    ice.scale.setScalar(RELICS[t.kind].radius + 0.04); burn.scale.setScalar(RELICS[t.kind].radius * 0.8);
+    group.position.set(t.x, 0, t.z); group.add(art.shadow(), ice, burn, model.root);
+    scene.add(group); const item = { group, model, ice, burn, kick: -1000 }; relics.set(t.id, item); return item;
   }
   const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xf9d78b, transparent: true, opacity: 0.65, depthWrite: false }); materials.add(cursorMaterial);
   const cursor = new THREE.Mesh(ringGeo, cursorMaterial); cursor.rotation.x = -Math.PI / 2; scene.add(cursor);
@@ -84,8 +91,36 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       p.color.setHex(color);
     }
   }
+  const waves = Array.from({ length: mobile ? 8 : 16 }, () => {
+    const mat = new THREE.MeshBasicMaterial({ color: 0xe4c68c, transparent: true, opacity: 0, depthWrite: false }); materials.add(mat);
+    const ring = new THREE.Mesh(ringGeo, mat); ring.rotation.x = -Math.PI / 2; ring.visible = false; scene.add(ring);
+    return { ring, mat, life: 0, total: 0.6, radius: 1 };
+  });
+  const beams = Array.from({ length: mobile ? 4 : 8 }, () => {
+    const g = geometry(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(18), 3)));
+    const mat = new THREE.LineBasicMaterial({ color: 0xc6eff5, transparent: true, opacity: 0, depthWrite: false }); materials.add(mat);
+    const line = new THREE.Line(g, mat); line.visible = false; line.frustumCulled = false; scene.add(line);
+    return { line, mat, life: 0 };
+  });
+  let waveIndex = 0, beamIndex = 0;
+  function effect(event: FoundryEffect) {
+    if (event.kind === "burn") { emit(event.x, event.z, 0xffa95a, mobile ? 3 : 6, false); return; }
+    if (event.kind === "frenzy" || event.kind === "jackpot") { emit(event.x, event.z, event.kind === "frenzy" ? 0xffcb83 : 0xffdf86, mobile ? 5 : 10, event.kind === "jackpot"); return; }
+    if (motion.matches) return;
+    if (event.kind === "lightning") {
+      const beam = beams[beamIndex++ % beams.length]!; const attribute = beam.line.geometry.getAttribute("position") as THREE.BufferAttribute;
+      for (let i = 0; i < 6; i++) {
+        const t = i / 5; const bend = i === 0 || i === 5 ? 0 : (i % 2 ? 0.11 : -0.11);
+        attribute.setXYZ(i, THREE.MathUtils.lerp(event.x, event.toX ?? event.x, t) + bend, 0.65 + Math.sin(t * Math.PI) * 0.2, THREE.MathUtils.lerp(event.z, event.toZ ?? event.z, t) - bend);
+      }
+      attribute.needsUpdate = true; beam.life = 0.24; beam.line.visible = true; return;
+    }
+    const wave = waves[waveIndex++ % waves.length]!;
+    wave.life = wave.total; wave.radius = event.radius ?? 2; wave.ring.position.set(event.x, 0.035, event.z);
+    wave.mat.color.setHex(event.kind === "freeze" ? 0x9bd9e2 : 0xdfc18b); wave.ring.visible = true;
+  }
   const queued: { frame: FoundryFrame; at: number }[] = [];
-  let strikeAt = -1000; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0;
+  let strikeAt = -1000; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0; let wasFrozen = false; let freezeVisualTime = 0;
   const resize = () => {
     canvasWidth = Math.max(1, host.clientWidth); canvasHeight = Math.max(1, host.clientHeight);
     renderer.setSize(canvasWidth, canvasHeight, false);
@@ -105,7 +140,8 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       while (queued.length && queued[0]!.at <= time) {
         const next = queued.shift()!;
         const critical = next.frame.impacts.some((hit) => hit.critical);
-        options.sound(critical, next.frame.impacts.some((hit) => hit.broken));
+        if (next.frame.impacts.length) options.sound(critical, next.frame.impacts.some((hit) => hit.broken));
+        next.frame.effects?.forEach(effect);
         if (!motion.matches) shakeAt = critical ? time : shakeAt;
         for (const hit of next.frame.impacts) {
           const obj = relics.get(hit.targetId); if (obj) obj.kick = time;
@@ -113,6 +149,11 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
           if (hit.loot) emit(hit.x, hit.z, 0xffd878, Math.min(7, hit.loot), true);
         }
       }
+      const frozen = !!round.rogue && round.rogue.frozenUntil > round.tick;
+      if (frozen && !wasFrozen) freezeVisualTime = visualSeconds;
+      wasFrozen = frozen;
+      const modelTime = frozen ? freezeVisualTime : visualSeconds;
+      const burning = new Set(round.rogue?.burns.map((burn) => burn.id) ?? []);
       const alive = new Set(round.targets.map((t) => t.id));
       // Keep a shattered relic visible during the hammer's anticipation, until
       // the matching sound and fragments land on the actual impact frame.
@@ -122,25 +163,22 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       for (const t of round.targets) {
         const item = relics.get(t.id) ?? makeRelic(t); const elapsed = (time - item.kick) / 1000;
         const kick = elapsed < 0.25 ? Math.sin(elapsed * 30) * Math.exp(-elapsed * 13) * 0.13 : 0;
-        const follow = active ? 1 - Math.exp(-dt * 24) : 1;
-        item.group.position.x = THREE.MathUtils.lerp(item.group.position.x, t.x, follow);
-        item.group.position.z = THREE.MathUtils.lerp(item.group.position.z, t.z, follow);
-        const dance = motion.matches ? 0 : Math.sin(visualSeconds * (t.kind === "runner" ? 8 : 2.2) + t.phase);
+        // Independent visual easing would let two separated discs overlap.
+        item.group.position.set(t.x, 0, t.z);
+        const dance = motion.matches ? 0 : Math.sin(modelTime * (t.kind === "runner" ? 8 : 2.2) + t.phase);
         const hover = motion.matches ? 0 : t.kind === "chaos" ? 0.055 : t.kind === "runner" ? 0.035 : 0.016;
         item.model.root.position.y = kick + hover + dance * hover;
         const heading = t.kind === "runner" ? Math.atan2(t.vx, t.vz) : t.phase;
         item.model.root.rotation.set(0, heading, kick + dance * (t.kind === "chaos" ? 0.05 : 0.025));
         item.model.damage.visible = t.hp < t.maxHp * 0.75;
-        item.model.animate(motion.matches ? 0 : visualSeconds);
+        item.model.animate(motion.matches ? 0 : modelTime);
+        item.ice.visible = frozen; item.burn.visible = burning.has(t.id);
       }
       cursor.visible = aim.active && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);
       hammer.root.visible = aim.active || !active;
-      const elapsed = (time - strikeAt) / 1000;
-      const swing = elapsed >= 0 && elapsed < 0.28 ? Math.sin(Math.min(1, elapsed / 0.12) * Math.PI / 2) * Math.exp(-Math.max(0, elapsed - 0.12) * 12) : 0;
-      hammer.root.position.set(aim.x + 0.3, 1.65 - swing * 0.65, aim.z + 0.65);
-      hammer.root.rotation.set(-0.55 - swing * 1.65, 0, -0.42 + swing * 0.2);
       hammer.tool(round.tool);
+      poseFoundryHammer(hammer, aim, time - strikeAt);
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]!;
         if (p.life > 0) {
@@ -152,6 +190,16 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
           dummy.scale.setScalar(p.scale * Math.max(0, Math.min(1, p.life * 5)));
         } else dummy.scale.setScalar(0);
         dummy.updateMatrix(); particleMesh.setMatrixAt(i, dummy.matrix); particleMesh.setColorAt(i, p.color);
+      }
+      for (const wave of waves) {
+        if (active) wave.life = Math.max(0, wave.life - dt);
+        wave.ring.visible = wave.life > 0;
+        wave.ring.scale.setScalar(wave.radius * (0.25 + (1 - wave.life / wave.total) * 0.75));
+        wave.mat.opacity = wave.life / wave.total * 0.48;
+      }
+      for (const beam of beams) {
+        if (active) beam.life = Math.max(0, beam.life - dt);
+        beam.line.visible = beam.life > 0; beam.mat.opacity = beam.life / 0.24;
       }
       particleMesh.instanceMatrix.needsUpdate = true;
       if (particleMesh.instanceColor) particleMesh.instanceColor.needsUpdate = true;
@@ -171,7 +219,11 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       return aimAtFoundry(clientX, clientY, host.getBoundingClientRect(), viewport, camera);
     },
     nudge(input, dx, dz) { return nudgeFoundryAim(input, dx, dz, viewport.portrait); },
-    impact(frame) { if (!frame.strike) return; strikeAt = performance.now(); queued.push({ frame, at: strikeAt + 80 }); },
+    impact(frame) {
+      if (!frame.strike && !frame.impacts.length && !frame.effects?.length) return;
+      const now = performance.now(); if (frame.strike) strikeAt = now;
+      queued.push({ frame, at: now + (frame.strike ? FOUNDRY_IMPACT_DELAY_MS : 0) }); queued.sort((a, b) => a.at - b.at);
+    },
     destroy() {
       if (destroyed) return; destroyed = true;
       renderer.setAnimationLoop(null); observer.disconnect();

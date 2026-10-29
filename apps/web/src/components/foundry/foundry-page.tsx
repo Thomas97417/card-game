@@ -5,12 +5,13 @@ import type { FunctionReturnType } from "convex/server";
 import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, LockKeyhole, RotateCcw, Wifi, BookOpen, Gem } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { ASSISTANTS, ASSISTANT_IDS, BLESSINGS, FOUNDRY, RELICS, RELIC_KINDS, TOOLS, TOOL_IDS, UPGRADES, UPGRADE_IDS,
-  createFoundryRound, newFoundryCycle, type FoundryAssistant, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
+import { ASSISTANTS, ASSISTANT_IDS, BLESSINGS, FOUNDRY, RELICS, RELIC_KINDS, TOOLS, TOOL_IDS, FOUNDRY_SKILL_IDS, FOUNDRY_RARITY,
+  createFoundryRound, newFoundryCycle, foundryOrderCost, type FoundryAssistant, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
+import { FoundrySkillTree } from "./foundry-skill-tree";
 import type { FoundryScene } from "./foundry-scene";
 
 const ChestRevealDialog = lazy(() => import("@/components/play/chest-reveal-dialog").then((m) => ({ default: m.ChestRevealDialog })));
@@ -30,7 +31,9 @@ export function FoundryPage() {
   const startRound = useMutation(api.foundry.startRound);
   const submit = useMutation(api.foundry.submitInputs);
   const finish = useMutation(api.foundry.finishRound);
-  const purchase = useMutation(api.foundry.purchaseUpgrade);
+  const purchaseSkill = useMutation(api.foundry.purchaseSkill);
+  const purchaseCharm = useMutation(api.foundry.purchaseCharm);
+  const abandon = useMutation(api.foundry.abandonChantier);
   const pay = useMutation(api.foundry.payOrder);
   const choose = useMutation(api.foundry.chooseBlessing);
   const restart = useMutation(api.foundry.newChantier);
@@ -48,6 +51,8 @@ export function FoundryPage() {
   const [sound, setSound] = useState(true);
   const [help, setHelp] = useState(false);
   const [equipment, setEquipment] = useState(false);
+  const [tree, setTree] = useState<"tree" | "charms" | null>(null);
+  const [closing, setClosing] = useState(false);
   const [, tick] = useState(0);
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -108,7 +113,7 @@ export function FoundryPage() {
   }, [board, ensure]);
   useEffect(() => {
     const saved = latest.current.board?.progress;
-    if (!session.current) preview.current = createFoundryRound(20261029, saved?.cycle ?? newFoundryCycle(), tool, assistant);
+    if (!session.current) preview.current = createFoundryRound(20261029, saved?.cycle ?? newFoundryCycle(), tool, assistant, saved?.charms ?? []);
   }, [tool, assistant, board?.progress]);
   useEffect(() => {
     alive.current = true; let cancelled = false; let localScene: FoundryScene | null = null; let localAudio: Audio | null = null;
@@ -162,9 +167,9 @@ export function FoundryPage() {
   const runtime = session.current; const live = runtime?.state;
   const inRound = !!board?.round || !!runtime;
   const locked = busy || inRound || !!cycle?.choices.length || cycle?.status !== "active";
-  const orderCost = cycle ? FOUNDRY.orderCosts[cycle.orderIndex] : undefined;
+  const orderCost = cycle ? foundryOrderCost(cycle) : undefined;
   const dailyProgress = Math.min(3, board?.daily.delivered ?? 0);
-  const endState = cycle?.status === "failed" || (cycle?.status === "completed" && !cycle.choices.length);
+  const endState = cycle?.status === "failed" || cycle?.status === "abandoned" || (cycle?.status === "completed" && !cycle.choices.length);
   function revision(current: Board) { return { expectedOwnerId: current.ownerId, revision: current.progress!.revision }; }
   function move(event: React.PointerEvent<HTMLDivElement>) {
     if (event.target !== host.current && !(event.target instanceof HTMLCanvasElement) && !event.currentTarget.hasPointerCapture?.(event.pointerId)) { aim.current.active = false; return; }
@@ -184,7 +189,7 @@ export function FoundryPage() {
       <GameHeader />
       <div className="foundry-heading">
         <div><span className="foundry-eyebrow">L’art du feu et du vivant</span><h1>La Fonderie des Échos</h1><p>Brise les reliques. Honore les commandes. Fais vibrer le refuge.</p></div>
-        <div className="foundry-meta"><span><Sparkles size={15} /><strong>{progress?.mastery ?? 0}</strong> maîtrise</span><button type="button" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={16} /> Guide</button></div>
+        <div className="foundry-meta"><span title={`${Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0))} points disponibles pour les talismans`}><Sparkles size={15} /><strong>{progress?.mastery ?? 0}</strong> maîtrise</span><button type="button" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={16} /> Guide</button></div>
       </div>
 
       <div className="foundry-layout">
@@ -195,6 +200,7 @@ export function FoundryPage() {
             <div className="foundry-canvas" ref={host} />
             <div className="foundry-stage-top"><span className="foundry-stage-label"><span className={phase === "running" ? "is-lit" : ""} />{phase === "running" ? "La forge résonne" : "L’établi des anciens"}</span><button type="button" aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={17} /> : <VolumeX size={17} />}</button></div>
             {live && <div className="foundry-run-hud"><div><span>Concentration</span><strong>{Math.max(0, Math.ceil(live.concentration))}<small> / {live.stats.concentration}</small></strong><div className="foundry-focus-track"><i style={{ width: `${live.concentration / live.stats.concentration * 100}%` }} /></div></div><div className="foundry-run-shards"><Gem size={18} /><strong>{live.shards}</strong><span>éclats</span></div></div>}
+            {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} reliques embrasées</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}</div>}
             {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Les braises s’éveillent…</p></div>}
             {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>L’établi 3D est indisponible</h2><p>La fonderie a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
             {ready && phase === "idle" && !inRound && <div className="foundry-intro-overlay"><span className="foundry-stamp"><Hammer size={24} /></span><h2>{endState ? cycle?.status === "completed" ? "Un refuge qui rayonne" : "Chaque écho nous apprend" : "À chaque frappe, un nouvel écho"}</h2><p>{endState ? cycle?.status === "completed" ? "Les cinq commandes sont livrées. Tes outils et ta maîtrise t’accompagnent pour la suite." : "Le chantier est clos. Tes outils et ta maîtrise restent acquis." : "Les reliques attendent ton marteau. Choisis ton outil, puis entre dans la danse."}</p><button type="button" className="foundry-primary" disabled={locked || !cycle?.roundsLeft} onClick={start}><Play size={16} />{busy ? "Préparation…" : "Commencer une manche"}</button><span className="foundry-controls-hint">Souris · doigt maintenu · flèches</span></div>}
@@ -218,14 +224,17 @@ export function FoundryPage() {
           </section>
           {progress?.lastSummary && !inRound && <div className="foundry-summary" role="status"><Sparkles size={22} /><div><strong>Dernière récolte</strong><span>{progress.lastSummary.broken} reliques · {progress.lastSummary.criticals} critiques · {Math.round(progress.lastSummary.seconds)} secondes</span></div><b>+{progress.lastSummary.shards}<small> éclats</small></b></div>}
           <section className="foundry-daily"><img src="/art/chests/common.webp" onError={(e) => { e.currentTarget.src = "/art/ui/rewards-gift.webp"; }} alt="" /><div><span className="foundry-eyebrow">Le présent du refuge</span><h2>{board?.daily.claimed ? "Ton coffre est reçu" : "Un coffre, chaque jour"}</h2><p>{board?.daily.claimed ? "La forge reste ouverte pour ta maîtrise." : `${dailyProgress} / 3 commandes livrées aujourd’hui`}</p><div className="foundry-daily-dots" aria-label={`${dailyProgress} commandes sur trois`}>{[1, 2, 3].map((n) => <i key={n} className={dailyProgress >= n ? "is-complete" : ""}>{dailyProgress >= n && <Check size={11} />}</i>)}</div><small>Réinitialisation à minuit · heure de Paris</small></div></section>
-          <section className="foundry-upgrades"><div className="foundry-section-title"><h2>Façonner son savoir</h2><span>Ce chantier</span></div>{UPGRADE_IDS.map((id) => { const level = cycle?.upgrades[id] ?? 0; const cost = FOUNDRY.upgradeCosts[level]; return <div key={id} className="foundry-upgrade"><div><strong>{UPGRADES[id].name}</strong><span>{UPGRADES[id].detail}</span><div className="foundry-upgrade-level">{[1, 2, 3].map((n) => <i key={n} className={level >= n ? "is-complete" : ""} />)}</div></div><button type="button" disabled={locked || !cycle?.roundsLeft || cost === undefined || (cycle?.shards ?? 0) < cost} onClick={() => action((b) => purchase({ ...revision(b), upgrade: id }))} aria-label={`Améliorer ${UPGRADES[id].name}${cost === undefined ? ", maximum atteint" : ` pour ${cost} éclats`}`}>{cost === undefined ? <Check size={15} /> : <>{cost}<Gem size={12} /></>}</button></div>; })}</section>
+          <section className="foundry-build-panel"><span className="foundry-eyebrow">Un build pour ce chantier</span><h2>Les voies de l’Écho</h2><p>{cycle?.skills?.length ?? 0} / {FOUNDRY_SKILL_IDS.length} savoirs appris · {cycle?.blessings.length ?? 0} bénédictions</p><div className="foundry-build-branches" aria-hidden="true"><span>◆</span><span>❋</span><span>ϟ</span><span>✦</span><span>◎</span></div><button type="button" className="foundry-primary" disabled={!cycle} onClick={() => { pause(); setTree("tree"); }}>Ouvrir l’arbre de compétences <ArrowUpRight size={15} /></button><button type="button" className="foundry-mastery-button" disabled={!cycle} onClick={() => { pause(); setTree("charms"); }}><Sparkles size={15} /><span>Talismans permanents<small>{progress?.charms?.length ?? 0} acquis · {Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0))} points disponibles</small></span><ArrowUpRight size={14} /></button></section>
           {!!cycle?.blessings.length && <section className="foundry-blessings"><h2>Les échos qui t’accompagnent</h2><div>{cycle.blessings.map((id, i) => <span key={`${id}-${i}`} title={BLESSINGS[id].detail}>{BLESSINGS[id].symbol}<small>{BLESSINGS[id].name}</small></span>)}</div></section>}
+          {cycle?.status === "active" && <button type="button" className="foundry-close-cycle" disabled={inRound || busy || !!cycle.choices.length} onClick={() => setClosing(true)}>Clore ce chantier et préparer le suivant</button>}
           <p className="foundry-lore">« Chaque relique porte un souvenir. À toi de lui rendre sa voix. »<span>— Le Forgeron de la citadelle</span></p>
         </aside>
       </div>
+      {tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={locked} busy={busy} inRound={inRound} onSkill={(skill) => action((b) => purchaseSkill({ ...revision(b), skill }))} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}
+      <Dialog open={closing} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs et bénédictions de ce chantier seront perdus. Tu conserves ta maîtrise, tes outils et tes talismans pour le prochain essai.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
       <Dialog open={help} onOpenChange={setHelp}>
         <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les gestes de l’artisan</DialogTitle>
-          <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Déplace la souris : le marteau frappe tout seul.</strong> Sur mobile, maintiens le doigt sur l’établi. Les flèches déplacent aussi la visée. Échap met en pause.</p><p>Chaque commande doit être livrée en deux manches. Dépense tes éclats en améliorations ou garde-les pour la livraison. Les bénédictions durent tout le chantier ; la maîtrise et les outils restent acquis.</p><div>{RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>
+          <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Déplace la souris : le marteau frappe tout seul.</strong> Sur mobile, maintiens le doigt sur l’établi. Les flèches déplacent aussi la visée. Échap met en pause.</p><p>Chaque commande te donne trois manches. Investis tes éclats dans les cinq voies de l’arbre, ou garde-les pour la livraison. Chaque livraison propose trois bénédictions, dont une technique. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise, les outils et les talismans restent acquis.</p><div>{RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>
         </DialogContent>
       </Dialog>
       <Dialog open={equipment} onOpenChange={setEquipment}>
@@ -243,7 +252,7 @@ export function FoundryPage() {
       {notice && phase !== "paused" && <p className="foundry-notice" role="status">{notice}</p>}
       <Dialog open={!!cycle?.choices.length && !board?.pendingReward} onOpenChange={() => {}}>
         <DialogContent className="foundry-blessing-popup" showCloseButton={false}>
-          <section className="foundry-blessing-dialog"><span className="foundry-eyebrow">Une commande honorée, un savoir partagé</span><DialogTitle>Le refuge te remercie</DialogTitle><p>Choisis une bénédiction pour ce chantier.</p><div>{cycle?.choices.map((id) => <button type="button" autoFocus={id === cycle.choices[0]} key={id} disabled={busy} onClick={() => action((b) => choose({ ...revision(b), blessing: id }))}><b>{BLESSINGS[id].symbol}</b><strong>{BLESSINGS[id].name}</strong><span>{BLESSINGS[id].detail}</span></button>)}</div></section>
+          <section className="foundry-blessing-dialog"><span className="foundry-eyebrow">Une commande honorée, un savoir partagé</span><DialogTitle>Le refuge te remercie</DialogTitle><p>Choisis une bénédiction pour ce chantier.</p><div>{cycle?.choices.map((id) => <button type="button" autoFocus={id === cycle.choices[0]} key={id} disabled={busy} onClick={() => action((b) => choose({ ...revision(b), blessing: id }))}><small className={`foundry-perk-rarity rarity-${BLESSINGS[id].rarity}`}>{FOUNDRY_RARITY[BLESSINGS[id].rarity].name} · {BLESSINGS[id].kind === "pact" ? "Pacte" : BLESSINGS[id].kind === "technique" ? "Technique" : "Renfort"}</small><b>{BLESSINGS[id].symbol}</b><strong>{BLESSINGS[id].name}</strong><span>{BLESSINGS[id].detail}</span><small className="foundry-perk-level">{BLESSINGS[id].maxStacks > 1 ? `Niveau ${1 + (cycle.blessings.filter((owned) => owned === id).length)} / ${BLESSINGS[id].maxStacks}` : "Effet unique pour ce chantier"}</small></button>)}</div></section>
         </DialogContent>
       </Dialog>
       {board?.pendingReward?.receipt && <Suspense fallback={<div className="foundry-modal-backdrop"><p>Le coffre du refuge s’ouvre…</p></div>}><ChestRevealDialog reward={board.pendingReward.receipt} collection={collection} onUpgrade={(variantId) => upgradeCard({ variantId })} onClose={() => action((b) => acknowledge({ expectedOwnerId: b.ownerId, rewardId: b.pendingReward!._id }))} /></Suspense>}

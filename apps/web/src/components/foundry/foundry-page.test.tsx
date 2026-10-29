@@ -93,6 +93,30 @@ describe("la fonderie à l’écran", () => {
     const before = sceneOptions.state().tick;
     act(() => sceneOptions.frame(4000)); expect(sceneOptions.state().tick).toBe(before);
   });
+  it("opens the real skill tree, explains prerequisites and buys with the displayed revision", async () => {
+    board.progress!.revision = 8; board.progress!.cycle.shards = 100;
+    render(<FoundryPage />); await ready();
+    fireEvent.click(screen.getByRole("button", { name: /Ouvrir l’arbre de compétences/ }));
+    expect(screen.getByRole("dialog", { name: "Les voies de l’Écho" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Cœur du forgeron, 240 éclats/ }));
+    expect(disabled(screen.getByRole("button", { name: "Apprendre Cœur du forgeron" }))).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: /Poigne de cuivre, 30 éclats/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Apprendre Poigne de cuivre" }));
+    await waitFor(() => expect(mutations.get("foundry:purchaseSkill")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 8, skill: "forge-grip" }));
+  });
+  it("shows available mastery separately and buys a permanent charm", async () => {
+    board.progress!.mastery = 4; board.progress!.masterySpent = 1; board.progress!.revision = 4;
+    render(<FoundryPage />); await ready();
+    fireEvent.click(screen.getByRole("button", { name: /Talismans permanents/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Acquérir Anneau de braise/ }));
+    await waitFor(() => expect(mutations.get("foundry:purchaseCharm")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 4, charm: "ember" }));
+  });
+  it("explains the loss of the temporary build before closing a chantier", async () => {
+    render(<FoundryPage />); await ready(); fireEvent.click(screen.getByRole("button", { name: "Clore ce chantier et préparer le suivant" }));
+    expect(screen.getByRole("dialog", { name: "Transmettre ce savoir" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Clore le chantier" }));
+    await waitFor(() => expect(mutations.get("foundry:abandonChantier")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 0 }));
+  });
   it("traps the blessing choice and submits the displayed revision", async () => {
     board.progress!.revision = 3;
     board.progress!.cycle = { ...newFoundryCycle(), orderIndex: 1, choices: ["power", "focus", "reach"] };
