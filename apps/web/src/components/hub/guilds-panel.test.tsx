@@ -145,6 +145,13 @@ describe("guildes dans le refuge", () => {
 
   it("keeps global ranks when searching and finds names without accents", () => {
     render(<GuildsPanel id="guilds" onClose={vi.fn()} />);
+    expect(screen.getByText("Les grandes alliances")).toBeTruthy();
+    expect(screen.queryByText("LE POUVOIR DU COLLECTIF")).toBeNull();
+    expect(
+      screen.queryByText(
+        "Chaque deck compte. Trouve les gardiens avec qui grandir.",
+      ),
+    ).toBeNull();
     const search = screen.getByRole("searchbox", {
       name: "Rechercher une guilde",
     });
@@ -198,6 +205,10 @@ describe("guildes dans le refuge", () => {
     expect(screen.getByText("Aëlys")).toBeTruthy();
     expect(screen.getByText("Chef de guilde")).toBeTruthy();
     expect(screen.getByText("#1")).toBeTruthy();
+    expect(
+      screen.queryByText("Ta guilde est créée. L’aventure commence !"),
+    ).toBeNull();
+    expect(screen.queryByText(/Chaque amélioration de vos cartes/)).toBeNull();
   });
 
   it("keeps the draft and selection after a server rejection and prevents duplicate submissions", async () => {
@@ -260,10 +271,42 @@ describe("guildes dans le refuge", () => {
     ).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Toutes les guildes" }));
     expect(screen.queryByRole("button", { name: /Rejoindre/ })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Voir" }));
+    const openGuild = screen.getByRole("button", {
+      name: "Ouvrir la guilde Les Veilleurs",
+    });
+    expect(openGuild.classList.contains("guild-row-open")).toBe(true);
+    expect(
+      screen.queryByRole("button", { name: "Voir" }),
+    ).toBeNull();
+    fireEvent.click(within(openGuild).getByText("Les Veilleurs"));
     expect(
       screen.getByRole("list", { name: "Membres de ma guilde" }),
     ).toBeTruthy();
+  });
+
+  it("uses the three podium medals and preserves numbered ranks below the podium", () => {
+    const first = ranking.guilds[0]!;
+    ranking.guilds = [1, 2, 3, 4].map((rank) => ({
+      ...first,
+      id: `guild-${rank}` as Id<"guilds">,
+      name: `Alliance ${rank}`,
+      rank,
+      power: 5000 - rank,
+    }));
+    render(<GuildsPanel id="guilds" onClose={vi.fn()} />);
+    for (const [rank, medal] of [
+      [1, "gold"],
+      [2, "silver"],
+      [3, "bronze"],
+    ] as const) {
+      const position = screen.getByLabelText(`Rang ${rank}`);
+      expect(position.querySelector("img")?.getAttribute("src")).toBe(
+        `/art/ui/podium-${medal}.webp`,
+      );
+    }
+    const fourth = screen.getByLabelText("Rang 4");
+    expect(within(fourth).getByText("#4")).toBeTruthy();
+    expect(fourth.querySelector("img")).toBeNull();
   });
 
   it("lets the leader update the emblem and requires an explicit departure confirmation", async () => {

@@ -8,6 +8,8 @@ Toutes les guildes sont classées par puissance décroissante. La puissance d’
 
 Le calcul utilise `heroDeckCards` et `deckMight`, côté Convex. Les changements de composition, améliorations, liens d’âme, emplacements et adhésions actualisent les requêtes réactives. En cas d’égalité, la guilde la plus ancienne passe devant, puis son identifiant sert de dernier départage stable. La recherche conserve le rang mondial et ignore les accents et la casse.
 
+Les places 1, 2 et 3 utilisent les mêmes médailles d’or, d’argent et de bronze que le classement des joueurs. Cliquer sur la ligne entière de sa guilde ouvre directement **Ma guilde**, au pointeur comme au clavier.
+
 ## Création et membres
 
 - Création gratuite, avec un nom de 3 à 32 caractères, une description facultative de 160 caractères maximum et un emblème choisi parmi 16 illustrations.

@@ -1242,7 +1242,7 @@
 }
 .hub-ranking-trigger {
   display: grid;
-  grid-template-columns: 32px 42px minmax(0, 1fr) auto 16px;
+  grid-template-columns: 36px 42px minmax(0, 1fr) auto 16px;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -1256,6 +1256,20 @@
 }
 .hub-ranking-trigger:focus-visible {
   outline-offset: -3px;
+}
+.ranking-position {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+}
+.ranking-podium-icon {
+  width: 36px;
+  height: 36px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #061a1377);
 }
 .hub-ranking-rank {
   display: flex;
@@ -1635,13 +1649,15 @@
     height: 34px;
   }
   .hub-ranking-trigger {
-    grid-template-columns: 26px 42px minmax(0, 1fr) auto 14px;
+    grid-template-columns: 30px 42px minmax(0, 1fr) auto 14px;
     gap: 7px;
     padding: 9px 8px;
   }
   .hub-ranking-name {
     font-size: 12px;
   }
+  .ranking-position { min-height: 30px; }
+  .ranking-podium-icon { width: 30px; height: 30px; }
   .hub-ranking-trophies {
     gap: 3px;
     font-size: 11px;

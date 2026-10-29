@@ -28,6 +28,8 @@ Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par fa
 
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
+Les trois premières places du classement des joueurs et des guildes partagent les médailles `ui/podium-gold.webp`, `ui/podium-silver.webp` et `ui/podium-bronze.webp`, générées avec ImageGen intégré. Le chiffre est intégré à chaque médaille ; un libellé de rang reste accessible aux lecteurs d’écran. À partir de la quatrième place, le rang est affiché en texte.
+
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 
 La capture du duel provient de l’interface réelle du terrain d’entraînement, après plusieurs tours joués. Sa provenance figure dans la section `captures` du manifeste.

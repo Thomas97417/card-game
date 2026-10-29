@@ -27,6 +27,7 @@ import {
 } from "@sylve/game/guilds";
 import { GuardianAvatar } from "@/components/guardian-avatar";
 import { GameIcon } from "@/components/game/game-icon";
+import { RankingPosition } from "@/components/game/ranking-position";
 import { HubPanel } from "./hub-panel";
 import "@/guilds.css";
 
@@ -82,7 +83,7 @@ export function GuildsPanel({
 
   async function act(
     action: () => Promise<unknown>,
-    success: string,
+    success: string | null,
     after?: () => void,
   ) {
     if (pending.current) return;
@@ -156,11 +157,7 @@ export function GuildsPanel({
         {view === "all" ? (
           <>
             <div className="guild-intro">
-              <div>
-                <span className="guild-eyebrow">LE POUVOIR DU COLLECTIF</span>
-                <h3>Les grandes alliances</h3>
-                <p>Chaque deck compte. Trouve les gardiens avec qui grandir.</p>
-              </div>
+              <h3>Les grandes alliances</h3>
               {!ranking.isPending &&
                 !ranking.isError &&
                 !ranking.data?.guildId && (
@@ -270,7 +267,7 @@ export function GuildsPanel({
                     : create(fields),
                 editor === "edit"
                   ? "L’identité de ta guilde a été mise à jour."
-                  : "Ta guilde est créée. L’aventure commence !",
+                  : null,
                 () => setEditor(null),
               )
             }
@@ -343,10 +340,6 @@ export function GuildsPanel({
                 </li>
               ))}
             </ul>
-            <p className="guild-footnote">
-              Chaque amélioration de vos cartes renforce votre puissance
-              collective.
-            </p>
             <div className="guild-management">
               {ownGuild.isLeader && (
                 <button
@@ -463,45 +456,60 @@ function GuildRow({
       data-own={guild.isOwn || undefined}
       data-podium={guild.rank <= 3 || undefined}
     >
-      <span className="guild-position" aria-label={`Rang ${guild.rank}`}>
-        {guild.rank === 1 && <Crown size={14} aria-hidden="true" />}
-        <span>#{guild.rank}</span>
-      </span>
-      <Emblem id={guild.emblemId} size={52} />
-      <div className="guild-row-name">
-        <strong>{guild.name}</strong>
-        {guild.description && <p>{guild.description}</p>}
-        <span>
-          <Users size={11} aria-hidden="true" /> {guild.memberCount}/
-          {GUILD_MEMBER_LIMIT} membres{guild.isOwn && <b>Ta guilde</b>}
-        </span>
-      </div>
-      <div className="guild-row-power">
-        <Flame size={14} aria-hidden="true" />
-        <strong>{number(guild.power)}</strong>
-        <small>puissance</small>
-      </div>
       {guild.isOwn ? (
         <button
           type="button"
-          className="guild-button guild-row-action"
+          className="guild-row-open"
+          aria-label={`Ouvrir la guilde ${guild.name}`}
           disabled={busy}
           onClick={onOpen}
         >
-          Voir
+          <GuildRowContent guild={guild} />
         </button>
-      ) : !hasGuild ? (
-        <button
-          type="button"
-          className="guild-button guild-row-action"
-          aria-label={`Rejoindre ${guild.name}`}
-          disabled={busy || full}
-          onClick={onJoin}
-        >
-          {full ? "Complète" : "Rejoindre"}
-        </button>
-      ) : null}
+      ) : (
+        <>
+          <GuildRowContent guild={guild} />
+          {!hasGuild && (
+            <button
+              type="button"
+              className="guild-button guild-row-action"
+              aria-label={`Rejoindre ${guild.name}`}
+              disabled={busy || full}
+              onClick={onJoin}
+            >
+              {full ? "Complète" : "Rejoindre"}
+            </button>
+          )}
+        </>
+      )}
     </li>
+  );
+}
+
+function GuildRowContent({ guild }: { guild: GuildListing }) {
+  return (
+    <>
+      <span className="guild-position" aria-label={`Rang ${guild.rank}`}>
+        <RankingPosition rank={guild.rank} />
+      </span>
+      <Emblem id={guild.emblemId} size={52} />
+      <span className="guild-row-name">
+        <strong>{guild.name}</strong>
+        {guild.description && (
+          <span className="guild-row-description">{guild.description}</span>
+        )}
+        <span className="guild-row-meta">
+          <Users size={11} aria-hidden="true" /> {guild.memberCount}/
+          {GUILD_MEMBER_LIMIT} membres
+          {guild.isOwn && <b>Ta guilde</b>}
+        </span>
+      </span>
+      <span className="guild-row-power">
+        <Flame size={14} aria-hidden="true" />
+        <strong>{number(guild.power)}</strong>
+        <small>puissance</small>
+      </span>
+    </>
   );
 }
 

@@ -166,7 +166,7 @@
 }
 .guild-row {
   display: grid;
-  grid-template-columns: 28px 52px minmax(0, 1fr) auto auto;
+  grid-template-columns: 36px 52px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 11px;
   padding: 12px;
@@ -179,8 +179,30 @@
   background: linear-gradient(110deg, #c5a76b10, #0c231b55);
 }
 .guild-row[data-own] {
+  display: block;
+  padding: 0;
   border-color: #9fc58888;
   background: #597b3820;
+}
+.guild-row-open {
+  display: grid;
+  grid-template-columns: 36px 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.guild-row-open:hover {
+  background: #c5a76b12;
+}
+.guild-row-open:disabled {
+  cursor: wait;
 }
 .guild-position {
   display: flex;
@@ -211,7 +233,8 @@
     serif;
   overflow-wrap: anywhere;
 }
-.guild-row-name > p {
+.guild-row-description {
+  display: block;
   overflow: hidden;
   margin-top: 4px;
   color: #aebda3;
@@ -219,7 +242,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.guild-row-name > span {
+.guild-row-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -655,12 +678,13 @@
   .guild-intro h3 {
     font-size: 23px;
   }
-  .guild-row {
-    grid-template-columns: 22px 42px minmax(0, 1fr) auto;
+  .guild-row,
+  .guild-row-open {
+    grid-template-columns: 30px 42px minmax(0, 1fr) auto;
     gap: 8px;
     padding: 10px 8px;
   }
-  .guild-row > .guild-emblem {
+  .guild-row .guild-emblem {
     width: 42px;
     height: 42px;
   }

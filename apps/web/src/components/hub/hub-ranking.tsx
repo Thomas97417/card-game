@@ -11,6 +11,7 @@ import { GuardianAvatar } from "@/components/guardian-avatar";
 import { CreaturePortrait } from "@/components/game/creature-portrait";
 import { FactionBackdrop } from "@/components/game/faction-artwork";
 import { GameIcon } from "@/components/game/game-icon";
+import { RankingPosition } from "@/components/game/ranking-position";
 import { LeagueBadge, TrophyIcon } from "@/components/leagues/league-progress";
 import {
   Accordion,
@@ -85,15 +86,7 @@ export function HubRanking({
                     data-self={player.isCurrentPlayer || undefined}
                   >
                     <AccordionTrigger className="hub-ranking-trigger">
-                      <span
-                        className="hub-ranking-rank"
-                        data-rank={player.rank}
-                      >
-                        {player.rank === 1 && (
-                          <Crown size={12} aria-hidden="true" />
-                        )}
-                        <span>#{player.rank}</span>
-                      </span>
+                      <RankingPosition rank={player.rank} className="hub-ranking-rank" />
                       <span className="hub-ranking-avatar" aria-hidden="true">
                         <GuardianAvatar heroId={player.profile?.heroId} />
                       </span>
