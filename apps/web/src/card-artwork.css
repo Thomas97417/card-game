@@ -134,7 +134,7 @@
 }
 .workshop-card-caption {
   position: absolute;
-  inset: auto 0 0;
+  inset: auto 3px 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -143,7 +143,8 @@
   min-height: 39%;
   padding: 25px 6px 11px;
   background: linear-gradient(transparent, #132a25e6 40%, #132a25fa);
-  border-radius: 0 0 5px 5px;
+  border-radius: 0 0 4px 4px;
+  overflow: hidden;
 }
 .deck-workshop .workshop-card-caption {
   inset: auto 3px 3px;

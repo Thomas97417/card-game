@@ -105,21 +105,102 @@
     serif;
   font-variant-numeric: tabular-nums;
 }
-.soulbind-rank-progress {
+.soulbind-progression {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 20px;
+  padding: 16px;
+  border: 1px solid #b8b77d55;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #34513a66, #0b241c99);
+  box-shadow: inset 0 1px #fff0c00a;
+}
+.soulbind-rank-summary {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 7px;
-  grid-column: 1 / -1;
-  padding-top: 12px;
-  border-top: 1px solid #cbb78322;
-  color: #becbb8;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.soulbind-rank-summary > .game-icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 3px 5px #061e1966);
+}
+.soulbind-rank-summary strong {
+  display: block;
+  color: #fff0ce;
+  font: 600 25px/1.2 Georgia, serif;
+}
+.soulbind-rank-summary span {
+  display: block;
+  margin-top: 3px;
+  color: #b7c7b6;
+  font-size: 11px;
+}
+.soulbind-dust-balance {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid #b8b77d22;
+  border-radius: 8px;
+  background: #071e1855;
+}
+.soulbind-dust-balance > .game-icon {
+  flex-shrink: 0;
+}
+.soulbind-dust-balance > span {
+  color: #c4d0bd;
   font-size: 10px;
+  line-height: 1.4;
+}
+.soulbind-dust-balance strong {
+  display: block;
+  margin-top: 2px;
+  color: #fff0ce;
+  font: 600 21px/1.2 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+.soulbind-rank-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  grid-column: 1 / -1;
+  gap: 8px;
+  color: #becbb8;
+  font-size: 11px;
+}
+.soulbind-rank-progress strong {
+  color: #e5f3de;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .soulbind-rank-progress progress {
+  grid-column: 1 / -1;
   width: 100%;
-  height: 6px;
-  accent-color: #afce84;
+  height: 10px;
+  overflow: hidden;
+  appearance: none;
+  border: 1px solid #8abdb933;
+  border-radius: 5px;
+  background: #071c18;
+  accent-color: #4fc5b7;
+}
+.soulbind-rank-progress progress::-webkit-progress-bar {
+  border-radius: 4px;
+  background: #071c18;
+  box-shadow: inset 0 1px 3px #020c0b80;
+}
+.soulbind-rank-progress progress::-webkit-progress-value {
+  border-radius: 3px;
+  background: linear-gradient(#6dd4c6, #239c9d);
+  box-shadow: inset 0 1px #d5fff755;
+}
+.soulbind-rank-progress progress::-moz-progress-bar {
+  border-radius: 3px;
+  background: linear-gradient(#6dd4c6, #239c9d);
 }
 .progression-notice {
   display: flex;
@@ -344,15 +425,41 @@
   color: #b6c4ad;
   font-size: 10px;
 }
-.soulbind-companion-level {
+.soulbind-companion-levels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid #cbb78333;
+  border-radius: 8px;
+  background: #0b211a66;
+}
+.soulbind-companion-levels > div + div {
+  padding-left: 8px;
+  border-left: 1px solid #cbb78333;
+}
+.soulbind-companion-levels dt {
+  color: #aebfa7;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.soulbind-companion-levels dd {
   display: flex;
   align-items: center;
-  gap: 5px;
-  color: #d9c8a4;
-  font-size: 10px;
-  white-space: nowrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 5px 0 0;
+  color: #ece0bb;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
 }
-li[data-ready="true"] .soulbind-companion-level {
+.soulbind-level-current dd {
+  color: #e5bf85;
+}
+.soulbind-companion-levels[data-ready="true"] .soulbind-level-current dd {
   color: #c6e6af;
 }
 .is-page .soulbind-bonuses {
@@ -382,8 +489,10 @@ li[data-ready="true"] .soulbind-companion-level {
   touch-action: pan-y pinch-zoom;
 }
 .soulbind-required-card .workshop-card-caption {
+  inset: auto 3px 3px;
   min-height: 22%;
   padding: 16px 8px 10px;
+  border-radius: 0 0 4px 4px;
 }
 .soulbind-required-card .workshop-card-name {
   font-size: 16px;
@@ -428,17 +537,9 @@ li[data-ready="true"] .soulbind-companion-level {
   margin-top: 0;
   font-size: 11px;
 }
-.is-page .soulbind-companion-level {
-  justify-content: center;
-  padding: 5px 10px;
-  border: 1px solid #cbb78344;
-  border-radius: 20px;
-  background: #0b211a66;
-  font-size: 11px;
-}
-.is-page li[data-ready="true"] .soulbind-companion-level {
-  border-color: #a3cf9266;
-  background: #a3cf9210;
+.is-page .soulbind-companion-levels {
+  width: min(100%, 190px);
+  text-align: center;
 }
 .soulbind-activation {
   display: grid;
@@ -592,6 +693,81 @@ li[data-ready="true"] .soulbind-companion-level {
   border-radius: 10px;
   background: linear-gradient(140deg, rgba(var(--rarity-rgb), 0.07), #0a241b66);
 }
+.soulbind-evolution-lock {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #d4b87977;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 0 0, #bda15c1f, transparent 75%), #10281fe6;
+  box-shadow: inset 0 1px #ffe1a315;
+}
+.soulbind-evolution-lock-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid #dac18588;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #85744855, #3c452633);
+  color: #f0d49c;
+  box-shadow: inset 0 1px #fff1bc22, 0 3px 8px #061b1644;
+}
+.soulbind-evolution-lock-copy h3 {
+  color: #f3dfb6;
+  font: 600 22px/1.25 Georgia, serif;
+}
+.soulbind-evolution-lock-copy p {
+  margin-top: 7px;
+  color: #c9ccb8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.soulbind-evolution-unlock-league {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #cbb78333;
+  border-radius: 8px;
+  background: #071e1866;
+}
+.soulbind-evolution-unlock-league > span:last-child {
+  color: #bbc5ad;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.soulbind-evolution-unlock-league strong {
+  display: block;
+  margin-top: 2px;
+  color: #f1d395;
+  font: 600 20px/1.2 Georgia, serif;
+}
+.soulbind-evolution-option[data-locked="true"] {
+  border-color: #a7ad8b33;
+  background: #0b211a55;
+}
+.soulbind-evolution-option[data-locked="true"] .soulbind-evolution-art {
+  opacity: 0.7;
+  filter: saturate(0.6);
+}
+.soulbind-evolution-option[data-locked="true"] h4 {
+  color: #cbd0bc;
+}
+.soulbind-evolution-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b8c3ad;
+  font-size: 11px;
+}
+.soulbind-evolution-preview > svg {
+  flex-shrink: 0;
+}
 .soulbind-evolution-target {
   display: flex;
   align-items: center;
@@ -691,9 +867,6 @@ li[data-ready="true"] .soulbind-companion-level {
 .soulbind-conversion-body > p {
   font-size: 12px;
 }
-.soulbind-conversion-body > p strong {
-  color: #e5dbbf;
-}
 .soulbind-quantity-heading {
   display: flex;
   flex-wrap: wrap;
@@ -781,6 +954,39 @@ li[data-ready="true"] .soulbind-companion-level {
   .progression-wallet > div > span {
     font-size: 10px;
   }
+  .soulbind-progression {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+    padding: 12px;
+  }
+  .soulbind-rank-summary {
+    gap: 7px;
+  }
+  .soulbind-rank-summary > .game-icon {
+    width: 42px;
+    height: 42px;
+  }
+  .soulbind-rank-summary strong {
+    font-size: 21px;
+  }
+  .soulbind-rank-summary span {
+    font-size: 10px;
+  }
+  .soulbind-dust-balance {
+    gap: 6px;
+    padding: 8px;
+  }
+  .soulbind-dust-balance > .game-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .soulbind-evolution-lock {
+    gap: 12px;
+    padding: 14px;
+  }
+  .soulbind-evolution-lock-copy h3 {
+    font-size: 20px;
+  }
   .soulbind-link,
   .soulbind-evolution-option {
     padding: 12px;
@@ -794,7 +1000,7 @@ li[data-ready="true"] .soulbind-companion-level {
     width: 38px;
     height: 48px;
   }
-  .soulbind-companion-level {
+  .soulbind-companion-levels {
     grid-column: 2;
   }
   .soulbind-companion-info strong {

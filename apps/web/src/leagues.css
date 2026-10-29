@@ -939,38 +939,6 @@
     gap: 10px;
   }
 }
-.workshop-locked-slot {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  overflow: hidden;
-  border-color: #8b8468 !important;
-  background: linear-gradient(145deg, #302c26e6, #14251ee6) !important;
-}
-.workshop-locked-slot > img {
-  position: absolute;
-  top: 3%;
-  left: 0;
-  width: 100%;
-  height: 74%;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 4px #0008);
-}
-.workshop-locked-slot > span {
-  z-index: 1;
-  padding: 8px 4px;
-  color: #ecdbb2;
-  font-size: 10px;
-  text-align: center;
-  line-height: 1.6;
-}
-.workshop-locked-slot small {
-  display: block;
-  color: #c9bd9b;
-  font-size: 9px;
-}
 @media (max-width: 600px) {
   .league-panel-heading > strong {
     font-size: 20px;

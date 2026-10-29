@@ -24,6 +24,7 @@ export interface DeckWorkshopState {
   rarityFilters: CardRarity[];
   factionFilters: Faction[];
   upgradeOnly: boolean;
+  evolutionOnly: boolean;
   syncDeck: (deck: WorkshopDeck) => void;
   setDraft: (draft: DeckDraft) => void;
   markSaved: (draft: DeckDraft) => void;
@@ -31,6 +32,7 @@ export interface DeckWorkshopState {
   toggleRarity: (rarity: CardRarity) => void;
   toggleFaction: (faction: Faction) => void;
   toggleUpgradeOnly: () => void;
+  toggleEvolutionOnly: () => void;
   resetFilters: () => void;
 }
 
@@ -42,6 +44,7 @@ const emptyFilters = () => ({
   rarityFilters: [] as CardRarity[],
   factionFilters: [] as Faction[],
   upgradeOnly: false,
+  evolutionOnly: false,
 });
 
 /** One store per mounted player session. Convex owns the persisted data. */
@@ -93,6 +96,7 @@ export function createDeckWorkshopStore() {
         : [...state.factionFilters, faction],
     })),
     toggleUpgradeOnly: () => set((state) => ({ upgradeOnly: !state.upgradeOnly })),
+    toggleEvolutionOnly: () => set((state) => ({ evolutionOnly: !state.evolutionOnly })),
     resetFilters: () => set(emptyFilters()),
   }));
 }

@@ -24,6 +24,7 @@ import { DeckWorkshopStoreProvider } from "./deck-workshop-state";
 import { createDeckWorkshopStore } from "@/stores/deck-workshop-store";
 import { GoldContext } from "@/components/gold-balance";
 import { leagueProgress } from "@sylve/game/leagues";
+import type { SoulProgressView } from "./card-soulbind";
 
 vi.mock("@tanstack/react-router", () => ({
   useBlocker: vi.fn(),
@@ -63,6 +64,7 @@ function setup(
   gold: number | undefined = 500,
   trophies = 2400,
   store = createDeckWorkshopStore(),
+  soulProgress?: SoulProgressView,
 ) {
   const onSave = vi.fn().mockResolvedValue(deckId);
   const onUpgrade = vi.fn().mockResolvedValue(undefined);
@@ -74,6 +76,7 @@ function setup(
         collection={collection}
         onSave={onSave}
         onUpgrade={onUpgrade}
+        soulProgress={soulProgress}
       />
     </GoldContext.Provider>,
     { wrapper: ({ children }) => <DeckWorkshopStoreProvider store={store}>{children}</DeckWorkshopStoreProvider> },
@@ -145,12 +148,12 @@ function dragCard(
 describe("l’atelier et la collection", () => {
   it("retains all collection filters after leaving and returning without saving them to Convex", () => {
     const first = setup();
-    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables"]) {
+    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables", "Cartes évoluables"]) {
       fireEvent.click(screen.getByRole("button", { name }));
     }
     first.unmount();
     const second = setup(savedDeck, fullCollection, 500, 2400, first.store);
-    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables"]) {
+    for (const name of ["À distance", "Rare", "Nature", "Cartes améliorables", "Cartes évoluables"]) {
       expect(screen.getByRole("button", { name }).getAttribute("aria-pressed")).toBe("true");
     }
     expect(first.onSave).not.toHaveBeenCalled();
@@ -555,6 +558,7 @@ describe("l’atelier et la collection", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Cartes améliorables" }),
     );
+    fireEvent.click(screen.getByRole("button", { name: "Cartes évoluables" }));
     expect(
       screen.getByRole("heading", { name: "Aucune carte avec ces filtres" }),
     ).toBeTruthy();
@@ -574,6 +578,7 @@ describe("l’atelier et la collection", () => {
       "Légendaire",
       "Chaos",
       "Cartes améliorables",
+      "Cartes évoluables",
     ]) {
       expect(
         screen.getByRole("button", { name }).getAttribute("aria-pressed"),
@@ -598,21 +603,20 @@ describe("l’atelier et la collection", () => {
   it("keeps keyboard movement and cancellation for cards already in the deck", async () => {
     const { onSave } = setup();
     fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
-    );
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Déplacer dans le deck" }),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: " " });
     fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: "Escape" });
     expect(
       screen.getByRole("status", { name: "Conseils pour ton deck" })
         .textContent,
     ).not.toContain("Choisis une carte");
     expect(onSave).not.toHaveBeenCalled();
-    fireEvent.click(card(deckRow(), "Gardien du rempart"), { detail: 0 });
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Déplacer dans le deck" }),
-    );
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    fireEvent.keyDown(card(deckRow(), "Gardien du rempart"), { key: " " });
     const targetId = savedDeck.cardIds[1]!;
     const target = fullCollection.find(
       (entry) => entry.card.id === targetId,
@@ -741,6 +745,74 @@ describe("l’atelier et la collection", () => {
       expect(onSave).not.toHaveBeenCalled();
     },
   );
+  it("filters executable rarity evolutions and combines them with the other collection filters", () => {
+    const common = variantCard("guardian", "common", 26);
+    const rare = variantCard("guardian", "rare");
+    const epic = variantCard("guardian", "epic");
+    const legendary = variantCard("guardian", "legendary");
+    const owned = [
+      { card: common, copies: 50 },
+      { card: rare, copies: 50 },
+      { card: epic, copies: 20 },
+      { card: legendary, copies: 0 },
+      { card: variantCard("fox", "common"), copies: 49 },
+      { card: variantCard("fox", "rare"), copies: 0 },
+      { card: variantCard("knight", "common"), copies: 100 },
+      { card: variantCard("fox", "legendary"), copies: 10000 },
+    ];
+    const progress: SoulProgressView = {
+      rank: 10, soulDust: 0, unlocked: true, evolutionUnlocked: true, earned: 0, required: 50,
+    };
+    const { onSave } = setup(
+      { ...savedDeck, cardIds: [legendary.id] }, owned, 0, 2400,
+      createDeckWorkshopStore(), progress,
+    );
+    const evolve = screen.getByRole("button", { name: "Cartes évoluables" });
+    expect(evolve.querySelector("img")?.getAttribute("src")).toBe("/art/ui/sanctuary-crystal.webp");
+    fireEvent.click(evolve);
+    expect(evolve.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Toutes" }).getAttribute("aria-pressed")).toBe("false");
+    expect(collection().getAllByRole("button")).toHaveLength(3);
+    for (const ready of [common, rare, epic]) expect(card(collection(), ready.name)).toBeTruthy();
+    expect(card(deckRow(), legendary.name)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Rare" }));
+    expect(collection().getAllByRole("button")).toHaveLength(1);
+    expect(card(collection(), rare.name)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Toutes" }));
+    expect(evolve.getAttribute("aria-pressed")).toBe("false");
+    expect(collection().getAllByRole("button")).toHaveLength(owned.length - 1);
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("refreshes evolution eligibility when reserves, discovered targets or the league unlock change", () => {
+    const common = variantCard("guardian", "common");
+    const rare = variantCard("guardian", "rare");
+    const deck = { ...savedDeck, cardIds: [] };
+    const progress: SoulProgressView = {
+      rank: 10, soulDust: 0, unlocked: true, evolutionUnlocked: true, earned: 0, required: 50,
+    };
+    const owned = [{ card: common, copies: 49 }, { card: rare, copies: 0 }];
+    const store = createDeckWorkshopStore();
+    const { rerender, onSave, onUpgrade } = setup(deck, owned, 0, 2400, store, progress);
+    fireEvent.click(screen.getByRole("button", { name: "Cartes évoluables" }));
+    const empty = () => expect(screen.getByRole("heading", { name: "Aucune carte avec ces filtres" })).toBeTruthy();
+    const update = (collection: OwnedCard[], soulProgress: SoulProgressView | undefined = progress) => rerender(
+      <GoldContext.Provider value={0}>
+        <DeckWorkshop deck={deck} collection={collection} onSave={onSave} onUpgrade={onUpgrade} soulProgress={soulProgress} />
+      </GoldContext.Provider>,
+    );
+    empty();
+    const ready = [{ card: common, copies: 50 }, { card: rare, copies: 0 }];
+    update(ready);
+    expect(card(collection(), common.name)).toBeTruthy();
+    update([ready[0]!]);
+    empty();
+    update(ready, { ...progress, evolutionUnlocked: false });
+    empty();
+    update(ready);
+    expect(card(collection(), common.name)).toBeTruthy();
+    expect(onSave).not.toHaveBeenCalled();
+  });
   it("keeps improvement disabled when there are not enough copies", async () => {
     setup(starter);
     fireEvent.click(card(deckRow(), "Gardien du rempart"));

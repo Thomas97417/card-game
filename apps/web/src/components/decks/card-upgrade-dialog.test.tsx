@@ -399,11 +399,9 @@ describe("resource exchange preview", () => {
     openTab(/^Évolution et poussière/);
     chooseDust();
     fireEvent.click(screen.getByRole("button", { name: "Maximum" }));
-    expect(
-      screen.getByText(
-        "Après conversion : 25 exemplaires en réserve · 10020 poussières d’âme.",
-      ),
-    ).toBeTruthy();
+    const preview = within(screen.getByLabelText("Aperçu de la conversion"));
+    expect(preview.getByText("100")).toBeTruthy();
+    expect(preview.getByText("20")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
         name: "Convertir 100 exemplaires en 20 poussières",
@@ -457,24 +455,29 @@ describe("resource exchange preview", () => {
     },
   );
 
-  it("explains locked evolution while leaving dust conversion available", () => {
-    setup({
+  it("shows a locked-feature preview until evolution unlocks while leaving dust conversion available", () => {
+    const { rerender, view, onEvolve } = setup({
       soulProgress: { ...readyProgress, evolutionUnlocked: false },
       collection: [starter],
     });
     openTab(/^Évolution et poussière/);
-    expect(screen.getByText("Débloqué en ligue Or IV")).toBeTruthy();
+    const lock = within(
+      screen.getByRole("note", { name: "Évolutions verrouillées" }),
+    );
     expect(
-      (
-        screen.getByRole("button", {
-          name: /Évoluer vers/,
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
+      lock.getByRole("heading", { name: "Évolutions verrouillées" }),
+    ).toBeTruthy();
+    expect(lock.getByRole("img", { name: "Or IV" })).toBeTruthy();
     expect(
-      screen.getByText(
-        "Découvre cette forme dans ta collection pour l’obtenir par évolution.",
+      lock.getByText(
+        "Atteins la ligue Or IV pour faire évoluer tes exemplaires.",
       ),
+    ).toBeTruthy();
+    expect(screen.getByText("Aperçu après déblocage")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Évoluer vers/ })).toBeNull();
+    expect(onEvolve).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("heading", { name: "Gardien des remparts" }),
     ).toBeTruthy();
     chooseDust();
     expect(
@@ -483,6 +486,17 @@ describe("resource exchange preview", () => {
           name: "Convertir 50 exemplaires en 10 poussières",
         }) as HTMLButtonElement
       ).disabled,
+    ).toBe(false);
+
+    rerender(view(starter, false, readyProgress, owned));
+    fireEvent.click(screen.getByRole("button", { name: "Évolution" }));
+    expect(
+      screen.queryByRole("note", { name: "Évolutions verrouillées" }),
+    ).toBeNull();
+    expect(screen.queryByText("Aperçu après déblocage")).toBeNull();
+    expect(
+      (screen.getByRole("button", { name: /Évoluer vers/ }) as HTMLButtonElement)
+        .disabled,
     ).toBe(false);
   });
 

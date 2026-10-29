@@ -13,6 +13,7 @@ import {
   getCombatType,
   maxCardLevel,
   upgradeCost,
+  evolutionOptions,
 } from "@sylve/game";
 import type {
   CardDefinition,
@@ -23,6 +24,7 @@ import { CardArtwork } from "./card-artwork";
 import { HeroProgressSummary } from "@/components/guardian/hero-progress-summary";
 import type { HeroProgress } from "@/components/guardian/guardian-house";
 import type { CardProgressionActions } from "./card-soulbind";
+import type { CardRequestActions } from "./card-request-panel";
 import {
   ArrowRight,
   ArrowRightLeft,
@@ -48,7 +50,7 @@ import {
 
 export type { WorkshopDeck } from "@/stores/deck-workshop-store";
 
-interface DeckWorkshopProps extends CardProgressionActions {
+interface DeckWorkshopProps extends CardProgressionActions, CardRequestActions {
   inspectedCardId?: string;
   onInspectCard?: (variantId: string | undefined) => void;
   hero?: HeroProgress;
@@ -76,6 +78,8 @@ export function DeckWorkshop({
   onSoulbind,
   onSacrifice,
   onEvolve,
+  cardRequestStatus,
+  onRequestCards,
   hero,
   inspectedCardId,
   onInspectCard,
@@ -86,6 +90,7 @@ export function DeckWorkshop({
   const rarityFilters = useDeckWorkshopState((state) => state.rarityFilters);
   const factionFilters = useDeckWorkshopState((state) => state.factionFilters);
   const upgradeOnly = useDeckWorkshopState((state) => state.upgradeOnly);
+  const evolutionOnly = useDeckWorkshopState((state) => state.evolutionOnly);
   const {
     syncDeck,
     setDraft,
@@ -94,6 +99,7 @@ export function DeckWorkshop({
     toggleRarity,
     toggleFaction,
     toggleUpgradeOnly,
+    toggleEvolutionOnly,
     resetFilters,
   } = store.getState();
   const [picked, setPicked] = useState<string | null>(null);
@@ -173,7 +179,14 @@ export function DeckWorkshop({
         (!upgradeOnly ||
           ((card.level ?? 1) < maxCardLevel(card.rarity, card.baseId) &&
             (entries.get(card.id)?.copies ?? 0) >=
-              upgradeCost(card.level ?? 1, card.rarity))),
+              upgradeCost(card.level ?? 1, card.rarity))) &&
+        (!evolutionOnly ||
+          (soulProgress?.evolutionUnlocked === true &&
+            evolutionOptions(card.id).some(
+              (option) =>
+                entries.has(option.variantId) &&
+                (entries.get(card.id)?.copies ?? 0) >= option.cost,
+            ))),
     )
     .sort(
       (a, b) =>
@@ -331,8 +344,20 @@ export function DeckWorkshop({
           aria-label={`${card.name}, ${combatTypeLabel(card)}, ${card.attack} attaque, ${card.health} points de vie, ${RARITY_LABELS[card.rarity ?? "common"]}, niveau ${card.level ?? 1}, ${slot === undefined ? "dans la collection" : `carte ${slot + 1} du deck`}`}
           aria-haspopup={picked ? undefined : "dialog"}
           aria-describedby="workshop-instructions"
+          aria-keyshortcuts={slot === undefined ? undefined : "Space"}
           onPointerDown={(event) => pointerDown(event, card)}
           onClick={() => chooseCard(card, slot)}
+          onKeyDown={(event) => {
+            if (event.key !== " " || slot === undefined) return;
+            event.preventDefault();
+            if (picked) chooseCard(card, slot);
+            else {
+              setPicked(card.id);
+              setMessage(
+                "Choisis une carte du deck à échanger. Échap pour annuler.",
+              );
+            }
+          }}
           onDragStart={(event) => event.preventDefault()}
         >
           <CardArtwork
@@ -426,8 +451,8 @@ export function DeckWorkshop({
                             height={512}
                             draggable={false}
                           />
-                          <span>
-                            {leagueAt(unlock.trophies).label}
+                          <span className="workshop-slot-unlock">
+                            <strong>{leagueAt(unlock.trophies).label}</strong>
                             <small>{unlock.trophies} trophées</small>
                           </span>
                         </div>
@@ -552,60 +577,103 @@ export function DeckWorkshop({
           role="group"
           aria-label="Filtrer la collection"
         >
-          {(
-            [
-              { type: null, label: "Toutes" },
-              { type: "melee", label: "Corps à corps" },
-              { type: "ranged", label: "À distance" },
-              { type: "building", label: "Bâtiments" },
-            ] as const
-          ).map(({ type, label }) => (
+          <div className="workshop-primary-filters">
             <button
-              key={type ?? "all"}
               type="button"
               className={
-                filter === type &&
-                (type !== null ||
-                  (rarityFilters.length === 0 &&
-                    factionFilters.length === 0 &&
-                    !upgradeOnly))
+                filter === null &&
+                rarityFilters.length === 0 &&
+                factionFilters.length === 0 &&
+                !upgradeOnly &&
+                !evolutionOnly
                   ? "is-active"
                   : ""
               }
+              aria-label="Toutes"
+              title="Toutes"
               aria-pressed={
-                filter === type &&
-                (type !== null ||
-                  (rarityFilters.length === 0 &&
-                    factionFilters.length === 0 &&
-                    !upgradeOnly))
+                filter === null &&
+                rarityFilters.length === 0 &&
+                factionFilters.length === 0 &&
+                !upgradeOnly &&
+                !evolutionOnly
               }
-              aria-label={label}
-              title={label}
               disabled={!ready}
               onClick={() => {
-                selectCombatType(type);
+                selectCombatType(null);
                 setPicked(null);
                 setMessage(instructions);
               }}
             >
-              <GameIcon kind={type ?? "all"} size={30} />
+              <GameIcon kind="all" size={30} />
             </button>
-          ))}
-          <button
-            type="button"
-            className={`workshop-upgrade-toggle ${upgradeOnly ? "is-active" : ""}`}
-            aria-label="Cartes améliorables"
-            title="Cartes améliorables"
-            aria-pressed={upgradeOnly}
-            disabled={!ready}
-            onClick={() => {
-              toggleUpgradeOnly();
-              setPicked(null);
-              setMessage(instructions);
-            }}
-          >
-            <GameIcon kind="cardUpgrade" size={34} />
-          </button>
+            <div
+              className="workshop-filter-group workshop-type-filters"
+              role="group"
+              aria-label="Filtrer par type"
+            >
+              {(
+                [
+                  { type: "melee", label: "Corps à corps" },
+                  { type: "ranged", label: "À distance" },
+                  { type: "building", label: "Bâtiments" },
+                ] as const
+              ).map(({ type, label }) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={filter === type ? "is-active" : ""}
+                  aria-pressed={filter === type}
+                  aria-label={label}
+                  title={label}
+                  disabled={!ready}
+                  onClick={() => {
+                    selectCombatType(type);
+                    setPicked(null);
+                    setMessage(instructions);
+                  }}
+                >
+                  <GameIcon kind={type} size={30} />
+                </button>
+              ))}
+            </div>
+            <div
+              className="workshop-filter-group workshop-progression-filters"
+              role="group"
+              aria-label="Filtrer par progression"
+            >
+              <button
+                type="button"
+                className={`workshop-upgrade-toggle ${upgradeOnly ? "is-active" : ""}`}
+                aria-label="Cartes améliorables"
+                title="Cartes améliorables"
+                aria-pressed={upgradeOnly}
+                disabled={!ready}
+                onClick={() => {
+                  toggleUpgradeOnly();
+                  setPicked(null);
+                  setMessage(instructions);
+                }}
+              >
+                <GameIcon kind="cardUpgrade" size={34} />
+              </button>
+              <button
+                type="button"
+                className={evolutionOnly ? "is-active" : ""}
+                aria-label="Cartes évoluables"
+                title="Cartes évoluables"
+                aria-pressed={evolutionOnly}
+                disabled={!ready}
+                onClick={() => {
+                  toggleEvolutionOnly();
+                  setPicked(null);
+                  setMessage(instructions);
+                }}
+              >
+                <GameIcon kind="sanctuary" size={34} />
+              </button>
+            </div>
+          </div>
           <div className="workshop-secondary-filters">
             <div
               className="workshop-rarity-filters"
@@ -639,10 +707,7 @@ export function DeckWorkshop({
                       draggable={false}
                     />
                     {active && (
-                      <span
-                        className="workshop-rarity-check"
-                        aria-hidden="true"
-                      >
+                      <span className="workshop-rarity-check" aria-hidden="true">
                         <Check size={10} strokeWidth={3} />
                       </span>
                     )}
@@ -742,7 +807,6 @@ export function DeckWorkshop({
       )}
       <CardUpgradeDialog
         entry={inspected ? entries.get(inspected) : undefined}
-        inDeck={!!inspected && cards.includes(inspected)}
         onClose={() => setInspected(null)}
         onUpgrade={onUpgrade}
         collection={collection}
@@ -750,13 +814,8 @@ export function DeckWorkshop({
         onSoulbind={onSoulbind}
         onSacrifice={onSacrifice}
         onEvolve={onEvolve}
-        onMove={() => {
-          setPicked(inspected);
-          setInspected(null);
-          setMessage(
-            "Choisis une carte du deck à remplacer ou à échanger. Échap pour annuler.",
-          );
-        }}
+        cardRequestStatus={cardRequestStatus}
+        onRequestCards={onRequestCards}
       />
     </main>
   );

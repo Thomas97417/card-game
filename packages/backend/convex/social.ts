@@ -1,9 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
-import { requirePlayer } from "./lib/game_service";
-import { playerLeague, playerWallet } from "./lib/progression";
+import { requirePlayer, rules } from "./lib/game_service";
+import { ownedCard, playerLeague, playerWallet } from "./lib/progression";
+import { catalogueMigration, canonicalVariantId, resolveCard } from "@sylve/game";
+import { cardRequestLimits, isRequestableRarity } from "@sylve/game/card-requests";
+import { migratePlayerCatalogue } from "./lib/catalogue";
 import { FRIEND_HELP_EXPERIENCE, FRIENDS_UNLOCK_RANK } from "@sylve/game/ranks";
+import { leagueAt } from "@sylve/game/leagues";
 import { addRankExperience, readRank } from "./lib/ranks";
 import {
   FRIEND_HELP_TOKENS,
@@ -192,6 +196,238 @@ export const sendHelp = mutation({
     });
     await addRankExperience(ctx, userId, FRIEND_HELP_EXPERIENCE);
     return { sent: true, tokens: FRIEND_HELP_TOKENS, experience: FRIEND_HELP_EXPERIENCE };
+  },
+});
+
+/** refreshDay invalidates open clients; the server alone decides the current day. */
+export const cardRequestStatus = query({
+  args: { refreshDay: v.optional(v.string()) },
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    const day = socialDay();
+    const [rank, league, friends, request] = await Promise.all([
+      readRank(ctx, userId),
+      playerLeague(ctx, userId),
+      playerFriendships(ctx, userId, "accepted"),
+      ctx.db
+        .query("cardRequests")
+        .withIndex("by_owner_day", (q) =>
+          q.eq("ownerId", userId).eq("day", day),
+        )
+        .unique(),
+    ]);
+    return {
+      day,
+      unlocked: rank.friends > 0,
+      friendCount: friends.length,
+      leagueLabel: leagueAt(league.peakTrophies).label,
+      limits: cardRequestLimits(league.peakTrophies),
+      request: request
+        ? {
+            id: request._id,
+            variantId: request.variantId,
+            requested: request.requested,
+            received: request.received,
+          }
+        : null,
+    };
+  },
+});
+
+export const requestCards = mutation({
+  args: { variantId: v.string() },
+  handler: async (ctx, { variantId }) => {
+    const { userId } = await requirePlayer(ctx);
+    variantId = canonicalVariantId(variantId);
+    const card = rules(() => resolveCard(variantId));
+    if (!isRequestableRarity(card.rarity))
+      throw new ConvexError(
+        "Tu peux demander uniquement des cartes communes ou rares.",
+      );
+    const day = socialDay();
+    const previous = await ctx.db
+      .query("cardRequests")
+      .withIndex("by_owner_day", (q) => q.eq("ownerId", userId).eq("day", day))
+      .unique();
+    // Keep completed requests too: neither completion nor retries grant another one.
+    if (previous) {
+      if (previous.variantId === variantId) return previous._id;
+      throw new ConvexError(
+        "Tu as déjà demandé des cartes aujourd’hui. Reviens après minuit (heure de Paris).",
+      );
+    }
+    const rank = await readRank(ctx, userId);
+    if (rank.friends === 0)
+      throw new ConvexError(
+        `Les demandes de cartes se débloquent avec les amis au rang ${FRIENDS_UNLOCK_RANK}.`,
+      );
+    await migratePlayerCatalogue(ctx, userId);
+    if (!(await ownedCard(ctx, userId, variantId)))
+      throw new ConvexError(
+        "Découvre cette carte avant de la demander à tes amis.",
+      );
+    const league = await playerLeague(ctx, userId);
+    return ctx.db.insert("cardRequests", {
+      ownerId: userId,
+      day,
+      variantId,
+      requested: cardRequestLimits(league.peakTrophies)[card.rarity].request,
+      received: 0,
+    });
+  },
+});
+
+/** Only accepted friends' requests are exposed, with the viewer's live reserves. */
+export const cardRequests = query({
+  args: { refreshDay: v.optional(v.string()) },
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    const day = socialDay();
+    const [friends, league, collection] = await Promise.all([
+      playerFriendships(ctx, userId, "accepted"),
+      playerLeague(ctx, userId),
+      ctx.db
+        .query("collection")
+        .withIndex("by_owner_variant", (q) => q.eq("ownerId", userId))
+        .collect(),
+    ]);
+    const owned = new Map(
+      catalogueMigration(collection).cards.map((entry) => [
+        entry.variantId,
+        entry.copies,
+      ]),
+    );
+    const limits = cardRequestLimits(league.peakTrophies);
+    const requests = await Promise.all(
+      friends.map(async (relation) => {
+        const playerId =
+          relation.playerA === userId ? relation.playerB : relation.playerA;
+        const request = await ctx.db
+          .query("cardRequests")
+          .withIndex("by_owner_day", (q) =>
+            q.eq("ownerId", playerId).eq("day", day),
+          )
+          .unique();
+        if (!request) return null;
+        const [user, donation] = await Promise.all([
+          authComponent.getAnyUserById(ctx, playerId),
+          ctx.db
+            .query("cardDonations")
+            .withIndex("by_request_sender", (q) =>
+              q.eq("requestId", request._id).eq("senderId", userId),
+            )
+            .unique(),
+        ]);
+        const card = resolveCard(request.variantId);
+        if (!user || !isRequestableRarity(card.rarity)) return null;
+        const donated = donation?.count ?? 0;
+        const copies = owned.get(request.variantId) ?? 0;
+        const limit = limits[card.rarity];
+        return {
+          id: request._id,
+          playerId,
+          playerName: user.name,
+          variantId: request.variantId,
+          requested: request.requested,
+          received: request.received,
+          donated,
+          copies,
+          donationLimit: limit.donate,
+          experiencePerCard: limit.experience,
+          sendable: Math.max(
+            0,
+            Math.min(
+              copies,
+              request.requested - request.received,
+              limit.donate - donated,
+            ),
+          ),
+        };
+      }),
+    );
+    return requests
+      .filter((request) => request !== null)
+      .sort(
+        (a, b) =>
+          Number(b.sendable > 0) - Number(a.sendable > 0) ||
+          a.playerName.localeCompare(b.playerName, "fr"),
+      );
+  },
+});
+
+export const donateCards = mutation({
+  args: {
+    requestId: v.id("cardRequests"),
+    count: v.number(),
+    expectedDonated: v.number(),
+  },
+  handler: async (ctx, { requestId, count, expectedDonated }) => {
+    const { userId } = await requirePlayer(ctx);
+    if (
+      !Number.isSafeInteger(count) ||
+      count <= 0 ||
+      !Number.isSafeInteger(expectedDonated) ||
+      expectedDonated < 0
+    )
+      throw new ConvexError("Quantité de cartes invalide.");
+    const request = await ctx.db.get(requestId);
+    if (!request || request.day !== socialDay())
+      throw new ConvexError("Cette demande de cartes a expiré.");
+    if (request.ownerId === userId)
+      throw new ConvexError("Tu ne peux pas répondre à ta propre demande.");
+    await requireFriend(ctx, userId, request.ownerId);
+    const donation = await ctx.db
+      .query("cardDonations")
+      .withIndex("by_request_sender", (q) =>
+        q.eq("requestId", requestId).eq("senderId", userId),
+      )
+      .unique();
+    const donated = donation?.count ?? 0;
+    // An identical click or transport retry must never transfer or award XP twice.
+    if (donated > expectedDonated)
+      return { sent: false, count: 0, experience: 0 };
+    if (donated !== expectedDonated)
+      throw new ConvexError("Tes dons ont changé. Actualise cette demande.");
+    const card = rules(() => resolveCard(request.variantId));
+    if (!isRequestableRarity(card.rarity))
+      throw new ConvexError(
+        "Tu peux envoyer uniquement des cartes communes ou rares.",
+      );
+    const league = await playerLeague(ctx, userId);
+    const limit = cardRequestLimits(league.peakTrophies)[card.rarity];
+    if (donated + count > limit.donate)
+      throw new ConvexError(
+        `Tu peux donner au maximum ${limit.donate} cartes à cet ami par demande.`,
+      );
+    if (request.received + count > request.requested)
+      throw new ConvexError(
+        "Cette demande a déjà reçu des cartes. Vérifie la quantité restante.",
+      );
+    await migratePlayerCatalogue(ctx, userId);
+    await migratePlayerCatalogue(ctx, request.ownerId);
+    const [sender, recipient] = await Promise.all([
+      ownedCard(ctx, userId, request.variantId),
+      ownedCard(ctx, request.ownerId, request.variantId),
+    ]);
+    if (!sender || sender.copies < count)
+      throw new ConvexError(
+        "Tu n’as pas assez d’exemplaires en réserve pour ce don.",
+      );
+    if (!recipient)
+      throw new ConvexError("Cette carte n’est plus disponible chez ton ami.");
+    await ctx.db.patch(sender._id, { copies: sender.copies - count });
+    await ctx.db.patch(recipient._id, { copies: recipient.copies + count });
+    await ctx.db.patch(requestId, { received: request.received + count });
+    if (donation) await ctx.db.patch(donation._id, { count: donated + count });
+    else
+      await ctx.db.insert("cardDonations", {
+        requestId,
+        senderId: userId,
+        count,
+      });
+    const experience = count * limit.experience;
+    await addRankExperience(ctx, userId, experience);
+    return { sent: true, count, experience };
   },
 });
 

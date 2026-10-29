@@ -65,6 +65,8 @@ La fiche présente les rangs, compagnons, niveaux actuels et requis, coûts, bon
 
 L’[évolution CW](https://cwars.miraheze.org/wiki/Evolve) s’ouvre à la ligue CW 18, soit **Or IV / 2 400 trophées Sylve**. La forme cible doit déjà être découverte. Les conversions documentées donnent 5 rares contre 50 communes, 5 épiques contre 50 rares et 1 légendaire contre 20 épiques. Les embranchements présents dans le catalogue sont conservés, dont ceux de Big Toad vers Leaf Child et Wood Spirit. Le niveau et les liens de la carte source restent acquis ; la conversion transfère des exemplaires de réserve.
 
+Le filtre **Cartes évoluables** du deck réutilise l’icône du menu Évolution et affiche les cartes de la collection ayant assez d’exemplaires pour au moins une forme cible déjà découverte, une fois l’évolution débloquée. Il se combine aux filtres de type, rareté et famille, reste actif pendant les navigations de la session et se réinitialise avec **Toutes**.
+
 ## Migration des collections
 
 La migration persistante est transactionnelle et marquée `catalogueVersion: 2` dans le portefeuille.

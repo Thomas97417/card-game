@@ -17,6 +17,7 @@ import { GameIcon } from "@/components/game/game-icon";
 import { HubPanel } from "./hub-panel";
 import { PlayerMenu, type SocialPlayer } from "./player-menu";
 import { useSocialDay } from "./use-social-day";
+import { FriendCardRequests } from "./friend-card-requests";
 
 export type FriendsOverview = FunctionReturnType<typeof api.social.list>;
 
@@ -31,6 +32,8 @@ export function FriendsPanel({
 }) {
   const refreshDay = useSocialDay();
   const data = useQuery(api.social.list, { refreshDay });
+  const cardRequests = useQuery(api.social.cardRequests, { refreshDay });
+  const [view, setView] = useState<"friends" | "cards">("friends");
   const sendHelp = useMutation(api.social.sendHelp);
   const accept = useMutation(api.social.accept);
   const remove = useMutation(api.social.remove);
@@ -38,6 +41,7 @@ export function FriendsPanel({
   const pending = useRef(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const openRequests = cardRequests?.filter((request) => request.received < request.requested).length ?? 0;
 
   async function act(
     playerId: string,
@@ -80,16 +84,24 @@ export function FriendsPanel({
         </span>
         {data && <FriendshipAmount amount={data.tokens} />}
       </div>
-      {data && (
-        <p className="social-notice social-rank-info">
-          {data.limit === 0
-            ? `Les amis se débloquent au rang ${FRIENDS_UNLOCK_RANK}. Améliore tes cartes pour y accéder.`
-            : `Rang ${data.rank} · Chaque aide envoyée te rapporte ${FRIEND_HELP_EXPERIENCE} XP.`}
-          {data.limit > 0 && data.nextUnlock && (
-            <> {data.nextUnlock.friends} places au rang {data.nextUnlock.rank}.</>
-          )}
-        </p>
-      )}
+      <div className="social-friends-tabs" role="group" aria-label="Vue des amis">
+        <button
+          type="button"
+          aria-pressed={view === "friends"}
+          onClick={() => setView("friends")}
+        >
+          Mes amis
+        </button>
+        <button
+          type="button"
+          aria-label="Demandes de cartes"
+          aria-pressed={view === "cards"}
+          onClick={() => setView("cards")}
+        >
+          Demandes de cartes
+          {openRequests > 0 && <span aria-hidden="true">{openRequests}</span>}
+        </button>
+      </div>
       {error && (
         <p className="social-notice social-error" role="alert">
           {error}
@@ -101,7 +113,9 @@ export function FriendsPanel({
         </p>
       )}
       <div className="social-friends-scroll" aria-busy={!data}>
-        {!data ? (
+        {view === "cards" ? (
+          <FriendCardRequests requests={cardRequests} />
+        ) : !data ? (
           <div className="hub-world-chat-empty" role="status">
             <LoaderCircle size={24} className="animate-spin" />
             <p>Retrouvons tes amis…</p>

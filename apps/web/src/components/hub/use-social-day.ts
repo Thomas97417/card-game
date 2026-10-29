@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { socialDay } from "@my-better-t-app/backend/convex/lib/social";
 
-/** Refresh daily help availability for tabs that stay open overnight. */
+/** Refresh daily help and card requests for tabs that stay open overnight. */
 export function useSocialDay() {
   const [day, setDay] = useState(() => socialDay());
   useEffect(() => {

@@ -562,6 +562,150 @@
 .social-friends-scroll::-webkit-scrollbar {
   display: none;
 }
+.social-friends-tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 5px;
+  padding: 10px 12px 4px;
+}
+.social-friends-tabs button {
+  flex: 1;
+  min-height: 38px;
+  padding: 7px;
+  border: 1px solid #b5cb9c26;
+  border-radius: 8px;
+  color: #b8c8ae;
+  background: #132a20;
+  cursor: pointer;
+  font-size: 11px;
+}
+.social-friends-tabs button[aria-pressed="true"] {
+  color: #ffe5a9;
+  border-color: #d8c18c88;
+  background: #55683b44;
+}
+.social-friends-tabs button span {
+  margin-left: 7px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: #b5d18c26;
+}
+.social-card-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.social-card-request-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.social-card-request {
+  padding: 12px;
+  border: 1px solid #c5b38333;
+  border-radius: 10px;
+  background: linear-gradient(120deg, #4c66312b, #132a2070);
+}
+.social-card-request-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.social-request-portrait {
+  flex: 0 0 52px;
+  height: 60px;
+  overflow: hidden;
+  border: 1px solid #a8c79588;
+  border-radius: 7px;
+  background: #405b3b;
+}
+.social-card-request[data-rarity="rare"] .social-request-portrait {
+  border-color: #89b9df;
+  background: #284c60;
+}
+.social-request-portrait .creature-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.social-card-request-identity {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 4px;
+}
+.social-card-request-identity span,
+.social-card-request-identity small {
+  color: #b2c6a8;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.social-card-request-identity strong {
+  color: #f8e8c1;
+  font: 16px Georgia, serif;
+}
+.social-card-request-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+.social-card-request-progress progress {
+  flex: 1;
+  min-width: 0;
+  height: 7px;
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #061b14;
+  accent-color: #badb88;
+}
+.social-card-request-progress progress::-webkit-progress-bar {
+  background: #061b14;
+}
+.social-card-request-progress progress::-webkit-progress-value {
+  border-radius: 5px;
+  background: linear-gradient(90deg, #6e9257, #badb88);
+}
+.social-card-request-progress progress::-moz-progress-bar {
+  border-radius: 5px;
+  background: #badb88;
+}
+.social-card-request-progress span {
+  color: #d9cba6;
+  font-size: 11px;
+}
+.social-card-request-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.social-card-request-footer > small {
+  color: #c6c6a1;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.social-card-send small {
+  display: block;
+  font-size: 9px;
+  color: #a9c49a;
+}
+.social-card-send {
+  gap: 8px;
+  min-height: 40px;
+  padding-inline: 10px;
+}
+.social-deck-link {
+  color: #e5cb8d;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .social-friends-scroll > .hub-world-chat-empty {
   flex: 1;
   min-height: 0;
