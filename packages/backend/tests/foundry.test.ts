@@ -22,9 +22,11 @@ async function begin(p: Awaited<ReturnType<typeof player>>, requestId = "round-1
 }
 async function emptyRound(p: Awaited<ReturnType<typeof player>>, requestId: string) {
   const round = await begin(p, requestId);
-  vi.setSystemTime(round.startedAt + 80000);
-  for (let startTick = 0; startTick < 1000; startTick += 100)
-    await p.client.mutation(api.foundry.submitInputs, { expectedOwnerId: p.ownerId, roundId: round._id, startTick, inputs: Array.from({ length: 100 }, () => ({ x: 5.6, z: 3.4, active: false })) });
+  let state = round.state;
+  while (!state.ended) {
+    vi.setSystemTime(round.startedAt + (state.tick + 100) * FOUNDRY.stepMs);
+    state = await p.client.mutation(api.foundry.submitInputs, { expectedOwnerId: p.ownerId, roundId: round._id, startTick: state.tick, inputs: Array.from({ length: 100 }, () => ({ x: 5.6, z: 3.4, active: false })) });
+  }
   return round;
 }
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:59:58Z")); });
@@ -37,7 +39,8 @@ describe("la fonderie connectée", () => {
     await t.run((ctx) => ctx.db.patch(round._id, { state: initial }));
     const expected = structuredClone(initial), inputs = Array.from({ length: 100 }, () => ({ x: 5.6, z: 3.4, active: false }));
     const first = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick: 0, inputs };
-    for (let startTick = 0; startTick < 4000; startTick += 100) {
+    const totalTicks = 1 + 399 * initial.stats.interval;
+    for (let startTick = 0; startTick < totalTicks; startTick += 100) {
       vi.setSystemTime(round.startedAt + (startTick + 100) * 50); inputs.forEach((input) => stepFoundry(expected, input));
       expect(await alice.client.mutation(api.foundry.submitInputs, { ...first, startTick })).toEqual(expected);
       if (startTick === 1900) { expect(expected.ended).toBe(false); await expect(alice.client.mutation(api.foundry.finishRound, { expectedOwnerId: alice.ownerId, roundId: round._id })).rejects.toThrow("terminée"); }
@@ -46,7 +49,7 @@ describe("la fonderie connectée", () => {
     expect(await alice.client.mutation(api.foundry.submitInputs, first)).toEqual(expected);
     await expect(alice.client.mutation(api.foundry.submitInputs, { ...first, inputs: inputs.map((input) => ({ ...input, x: 0 })) })).rejects.toThrow("autre onglet");
     const stored = await t.run((ctx) => ctx.db.get(round._id)); expect(stored?.batches).toHaveLength(0);
-    expect(await t.run((ctx) => ctx.db.query("foundryInputReceipts").collect())).toHaveLength(40);
+    expect(await t.run((ctx) => ctx.db.query("foundryInputReceipts").collect())).toHaveLength(Math.ceil(totalTicks / 100));
     const finish = { expectedOwnerId: alice.ownerId, roundId: round._id };
     expect(await alice.client.mutation(api.foundry.finishRound, finish)).toEqual(await alice.client.mutation(api.foundry.finishRound, finish));
   });
@@ -81,7 +84,7 @@ describe("la fonderie connectée", () => {
   it("replays moving relics exactly and can resume a persisted V1 round", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const round = await begin(alice);
-    expect(round.state.version).toBe(5);
+    expect(round.state.version).toBe(6);
     expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
     const inputs = Array.from({ length: 40 }, (_, i) => ({ x: Math.sin(i / 8) * 4, z: Math.cos(i / 9) * 2, active: true }));
     const expected = structuredClone(round.state); inputs.forEach((input) => stepFoundry(expected, input));

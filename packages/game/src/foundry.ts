@@ -4,8 +4,8 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 5, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
-  maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1,
+  version: 6, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
   upgradeCosts: [50, 100, 200], orderCosts: [100, 250, 500, 900, 1500],
@@ -51,7 +51,7 @@ export interface FoundryStats { damage: number; interval: number; radius: number
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
@@ -63,6 +63,11 @@ export interface FoundryImpact { x: number; z: number; targetId: number; kind: R
 export interface FoundryEffect { kind: "freeze" | "lightning" | "burn" | "frenzy" | "shockwave" | "jackpot"; x: number; z: number; toX?: number; toZ?: number; radius?: number }
 export interface FoundryFrame { strike: boolean; impacts: FoundryImpact[]; effects?: FoundryEffect[]; strikePosition?: { x: number; z: number } }
 export interface FoundrySummary { shards: number; broken: number; hits: number; criticals: number; seconds: number }
+
+export function foundryStrikeCost(round: FoundryRound): number {
+  const rogue = round.rogue;
+  return FOUNDRY.staminaPerStrike * Math.max(0.25, 1 + (rogue?.modifiers.drain ?? 0)) * (rogue && rogue.frenzyUntil > round.tick ? 0.5 : 1);
+}
 
 export function newFoundryCycle(number = 1, seed = Math.imul(number, 2654435761) >>> 0): FoundryCycle {
   return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], seed, economy: 2, status: "active" };
@@ -236,13 +241,13 @@ export function stepFoundry(state: FoundryRound, input: FoundryInput): FoundryFr
   state.ended = state.concentration < 0.00001 || state.tick >= FOUNDRY.legacyMaxTicks;
   return frame;
 }
-/** The build is frozen into the round; saved V4 rounds retain their original cadence and duration. */
+/** The build is frozen into the round; saved V4/V5 rounds retain their original stamina rules. */
 function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFrame {
   const frame: FoundryFrame = { strike: false, impacts: [], effects: [] };
   const rogue = state.rogue!; const mods = rogue.modifiers;
   state.tick++;
   const fury = rogue.frenzyUntil > state.tick;
-  state.concentration = Math.max(0, state.concentration - FOUNDRY.drainPerTick * Math.max(0.25, 1 + mods.drain) * (fury ? 0.5 : 1));
+  if (state.version < 6) state.concentration = Math.max(0, state.concentration - FOUNDRY.drainPerTick * Math.max(0.25, 1 + mods.drain) * (fury ? 0.5 : 1));
   const roll = (chance: number) => chance > 0 && random(state) < Math.min(1, chance);
   if (mods.freezeChance > 0 && state.tick >= rogue.nextFreeze) {
     rogue.nextFreeze = state.tick + FOUNDRY.freezeEveryTicks;
@@ -267,6 +272,7 @@ function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFram
   const direct = state.targets.filter((target) => Math.hypot(target.x - input.x, target.z - input.z) <= state.stats.radius);
   if (state.tick >= state.nextStrike && (state.version >= 5 || (input.active && direct.length))) {
     frame.strike = true; rogue.strikes++;
+    if (state.version >= 6) state.concentration = Math.max(0, state.concentration - foundryStrikeCost(state));
     if (state.version >= 5) frame.strikePosition = { x: input.x, z: input.z };
     state.nextStrike = state.tick + Math.max(2, Math.round(state.stats.interval / (fury ? 1.5 : 1)));
     const critical = direct.length > 0 && roll(state.stats.critical);

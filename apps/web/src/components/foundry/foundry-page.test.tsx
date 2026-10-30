@@ -104,6 +104,7 @@ describe("la fonderie à l’écran", () => {
     fireEvent.keyDown(stage, { key: "Escape" });
     expect(screen.getByRole("button", { name: "Reprendre la manche" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Livrer la commande" })).toBeNull(); expect(screen.getByRole("progressbar", { name: "Stamina" })).toBeTruthy();
+    expect(screen.getByText("1 stamina / coup")).toBeTruthy();
     const before = sceneOptions.state().tick;
     act(() => sceneOptions.frame(4000)); expect(sceneOptions.state().tick).toBe(before);
   });

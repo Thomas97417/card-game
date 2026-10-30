@@ -68,19 +68,21 @@ describe("les builds de la fonderie", () => {
     const loot = round.shards; for (let i = 0; i < 20; i++) stepFoundry(round, idle);
     expect(round.shards).toBe(loot); expect(round.rogue!.burns).toHaveLength(0);
   });
-  it("starts timed fury, halves drain, and bounds chained kills", () => {
+  it("starts timed fury, halves the strike cost, and bounds chained kills", () => {
     const round = isolated(); round.targets.forEach((target) => { target.hp = target.maxHp = 1; });
     Object.assign(round.rogue!.modifiers, { berserkChance: 1, chainChance: 1, chainDamage: 1 });
     const result = stepFoundry(round, { x: 0, z: 0, active: true });
     expect(result.impacts.filter((hit) => hit.broken)).toHaveLength(3); expect(round.broken).toBe(3); expect(round.rogue!.frenzyUntil).toBe(1 + FOUNDRY.berserkTicks);
-    const focus = round.concentration; stepFoundry(round, idle); expect(focus - round.concentration).toBeCloseTo(FOUNDRY.drainPerTick / 2);
+    const focus = round.concentration; round.targets = [];
+    while (round.tick + 1 < round.nextStrike) { stepFoundry(round, idle); expect(round.concentration).toBe(focus); }
+    expect(stepFoundry(round, idle).strike).toBe(true); expect(focus - round.concentration).toBeCloseTo(FOUNDRY.staminaPerStrike / 2);
   });
   it("combines first-kill recovery with a permanent first shockwave", () => {
     const cycle = { ...newFoundryCycle(), skills: ["fortune-purity", "sap-second"] as ("fortune-purity" | "sap-second")[] };
     const round = createFoundryRound(42, cycle, "mallet", "smith", ["echo"]); round.concentration = 50; round.targets = round.targets.slice(0, 1);
     const target = round.targets[0]!; target.hp = target.maxHp = 1;
     const result = stepFoundry(round, { x: target.x, z: target.z, active: true });
-    expect(round.concentration).toBeGreaterThan(59); expect(result.effects?.some((effect) => effect.kind === "shockwave")).toBe(true); expect(round.rogue!.strikes).toBe(1);
+    expect(round.concentration).toBe(59); expect(result.effects?.some((effect) => effect.kind === "shockwave")).toBe(true); expect(round.rogue!.strikes).toBe(1);
   });
   it("preserves old bill amounts and makes the first new bill affordable after investing", () => {
     const old = { ...newFoundryCycle(), economy: undefined, orderIndex: 4 }; expect(foundryOrderCost(old)).toBe(850); expect(foundryOrderCost({ ...old, economy: 2 })).toBe(1500);

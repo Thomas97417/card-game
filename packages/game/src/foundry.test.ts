@@ -23,7 +23,7 @@ describe("la fonderie déterministe", () => {
       }
       expect(strikes[0]).toBe(1);
       for (let i = 1; i < strikes.length; i++) expect(strikes[i]! - strikes[i - 1]!).toBe(state.stats.interval);
-      expect(state.shards).toBe(0);
+      expect(state.shards).toBe(0); expect(state.concentration).toBe(100 - strikes.length);
     }
   });
   it("replays identical inputs identically regardless of rendering and batch boundaries", () => {
@@ -37,15 +37,17 @@ describe("la fonderie déterministe", () => {
   });
   it("ends only at zero stamina, including rounds lasting longer than the former 75-second cap", () => {
     const state = round(); state.targets = []; while (!state.ended) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
-    expect(state.tick).toBe(1000); expect(state.shards).toBe(0);
+    expect(state.tick).toBe(1 + 99 * state.stats.interval); expect(state.rogue!.strikes).toBe(100); expect(state.shards).toBe(0);
     const long = createFoundryRound(9, { ...newFoundryCycle(), upgrades: { power: 0, focus: 3, fortune: 0 }, blessings: ["focus", "focus", "focus"] }, "mallet", "dryad");
     long.targets = [];
     for (let i = 0; i < 1500; i++) stepFoundry(long, { x: 5.6, z: 3.4, active: false });
     expect(long.ended).toBe(false); expect(long.concentration).toBeGreaterThan(0);
     while (!long.ended) stepFoundry(long, { x: 5.6, z: 3.4, active: false });
-    expect(long.tick).toBe(long.stats.concentration * 10); expect(long.concentration).toBe(0);
+    expect(long.tick).toBe(1 + (long.stats.concentration - 1) * long.stats.interval); expect(long.concentration).toBe(0);
     const legacy = round(); legacy.version = 4; legacy.concentration = 300;
     while (!legacy.ended) stepFoundry(legacy, { x: 5.6, z: 3.4, active: false }); expect(legacy.tick).toBe(1500);
+    const previous = round(); previous.version = 5; previous.targets = [];
+    while (!previous.ended) stepFoundry(previous, { x: 5.6, z: 3.4, active: false }); expect(previous.tick).toBe(1000);
   });
   it("keeps all relics inside the board and sixteen live relics after destruction", () => {
     const state = harvest(round()); expect(state.targets).toHaveLength(state.rogue?.capacity ?? 16);
@@ -60,7 +62,7 @@ describe("la fonderie déterministe", () => {
     expect(new Set(state.targets.map((t) => t.kind)).size).toBe(RELIC_KINDS.length);
     const before = structuredClone(state.targets);
     for (let tick = 0; tick < 80; tick++) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
-    expect(state.version).toBe(5);
+    expect(state.version).toBe(6);
     for (const relic of state.targets) {
       const original = before.find((t) => t.id === relic.id)!;
       expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
@@ -94,9 +96,10 @@ describe("la fonderie déterministe", () => {
     state.targets[0]!.kind = "chaos"; state.targets[0]!.hp = 1;
     state.targets[1]!.kind = "chaos"; state.targets[1]!.hp = 4;
     state.targets[2]!.kind = "spring"; state.targets[2]!.hp = 4;
+    state.targets[3]!.kind = "urn"; state.targets[3]!.hp = state.targets[3]!.maxHp = 100;
     const first = stepFoundry(state, aim);
     expect(first.strike).toBe(true); expect(first.impacts.length).toBeGreaterThanOrEqual(4);
-    expect(state.concentration).toBeGreaterThan(47);
+    expect(state.concentration).toBe(47);
     expect(first.impacts.filter((hit) => hit.broken).map((hit) => hit.targetId)).toEqual(expect.arrayContaining([1, 2, 3]));
     expect(stepFoundry(state, aim).strike).toBe(false);
   });
