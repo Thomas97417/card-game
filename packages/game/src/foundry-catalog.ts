@@ -30,7 +30,7 @@ export const FOUNDRY_SKILLS = {
   "forge-finisher": skill("forge", "Dernier écho", "Un critique achève les reliques à 10 % de vie ou moins.", 120, ["forge-crit"], { execute: 0.1 }, "street-smarts/finisher"),
   "forge-mastery": skill("forge", "Cœur du forgeron", "+30 % de dégâts et +35 % de dégâts critiques.", 240, ["forge-crushing", "forge-finisher"], { power: 0.3, criticalDamage: 0.35 }, "street-smarts/crit-power"),
   "sap-breath": skill("sap", "Souffle des fougères", "+15 % de concentration maximale.", 30, [], { focus: 0.15 }, "skill-tree/endurance-stamina-1"),
-  "sap-recovery": skill("sap", "Sève retrouvée", "Chaque relique brisée a 10 % de chance de rendre 3 points de concentration.", 60, ["sap-breath"], { recoveryChance: 0.1, recoveryAmount: 1 }, "skill-tree/endurance-siphon-1"),
+  "sap-recovery": skill("sap", "Sève retrouvée", "Chaque relique brisée a 10 % de chance de rendre jusqu’à 3 points de concentration.", 60, ["sap-breath"], { recoveryChance: 0.1, recoveryAmount: 1 }, "skill-tree/endurance-siphon-1"),
   "sap-spring": skill("sap", "Réserves profondes", "+10 % de concentration maximale.", 60, ["sap-breath"], { focus: 0.1 }, "skill-tree/endurance-stamina-1"),
   "sap-second": skill("sap", "Seconde sève", "La première relique brisée d’une manche rend 10 points de concentration.", 120, ["sap-recovery"], { firstKillRecovery: 10 }, "prestige-items/recovery-ring"),
   "sap-flow": skill("sap", "Respiration calme", "Chaque frappe consomme 15 % de stamina en moins.", 120, ["sap-spring"], { drain: -0.15 }, "skill-tree/endurance-cost-1"),

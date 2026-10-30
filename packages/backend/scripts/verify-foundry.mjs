@@ -1,4 +1,4 @@
-/** Isolated development smoke test: bun scripts/verify-foundry.mjs [--keep | --cleanup]. */
+/** Isolated development smoke test: bun scripts/verify-foundry.mjs [--preview] [--keep | --cleanup]. */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -6,7 +6,8 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api.js";
-import { FOUNDRY, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, TOOLS, foundryOrderCost, stepFoundry } from "@sylve/game/foundry";
+import { planFoundryRunPurchases, preferredFoundryBlessing } from "../../game/src/test-fixtures/foundry-run.ts";
 import "dotenv/config";
 
 const cwd = fileURLToPath(new URL("../", import.meta.url));
@@ -47,12 +48,17 @@ try {
   await client.mutation(api.foundry.ensure, owner);
   let board = await client.query(api.foundry.board, {});
   check(board.progress.mastery === 0 && board.availableAssistants.includes("dryad"), "A new foundry starts with the free smith and the owned dryad");
-  for (let attempt = 0; attempt < 4 && board.daily.delivered < 3; attempt++) {
+  const preview = process.argv.includes("--preview");
+  check(board.progress.cycle.economy === 3, "The reference hammer economy is active");
+  for (let attempt = 0; attempt < (preview ? 2 : 15) && (preview ? board.progress.cycle.shards < TOOLS.swift.cost : board.daily.delivered < 3); attempt++) {
     if (board.progress.cycle.status !== "active") {
       await client.mutation(api.foundry.newChantier, { ...owner, revision: board.progress.revision });
       board = await client.query(api.foundry.board, {});
     }
-    const round = await client.mutation(api.foundry.startRound, { ...owner, revision: board.progress.revision, requestId: randomUUID(), tool: "mallet", assistant: "smith" });
+    const shopping = planFoundryRunPurchases(board.progress.cycle);
+    if (shopping.tool) { await client.mutation(api.foundry.purchaseTool, { ...owner, revision: board.progress.revision, tool: shopping.tool }); board = await client.query(api.foundry.board, {}); }
+    for (const skill of shopping.skills) { await client.mutation(api.foundry.purchaseSkill, { ...owner, revision: board.progress.revision, skill }); board = await client.query(api.foundry.board, {}); }
+    const round = await client.mutation(api.foundry.startRound, { ...owner, revision: board.progress.revision, requestId: randomUUID(), tool: board.progress.cycle.selectedTool ?? "mallet", assistant: "smith" });
     let state = structuredClone(round.state);
     const began = Date.now();
     while (!state.ended) {
@@ -75,17 +81,20 @@ try {
     const finishArgs = { ...owner, roundId: round._id };
     await client.mutation(api.foundry.finishRound, finishArgs); await client.mutation(api.foundry.finishRound, finishArgs);
     board = await client.query(api.foundry.board, {});
-    while (board.progress.cycle.status === "active" && board.progress.cycle.shards >= FOUNDRY.orderCosts[board.progress.cycle.orderIndex]) {
+    while (board.progress.cycle.status === "active" && board.progress.cycle.roundsLeft === 0 && board.progress.cycle.shards >= foundryOrderCost(board.progress.cycle)) {
       const payment = { ...owner, revision: board.progress.revision, cycleNumber: board.progress.cycle.number, orderIndex: board.progress.cycle.orderIndex };
       await client.mutation(api.foundry.payOrder, payment); await client.mutation(api.foundry.payOrder, payment);
       board = await client.query(api.foundry.board, {});
-      await client.mutation(api.foundry.chooseBlessing, { ...owner, revision: board.progress.revision, blessing: board.progress.cycle.choices[0] });
+      await client.mutation(api.foundry.chooseBlessing, { ...owner, revision: board.progress.revision, blessing: preferredFoundryBlessing(board.progress.cycle.choices) });
       board = await client.query(api.foundry.board, {});
       if (board.daily.delivered === 3) break;
     }
   }
-  check(board.daily.claimed && board.pendingReward?.receipt?.reveals.length > 0, "Three deliveries grant a persisted common chest");
-  check(board.progress.mastery >= 3 && !board.round, "Mastery unlocks all three tools and the completed round stays settled");
+  if (preview) check(board.progress.cycle.shards >= TOOLS.swift.cost && !board.round, "Saved first-round shards can purchase Toy Hammer");
+  else {
+    check(board.daily.claimed && board.pendingReward?.receipt?.reveals.length > 0, "Three deliveries grant a persisted common chest");
+    check(board.progress.mastery >= 3 && !board.round, "Deliveries grant mastery for charms and the completed round stays settled");
+  }
   if (process.argv.includes("--keep")) {
     mkdirSync(`${cwd}.cache`, { recursive: true });
     writeFileSync(fixturePath, JSON.stringify({ deployment: process.env.CONVEX_DEPLOYMENT, user }, null, 2), { mode: 0o600 }); keep = true;

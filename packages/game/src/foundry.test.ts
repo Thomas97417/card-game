@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FOUNDRY, TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound, deliverFoundryOrder,
+import { FOUNDRY, LEGACY_TOOLS as TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound, deliverFoundryOrder,
   RELICS, ACTIVE_RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryInput, type FoundryRound } from "./foundry";
 
 const aim: FoundryInput = { x: 0, z: 0, active: true };
-function round() { return createFoundryRound(12345, newFoundryCycle(), "mallet", "smith"); }
+function round() { return createFoundryRound(12345, legacyCycle(), "mallet", "smith"); }
 function harvest(state: FoundryRound) {
   while (!state.ended) {
     const target = [...state.targets].sort((a, b) => (a.kind === "geode" ? 5 : a.kind === "spring" ? 2 : 0) - (b.kind === "geode" ? 5 : b.kind === "spring" ? 2 : 0) || a.hp - b.hp)[0]!;
@@ -15,7 +15,7 @@ function harvest(state: FoundryRound) {
 describe("la fonderie déterministe", () => {
   it("swings in empty space at the tool cadence, even before the aim is moved", () => {
     for (const tool of ["mallet", "swift", "resonance"] as const) {
-      const state = createFoundryRound(17, newFoundryCycle(), tool, "smith"); state.targets = [];
+      const state = createFoundryRound(17, legacyCycle(), tool, "smith"); state.targets = [];
       const strikes: number[] = [];
       for (let tick = 0; tick < 80; tick++) {
         const frame = stepFoundry(state, { x: 4, z: 2, active: false });
@@ -38,7 +38,7 @@ describe("la fonderie déterministe", () => {
   it("ends only at zero stamina, including rounds lasting longer than the former 75-second cap", () => {
     const state = round(); state.targets = []; while (!state.ended) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
     expect(state.tick).toBe(1 + 99 * state.stats.interval); expect(state.rogue!.strikes).toBe(100); expect(state.shards).toBe(0);
-    const long = createFoundryRound(9, { ...newFoundryCycle(), upgrades: { power: 0, focus: 3, fortune: 0 }, blessings: ["focus", "focus", "focus"] }, "mallet", "dryad");
+    const long = createFoundryRound(9, { ...legacyCycle(), upgrades: { power: 0, focus: 3, fortune: 0 }, blessings: ["focus", "focus", "focus"] }, "mallet", "dryad");
     long.targets = [];
     for (let i = 0; i < 1500; i++) stepFoundry(long, { x: 5.6, z: 3.4, active: false });
     expect(long.ended).toBe(false); expect(long.concentration).toBeGreaterThan(0);
@@ -57,12 +57,12 @@ describe("la fonderie déterministe", () => {
   it("moves every relic kind with the runner fastest and bounces at the board edges", () => {
     const state = round();
     for (let seed = 1; seed <= 100 && new Set(state.targets.map((t) => t.kind)).size < ACTIVE_RELIC_KINDS.length; seed++) {
-      state.targets = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith").targets;
+      state.targets = createFoundryRound(seed, legacyCycle(), "mallet", "smith").targets;
     }
     expect(new Set(state.targets.map((t) => t.kind)).size).toBe(ACTIVE_RELIC_KINDS.length);
     const before = structuredClone(state.targets);
     for (let tick = 0; tick < 80; tick++) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
-    expect(state.version).toBe(FOUNDRY.version);
+    expect(state.version).toBe(8);
     for (const relic of state.targets) {
       const original = before.find((t) => t.id === relic.id)!;
       expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
@@ -89,7 +89,7 @@ describe("la fonderie déterministe", () => {
     expect(state.targets.filter((t) => t.kind !== "runner").every((t) => t.vx === 0 && t.vz === 0)).toBe(true);
   });
   it("applies area damage, bounded chaos chains, spring recovery, and the tool cooldown", () => {
-    const state = createFoundryRound(7, newFoundryCycle(), "resonance", "smith");
+    const state = createFoundryRound(7, legacyCycle(), "resonance", "smith");
     state.version = 6; // Only saved rounds retain sources and their recovery.
     state.concentration = 40;
     state.targets = state.targets.slice(0, 4);
@@ -111,7 +111,7 @@ describe("la fonderie déterministe", () => {
     }
   });
   it("applies assistant and upgrade bonuses independently of collection combat stats", () => {
-    const cycle = newFoundryCycle();
+    const cycle = legacyCycle();
     for (const assistant of ["smith", "dryad", "feline"] as const) expect(foundryStats(cycle, "mallet", assistant).damage).toBe(1);
     expect(foundryStats(cycle, "mallet", "dryad").concentration).toBe(115);
     expect(foundryStats(cycle, "mallet", "feline").loot).toBe(1.15);
@@ -124,15 +124,15 @@ describe("la fonderie déterministe", () => {
     const state = round(); state.stats.critical = 0;
     state.targets = [{ ...state.targets[0]!, kind: "urn", x: 0, z: 0, vx: 0, vz: 0, hp: 4, maxHp: 4 }];
     expect(stepFoundry(state, aim).impacts[0]?.damage).toBe(1); expect(state.targets[0]!.hp).toBe(3);
-    expect(foundryStats({ ...newFoundryCycle(), skills: ["forge-grip"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
-    expect(foundryStats({ ...newFoundryCycle(), blessings: ["power"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
-    expect(foundryStats(newFoundryCycle(), "mallet", "smith", ["ember"]).damage).toBeCloseTo(1.115);
-    expect(foundryStats({ ...newFoundryCycle(), blessings: ["haste"] }, "mallet", "smith").damage).toBe(0.85);
+    expect(foundryStats({ ...legacyCycle(), skills: ["forge-grip"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
+    expect(foundryStats({ ...legacyCycle(), blessings: ["power"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
+    expect(foundryStats(legacyCycle(), "mallet", "smith", ["ember"]).damage).toBeCloseTo(1.115);
+    expect(foundryStats({ ...legacyCycle(), blessings: ["haste"] }, "mallet", "smith").damage).toBe(0.85);
   });
   it("never spawns stamina sources in new rounds, including replacement relics", () => {
     const kinds = new Set<string>(); let broken = 0;
     for (let seed = 1; seed <= 20; seed++) {
-      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith");
+      const state = createFoundryRound(seed, legacyCycle(), "mallet", "smith");
       for (const target of state.targets) kinds.add(target.kind);
       while (!state.ended) {
         const target = state.targets.reduce((a, b) => a.hp < b.hp ? a : b);
@@ -147,15 +147,15 @@ describe("la fonderie déterministe", () => {
   it("retains stamina sources among the replacements of saved V6 rounds", () => {
     let sources = 0;
     for (let seed = 1; seed <= 12; seed++) {
-      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith"); state.version = 6;
+      const state = createFoundryRound(seed, legacyCycle(), "mallet", "smith"); state.version = 6;
       state.stats.radius = 20; state.targets.forEach((target) => { target.hp = 1; });
       stepFoundry(state, aim); sources += state.targets.filter((target) => target.kind === "spring").length;
     }
     expect(sources).toBeGreaterThan(0);
   });
   it("makes the first order affordable with the starting tool", () => {
-    let cycle = newFoundryCycle();
-    for (let i = 0; i < 2 && cycle.shards < FOUNDRY.orderCosts[0]; i++) cycle = settleFoundryRound(cycle, harvest(createFoundryRound(i + 17, cycle, "mallet", "smith")));
+    let cycle = legacyCycle();
+    for (let i = 0; i < 2 && cycle.shards < FOUNDRY.previousOrderCosts[0]; i++) cycle = settleFoundryRound(cycle, harvest(createFoundryRound(i + 17, cycle, "mallet", "smith")));
     expect(cycle.status).toBe("active"); expect(cycle.shards).toBeGreaterThanOrEqual(100);
   });
 });
@@ -207,7 +207,7 @@ describe("les collisions des reliques", () => {
   it("keeps new spawns and moving groups separated throughout harvested rounds", () => {
     let minimumGap = Infinity;
     for (let seed = 1; seed <= 8; seed++) {
-      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith");
+      const state = createFoundryRound(seed, legacyCycle(), "mallet", "smith");
       while (!state.ended) {
         for (let i = 0; i < state.targets.length; i++) for (let j = i + 1; j < state.targets.length; j++) {
           const a = state.targets[i]!, b = state.targets[j]!;
@@ -229,7 +229,7 @@ describe("les collisions des reliques", () => {
 describe("commandes et savoir", () => {
   it("allows the last round's loot to pay the deadline, but closes an unfunded chantier", () => {
     const state = { ...round(), ended: true, shards: 50 };
-    const cycle = { ...newFoundryCycle(), shards: 50, roundsLeft: 1 };
+    const cycle = { ...legacyCycle(), shards: 50, roundsLeft: 1 };
     const settled = settleFoundryRound(cycle, state);
     expect(settled.status).toBe("active"); expect(settled.roundsLeft).toBe(0);
     expect(() => buyFoundryUpgrade(settled, "power")).toThrow("Livre");
@@ -237,7 +237,7 @@ describe("commandes et savoir", () => {
     expect(settleFoundryRound({ ...cycle, shards: 49 }, state).status).toBe("failed");
   });
   it("offers three different blessings, blocks actions until selection, and completes five orders", () => {
-    let cycle = { ...newFoundryCycle(), shards: 5000 };
+    let cycle = { ...legacyCycle(), shards: 5000 };
     for (let i = 0; i < 5; i++) {
       cycle = deliverFoundryOrder(cycle);
       expect(new Set(cycle.choices).size).toBe(3);
@@ -246,13 +246,16 @@ describe("commandes et savoir", () => {
       expect(cycle.blessings).toHaveLength(i + 1); expect(cycle.roundsLeft).toBe(FOUNDRY.roundsPerOrder);
     }
     expect(cycle.status).toBe("completed");
-    expect(newFoundryCycle(cycle.number + 1)).toMatchObject({ number: 2, shards: 0, orderIndex: 0, blessings: [], upgrades: { power: 0, focus: 0, fortune: 0 } });
+    expect(legacyCycle(cycle.number + 1)).toMatchObject({ number: 2, shards: 0, orderIndex: 0, blessings: [], upgrades: { power: 0, focus: 0, fortune: 0 } });
   });
   it("charges upgrade tiers exactly and refuses unavailable purchases", () => {
-    let cycle = { ...newFoundryCycle(), shards: 1000 };
+    let cycle = { ...legacyCycle(), shards: 1000 };
     for (let i = 0; i < 3; i++) cycle = buyFoundryUpgrade(cycle, "power");
     expect(cycle.shards).toBe(650); expect(() => buyFoundryUpgrade(cycle, "power")).toThrow("maximum");
-    expect(() => buyFoundryUpgrade(newFoundryCycle(), "focus")).toThrow("manque");
-    expect(() => chooseFoundryBlessing(newFoundryCycle(), "power")).toThrow("proposée");
+    expect(() => buyFoundryUpgrade(legacyCycle(), "focus")).toThrow("manque");
+    expect(() => chooseFoundryBlessing(legacyCycle(), "power")).toThrow("proposée");
   });
 });
+
+// Saved V8 chantiers keep their original prices, profiles and simulation.
+function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCycle> { return { ...newFoundryCycle(number, seed), economy: 2 as const }; }

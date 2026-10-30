@@ -12,16 +12,16 @@ export const foundryCycle = v.object({
   number: v.number(), shards: v.number(), orderIndex: v.number(), roundsLeft: v.number(),
   upgrades: v.object({ power: v.number(), focus: v.number(), fortune: v.number() }),
   blessings: v.array(foundryBlessing), choices: v.array(foundryBlessing),
-  skills: v.optional(v.array(foundrySkill)), seed: v.optional(v.number()), economy: v.optional(v.literal(2)),
+  skills: v.optional(v.array(foundrySkill)), seed: v.optional(v.number()), economy: v.optional(v.union(v.literal(2), v.literal(3))),
   purchasedTools: v.optional(v.array(foundryTool)), selectedTool: v.optional(foundryTool),
   status: v.union(v.literal("active"), v.literal("failed"), v.literal("completed"), v.literal("abandoned")),
 });
 export const foundrySummary = v.object({ shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), seconds: v.number() });
 export const foundryRound = v.object({
-  version: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4), v.literal(5), v.literal(6), v.literal(7), v.literal(8)), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
-  stats: v.object({ damage: v.number(), interval: v.number(), radius: v.number(), critical: v.number(), loot: v.number(), concentration: v.number() }),
+  version: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4), v.literal(5), v.literal(6), v.literal(7), v.literal(8), v.literal(9)), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
+  stats: v.object({ damage: v.number(), interval: v.number(), radius: v.number(), critical: v.number(), loot: v.number(), concentration: v.number(), stamina: v.optional(v.number()) }),
   tool: foundryTool, assistant: foundryAssistant, nextStrike: v.number(), shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), ended: v.boolean(),
-  rogue: v.optional(v.object({ modifiers: v.object(modifierShape), capacity: v.number(), pressure: v.number(), frenzyUntil: v.number(), frozenUntil: v.number(), nextFreeze: v.number(), strikes: v.number(), jackpots: v.number(),
+  rogue: v.optional(v.object({ modifiers: v.object(modifierShape), capacity: v.number(), pressure: v.number(), frenzyUntil: v.number(), frozenUntil: v.number(), nextFreeze: v.number(), strikes: v.number(), jackpots: v.number(), wealth: v.optional(v.number()), recoveryReserve: v.optional(v.number()),
     burns: v.array(v.object({ id: v.number(), until: v.number(), next: v.number() })) })),
   targets: v.array(v.object({ id: v.number(), kind: v.union(v.literal("urn"), v.literal("geode"), v.literal("runner"), v.literal("spring"), v.literal("chaos")),
     x: v.number(), z: v.number(), hp: v.number(), maxHp: v.number(), vx: v.number(), vz: v.number(), phase: v.number() })),

@@ -10,12 +10,12 @@ const skillIcons: Record<FoundrySkillId, LucideIcon> = {
   "fortune-touch": Gem, "fortune-critical": Target, "fortune-geode": Mountain, "fortune-lucky": Clover, "fortune-purity": Sparkles, "fortune-overflow": Coins,
   "echo-reach": Radio, "echo-company": Shapes, "echo-wave": Orbit, "echo-gathering": Layers, "echo-chain": Link2, "echo-harmony": AudioLines,
 };
-interface Props { visible: FoundrySkillId[]; owned: readonly FoundrySkillId[]; selected: FoundrySkillId; onSelect(id: FoundrySkillId): void }
+interface Props { costs?: Partial<Record<FoundrySkillId, number>>; visible: FoundrySkillId[]; owned: readonly FoundrySkillId[]; selected: FoundrySkillId; onSelect(id: FoundrySkillId): void }
 interface Gesture { view: TreeView; points: TreePoint[] }
 const middle = (points: TreePoint[]) => ({ x: points.reduce((sum, p) => sum + p.x, 0) / points.length, y: points.reduce((sum, p) => sum + p.y, 0) / points.length });
 const distance = (points: TreePoint[]) => Math.hypot(points[0]!.x - points[1]!.x, points[0]!.y - points[1]!.y);
 
-export function FoundryTreeMap({ visible, owned, selected, onSelect }: Props) {
+export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {} }: Props) {
   const viewport = useRef<HTMLDivElement>(null);
   const size = useRef<TreeSize>({ width: 900, height: 520 });
   const [view, setView] = useState<TreeView>({ x: 0, y: 0, scale: 0.8 });
@@ -123,10 +123,10 @@ export function FoundryTreeMap({ visible, owned, selected, onSelect }: Props) {
         </svg>
         <div className="foundry-map-heart" style={{ left: FOUNDRY_TREE.center.x, top: FOUNDRY_TREE.center.y }} aria-hidden="true"><Anvil size={32} /><span>Le premier écho</span></div>
         {visible.map((id) => {
-          const skill = FOUNDRY_SKILLS[id], Icon = skillIcons[id], acquired = owned.includes(id), position = FOUNDRY_TREE_POINTS[id];
-          return <button key={id} type="button" className={`foundry-map-node ${acquired ? "is-owned" : "is-frontier"} ${selected === id ? "is-selected" : ""} ${skill.cost === 240 ? "is-keystone" : ""}`} style={{ left: position.x, top: position.y, "--branch-color": FOUNDRY_BRANCHES[skill.branch].color } as CSSProperties} data-root={!skill.requires.length} aria-pressed={selected === id} aria-label={`${skill.name}, ${acquired ? "acquis" : `${skill.cost} éclats`}`}
+          const skill = FOUNDRY_SKILLS[id], Icon = skillIcons[id], acquired = owned.includes(id), position = FOUNDRY_TREE_POINTS[id], cost = costs[id] ?? skill.cost;
+          return <button key={id} type="button" className={`foundry-map-node ${acquired ? "is-owned" : "is-frontier"} ${selected === id ? "is-selected" : ""} ${skill.cost === 240 ? "is-keystone" : ""}`} style={{ left: position.x, top: position.y, "--branch-color": FOUNDRY_BRANCHES[skill.branch].color } as CSSProperties} data-root={!skill.requires.length} aria-pressed={selected === id} aria-label={`${skill.name}, ${acquired ? "acquis" : `${new Intl.NumberFormat("fr-FR").format(cost)} éclats`}`}
             onClick={() => onSelect(id)} onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) keepVisible(id); }}>
-            <span className="foundry-map-node-ring"><Icon size={25} />{acquired ? <i className="foundry-map-node-check"><Check size={12} /></i> : <small>{skill.cost}</small>}</span>
+            <span className="foundry-map-node-ring"><Icon size={25} />{acquired ? <i className="foundry-map-node-check"><Check size={12} /></i> : <small title={`${new Intl.NumberFormat("fr-FR").format(cost)} éclats`}>{new Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 1 }).format(cost)}</small>}</span>
             <span className="foundry-map-node-label">{!skill.requires.length && <small>{FOUNDRY_BRANCHES[skill.branch].name}</small>}<strong>{skill.name}</strong></span>
           </button>;
         })}

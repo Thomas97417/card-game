@@ -2,6 +2,7 @@ import type { FoundryImpact } from "@sylve/game/foundry";
 
 interface Label { element: HTMLDivElement; x: number; z: number; life: number; duration: number; loot: boolean }
 const format = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
+const compact = new Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 1 });
 export interface FoundryTextPoint { x: number; y: number; visible: boolean }
 
 /** Reused DOM labels remain sharp over the painted scene, including on mobile. */
@@ -15,7 +16,7 @@ export function createFoundryCombatText(host: HTMLElement, capacity: number) {
   function emit(hit: FoundryImpact, loot: boolean) {
     const label = labels[cursor++ % labels.length]!;
     Object.assign(label, { x: hit.x, z: hit.z, life: loot ? 1.25 : 0.95, duration: loot ? 1.25 : 0.95, loot });
-    label.element.textContent = loot ? `+${format.format(hit.loot)} ◇` : `${format.format(hit.damage)}${hit.critical ? " !" : ""}`;
+    label.element.textContent = loot ? `+${(hit.loot >= 1000000 ? compact : format).format(hit.loot)} ◇` : `${format.format(hit.damage)}${hit.critical ? " !" : ""}`;
     label.element.className = `foundry-hit-number ${loot ? "is-loot" : hit.critical ? "is-critical" : "is-damage"}`;
     label.element.hidden = false;
   }

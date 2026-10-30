@@ -68,7 +68,7 @@ export const startRound = mutation({
     if (previous) return previous;
     const saved = await progress(ctx, userId, args.revision); idle(saved);
     if (saved.cycle.status !== "active" || saved.cycle.choices.length || saved.cycle.roundsLeft <= 0) throw new ConvexError("Livre ta commande et choisis ta bénédiction avant de jouer.");
-    if (!ownsFoundryTool(saved.cycle, saved.mastery, args.tool)) throw new ConvexError("Cet outil doit être acheté ou débloqué avant de jouer.");
+    if (!ownsFoundryTool(saved.cycle, args.tool)) throw new ConvexError("Cet outil doit être acheté pour ce chantier avant de jouer.");
     if (!(await assistants(ctx, userId)).includes(args.assistant)) throw new ConvexError("Découvre ce compagnon dans ta collection pour l’inviter.");
     const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, saved.cycle, args.tool, args.assistant, saved.charms ?? []);
     const id = await ctx.db.insert("foundryRounds", { ownerId: userId, cycleNumber: saved.cycle.number, requestId: args.requestId, startedAt: Date.now(), finished: false, state, batches: [] });
@@ -131,7 +131,7 @@ export const equipTool = mutation({
   args: { ...revisionArgs, tool: foundryTool },
   handler: async (ctx, args) => {
     const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
-    const cycle = rules(() => equipFoundryTool(saved.cycle, saved.mastery, args.tool));
+    const cycle = rules(() => equipFoundryTool(saved.cycle, args.tool));
     await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
   },
 });

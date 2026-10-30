@@ -5,7 +5,7 @@ import { FoundrySkillTree } from "./foundry-skill-tree";
 
 const onSkill = vi.fn();
 const props = { open: true, onOpenChange: vi.fn(), mastery: 3, masterySpent: 0, charms: [], locked: false, busy: false, inRound: false, onSkill, onCharm: vi.fn() };
-const cycle = (skills: FoundrySkillId[] = []) => ({ ...newFoundryCycle(), shards: 300, skills });
+const cycle = (skills: FoundrySkillId[] = []) => ({ ...legacyCycle(), shards: 300, skills });
 beforeEach(() => {
   vi.stubGlobal("PointerEvent", class extends MouseEvent {
     pointerId: number; pointerType: string;
@@ -57,3 +57,6 @@ describe("l’arbre explorable de la fonderie", () => {
     fireEvent.pointerCancel(stage, { pointerId: 2 }); fireEvent.pointerCancel(stage, { pointerId: 1 }); expect(stage.dataset.dragging).toBe("false");
   });
 });
+
+// Saved V8 chantiers keep their original prices, profiles and simulation.
+function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCycle> { return { ...newFoundryCycle(number, seed), economy: 2 as const }; }

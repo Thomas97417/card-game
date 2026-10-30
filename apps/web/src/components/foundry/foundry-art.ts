@@ -232,12 +232,21 @@ export function createFoundryArt(mobile: boolean) {
       }
       seal.castShadow = false;
     }
-    return { root, strikeFace, tool(tool: FoundryTool) {
+    const peen = new THREE.Group(); head.add(peen);
+    const wedge = mesh(bevel, iron, peen, -0.4, 0, 0, 0.7, 0.22, 0.6); wedge.rotation.z = -0.15;
+    const spiked = new THREE.Group(); head.add(spiked);
+    for (const z of [-0.37, 0.37]) for (const x of [-0.35, 0, 0.35]) {
+      const spike = mesh(geo("hammer-spike", () => new THREE.ConeGeometry(0.11, 0.32, mobile ? 10 : 16)), iron, spiked, x, 0, z);
+      spike.rotation.x = z < 0 ? -Math.PI / 2 : Math.PI / 2;
+      mesh(ball, iron, spiked, x, 0, z * 0.9, 0.14, 0.14, 0.07);
+    }
+    return { root, strikeFace, tool(tool: FoundryTool, legacy = false) {
       head.scale.set(tool === "swift" ? 0.72 : tool === "precision" ? 0.78 : tool === "heavy" ? 1.45 : tool === "resonance" || tool === "gilded" ? 1.2 : 1,
         tool === "heavy" ? 1.12 : tool === "precision" ? 0.86 : 1, tool === "heavy" ? 1.12 : 1);
-      body.material = tool === "heavy" ? stone : tool === "precision" ? patina : tool === "gilded" ? gold : copper;
+      body.material = tool === "heavy" ? stone : tool === "spiked" ? iron : tool === "precision" ? patina : tool === "gilded" ? gold : copper;
       collar.material = tool === "heavy" ? iron : tool === "precision" ? amethyst : patina;
-      resonance.visible = tool === "resonance"; heavy.visible = tool === "heavy"; precision.visible = tool === "precision"; gilded.visible = tool === "gilded";
+      resonance.visible = tool === "resonance" && legacy; peen.visible = tool === "resonance" && !legacy; spiked.visible = tool === "spiked";
+      heavy.visible = tool === "heavy"; precision.visible = tool === "precision"; gilded.visible = tool === "gilded";
     } };
   }
   const shadowSize = 64; const shadowPixels = new Uint8Array(shadowSize * shadowSize * 4);

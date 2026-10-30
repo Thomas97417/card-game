@@ -2,18 +2,20 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY, TOOLS, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
 const modules = import.meta.glob("../convex/**/*.ts");
 function setup() { const t = convexTest(schema, modules); betterAuthTest.register(t); return t; }
 type Test = ReturnType<typeof setup>;
-async function player(t: Test, name: string) {
+async function player(t: Test, name: string, modern = false) {
   const user = await t.mutation(components.betterAuth.adapter.create, { input: { model: "user", data: { name, email: `${name}@example.invalid`, emailVerified: true, createdAt: Date.now(), updatedAt: Date.now() } } });
   const session = await t.mutation(components.betterAuth.adapter.create, { input: { model: "session", data: { userId: user._id, token: `${name}-session`, createdAt: Date.now(), updatedAt: Date.now(), expiresAt: Date.now() + 90 * 86400000 } } });
   const client = t.withIdentity({ subject: user._id, sessionId: session._id });
   await client.mutation(api.foundry.ensure, { expectedOwnerId: user._id });
+  const saved = await client.query(api.foundry.board, {});
+  if (!modern) await t.run((ctx) => ctx.db.patch(saved.progress!._id, { cycle: { ...saved.progress!.cycle, economy: 2 } }));
   return { client, ownerId: user._id };
 }
 async function begin(p: Awaited<ReturnType<typeof player>>, requestId = "round-1") {
@@ -33,6 +35,84 @@ beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("la fonderie connectée", () => {
+  it("initializes the reference economy and authoritatively buys and replays every source hammer", async () => {
+    const t = setup();
+    for (const tool of TOOL_IDS.filter((id) => id !== "mallet")) {
+      const p = await player(t, `source-${tool}`, true), board = await p.client.query(api.foundry.board, {});
+      expect(board.progress!.cycle.economy).toBe(3);
+      const spec = foundryToolDefinition(board.progress!.cycle, tool);
+      await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 500, cycle: { ...board.progress!.cycle, shards: spec.cost } }));
+      await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool });
+      expect((await p.client.query(api.foundry.board, {})).progress!.cycle.shards).toBe(0);
+      const round = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: `reference-${tool}`, tool, assistant: "smith" });
+      expect(round.state.version).toBe(9); expect(round.state.stats.damage).toBe(spec.damage); expect(round.state.stats.stamina).toBe(spec.stamina);
+      expect(round.state.rogue!.wealth).toBe(10);
+      const expected = structuredClone(round.state), inputs = [];
+      for (let i = 0; i < 40; i++) { const target = expected.targets.reduce((a, b) => a.hp < b.hp ? a : b), input = { x: target.x, z: target.z, active: true }; inputs.push(input); stepFoundry(expected, input); }
+      vi.setSystemTime(round.startedAt + 2000);
+      const args = { expectedOwnerId: p.ownerId, roundId: round._id, startTick: 0, inputs };
+      expect(await p.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+      expect(await p.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    }
+  });
+  it("replays high-value relics and limited recovery identically over several saved batches", async () => {
+    const t = setup(), p = await player(t, "endgame", true), board = await p.client.query(api.foundry.board, {});
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { cycle: { ...board.progress!.cycle, orderIndex: 4, shards: 10000000,
+      skills: FOUNDRY_SKILL_IDS, blessings: ["recovery", "efficient", "berserk", "power"] } }));
+    await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool: "gilded" });
+    const round = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: "final-deposit", tool: "gilded", assistant: "smith" });
+    expect(round.state.rogue).toMatchObject({ pressure: 90, wealth: 14000, recoveryReserve: 0 });
+    const expected = structuredClone(round.state);
+    for (let startTick = 0; startTick < 320; startTick += 40) {
+      const inputs = [];
+      for (let i = 0; i < 40; i++) { const t = expected.targets.reduce((a, b) => a.hp < b.hp ? a : b), input = { x: t.x, z: t.z, active: true }; inputs.push(input); stepFoundry(expected, input); }
+      vi.setSystemTime(round.startedAt + (startTick + 40) * FOUNDRY.stepMs);
+      const args = { expectedOwnerId: p.ownerId, roundId: round._id, startTick, inputs };
+      expect(await p.client.mutation(api.foundry.submitInputs, args)).toEqual(expected); expect(await p.client.mutation(api.foundry.submitInputs, args)).toEqual(expected);
+    }
+    expect(expected.shards).toBeGreaterThan(10000); expect(expected.rogue!.recoveryReserve).toBeGreaterThanOrEqual(0);
+  });
+  it("moves a closed legacy chantier to the new economy without carrying cheap hammer purchases", async () => {
+    const t = setup(), p = await player(t, "migration"), board = await p.client.query(api.foundry.board, {});
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 3, cycle: { ...board.progress!.cycle, shards: 5000, purchasedTools: ["heavy"], selectedTool: "heavy" } }));
+    await p.client.mutation(api.foundry.abandonChantier, { expectedOwnerId: p.ownerId, revision: 0 });
+    await p.client.mutation(api.foundry.newChantier, { expectedOwnerId: p.ownerId, revision: 1 });
+    const fresh = await p.client.query(api.foundry.board, {});
+    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 3, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
+    await expect(p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 2, tool: "heavy" })).rejects.toThrow("éclats");
+  });
+  it("requires buying swift and resonance even with high mastery and funds them with run shards", async () => {
+    const t = setup(), p = await player(t, "master"); let board = await p.client.query(api.foundry.board, {});
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 500, cycle: { ...board.progress!.cycle, shards: 400 } }));
+    for (const tool of ["swift", "resonance"] as const) {
+      await expect(p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 0, requestId: `unpaid-${tool}`, tool, assistant: "smith" })).rejects.toThrow("acheté");
+      await expect(p.client.mutation(api.foundry.equipTool, { expectedOwnerId: p.ownerId, revision: 0, tool })).rejects.toThrow("acheté");
+    }
+    await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool: "swift" });
+    await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 1, tool: "resonance" });
+    board = await p.client.query(api.foundry.board, {});
+    expect(board.progress).toMatchObject({ mastery: 500, masterySpent: 0, revision: 2, cycle: { shards: 20, purchasedTools: ["swift", "resonance"], selectedTool: "resonance" } });
+    const round = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 2, requestId: "paid-resonance", tool: "resonance", assistant: "smith" });
+    expect(round.state.tool).toBe("resonance");
+  });
+  it("finishes an already active legacy swift round without granting a free hammer for the next round", async () => {
+    const t = setup(), p = await player(t, "legacy"), round = await begin(p);
+    const board = await p.client.query(api.foundry.board, {}), initial = createFoundryRound(91, board.progress!.cycle, "swift", "smith");
+    await t.run(async (ctx) => {
+      await ctx.db.patch(round._id, { state: initial });
+      await ctx.db.patch(board.progress!._id, { mastery: 500, cycle: { ...board.progress!.cycle, selectedTool: "swift", purchasedTools: undefined } });
+    });
+    const expected = structuredClone(initial), inputs = Array.from({ length: 40 }, () => ({ x: 5.6, z: 3.4, active: false }));
+    while (!expected.ended) {
+      const startTick = expected.tick; inputs.forEach((input) => stepFoundry(expected, input));
+      vi.setSystemTime(round.startedAt + (startTick + 40) * FOUNDRY.stepMs);
+      expect(await p.client.mutation(api.foundry.submitInputs, { expectedOwnerId: p.ownerId, roundId: round._id, startTick, inputs })).toEqual(expected);
+    }
+    await p.client.mutation(api.foundry.finishRound, { expectedOwnerId: p.ownerId, roundId: round._id });
+    const resumed = await p.client.query(api.foundry.board, {});
+    await expect(p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: resumed.progress!.revision, requestId: "next-swift", tool: "swift", assistant: "smith" })).rejects.toThrow("acheté");
+    expect(resumed.progress!.mastery).toBe(500);
+  });
   it("buys a run hammer once across concurrent tabs, saves equipment and rejects unowned tools", async () => {
     const t = setup(), alice = await player(t, "alice"), bob = await player(t, "bob");
     await expect(alice.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: alice.ownerId, revision: 0, tool: "heavy" })).rejects.toThrow("éclats");
@@ -56,7 +136,7 @@ describe("la fonderie connectée", () => {
   });
   it("replays each purchased hammer's damage and stamina exactly and refuses purchases during a round", async () => {
     const t = setup();
-    for (const tool of ["heavy", "precision", "gilded"] as const) {
+    for (const tool of ["swift", "resonance", "heavy", "precision", "gilded"] as const) {
       const p = await player(t, `buyer-${tool}`); const board = await p.client.query(api.foundry.board, {});
       await t.run((ctx) => ctx.db.patch(board.progress!._id, { cycle: { ...board.progress!.cycle, shards: TOOLS[tool].cost } }));
       await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool });
@@ -77,7 +157,7 @@ describe("la fonderie connectée", () => {
       expect((await p.client.query(api.foundry.board, {})).progress!.cycle.selectedTool).toBe(tool);
     }
   });
-  it("resets run purchases on restart while retaining mastery tools and accepts old cycles", async () => {
+  it("resets every purchased hammer on restart, retains mastery for charms and accepts old cycles", async () => {
     const t = setup(), p = await player(t, "alice"); let board = await p.client.query(api.foundry.board, {});
     const legacyCycle = { ...board.progress!.cycle, shards: 100, purchasedTools: undefined, selectedTool: undefined };
     await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 3, cycle: legacyCycle }));
@@ -87,8 +167,12 @@ describe("la fonderie connectée", () => {
     board = await p.client.query(api.foundry.board, {});
     expect(board.progress).toMatchObject({ mastery: 3, revision: 3, cycle: { number: 2, shards: 0, purchasedTools: [], selectedTool: "mallet" } });
     await expect(p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 3, requestId: "reset-shop", tool: "heavy", assistant: "smith" })).rejects.toThrow("outil");
-    const free = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 3, requestId: "permanent-refuge", tool: "resonance", assistant: "smith" });
-    expect(free.state.tool).toBe("resonance");
+    for (const tool of ["swift", "resonance", "heavy", "precision", "gilded"] as const) {
+      await expect(p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 3, requestId: `unowned-${tool}`, tool, assistant: "smith" })).rejects.toThrow("acheté");
+      await expect(p.client.mutation(api.foundry.equipTool, { expectedOwnerId: p.ownerId, revision: 3, tool })).rejects.toThrow("acheté");
+    }
+    const free = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 3, requestId: "starting-mallet", tool: "mallet", assistant: "smith" });
+    expect(free.state.tool).toBe("mallet");
   });
   it("saves uncapped rounds in separate receipts and finalizes only when stamina is exhausted", async () => {
     const t = setup(); const alice = await player(t, "alice"), round = await begin(alice);
@@ -110,7 +194,7 @@ describe("la fonderie connectée", () => {
     const finish = { expectedOwnerId: alice.ownerId, roundId: round._id };
     expect(await alice.client.mutation(api.foundry.finishRound, finish)).toEqual(await alice.client.mutation(api.foundry.finishRound, finish));
   });
-  it("requires authentication, initializes once, and checks owned assistants and permanent tool unlocks", async () => {
+  it("requires authentication, initializes once, and checks owned assistants and purchased hammers", async () => {
     const t = setup(); await expect(t.query(api.foundry.board, {})).rejects.toThrow("Connecte-toi");
     const alice = await player(t, "alice");
     await Promise.all([alice.client.mutation(api.foundry.ensure, { expectedOwnerId: alice.ownerId }), alice.client.mutation(api.foundry.ensure, { expectedOwnerId: alice.ownerId })]);
@@ -141,7 +225,7 @@ describe("la fonderie connectée", () => {
   it("replays moving relics exactly and can resume a persisted V1 round", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const round = await begin(alice);
-    expect(round.state.version).toBe(FOUNDRY.version);
+    expect(round.state.version).toBe(8);
     expect(round.state.stats.damage).toBe(1);
     expect(round.state.targets.some((relic) => relic.kind === "spring")).toBe(false);
     expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
@@ -195,7 +279,7 @@ describe("la fonderie connectée", () => {
     await alice.client.mutation(api.foundry.newChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });
     board = await alice.client.query(api.foundry.board, {});
     expect(board.progress).toMatchObject({ mastery: 4, masterySpent: 1, charms: ["ember"], cycle: { shards: 0, skills: [], blessings: [] } });
-    const fresh = await begin(alice, "next-build"); expect(fresh.state.stats.damage).toBeGreaterThan(foundryStats(newFoundryCycle(), "mallet", "smith").damage);
+    const fresh = await begin(alice, "next-build"); expect(fresh.state.stats.damage).toBeGreaterThan(foundryStats(legacyCycle(), "mallet", "smith").damage);
     await expect(alice.client.mutation(api.foundry.purchaseSkill, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision + 1, skill: "forge-grip" })).rejects.toThrow("manche");
   });
   it("replays combined techniques and their timers exactly across checkpoints and retries", async () => {
@@ -233,7 +317,8 @@ describe("la fonderie connectée", () => {
     await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 3 }));
     await alice.client.mutation(api.foundry.newChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });
     board = await alice.client.query(api.foundry.board, {}); expect(board.progress).toMatchObject({ mastery: 3, cycle: { number: 2, orderIndex: 0, shards: 0, status: "active" } });
-    await alice.client.mutation(api.foundry.startRound, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, requestId: "permanent-tool", tool: "resonance", assistant: "dryad" });
+    await expect(alice.client.mutation(api.foundry.startRound, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, requestId: "unbought-tool", tool: "resonance", assistant: "dryad" })).rejects.toThrow("acheté");
+    await alice.client.mutation(api.foundry.startRound, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, requestId: "starting-tool", tool: "mallet", assistant: "dryad" });
   });
   it("credits exactly one real common chest after three deliveries, persists its reveal, and resets at Paris midnight", async () => {
     const t = setup(); const alice = await player(t, "alice");
@@ -268,7 +353,7 @@ describe("la fonderie connectée", () => {
     await delivery(); expect(board.daily.delivered).toBe(1);
     await alice.client.mutation(api.foundry.newChantier, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision });
     board = await alice.client.query(api.foundry.board, {});
-    await t.run((ctx) => ctx.db.patch(board.progress!._id, { cycle: { ...board.progress!.cycle, shards: 9000 } }));
+    await t.run((ctx) => ctx.db.patch(board.progress!._id, { cycle: { ...board.progress!.cycle, shards: 25000 } }));
     await delivery(); await delivery(); expect(board.daily.claimed).toBe(true);
     expect(await t.run((ctx) => ctx.db.query("foundryDaily").collect())).toHaveLength(2);
   });
@@ -279,6 +364,9 @@ describe("la fonderie connectée", () => {
     await expect(alice.client.mutation(api.foundry.purchaseUpgrade, { expectedOwnerId: alice.ownerId, revision: 0, upgrade: "power" })).rejects.toThrow("changé");
     await begin(alice); board = await alice.client.query(api.foundry.board, {});
     await expect(alice.client.mutation(api.foundry.payOrder, { expectedOwnerId: alice.ownerId, revision: board.progress!.revision, cycleNumber: 1, orderIndex: 0 })).rejects.toThrow("manche en cours");
-    expect(board.progress!.cycle.shards).toBe(500 - FOUNDRY.upgradeCosts[0]);
+    expect(board.progress!.cycle.shards).toBe(500 - FOUNDRY.previousUpgradeCosts[0]);
   });
 });
+
+// Saved V8 chantiers keep their original prices, profiles and simulation.
+function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCycle> { return { ...newFoundryCycle(number, seed), economy: 2 as const }; }

@@ -181,7 +181,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       cursor.visible = (round.version >= 5 || aim.active) && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);
       hammer.root.visible = round.version >= 5 || aim.active || !active;
-      hammer.tool(round.tool);
+      hammer.tool(round.tool, round.version < 9);
       const elapsed = time - strikeAt;
       poseFoundryHammer(hammer, strikeAim && elapsed <= FOUNDRY_IMPACT_DELAY_MS + 50 ? strikeAim : aim, elapsed);
       for (let i = 0; i < particles.length; i++) {

@@ -6,4 +6,4 @@ const known = new Set(Object.entries(reference.categories).flatMap(([category, d
 for (const item of [...Object.values(FOUNDRY_SKILLS), ...Object.values(BLESSINGS), ...Object.values(FOUNDRY_CHARMS), ...Object.values(TOOLS)]) {
   if (!known.has(item.source)) throw new Error(`Missing reference for ${item.name}: ${item.source}`);
 }
-console.log(`PASS: 368 reference records; all 30 skills, 24 blessings, 6 charms and 6 tools link to an existing reference.`);
+console.log(`PASS: 368 reference records; all 30 skills, 24 blessings, 6 charms and 7 tools link to an existing reference.`);
