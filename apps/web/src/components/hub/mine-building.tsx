@@ -10,7 +10,7 @@ import { GoldIcon } from "@/components/gold-balance";
 import { EmeraldIcon } from "@/components/emerald-balance";
 import { useMineClock } from "@/hooks/use-mine-clock";
 import { GameIcon } from "@/components/game/game-icon";
-import { HUB_BUILDING_ART } from "./hub-art";
+import { HUB_BUILDING_ART, HUB_BUILDING_AREAS } from "./hub-art";
 
 export interface HubMinesProps {
   board?: MineBoard;
@@ -71,6 +71,7 @@ function MineBuilding({
     <section
       id={`mine-${kind}`}
       className={`hub-mine hub-mine-${kind}`}
+      style={HUB_BUILDING_AREAS[kind]}
       aria-label={name}
       tabIndex={-1}
     >

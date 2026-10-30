@@ -1019,7 +1019,7 @@
       "width": 1418,
       "height": 1109,
       "transparentBackground": false,
-      "status": "workshop-study",
+      "status": "integrated-hub-v4",
       "export": "WebP, définition native.",
       "reference": "docs/art-references/workshop-integration-v3.webp"
     },
@@ -1030,9 +1030,337 @@
       "width": 686,
       "height": 574,
       "transparentBackground": true,
-      "status": "workshop-study",
+      "status": "integrated-hub-v4",
       "export": "WebP, marges transparentes retirées, alpha conservé.",
       "reference": "docs/art-references/workshop-integration-v3.webp"
+    },
+    {
+      "path": "docs/art-references/hub-archives-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing tall ivory-stone library tower, plum-purple slate roofs, bronze astrolabe finial, carved open-book emblem, amber arched windows and small walnut front door; preserve the elegant narrow tower silhouette.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=23.9% to 64.0%, y=6.6% to 78.0% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1283,
+      "height": 1226,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/archives-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 520,
+        "top": 0,
+        "width": 460,
+        "height": 440
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/archives-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Les archives.\nRemove ONLY the landmark and everything attached to it: the existing tall ivory-stone library tower, plum-purple slate roofs, bronze astrolabe finial, carved open-book emblem, amber arched windows and small walnut front door; preserve the elegant narrow tower silhouette. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1283,
+      "height": 1226,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-archives-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/archives-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: precisely aligned transparent landmark sprite for a layered 2D woodland fantasy village.\nEdit target: the supplied coherent scene of Les archives.\nIsolate ONLY the exact EXISTING landmark: the existing tall ivory-stone library tower, plum-purple slate roofs, bronze astrolabe finial, carved open-book emblem, amber arched windows and small walnut front door; preserve the elegant narrow tower silhouette. Include its complete recognizable silhouette, doors/interiors, all attached fixtures and front steps or rails, ivy physically attached to walls, and a narrow irregular fringe of low grass and tiny plants touching the foundation. For mines include the dark tunnel mouth, all timber equipment, cart and short rails plus ONLY the compact projecting mineral rock immediately framing the mouth; the whole natural hillside and trees become transparent. For magical landmarks keep all magic inside the crystal/portal itself, with a restrained edge, no outer glow cloud.\nCRITICAL REGISTRATION: keep the SAME full rectangular canvas as the input, with the landmark at EXACTLY the same original pixel coordinates, size, proportions and angle. All generous empty alignment margins are intentional and must stay. Do not recenter, enlarge, crop, zoom, redesign or re-light. Keep the original fine painted color and texture exactly, avoiding brighter studio highlights or thick outlines.\nRemove EVERY other part of the scene to genuine transparent alpha: distant scenery, sky, trees, all streams, bridges, paths, meadow, natural cliff faces outside the immediate mine frame, surrounding boulders and large foreground ferns. Keep only a very subtle semi-transparent contact shadow immediately under the feet, not a large opaque floor patch or terrain island. Clean natural alpha edges with no white/dark fringe, background color, checkerboard, text, UI or watermark. The result must register as an independent building over the supplied scene's ground.",
+      "tool": "Built-in ImageGen",
+      "width": 839,
+      "height": 1165,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-archives-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-home-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing compact guardians chateau, ivory limestone, one central tower with two smaller side towers, teal slate roofs, emerald leaf banners, welcoming oak doorway and broad short front stairs; preserve the recognizable welcoming chateau silhouette.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=24.1% to 82.8%, y=3.3% to 74.2% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1337,
+      "height": 1176,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/guardian-house-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 835,
+        "top": 0,
+        "width": 500,
+        "height": 440
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/home-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Maison des gardiens.\nRemove ONLY the landmark and everything attached to it: the existing compact guardians chateau, ivory limestone, one central tower with two smaller side towers, teal slate roofs, emerald leaf banners, welcoming oak doorway and broad short front stairs; preserve the recognizable welcoming chateau silhouette. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1337,
+      "height": 1176,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-home-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/home-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Maison des gardiens.\nExtract the actual pictured landmark: the existing compact guardians chateau, ivory limestone, one central tower with two smaller side towers, teal slate roofs, emerald leaf banners, welcoming oak doorway and broad short front stairs; preserve the recognizable welcoming chateau silhouette. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1277,
+      "height": 1146,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-home-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-sanctuary-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing open emerald summoning shrine, two curved ivy-covered ivory-stone arches, aged botanical gold tracery, a suspended faceted emerald crystal and shallow round jade basin on low steps; keep the crystal and arches recognizable, magic glow restrained and localized.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=22.7% to 74.9%, y=11.6% to 74.2% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1282,
+      "height": 1227,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/sanctuary-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 1240,
+        "top": 20,
+        "width": 470,
+        "height": 450
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/sanctuary-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Le sanctuaire.\nRemove ONLY the landmark and everything attached to it: the existing open emerald summoning shrine, two curved ivy-covered ivory-stone arches, aged botanical gold tracery, a suspended faceted emerald crystal and shallow round jade basin on low steps; keep the crystal and arches recognizable, magic glow restrained and localized. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1282,
+      "height": 1227,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-sanctuary-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/sanctuary-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Le sanctuaire.\nExtract the actual pictured landmark: the existing open emerald summoning shrine, two curved ivy-covered ivory-stone arches, aged botanical gold tracery, a suspended faceted emerald crystal and shallow round jade basin on low steps; keep the crystal and arches recognizable, magic glow restrained and localized. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1264,
+      "height": 1184,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-sanctuary-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-arena-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing low oval open-air dueling arena, ivory limestone circular walls and tiered seats, clean pale sandy floor with a subtle gold botanical compass, two entrance pillars with emerald crossed-sword banners and three front steps; preserve its broad low silhouette and visible playable floor.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=19.2% to 79.3%, y=19.9% to 70.6% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1393,
+      "height": 1129,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/arena-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 1120,
+        "top": 290,
+        "width": 535,
+        "height": 434
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/arena-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of L’arène.\nRemove ONLY the landmark and everything attached to it: the existing low oval open-air dueling arena, ivory limestone circular walls and tiered seats, clean pale sandy floor with a subtle gold botanical compass, two entrance pillars with emerald crossed-sword banners and three front steps; preserve its broad low silhouette and visible playable floor. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1393,
+      "height": 1129,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-arena-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/arena-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of L’arène.\nExtract the actual pictured landmark: the existing low oval open-air dueling arena, ivory limestone circular walls and tiered seats, clean pale sandy floor with a subtle gold botanical compass, two entrance pillars with emerald crossed-sword banners and three front steps; preserve its broad low silhouette and visible playable floor. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1372,
+      "height": 868,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-arena-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-foundry-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing Foundry of Echoes, round ivory stone and timber walls, a patinated copper-green dome with small turquoise crystal finial, squat chimney, amber furnace under a small awning, anvil and wooden hoist with a suspended turquoise crystal; retain the distinctive dome, furnace, tools and foundry identity.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=22.1% to 76.4%, y=10.6% to 68.8% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1299,
+      "height": 1211,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/foundry-building.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 1510,
+        "top": 295,
+        "width": 460,
+        "height": 429
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/foundry-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Fonderie des Échos.\nRemove ONLY the landmark and everything attached to it: the existing Foundry of Echoes, round ivory stone and timber walls, a patinated copper-green dome with small turquoise crystal finial, squat chimney, amber furnace under a small awning, anvil and wooden hoist with a suspended turquoise crystal; retain the distinctive dome, furnace, tools and foundry identity. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1299,
+      "height": 1211,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-foundry-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/foundry-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Fonderie des Échos.\nExtract the actual pictured landmark: the existing Foundry of Echoes, round ivory stone and timber walls, a patinated copper-green dome with small turquoise crystal finial, squat chimney, amber furnace under a small awning, anvil and wooden hoist with a suspended turquoise crystal; retain the distinctive dome, furnace, tools and foundry identity. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1295,
+      "height": 1173,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-foundry-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-teleporter-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing ancient upright circular portal, mossy ivory stone ring with aged brass botanical trim, contained turquoise and violet swirling magic, two curved stone buttresses and low round stepped platform; keep the entire ring and platform clearly visible, localized magic with no glow cloud outside silhouette.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=16.7% to 72.2%, y=13.5% to 64.8% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1205,
+      "height": 1305,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/campaign/teleporter.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 370,
+        "top": 150,
+        "width": 360,
+        "height": 390
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/teleporter-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Le téléporteur.\nRemove ONLY the landmark and everything attached to it: the existing ancient upright circular portal, mossy ivory stone ring with aged brass botanical trim, contained turquoise and violet swirling magic, two curved stone buttresses and low round stepped platform; keep the entire ring and platform clearly visible, localized magic with no glow cloud outside silhouette. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1205,
+      "height": 1306,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-teleporter-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/teleporter-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Le téléporteur.\nExtract the actual pictured landmark: the existing ancient upright circular portal, mossy ivory stone ring with aged brass botanical trim, contained turquoise and violet swirling magic, two curved stone buttresses and low round stepped platform; keep the entire ring and platform clearly visible, localized magic with no glow cloud outside silhouette. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1278,
+      "height": 1177,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-teleporter-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-gold-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing working gold mine, one compact natural grey limestone outcrop blending with the real rocky hillside, deep amber-lit tunnel framed by chunky walnut timbers, localized gold ore seams, small wooden ore cart on short rails and a rope hoist at the right; no extra house, compact believable mine entrance rather than a freestanding boulder statue.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=7.7% to 87.4%, y=9.4% to 67.1% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1298,
+      "height": 1212,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/gold-mine-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 0,
+        "top": 120,
+        "width": 450,
+        "height": 420
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/gold-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Mine d’or.\nRemove ONLY the landmark and everything attached to it: the existing working gold mine, one compact natural grey limestone outcrop blending with the real rocky hillside, deep amber-lit tunnel framed by chunky walnut timbers, localized gold ore seams, small wooden ore cart on short rails and a rope hoist at the right; no extra house, compact believable mine entrance rather than a freestanding boulder statue. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1298,
+      "height": 1212,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-gold-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/gold-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Mine d’or.\nExtract the actual pictured landmark: the existing working gold mine, one compact natural grey limestone outcrop blending with the real rocky hillside, deep amber-lit tunnel framed by chunky walnut timbers, localized gold ore seams, small wooden ore cart on short rails and a rope hoist at the right; no extra house, compact believable mine entrance rather than a freestanding boulder statue. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1377,
+      "height": 1013,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-gold-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
+    },
+    {
+      "path": "docs/art-references/hub-emeralds-v4.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local building-and-landscape integration reference for the Sylve woodland fantasy game.\nInput roles: Image 1 is the EXACT local terrain crop to edit; Image 2 is the architectural identity of the building to insert; Image 3 is ONLY the approved workshop scene used as the shared painterly texture, outdoor lighting and ground-integration reference. Do NOT copy the cottage from image 3.\nSubject: the existing working emerald mine, a compact natural grey limestone hillside outcrop, dark tunnel with stout walnut timber supports, localized luminous green crystal veins, a short rail and wooden cart of emerald ore, timber hoist and small dark teal sorting awning; clearly a working mine, no shrine or portal, rock strata connect naturally to the surrounding hillside.\nPrimary request: paint this recognizable building organically into the real terrain of Image 1, fully founded on dry solid land, with a believable short path joining the existing trails, irregular small moss, grass and low plants crossing a few foundation edges, precise contact shadows and a soft cast shadow to the lower right. Retouch building AND its immediate land together so they have the same painted material quality, natural sunlight and perspective. Architectural identity of Image 2 remains recognizable. No detached studio-lit object, no rigid terrain island and no giant rectangular pedestal.\nComposition invariant: keep the crop, land scale, stream courses, cliffs, tree positions and distant scenery of Image 1. The entire building should fit approximately within x=3.9% to 92.0%, y=11.1% to 67.6% of the local canvas. Keep its present village-scale footprint; do not enlarge it to fill the image. All extremities visible. The front steps, rails or entrance must end on a walkable DRY strip of ground at least 7% of canvas height in front of the building. Water stays clearly outside the foundation and the approach path. Adapt the immediate rocky bank around the feet to make that placement plausible, without relocating the whole landscape. Neighboring open areas remain open.\nStyle and camera: same exquisite detailed painterly woodland strategy-game realism as Image 3; elevated three-quarter camera looking down roughly 35 degrees, upright walls, visible roof/platform planes. Warm natural sunlight from upper LEFT, ivory limestone, cool jade reflected shadows, finely painted natural plants and rocks, restrained amber window light and jewel-color accents. Building and ground have the same fine level of detail. No black contour, thick gold outline, excessive orange saturation, excessive bloom or photographic texture mismatch. Plants are irregular and natural, no formal flowerbeds, no repeated decorative flower rings around every structure.\nCritical edge invariant: preserve the outermost 8% of Image 1 as closely as possible for a seamless local terrain patch. No new sky, no zoom, no reframe, no extra trees blocking neighboring paths. ONE opaque edge-to-edge scene of the SAME aspect ratio as Image 1. No people, creatures, additional buildings, UI, text, letters, labels, watermark, border, or multiple panels.",
+      "tool": "Built-in ImageGen",
+      "width": 1196,
+      "height": 1315,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/emerald-mine-v2.webp",
+        "docs/art-references/workshop-integration-v3.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 1790,
+        "top": 120,
+        "width": 382,
+        "height": 420
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/emeralds-ground-v4.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only layer for a separately composited woodland fantasy village landmark.\nEdit target: this exact local scene of Mine d’émeraudes.\nRemove ONLY the landmark and everything attached to it: the existing working emerald mine, a compact natural grey limestone hillside outcrop, dark tunnel with stout walnut timber supports, localized luminous green crystal veins, a short rail and wooden cart of emerald ore, timber hoist and small dark teal sorting awning; clearly a working mine, no shrine or portal, rock strata connect naturally to the surrounding hillside. Remove the engineered architecture, all doors, roof pieces, steps belonging to the building, fixtures, signs, banners, workbenches, carts, rails, hoists and magical crystals or portal magic, plus its directional cast shadow. Natural cliff ledges, hill faces, land terraces, stream banks and rocks remain part of the terrain. In the former footprint paint a coherent empty DRY plot continuing the local limestone, earth, meadow and fine low vegetation. For a mine, replace the tunnel and projecting ore outcrop with a continuous unworked natural grey rock hillside face; keep the surrounding real cliff.\nCritical invariants: preserve EXACTLY the full rectangular canvas, aspect ratio, camera, scale and framing. Every tree, distant mountain, water course, cascade, bridge, trail and natural cliff outside the precise landmark silhouette remains in the same place, with the same colors, detail and shadows. Keep the dry walkable approach path and vegetation around its edges. Fill only where the removed landmark stood. Retain the same fine painterly texture, warm upper-left outdoor sunlight and cool jade shadows. No redesign of the environment. No added objects, structures, buildings, characters, text, labels, UI, border or watermark. The output is one opaque terrain scene of the SAME dimensions/aspect as the reference. Do not zoom or recenter.",
+      "tool": "Built-in ImageGen",
+      "width": 1196,
+      "height": 1315,
+      "transparentBackground": false,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-emeralds-v4.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/emeralds-building-v4.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: one high-detail transparent landmark sprite derived from this exact unified woodland fantasy scene.\nEdit target: the supplied scene of Mine d’émeraudes.\nExtract the actual pictured landmark: the existing working emerald mine, a compact natural grey limestone hillside outcrop, dark tunnel with stout walnut timber supports, localized luminous green crystal veins, a short rail and wooden cart of emerald ore, timber hoist and small dark teal sorting awning; clearly a working mine, no shrine or portal, rock strata connect naturally to the surrounding hillside. Preserve its exact recognizable architecture, camera angle, proportions, materials, outdoor light, painterly textures and subdued highlights. All attached fixtures and the complete front steps or rails are included. Keep ivy and a NARROW irregular fringe of grass and small plants physically touching the foundation, with subtle semi-transparent contact shadow under the feet. For mines retain the tunnel mouth, timber frame, equipment, cart, short rail and compact projecting mineral rock immediately around the mouth; the surrounding vast hillside is removed. Magic remains entirely inside the portal or crystals.\nFraming: isolate the COMPLETE landmark, centered with about 5% transparent margin, maximize useful building detail. This is a separate sprite that will be scaled and placed by code. No re-design, no change of camera or lighting. Do not convert it to an icon or exaggerated studio render.\nGenuine transparent alpha outside the silhouette, including natural holes. Remove ALL distant scenery, trees, sky, meadow, paths, streams, bridges, surrounding cliffs outside the immediate mine frame, large foreground foliage and detached boulders. No large terrain island, opaque pedestal backdrop, rectangular floor, outer glow cloud, white/dark fringe, checkerboard background, text, UI, watermark or additional structures.",
+      "tool": "Built-in ImageGen",
+      "width": 1511,
+      "height": 988,
+      "transparentBackground": true,
+      "status": "integrated-hub-v4",
+      "reference": "docs/art-references/hub-emeralds-v4.webp",
+      "export": "WebP, alpha conservé, marges transparentes retirées, proportions conservées, placement ajusté à la scène de référence."
     }
   ],
   "captures": [

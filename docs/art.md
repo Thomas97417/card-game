@@ -18,9 +18,11 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
-| `hub/refuge-landscape-v2.webp` | Paysage du refuge, sans bâtiments, en panorama 3:1 |
-| `hub/*-v2.webp` | Sept bâtiments indépendants : archives, maison des gardiens, sanctuaire, atelier, arène et deux mines |
-| `hub/workshop-ground-v3.webp`, `hub/workshop-building-v3.webp` | Essai local de l’atelier : terrain sec détaillé et bâtiment transparent indépendant |
+| `hub/refuge-landscape-v2.webp` | Base du paysage du refuge, sans bâtiments, en panorama 3:1 |
+| `hub/*-ground-v4.webp` | Huit raccords de terrain détaillés, avec des approches sèches et des transitions de végétation |
+| `hub/*-building-v4.webp` | Huit bâtiments transparents harmonisés avec leurs terrains, dont la fonderie, le téléporteur et les mines |
+| `hub/workshop-ground-v3.webp`, `hub/workshop-building-v3.webp` | Atelier validé : terrain sec et bâtiment transparent, intégrés par défaut avec les autres bâtiments |
+| `hub/*-v2.webp` | Premières versions des bâtiments séparés, conservées comme références |
 | `guardian-village-mines.webp` | Ancien refuge avec bâtiments intégrés, conservé pour l’aperçu de l’accueil public |
 | `foundry-building.webp` | Bâtiment transparent de la Fonderie des Échos, superposé au panorama |
 | `foundry-interior-v1.webp` | Intérieur peint de la fonderie, grand établi accueillant les objets 3D |
@@ -32,9 +34,11 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 
 Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par faction et un accent par lignée. Les personnages conservent une identité commune entre les raretés, avec des poses, silhouettes et équipements progressifs. Les sprites restent transparents ; les statistiques et commandes sont rendues par l’interface.
 
-Le refuge utilise désormais un paysage de 2172 × 724 généré avec ImageGen intégré, sans aucun bâtiment : terrasses forestières, chemins, ruisseaux, cascades et ponts de pierre. Les sept nouveaux bâtiments ont chacun été générés séparément, puis exportés en WebP à leur définition native avec les marges transparentes retirées et le canal alpha conservé. La fonderie et le téléporteur existants complètent ces sept éléments. Les références d’images sont regroupées dans `components/hub/hub-art.ts` ; les bâtiments, leurs libellés et leurs liens partagent les mêmes coordonnées dans `village-hub.tsx`, tandis que les deux mines restent dans `mine-building.tsx` et `hub.css`. Tous les prompts exacts figurent dans le manifeste. Le paysage et chaque bâtiment peuvent être remplacés indépendamment.
+Le refuge utilise une base de paysage de 2172 × 724 générée avec ImageGen intégré, sans bâtiments, enrichie par neuf raccords de terrain détaillés. Les neuf bâtiments restent des sprites transparents indépendants. L’atelier V3 validé sert de référence commune pour la lumière, la perspective, les matières et les raccords de végétation des huit autres lieux. Les terrains ont chacun été repeints avec leur bâtiment pour fixer une implantation naturelle, puis séparés en terrain vide et sprite alpha. Les approches restent sur un sol sec ; les mines s’appuient sur les flancs rocheux. Les WebP conservent leur définition native et les sprites leur alpha, avec les marges transparentes retirées.
 
-L’essai `/hub?atelier=essai` conserve le panorama courant et remplace uniquement la zone de l’atelier. Une scène de référence commune, `art-references/workshop-integration-v3.webp`, fixe la berge sèche, les chemins, la perspective, la lumière et les raccords de végétation. Deux retouches ImageGen intégrées en dérivent le terrain vide de 1418 × 1109 et le bâtiment transparent de 686 × 574. Le terrain est superposé à la région `(560, 325, 510, 399)` du panorama avec un fondu sur ses bords ; le bâtiment et son lien utilisent les coordonnées de la découpe alpha. Cette variante reste optionnelle, sans modification de la version V2 par défaut. Les trois prompts et leurs références figurent dans le manifeste.
+`components/hub/hub-art.ts` regroupe les images, les emplacements et les paramètres des fondus. Les neuf raccords sont superposés à la base avec un fondu horizontal et vertical ; le terrain de l’atelier est posé en dernier pour conserver la zone validée. Les silhouettes sont ajustées à leurs emprises dans les scènes de référence en conservant leurs proportions. Chaque sprite, son libellé et son lien partagent les mêmes coordonnées, y compris pour le téléporteur et les deux mines. Les libellés des mines laissent la place aux commandes de collecte sur les écrans peu hauts.
+
+L’essai de l’atelier est désormais intégré par défaut sur `/hub`, avec les huit autres lieux harmonisés. Les scènes communes sont conservées dans `docs/art-references/hub-*-v4.webp` ; `hub-integration-v4.json` archive les régions sources, les emprises de référence et les placements exportés. Les prompts exacts et les références des 24 nouveaux fichiers figurent dans le manifeste. Le paysage, ses raccords et chacun des neuf bâtiments peuvent être remplacés indépendamment.
 
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 

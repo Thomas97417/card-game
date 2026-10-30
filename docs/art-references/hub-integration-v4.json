@@ -1,0 +1,337 @@
+{
+  "tool": "Built-in ImageGen",
+  "mapReference": {
+    "width": 2172,
+    "height": 724
+  },
+  "landmarks": [
+    {
+      "id": "archives",
+      "name": "Les archives",
+      "reference": "docs/art-references/hub-archives-v4.webp",
+      "sourceRegion": {
+        "left": 520,
+        "top": 0,
+        "width": 460,
+        "height": 440
+      },
+      "referenceSlot": {
+        "left": 35,
+        "top": 6,
+        "width": 35,
+        "height": 54
+      },
+      "terrain": {
+        "src": "/art/hub/archives-ground-v4.webp",
+        "width": 1283,
+        "height": 1226
+      },
+      "terrainArea": {
+        "left": "23.9411%",
+        "top": "0.0000%",
+        "width": "21.1786%",
+        "height": "60.7735%"
+      },
+      "building": {
+        "src": "/art/hub/archives-building-v4.webp",
+        "width": 839,
+        "height": 1165
+      },
+      "buildingArea": {
+        "left": "31.3536%",
+        "top": "5.5859%",
+        "width": "7.4125%",
+        "height": "30.8782%"
+      },
+      "fadeStart": 25,
+      "solidStart": 42
+    },
+    {
+      "id": "home",
+      "name": "Maison des gardiens",
+      "reference": "docs/art-references/hub-home-v4.webp",
+      "sourceRegion": {
+        "left": 835,
+        "top": 0,
+        "width": 500,
+        "height": 440
+      },
+      "referenceSlot": {
+        "left": 29,
+        "top": 4,
+        "width": 53,
+        "height": 60
+      },
+      "terrain": {
+        "src": "/art/hub/home-ground-v4.webp",
+        "width": 1337,
+        "height": 1176
+      },
+      "terrainArea": {
+        "left": "38.4438%",
+        "top": "0.0000%",
+        "width": "23.0203%",
+        "height": "60.7735%"
+      },
+      "building": {
+        "src": "/art/hub/home-building-v4.webp",
+        "width": 1277,
+        "height": 1146
+      },
+      "buildingArea": {
+        "left": "45.1197%",
+        "top": "6.0476%",
+        "width": "12.2007%",
+        "height": "32.8474%"
+      },
+      "fadeStart": 29,
+      "solidStart": 46
+    },
+    {
+      "id": "sanctuary",
+      "name": "Le sanctuaire",
+      "reference": "docs/art-references/hub-sanctuary-v4.webp",
+      "sourceRegion": {
+        "left": 1240,
+        "top": 20,
+        "width": 470,
+        "height": 450
+      },
+      "referenceSlot": {
+        "left": 27,
+        "top": 14,
+        "width": 42,
+        "height": 48
+      },
+      "terrain": {
+        "src": "/art/hub/sanctuary-ground-v4.webp",
+        "width": 1282,
+        "height": 1227
+      },
+      "terrainArea": {
+        "left": "57.0902%",
+        "top": "2.7624%",
+        "width": "21.6390%",
+        "height": "62.1547%"
+      },
+      "building": {
+        "src": "/art/hub/sanctuary-building-v4.webp",
+        "width": 1264,
+        "height": 1184
+      },
+      "buildingArea": {
+        "left": "62.9328%",
+        "top": "15.7588%",
+        "width": "9.0884%",
+        "height": "25.5395%"
+      },
+      "fadeStart": 27,
+      "solidStart": 44
+    },
+    {
+      "id": "arena",
+      "name": "L’arène",
+      "reference": "docs/art-references/hub-arena-v4.webp",
+      "sourceRegion": {
+        "left": 1120,
+        "top": 290,
+        "width": 535,
+        "height": 434
+      },
+      "referenceSlot": {
+        "left": 13,
+        "top": 14,
+        "width": 72,
+        "height": 46
+      },
+      "terrain": {
+        "src": "/art/hub/arena-ground-v4.webp",
+        "width": 1393,
+        "height": 1129
+      },
+      "terrainArea": {
+        "left": "51.5654%",
+        "top": "40.0552%",
+        "width": "24.6317%",
+        "height": "59.9448%"
+      },
+      "building": {
+        "src": "/art/hub/arena-building-v4.webp",
+        "width": 1372,
+        "height": 868
+      },
+      "buildingArea": {
+        "left": "56.3706%",
+        "top": "48.4475%",
+        "width": "14.5285%",
+        "height": "27.5746%"
+      },
+      "fadeStart": 25,
+      "solidStart": 42
+    },
+    {
+      "id": "foundry",
+      "name": "Fonderie des Échos",
+      "reference": "docs/art-references/hub-foundry-v4.webp",
+      "sourceRegion": {
+        "left": 1510,
+        "top": 295,
+        "width": 460,
+        "height": 429
+      },
+      "referenceSlot": {
+        "left": 23,
+        "top": 7,
+        "width": 56,
+        "height": 51
+      },
+      "terrain": {
+        "src": "/art/hub/foundry-ground-v4.webp",
+        "width": 1299,
+        "height": 1211
+      },
+      "terrainArea": {
+        "left": "69.5212%",
+        "top": "40.7459%",
+        "width": "21.1786%",
+        "height": "59.2541%"
+      },
+      "building": {
+        "src": "/art/hub/foundry-building-v4.webp",
+        "width": 1295,
+        "height": 1173
+      },
+      "buildingArea": {
+        "left": "74.7618%",
+        "top": "44.8936%",
+        "width": "11.1209%",
+        "height": "30.2196%"
+      },
+      "fadeStart": 23,
+      "solidStart": 40
+    },
+    {
+      "id": "teleporter",
+      "name": "Le téléporteur",
+      "reference": "docs/art-references/hub-teleporter-v4.webp",
+      "sourceRegion": {
+        "left": 370,
+        "top": 150,
+        "width": 360,
+        "height": 390
+      },
+      "referenceSlot": {
+        "left": 16,
+        "top": 24,
+        "width": 48,
+        "height": 44
+      },
+      "terrain": {
+        "src": "/art/hub/teleporter-ground-v4.webp",
+        "width": 1205,
+        "height": 1306
+      },
+      "terrainArea": {
+        "left": "17.0350%",
+        "top": "20.7182%",
+        "width": "16.5746%",
+        "height": "53.8674%"
+      },
+      "building": {
+        "src": "/art/hub/teleporter-building-v4.webp",
+        "width": 1278,
+        "height": 1177
+      },
+      "buildingArea": {
+        "left": "19.6869%",
+        "top": "35.3669%",
+        "width": "7.9558%",
+        "height": "21.9812%"
+      },
+      "fadeStart": 33,
+      "solidStart": 50
+    },
+    {
+      "id": "gold",
+      "name": "Mine d’or",
+      "reference": "docs/art-references/hub-gold-v4.webp",
+      "sourceRegion": {
+        "left": 0,
+        "top": 120,
+        "width": 450,
+        "height": 420
+      },
+      "referenceSlot": {
+        "left": 23,
+        "top": 17,
+        "width": 46,
+        "height": 36
+      },
+      "terrain": {
+        "src": "/art/hub/gold-ground-v4.webp",
+        "width": 1298,
+        "height": 1212
+      },
+      "terrainArea": {
+        "left": "0.0000%",
+        "top": "16.5746%",
+        "width": "20.7182%",
+        "height": "58.0110%"
+      },
+      "building": {
+        "src": "/art/hub/gold-building-v4.webp",
+        "width": 1377,
+        "height": 1013
+      },
+      "buildingArea": {
+        "left": "4.7990%",
+        "top": "26.4365%",
+        "width": "9.4627%",
+        "height": "20.8840%"
+      },
+      "fadeStart": 18,
+      "solidStart": 35
+    },
+    {
+      "id": "emeralds",
+      "name": "Mine d’émeraudes",
+      "reference": "docs/art-references/hub-emeralds-v4.webp",
+      "sourceRegion": {
+        "left": 1790,
+        "top": 120,
+        "width": 382,
+        "height": 420
+      },
+      "referenceSlot": {
+        "left": 16,
+        "top": 19,
+        "width": 70,
+        "height": 39
+      },
+      "terrain": {
+        "src": "/art/hub/emeralds-ground-v4.webp",
+        "width": 1196,
+        "height": 1315
+      },
+      "terrainArea": {
+        "left": "82.4125%",
+        "top": "16.5746%",
+        "width": "17.5875%",
+        "height": "58.0110%"
+      },
+      "building": {
+        "src": "/art/hub/emeralds-building-v4.webp",
+        "width": 1511,
+        "height": 988
+      },
+      "buildingArea": {
+        "left": "85.6154%",
+        "top": "27.5967%",
+        "width": "11.5335%",
+        "height": "22.6243%"
+      },
+      "fadeStart": 23,
+      "solidStart": 40
+    }
+  ]
+}

@@ -14,7 +14,7 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import type { HubLegendaryOffersProps } from "./legendary-offers";
-import { HUB_BUILDING_ART, HUB_LANDSCAPE, HUB_WORKSHOP_STUDY } from "./hub-art";
+import { HUB_BUILDING_ART, HUB_BUILDING_AREAS, HUB_GROUND_PATCHES, HUB_LANDSCAPE } from "./hub-art";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry";
 type Place = {
@@ -23,7 +23,6 @@ type Place = {
   purpose: string;
   to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena" | "/foundry";
   icon: GameIconKind;
-  area: CSSProperties;
 };
 
 // Each area positions the sprite, its label and its link together. Coordinates
@@ -35,7 +34,6 @@ const PLACES: readonly Place[] = [
     purpose: "Façonner les reliques du refuge",
     to: "/foundry",
     icon: "goldMine",
-    area: { left: "74.2%", top: "47%", width: "11.5%", height: "34.5%" },
   },
   {
     id: "archives",
@@ -43,7 +41,6 @@ const PLACES: readonly Place[] = [
     purpose: "Profil et paramètres",
     to: "/settings",
     icon: "archives",
-    area: { left: "29%", top: "4%", width: "8.5%", height: "43.4%" },
   },
   {
     id: "home",
@@ -51,7 +48,6 @@ const PLACES: readonly Place[] = [
     purpose: "Gérer mon Gardien",
     to: "/guardian",
     icon: "guardian",
-    area: { left: "44%", top: "2%", width: "13.5%", height: "43.1%" },
   },
   {
     id: "sanctuary",
@@ -59,7 +55,6 @@ const PLACES: readonly Place[] = [
     purpose: "Invoquer des compagnons",
     to: "/sanctuary",
     icon: "sanctuary",
-    area: { left: "62%", top: "10%", width: "11.3%", height: "38.9%" },
   },
   {
     id: "workshop",
@@ -67,7 +62,6 @@ const PLACES: readonly Place[] = [
     purpose: "Préparer mon deck",
     to: "/decks",
     icon: "all",
-    area: { left: "31.5%", top: "49%", width: "11.5%", height: "33.9%" },
   },
   {
     id: "arena",
@@ -75,7 +69,6 @@ const PLACES: readonly Place[] = [
     purpose: "Entrer dans le cercle",
     to: "/arena",
     icon: "arena",
-    area: { left: "56.3%", top: "52%", width: "14.8%", height: "30.4%" },
   },
 ];
 
@@ -85,7 +78,6 @@ const hotspotStyle = cn(
 );
 
 interface VillageHubProps {
-  workshopStudy?: boolean;
   dailyRewards?: HubDailyRewardsProps;
   legendaryOffers?: HubLegendaryOffersProps;
   missions?: HubMissionsProps;
@@ -98,7 +90,6 @@ interface VillageHubProps {
 }
 
 export function VillageHub({
-  workshopStudy = false,
   activity,
   missions,
   mines,
@@ -177,23 +168,29 @@ export function VillageHub({
               accessibles.
             </p>
           )}
-          {workshopStudy && (
+          {HUB_GROUND_PATCHES.map((patch) => (
             <img
-              {...HUB_WORKSHOP_STUDY.terrain}
+              key={patch.id}
+              {...patch.art}
               alt=""
               aria-hidden="true"
               draggable={false}
-              className="hub-workshop-ground"
-              style={HUB_WORKSHOP_STUDY.terrainArea}
+              decoding="async"
+              className="hub-ground-patch"
+              style={{
+                ...patch.area,
+                "--hub-ground-fade": `${patch.fadeStart}%`,
+                "--hub-ground-solid": `${patch.solidStart}%`,
+              } as CSSProperties}
             />
-          )}
+          ))}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#12291f]/40 via-transparent to-transparent"
           />
 
           <nav aria-label="Bâtiments du refuge">
-            <Link to="/world" className="hub-teleporter group" aria-label="Le téléporteur — Explorer la carte du monde">
+            <Link to="/world" className="hub-teleporter group" style={HUB_BUILDING_AREAS.teleporter} aria-label="Le téléporteur — Explorer la carte du monde">
               <img {...HUB_BUILDING_ART.teleporter} alt="" aria-hidden="true" draggable={false} />
               <span className="hub-teleporter-label">
                 <span>Le téléporteur</span>
@@ -204,9 +201,8 @@ export function VillageHub({
               {...(mines ?? { pending: [], onCollect: () => {} })}
             />
             {PLACES.map((place) => {
-              const isWorkshopStudy = workshopStudy && place.id === "workshop";
-              const art = isWorkshopStudy ? HUB_WORKSHOP_STUDY.building : HUB_BUILDING_ART[place.id];
-              const area = isWorkshopStudy ? HUB_WORKSHOP_STUDY.buildingArea : place.area;
+              const art = HUB_BUILDING_ART[place.id];
+              const area = HUB_BUILDING_AREAS[place.id];
               const content = (
                 <>
                   <img
@@ -214,7 +210,7 @@ export function VillageHub({
                     alt=""
                     aria-hidden="true"
                     draggable={false}
-                    className={cn("hub-building-art", isWorkshopStudy && "hub-workshop-study-art")}
+                    className="hub-building-art"
                   />
                   <BuildingLabel
                     place={place}
