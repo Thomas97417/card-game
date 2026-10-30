@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FOUNDRY_REFERENCE_SKILLS, FOUNDRY_REFERENCE_SKILL_IDS, foundrySkills, foundrySkillReady, foundryStats, foundrySkillCost, foundryStrikeCost,
-  buyFoundrySkill, createFoundryRound, newFoundryCycle, stepFoundry, type FoundryCycle, type FoundrySkillId, type FoundryRound } from './foundry';
+import { FOUNDRY_V4_SKILLS as FOUNDRY_REFERENCE_SKILLS, FOUNDRY_V4_SKILL_IDS as FOUNDRY_REFERENCE_SKILL_IDS, foundrySkills, foundrySkillReady, foundryStats, foundrySkillCost, foundryStrikeCost,
+  buyFoundrySkill, createFoundryRound, newFoundryCycle as latestCycle, stepFoundry, type FoundryCycle, type FoundrySkillId, type FoundryRound } from './foundry';
 
 const aim = { x: 0, z: 0, active: true }, miss = { x: 5.6, z: 3.4, active: false };
 function arena(skills: FoundrySkillId[] = []): FoundryRound {
@@ -86,3 +86,5 @@ describe('les compétences de référence de la fonderie', () => {
     expect(foundrySkillCost(old,'forge-grip')).toBe(300);expect(newFoundryCycle(2).skills).toEqual([]);
   });
 });
+
+function newFoundryCycle(number = 1): FoundryCycle { return { ...latestCycle(number), economy: 4 }; }

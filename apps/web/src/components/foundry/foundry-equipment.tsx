@@ -1,5 +1,5 @@
 import { Check, Gem, Hammer, LockKeyhole } from "lucide-react";
-import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, foundryTools, foundryToolDefinition, foundryModifiers, foundryStats, foundryToolStrikeCost, ownsFoundryTool,
+import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, foundryTools, foundryToolDefinition, foundryModifiers, foundryCompleteModifiers, foundryStats, foundryToolStrikeCost, ownsFoundryTool,
   type FoundryAssistant, type FoundryCharmId, type FoundryCycle, type FoundryTool } from "@sylve/game/foundry";
 
 interface Props {
@@ -11,6 +11,7 @@ const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
 
 export function FoundryEquipment({ cycle, charms, tool, assistant, assistants, locked, onTool, onAssistant }: Props) {
   const modifiers = foundryModifiers(cycle, charms);
+  const efficiency = cycle.economy === 5 && foundryCompleteModifiers(cycle.skills ?? []).efficientSwings > 0;
   function card(id: FoundryTool) {
     const item = foundryToolDefinition(cycle, id), owned = ownsFoundryTool(cycle, id), equipped = owned && tool === id;
     const shop = item.cost > 0, affordable = cycle.shards >= item.cost;
@@ -24,7 +25,7 @@ export function FoundryEquipment({ cycle, charms, tool, assistant, assistants, l
         <div><dt>Dégâts</dt><dd>{number.format(stats.damage)}</dd></div>
         <div><dt>Frappes / s</dt><dd>{number.format(1000 / (stats.interval * FOUNDRY.stepMs))}</dd></div>
         <div><dt>Portée</dt><dd>{number.format(stats.radius)}</dd></div>
-        <div><dt>Stamina / coup</dt><dd>{number.format(Math.max(cycle.economy === 4 ? 0.25 : 0, foundryToolStrikeCost(id, modifiers.drain, false, stats.stamina ?? item.stamina)))}</dd></div>
+        <div><dt>Stamina / coup</dt><dd>{number.format(Math.max((cycle.economy ?? 0) >= 4 ? 0.25 : 0, foundryToolStrikeCost(id, modifiers.drain, false, stats.stamina ?? item.stamina) / (efficiency ? Math.max(1, 1 + modifiers.cadence + item.cadence) : 1)))}</dd></div>
         <div><dt>Critiques</dt><dd>{number.format(stats.critical * 100)} %</dd></div>
         <div><dt>Butin</dt><dd>×{number.format(stats.loot)}</dd></div>
       </dl>

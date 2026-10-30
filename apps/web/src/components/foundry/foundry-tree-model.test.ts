@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS, type FoundrySkillId } from "@sylve/game/foundry";
+import { FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_V4_SKILL_IDS as FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS as ALL_IDS, type FoundrySkillId } from "@sylve/game/foundry";
 import { FOUNDRY_TREE, FOUNDRY_TREE_POINTS, boundTreeView, fitTreeView, visibleFoundrySkills, zoomTreeView } from "./foundry-tree-model";
 
 describe("la découverte du grand arbre", () => {
@@ -48,5 +48,17 @@ describe("la disposition des 104 compétences de référence",()=>{
     expect(points).toHaveLength(104);
     for(const p of points){expect(p.x).toBeGreaterThan(60);expect(p.y).toBeGreaterThan(60);expect(p.x).toBeLessThan(FOUNDRY_TREE.width-60);expect(p.y).toBeLessThan(FOUNDRY_TREE.height-60);}
     for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++)expect(Math.hypot(points[i]!.x-points[j]!.x,points[i]!.y-points[j]!.y)).toBeGreaterThanOrEqual(170);
+  });
+});
+
+
+describe("le graphe complet",()=>{
+  it("reveals exactly the source roots and contains all 211 original coordinates without overlap",()=>{
+    const ids=visibleFoundrySkills([],5);expect(ids).toEqual(['smash-damage-1','limit-break-crit-chance-1','limit-break-crit-damage-1','limit-break-damage-1','limit-break-attack-speed-1']);
+    const full=ALL_IDS;
+    expect(full).toHaveLength(211);const points=full.map(id=>FOUNDRY_TREE_POINTS[id]);
+    expect(new Set(points.map(p=>`${p.x},${p.y}`)).size).toBe(211);
+    for(const p of points){expect(p.x).toBeGreaterThan(60);expect(p.y).toBeGreaterThan(60);expect(p.x).toBeLessThan(FOUNDRY_TREE.width-60);expect(p.y).toBeLessThan(FOUNDRY_TREE.height-60);}
+    for(const size of [{width:900,height:520},{width:350,height:340}]){const fitted=fitTreeView(full,size);for(const p of points){expect(p.x*fitted.scale+fitted.x).toBeGreaterThan(0);expect(p.y*fitted.scale+fitted.y).toBeGreaterThan(0);expect(p.x*fitted.scale+fitted.x).toBeLessThan(size.width);expect(p.y*fitted.scale+fitted.y).toBeLessThan(size.height);}}
   });
 });

@@ -258,5 +258,16 @@ export function createFoundryArt(mobile: boolean) {
   const shadowTexture = new THREE.DataTexture(shadowPixels, shadowSize, shadowSize); shadowTexture.magFilter = THREE.LinearFilter; shadowTexture.needsUpdate = true; textures.add(shadowTexture);
   const shadowMaterial = new THREE.MeshBasicMaterial({ color: 0x2c2319, map: shadowTexture, transparent: true, opacity: 0.65, depthWrite: false }); materials.add(shadowMaterial);
   function shadow() { const object = new THREE.Mesh(circle, shadowMaterial); object.rotation.x = -Math.PI / 2; object.scale.setScalar(0.8); object.position.y = 0.012; return object; }
-  return { relic, hammer, shadow, dispose() { geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); textures.forEach((t) => t.dispose()); } };
+  const spectral = paint(0x9ac7ce, "metal", 0.12, 0.62); spectral.transparent = true; spectral.opacity = 0.65; spectral.depthWrite = false;
+  spectral.emissive.setHex(0x426e74); spectral.emissiveIntensity = 0.4;
+  function phantomHand() {
+    const root = new THREE.Group();
+    mesh(bevel, spectral, root, 0, 0, 0, 0.42, 0.16, 0.43);
+    for (let i = 0; i < 4; i++) { const finger = mesh(bevel, spectral, root, (i - 1.5) * 0.105, 0.015, -0.29, 0.085, 0.13, 0.3 - Math.abs(i - 1.5) * 0.035); finger.rotation.x = -0.15; }
+    const thumb = mesh(bevel, spectral, root, -0.27, 0, -0.01, 0.09, 0.13, 0.24); thumb.rotation.y = -0.8;
+    root.traverse((object) => { if (object instanceof THREE.Mesh) { object.castShadow = false; object.receiveShadow = false; } });
+    return root;
+  }
+  function fallingRock() { return new THREE.Mesh(rockGeo, stone); }
+  return { relic, hammer, shadow, phantomHand, fallingRock, dispose() { geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); textures.forEach((t) => t.dispose()); } };
 }

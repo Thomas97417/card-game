@@ -3,7 +3,7 @@ import { FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS, 
 export interface TreePoint { x: number; y: number }
 export interface TreeSize { width: number; height: number }
 export interface TreeView extends TreePoint { scale: number }
-export const FOUNDRY_TREE = { width: 3240, height: 2940, center: { x: 1620, y: 1390 }, minScale: 0.08, maxScale: 2.2 } as const;
+export const FOUNDRY_TREE = { width: 3560, height: 4100, center: { x: 1480, y: 1700 }, minScale: 0.055, maxScale: 2.2 } as const;
 const angles: Record<FoundryBranch, number> = { forge: -90, storm: -18, fortune: 54, sap: 126, echo: 198 };
 const steps = [{ depth: 175, side: 0 }, { depth: 340, side: -92 }, { depth: 340, side: 92 }, { depth: 505, side: -135 }, { depth: 505, side: 135 }, { depth: 690, side: 0 }];
 

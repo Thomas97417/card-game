@@ -49,7 +49,7 @@ try {
   let board = await client.query(api.foundry.board, {});
   check(board.progress.mastery === 0 && board.availableAssistants.includes("dryad"), "A new foundry starts with the free smith and the owned dryad");
   const preview = process.argv.includes("--preview");
-  check(board.progress.cycle.economy === 4, "The expanded reference skill tree is active");
+  check(board.progress.cycle.economy === 5, "The expanded reference skill tree is active");
   for (let attempt = 0; attempt < (preview ? 2 : 15) && (preview ? board.progress.cycle.shards < TOOLS.swift.cost : board.daily.delivered < 3); attempt++) {
     if (board.progress.cycle.status !== "active") {
       await client.mutation(api.foundry.newChantier, { ...owner, revision: board.progress.revision });

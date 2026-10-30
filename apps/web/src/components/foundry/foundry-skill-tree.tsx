@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Gem, LockKeyhole, Radio, Sparkles } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { FOUNDRY_BRANCHES, FOUNDRY_SKILLS, foundrySkills, foundrySkill, foundrySkillReady, FOUNDRY_CHARMS, FOUNDRY_CHARM_IDS, foundrySkillCost,
+import { FOUNDRY_BRANCHES, foundrySkills, foundrySkill, foundrySkillReady, FOUNDRY_CHARMS, FOUNDRY_CHARM_IDS, foundrySkillCost,
   type FoundryCycle, type FoundrySkillId, type FoundryCharmId } from "@sylve/game/foundry";
 import { FoundryTreeMap } from "./foundry-tree-map";
 import { visibleFoundrySkills } from "./foundry-tree-model";
@@ -18,7 +18,7 @@ export function FoundrySkillTree({ open, onOpenChange, cycle, mastery, masterySp
   const ids = foundrySkills(cycle);
   const visible = visibleFoundrySkills(owned, cycle.economy);
   const selected = visible.includes(selection) ? selection : visible[0]!;
-  const node = foundrySkill(selected);
+  const node = foundrySkill(selected, cycle);
   const learned = owned.includes(selected);
   const prerequisites = foundrySkillReady(selected, owned);
   const cost = foundrySkillCost(cycle, selected);
@@ -34,9 +34,9 @@ export function FoundrySkillTree({ open, onOpenChange, cycle, mastery, masterySp
       <div className="foundry-tree-wallet"><span>{tab === "tree" ? <Gem size={19} /> : <Sparkles size={19} />}<strong>{tab === "tree" ? new Intl.NumberFormat("fr-FR").format(cycle.shards) : Math.max(0, mastery - masterySpent)}</strong>{tab === "tree" ? "éclats disponibles" : "points de maîtrise disponibles"}</span><small>{tab === "tree" ? "Un achat par nœud • réinitialisé au prochain chantier" : `${mastery} acquis au total • talismans conservés au prochain chantier`}</small></div></div>
       {tab === "tree" ? <div className="foundry-tree-content">
           <FoundryTreeMap key={cycle.number} economy={cycle.economy} visible={visible} owned={owned} selected={selected} onSelect={setSelection} costs={Object.fromEntries(ids.map((id) => [id, foundrySkillCost(cycle, id)]))} />
-          <section className="foundry-skill-detail" aria-label="Savoir sélectionné" style={{ "--branch-color": FOUNDRY_BRANCHES[node.branch].color } as React.CSSProperties}><div className="foundry-skill-description"><span className="foundry-eyebrow">{FOUNDRY_BRANCHES[node.branch].name}</span><h3>{node.name}</h3><p>{node.detail}</p>
-            {!!node.requires.length && <div className="foundry-skill-needs"><strong>Savoirs requis</strong>{node.requires.map((id) => <span key={id} className={owned.includes(id as FoundrySkillId) ? "is-owned" : ""}>{owned.includes(id as FoundrySkillId) ? <Check size={12} /> : <LockKeyhole size={12} />}{FOUNDRY_SKILLS[id as FoundrySkillId].name}</span>)}</div>}
-            {!!node.requiresAny?.length && <div className="foundry-skill-needs"><strong>Un de ces savoirs suffit</strong>{node.requiresAny.map((id) => <span key={id} className={owned.includes(id as FoundrySkillId) ? "is-owned" : ""}>{owned.includes(id as FoundrySkillId) ? <Check size={12} /> : <LockKeyhole size={12} />}{foundrySkill(id as FoundrySkillId).name}</span>)}</div>}
+          <section className="foundry-skill-detail" aria-label="Savoir sélectionné" style={{ "--branch-color": FOUNDRY_BRANCHES[node.branch].color } as React.CSSProperties}><div className="foundry-skill-description"><span className="foundry-eyebrow">{FOUNDRY_BRANCHES[node.branch].name}</span>{node.limitBreak && <span className="foundry-limit-badge">Limite de branche</span>}<h3>{node.name}</h3><p>{node.detail}</p>
+            {!!node.requires.length && <div className="foundry-skill-needs"><strong>Savoirs requis</strong>{node.requires.map((id) => <span key={id} className={owned.includes(id as FoundrySkillId) ? "is-owned" : ""}>{owned.includes(id as FoundrySkillId) ? <Check size={12} /> : <LockKeyhole size={12} />}{foundrySkill(id as FoundrySkillId, cycle).name}</span>)}</div>}
+            {!!node.requiresAny?.length && <div className="foundry-skill-needs"><strong>Un de ces savoirs suffit</strong>{node.requiresAny.map((id) => <span key={id} className={owned.includes(id as FoundrySkillId) ? "is-owned" : ""}>{owned.includes(id as FoundrySkillId) ? <Check size={12} /> : <LockKeyhole size={12} />}{foundrySkill(id as FoundrySkillId, cycle).name}</span>)}</div>}
             <p className="foundry-skill-reason">{reason}</p></div><div className="foundry-skill-action"><div className="foundry-skill-price"><span>Apprentissage</span><b>{new Intl.NumberFormat("fr-FR").format(cost)} <Gem size={15} /></b></div>
             <button type="button" className="foundry-primary" disabled={locked || busy || learned || !prerequisites || !affordable || !cycle.roundsLeft} onClick={() => onSkill(selected)}>{learned ? <><Check size={15} /> Savoir acquis</> : <><Sparkles size={15} /> Apprendre {node.name}</>}</button>
             </div><div className="foundry-build-note"><strong>Un savoir en révèle d’autres</strong><p>Apprends les nœuds voisins pour découvrir la suite. Les voies se combinent librement.</p></div>

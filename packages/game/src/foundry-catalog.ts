@@ -1,5 +1,10 @@
 import { FOUNDRY_REFERENCE_SKILLS, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_MODIFIERS, type FoundryReferenceModifiers } from "./foundry-skill-reference";
+import { FOUNDRY_REFERENCE_SKILLS as V4_SKILLS, FOUNDRY_REFERENCE_SKILL_IDS as V4_IDS } from "./foundry-skill-reference-v4";
+import { FOUNDRY_COMPLETE_MODIFIERS, type FoundryCompleteModifiers } from "./foundry-complete-rules";
 export * from "./foundry-skill-reference";
+export * from "./foundry-complete-rules";
+export const FOUNDRY_V4_SKILL_IDS = V4_IDS;
+export const FOUNDRY_V4_SKILLS = V4_SKILLS;
 /** Sylve balance, adapted from the versioned numeric reference in docs/references. */
 export const FOUNDRY_MODIFIERS = {
   power: 0, cadence: 0, focus: 0, radius: 0, loot: 0, critical: 0, criticalDamage: 0, drain: 0,
@@ -24,6 +29,7 @@ export interface FoundrySkill {
   effects: Partial<FoundryModifiers>; source: string;
   requiresAny?: string[]; kind?: "upgrade" | "passive" | "technique"; reference?: Partial<FoundryReferenceModifiers>;
   originalName?: string; point?: { x: number; y: number }; adaptation?: string;
+  complete?: Partial<FoundryCompleteModifiers>; limitBreak?: boolean;
 }
 const skill = (branch: FoundryBranch, name: string, detail: string, cost: number, requires: string[], effects: Partial<FoundryModifiers>, source: string): FoundrySkill => ({ branch, name, detail, cost, requires, effects, source });
 export const LEGACY_FOUNDRY_SKILLS = {
@@ -62,15 +68,23 @@ export const FOUNDRY_SKILLS = { ...LEGACY_FOUNDRY_SKILLS, ...FOUNDRY_REFERENCE_S
 export type FoundrySkillId = keyof typeof FOUNDRY_SKILLS;
 export const FOUNDRY_SKILL_IDS = Object.keys(FOUNDRY_SKILLS) as FoundrySkillId[];
 export const LEGACY_FOUNDRY_SKILL_IDS = Object.keys(LEGACY_FOUNDRY_SKILLS) as FoundrySkillId[];
-export function foundrySkills(cycle: { economy?: number }): readonly FoundrySkillId[] { return cycle.economy === 4 ? FOUNDRY_REFERENCE_SKILL_IDS : LEGACY_FOUNDRY_SKILL_IDS; }
-export function foundrySkill(id: FoundrySkillId): FoundrySkill { return FOUNDRY_SKILLS[id]; }
+export function foundrySkills(cycle: { economy?: number }): readonly FoundrySkillId[] { return cycle.economy === 5 ? FOUNDRY_REFERENCE_SKILL_IDS : cycle.economy === 4 ? V4_IDS : LEGACY_FOUNDRY_SKILL_IDS; }
+export function foundrySkill(id: FoundrySkillId, cycle?: { economy?: number }): FoundrySkill { return cycle?.economy === 4 && id in V4_SKILLS ? V4_SKILLS[id as keyof typeof V4_SKILLS] : FOUNDRY_SKILLS[id]; }
 export function foundrySkillReady(id: FoundrySkillId, owned: readonly FoundrySkillId[]): boolean {
   const skill = foundrySkill(id);
   return skill.requires.every((parent) => owned.includes(parent as FoundrySkillId)) && (!skill.requiresAny?.length || skill.requiresAny.some((parent) => owned.includes(parent as FoundrySkillId)));
 }
-export function foundryReferenceModifiers(skills: readonly FoundrySkillId[]): FoundryReferenceModifiers {
+export function foundryReferenceModifiers(skills: readonly FoundrySkillId[], economy?: number): FoundryReferenceModifiers {
   const result = { ...FOUNDRY_REFERENCE_MODIFIERS };
-  for (const id of skills) for (const [key, value] of Object.entries(foundrySkill(id).reference ?? {})) result[key as keyof FoundryReferenceModifiers] += value;
+  for (const id of skills) for (const [key, value] of Object.entries(foundrySkill(id, { economy }).reference ?? {})) result[key as keyof FoundryReferenceModifiers] += value;
+  return result;
+}
+export function foundryCompleteModifiers(skills: readonly FoundrySkillId[]): FoundryCompleteModifiers {
+  const result = { ...FOUNDRY_COMPLETE_MODIFIERS };
+  for (const id of skills) for (const [key, value] of Object.entries(foundrySkill(id).complete ?? {})) {
+    const k = key as keyof FoundryCompleteModifiers;
+    result[k] = k === "spawnSeconds" ? Math.min(result[k] || value, value) : result[k] + value;
+  }
   return result;
 }
 
@@ -116,10 +130,10 @@ export const FOUNDRY_CHARMS = {
 export type FoundryCharmId = keyof typeof FOUNDRY_CHARMS;
 export const FOUNDRY_CHARM_IDS = Object.keys(FOUNDRY_CHARMS) as FoundryCharmId[];
 
-export function foundryModifiers(cycle: { skills?: readonly FoundrySkillId[]; blessings: readonly FoundryBlessing[] }, charms: readonly FoundryCharmId[] = []): FoundryModifiers {
+export function foundryModifiers(cycle: { economy?: number; skills?: readonly FoundrySkillId[]; blessings: readonly FoundryBlessing[] }, charms: readonly FoundryCharmId[] = []): FoundryModifiers {
   const modifiers: FoundryModifiers = { ...FOUNDRY_MODIFIERS };
   const add = (effects: Partial<FoundryModifiers>) => { for (const key of Object.keys(effects) as (keyof FoundryModifiers)[]) modifiers[key] += effects[key] ?? 0; };
-  for (const id of cycle.skills ?? []) add(FOUNDRY_SKILLS[id].effects);
+  for (const id of cycle.skills ?? []) add(foundrySkill(id, cycle).effects);
   for (const id of cycle.blessings) add(BLESSINGS[id].effects);
   for (const id of charms) add(FOUNDRY_CHARMS[id].effects);
   return modifiers;

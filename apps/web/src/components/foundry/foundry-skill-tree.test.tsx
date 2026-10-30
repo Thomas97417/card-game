@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { newFoundryCycle, type FoundrySkillId } from "@sylve/game/foundry";
+import { newFoundryCycle, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_SKILLS, type FoundrySkillId } from "@sylve/game/foundry";
 import { FoundrySkillTree } from "./foundry-skill-tree";
 
 const onSkill = vi.fn();
@@ -79,5 +79,22 @@ describe('l’arbre de référence', () => {
     fireEvent.click(screen.getByRole('button',{name:'Apprendre Appel des reliques'}));expect(onSkill).toHaveBeenCalledWith('piggy-spawn-amount');
     const region=screen.getByRole('region',{name:'Grand arbre de compétences'}),initial=Number(region.dataset.zoom);
     fireEvent.click(screen.getByRole('button',{name:'Zoomer dans l’arbre'}));expect(Number(region.dataset.zoom)).toBeGreaterThan(initial);
+  });
+});
+
+
+describe("l’arbre complet de 211 nœuds",()=>{
+  it("renders every learned node, the twelve limit breaks and their original prices",()=>{
+    render(<FoundrySkillTree {...props} cycle={{...newFoundryCycle(),shards:100000000,skills:[...FOUNDRY_REFERENCE_SKILL_IDS]}} />);
+    expect(screen.getByRole('region',{name:'Grand arbre de compétences'}).querySelectorAll('.foundry-map-node')).toHaveLength(211);expect(screen.getByRole('region',{name:'Grand arbre de compétences'}).querySelectorAll('[data-limit-break=true]')).toHaveLength(12);
+    const node=FOUNDRY_REFERENCE_SKILLS['limit-break-damage-3'];fireEvent.click(screen.getByRole('button',{name:`${node.name}, acquis`}));
+    expect(screen.getByText('Limite de branche')).toBeTruthy();expect(screen.getByRole('heading',{name:node.name})).toBeTruthy();expect(screen.getByRole('region',{name:'Savoir sélectionné'}).querySelector('.foundry-skill-price')?.textContent).toMatch(/100.000.000/);
+  });
+  it("keeps the source prerequisites for new attacks and reveals the next frontier after learning them",()=>{
+    const base={...newFoundryCycle(),shards:5000,skills:['smash-damage-1','smash-hit-radius','collateral-damage'] as FoundrySkillId[]};
+    const view=render(<FoundrySkillTree {...props} cycle={base} />);
+    fireEvent.click(screen.getByRole('button',{name:'Main spectrale, 1 000 éclats'}));fireEvent.click(screen.getByRole('button',{name:'Apprendre Main spectrale'}));expect(onSkill).toHaveBeenCalledWith('phantom-hand');
+    expect(screen.queryByRole('button',{name:/Appel spectral,/})).toBeNull();
+    view.rerender(<FoundrySkillTree {...props} cycle={{...base,skills:[...base.skills,'phantom-hand']}} />);expect(screen.getByRole('button',{name:'Appel spectral, 1 600 éclats'})).toBeTruthy();
   });
 });

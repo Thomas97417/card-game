@@ -54,3 +54,7 @@ Les marteaux du chantier partagent les matériaux peints et les géométries pro
 Le Marteau à panne reprend le profil Cross Peen avec une panne en fer biseautée ; le Marteau à pointes ajoute des cônes lissés et des attaches arrondies à la tête de fer. L’ancienne couronne de résonance reste visible dans les manches sauvegardées antérieures à V9. Ces variantes réutilisent les textures peintes et les ressources partagées de la scène.
 
 Les reliques lumineuses de l’arbre V4 réutilisent les modèles peints avec un anneau doré procédural, mutualisé et libéré avec les autres effets de la scène. Aucun visuel de Bills Must Be Paid n’est importé.
+
+Les techniques de l’arbre complet V11 ajoutent une main spectrale aux doigts arrondis, des piliers de lumière et des roches peintes. Ces volumes procéduraux réutilisent les textures de la fonderie ; aucun dessin du jeu de référence n’est importé. Les réserves graphiques sont bornées à 8 mains, 20 roches et 8 rayons sur ordinateur, et 4 / 12 / 4 sur mobile. La pause fige leur animation ; les animations réduites remplacent la chute et les flashes par des marques discrètes. Les ressources partagées sont libérées avec la scène.
+
+Les reliques V11 ont un volume et un rayon de collision réduits ensemble à 80 % pour conserver un plateau lisible jusqu’à 32 cibles. Un halo turquoise distingue les éclats enfouis ; le halo doré reste celui des reliques lumineuses. Les dommages simultanés d’une même relique sont additionnés dans un seul nombre, avec un gain d’éclats séparé.

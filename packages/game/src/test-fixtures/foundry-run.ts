@@ -1,4 +1,4 @@
-import { TOOLS, TOOL_IDS, FOUNDRY_SKILLS, foundrySkills, foundrySkillReady, buyFoundryTool, buyFoundrySkill, foundrySkillCost, foundryOrderCost,
+import { TOOLS, TOOL_IDS, FOUNDRY_SKILLS, foundrySkills, foundrySkillReady, buyFoundryTool, buyFoundrySkill, foundrySkillCost, foundryOrderCost, continueFoundryCycle,
   FOUNDRY, newFoundryCycle, createFoundryRound, stepFoundry, settleFoundryRound, deliverFoundryOrder, chooseFoundryBlessing,
   type FoundrySkillId, type FoundryTool, type FoundryCycle, type FoundryBlessing } from "../foundry";
 
@@ -14,11 +14,11 @@ export function planFoundryRunPurchases(cycle: FoundryCycle, reserveBill = false
   const reserve = cycle.roundsLeft === 1 && reserveBill ? foundryOrderCost(cycle)! : 0;
   const upgrade = TOOL_IDS.filter((id) => TOOLS[id].cost > TOOLS[tool].cost && TOOLS[id].cost <= cycle.shards - reserve).at(-1);
   if (upgrade) cycle = buyFoundryTool(cycle, upgrade);
-  let skillBudget = Math.min(cycle.shards - reserve, Math.max(300, cycle.shards * 0.2)), learned = 0;
+  let skillBudget = Math.min(cycle.shards - reserve, Math.max(300, cycle.shards * (cycle.freeplay ? 0.75 : 0.2))), learned = 0;
   const skills: FoundrySkillId[] = [];
-  const plan = cycle.economy === 4 ? [...foundrySkills(cycle)].sort((a,b) => FOUNDRY_SKILLS[a].cost - FOUNDRY_SKILLS[b].cost) : skillPlan;
+  const plan = (cycle.economy ?? 0) >= 4 ? [...foundrySkills(cycle)].sort((a,b) => FOUNDRY_SKILLS[a].cost - FOUNDRY_SKILLS[b].cost) : skillPlan;
   for (const id of plan) {
-    if (learned === (cycle.economy === 4 ? 4 : 2)) break;
+    if (learned === (cycle.freeplay ? 12 : (cycle.economy ?? 0) >= 4 ? 4 : 2)) break;
     if (!cycle.skills!.includes(id) && foundrySkillReady(id, cycle.skills!) && foundrySkillCost(cycle, id) <= skillBudget) {
       const cost = foundrySkillCost(cycle, id); cycle = buyFoundrySkill(cycle, id); skillBudget -= cost; learned++; skills.push(id);
     }
@@ -27,16 +27,18 @@ export function planFoundryRunPurchases(cycle: FoundryCycle, reserveBill = false
 }
 
 /** Deterministic, affordable decisions against moving relics; no state or loot cheats. */
-export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean; economy?: 3 | 4 } = {}) {
-  let cycle: FoundryCycle = { ...newFoundryCycle(1, seed), economy: options.economy ?? 4 }; let tool: FoundryTool = "mallet", rounds = 0;
+export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean; economy?: 3 | 4 | 5; freeplayRounds?: number; stopWhenMastered?: boolean } = {}) {
+  let cycle: FoundryCycle = { ...newFoundryCycle(1, seed), economy: options.economy ?? 5 }; let tool: FoundryTool = "mallet", rounds = 0;
+  let freeRounds = 0;
   const purchases: { tool: FoundryTool; round: number }[] = [];
   const history: { round: number; order: number; tool: FoundryTool; income: number; bank: number; skills: number; ticks: number; strikes: number; emptySwings: number }[] = [];
-  while (cycle.status === "active") {
+  while (cycle.status === "active" && (!cycle.freeplay || freeRounds < (options.freeplayRounds ?? 0))) {
     if (options.invest !== false) {
       const planned = planFoundryRunPurchases(cycle, options.reserveBill);
       cycle = planned.cycle;
       if (planned.tool) { tool = planned.tool; purchases.push({ tool, round: rounds + 1 }); }
     }
+    if (options.stopWhenMastered && cycle.skills!.length === foundrySkills(cycle).length) break;
     const order = cycle.orderIndex + 1, state = createFoundryRound(seed * 7919 + rounds * 9176, cycle, tool, "smith");
     let emptySwings = 0;
     while (!state.ended && state.tick < 30000) {
@@ -55,10 +57,12 @@ export function simulateFoundryRun(seed: number, options: { invest?: boolean; mi
     cycle = settleFoundryRound(cycle, state); rounds++;
     history.push({ round: rounds, order, tool, income: state.shards, bank: cycle.shards, skills: cycle.skills!.length, ticks: state.tick, strikes: state.rogue!.strikes, emptySwings });
     if (cycle.status === "failed") break;
+    if (cycle.freeplay) freeRounds++;
     if (cycle.roundsLeft === 0) {
       cycle = deliverFoundryOrder(cycle);
       cycle = chooseFoundryBlessing(cycle, preferredFoundryBlessing(cycle.choices));
+      if (cycle.status === "completed" && options.freeplayRounds && cycle.economy === 5) cycle = continueFoundryCycle(cycle);
     }
   }
-  return { seed, status: cycle.status, rounds, bank: cycle.shards, purchases, history };
+  return { seed, status: cycle.status, delivered: cycle.orderIndex, learned: cycle.skills!.length, freeRounds, rounds, bank: cycle.shards, purchases, history };
 }

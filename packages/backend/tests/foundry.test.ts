@@ -2,20 +2,20 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_V4_SKILL_IDS as FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
 const modules = import.meta.glob("../convex/**/*.ts");
 function setup() { const t = convexTest(schema, modules); betterAuthTest.register(t); return t; }
 type Test = ReturnType<typeof setup>;
-async function player(t: Test, name: string, modern = false) {
+async function player(t: Test, name: string, modern: boolean | "full" = false) {
   const user = await t.mutation(components.betterAuth.adapter.create, { input: { model: "user", data: { name, email: `${name}@example.invalid`, emailVerified: true, createdAt: Date.now(), updatedAt: Date.now() } } });
   const session = await t.mutation(components.betterAuth.adapter.create, { input: { model: "session", data: { userId: user._id, token: `${name}-session`, createdAt: Date.now(), updatedAt: Date.now(), expiresAt: Date.now() + 90 * 86400000 } } });
   const client = t.withIdentity({ subject: user._id, sessionId: session._id });
   await client.mutation(api.foundry.ensure, { expectedOwnerId: user._id });
   const saved = await client.query(api.foundry.board, {});
-  if (!modern) await t.run((ctx) => ctx.db.patch(saved.progress!._id, { cycle: { ...saved.progress!.cycle, economy: 2 } }));
+  if (modern !== "full") await t.run((ctx) => ctx.db.patch(saved.progress!._id, { cycle: { ...saved.progress!.cycle, economy: modern ? 4 : 2 } }));
   return { client, ownerId: user._id };
 }
 async function begin(p: Awaited<ReturnType<typeof player>>, requestId = "round-1") {
@@ -78,7 +78,7 @@ describe("la fonderie connectée", () => {
     await p.client.mutation(api.foundry.abandonChantier, { expectedOwnerId: p.ownerId, revision: 0 });
     await p.client.mutation(api.foundry.newChantier, { expectedOwnerId: p.ownerId, revision: 1 });
     const fresh = await p.client.query(api.foundry.board, {});
-    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 4, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
+    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 5, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
     await expect(p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 2, tool: "heavy" })).rejects.toThrow("éclats");
   });
   it("requires buying swift and resonance even with high mastery and funds them with run shards", async () => {

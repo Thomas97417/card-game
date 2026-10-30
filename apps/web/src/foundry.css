@@ -175,3 +175,5 @@
 }
 
 .foundry-run-hud .foundry-strike-cost{display:block;margin-top:7px;font-size:9px;color:#b9c9a6}
+
+.foundry-limit-badge{display:inline-block;margin:10px 0 0;padding:5px 8px;border:1px solid #dfc48177;border-radius:4px;color:#f1d48e;font-size:9px;letter-spacing:.08em;text-transform:uppercase}.foundry-coin-bank{padding:12px 15px;border:1px solid #c5a76d55;border-radius:8px;color:#ead196;font-size:10px;line-height:1.6;background:#23372cc9}.foundry-order>.foundry-primary+.foundry-primary{margin-top:9px}

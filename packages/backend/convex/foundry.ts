@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, buyFoundryTool, equipFoundryTool, ownsFoundryTool, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
-  deliverFoundryOrder, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
+  deliverFoundryOrder, continueFoundryCycle, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryAssistant } from "@sylve/game/foundry";
 import { chestGold, chestLoot } from "@sylve/game/progression";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
@@ -215,5 +215,17 @@ export const acknowledgeReward = mutation({
     const userId = await owner(ctx, args.expectedOwnerId); const saved = await ctx.db.get(args.rewardId);
     if (!saved || saved.ownerId !== userId || !saved.receipt) throw new ConvexError("Cette récompense est introuvable.");
     if (!saved.seen) await ctx.db.patch(saved._id, { seen: true });
+  },
+});
+
+export const continueChantier = mutation({
+  args: { ...revisionArgs, cycleNumber: v.number() },
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const existing = await progressFor(ctx, userId);
+    if (existing?.cycle.number === args.cycleNumber && existing.cycle.freeplay) return;
+    const saved = await progress(ctx, userId, args.revision); idle(saved);
+    if (saved.cycle.number !== args.cycleNumber) throw new ConvexError("Ce chantier a changé.");
+    const cycle = rules(() => continueFoundryCycle(saved.cycle));
+    await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
   },
 });

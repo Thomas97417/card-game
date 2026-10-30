@@ -1,10 +1,11 @@
 import * as THREE from "three";
-import { RELICS, type FoundryEffect, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound } from "@sylve/game/foundry";
+import { FOUNDRY, RELICS, type FoundryEffect, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound } from "@sylve/game/foundry";
 
 import { createFoundryArt, type FoundryRelicArt } from "./foundry-art";
 import { FOUNDRY_IMPACT_DELAY_MS, poseFoundryHammer } from "./foundry-hammer";
 import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim } from "./foundry-projection";
-import { createFoundryCombatText } from "./foundry-combat-text";
+import { createFoundryTechniqueArt } from "./foundry-technique-art";
+import { createFoundryCombatText, mergeFoundryImpacts } from "./foundry-combat-text";
 
 export interface FoundryScene {
   aim(clientX: number, clientY: number): FoundryInput;
@@ -36,7 +37,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   renderer.autoClear = false;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.append(renderer.domElement);
-  const combatText = createFoundryCombatText(host, mobile ? 40 : 72);
+  const combatText = createFoundryCombatText(host, mobile ? 72 : 128);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(39, 1, 0.1, 100);
@@ -49,6 +50,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   const materials = new Set<THREE.Material>();
   const geometry = <T extends THREE.BufferGeometry>(g: T) => { geometries.add(g); return g; };
   const art = createFoundryArt(mobile);
+  const techniques = createFoundryTechniqueArt(scene, art, mobile, () => motion.matches);
   const ringGeo = geometry(new THREE.TorusGeometry(1, 0.025, 8, 64));
   scene.add(new THREE.HemisphereLight(0xffe9c9, 0x61452a, 1.8));
   const sun = new THREE.DirectionalLight(0xffdea9, 2.4); sun.position.set(-5, 13, 7); sun.castShadow = true;
@@ -65,7 +67,8 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   const iceMaterial = new THREE.MeshBasicMaterial({ color: 0xa2e0e0, transparent: true, opacity: 0.48, depthWrite: false });
   const burnMaterial = new THREE.MeshBasicMaterial({ color: 0xffaf62, transparent: true, opacity: 0.6, depthWrite: false });
   const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xffdf76, transparent: true, opacity: 0.7, depthWrite: false });
-  materials.add(iceMaterial); materials.add(burnMaterial); materials.add(glowMaterial);
+  const extraMaterial = new THREE.MeshBasicMaterial({ color: 0x93ddd4, transparent: true, opacity: 0.65, depthWrite: false });
+  materials.add(iceMaterial); materials.add(burnMaterial); materials.add(glowMaterial); materials.add(extraMaterial);
   const relics = new Map<number, { group: THREE.Group; model: FoundryRelicArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
   function makeRelic(t: FoundryRelic) {
     const group = new THREE.Group(); const model = art.relic(t.kind);
@@ -108,6 +111,11 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   });
   let waveIndex = 0, beamIndex = 0;
   function effect(event: FoundryEffect) {
+    techniques.effect(event);
+    if (event.kind === "phantom" || event.kind === "rockfall") return;
+    if (event.kind === "rock") { emit(event.x, event.z, 0xb5a68d, mobile ? 4 : 8, false); }
+    if (event.kind === "coinrain") { emit(event.x, event.z, 0xffdf86, mobile ? 8 : 16, true); return; }
+
     if (event.kind === "burn") { emit(event.x, event.z, 0xffa95a, mobile ? 3 : 6, false); return; }
     if (event.kind === "frenzy" || event.kind === "jackpot") { emit(event.x, event.z, event.kind === "frenzy" ? 0xffcb83 : 0xffdf86, mobile ? 5 : 10, event.kind === "jackpot"); return; }
     if (motion.matches) return;
@@ -148,7 +156,8 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         if (next.frame.strike || next.frame.impacts.length) options.sound(critical, next.frame.impacts.some((hit) => hit.broken));
         next.frame.effects?.forEach(effect);
         if (!motion.matches) shakeAt = critical ? time : shakeAt;
-        for (const hit of next.frame.impacts) {
+        const impacts = options.state().version >= 11 ? mergeFoundryImpacts(next.frame.impacts) : next.frame.impacts;
+        for (const hit of impacts) {
           combatText.impact(hit);
           const obj = relics.get(hit.targetId); if (obj) obj.kick = time;
           emit(hit.x, hit.z, RELICS[hit.kind].color, hit.broken ? 8 : 3, false);
@@ -170,7 +179,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         const item = relics.get(t.id) ?? makeRelic(t); const elapsed = (time - item.kick) / 1000;
         const kick = elapsed < 0.25 ? Math.sin(elapsed * 30) * Math.exp(-elapsed * 13) * 0.13 : 0;
         // Independent visual easing would let two separated discs overlap.
-        item.group.position.set(t.x, 0, t.z);
+        item.group.position.set(t.x, 0, t.z); item.group.scale.setScalar(round.version >= 11 ? FOUNDRY.fullRelicScale : 1);
         const dance = motion.matches ? 0 : Math.sin(modelTime * (t.kind === "runner" ? 8 : 2.2) + t.phase);
         const hover = motion.matches ? 0 : t.kind === "chaos" ? 0.055 : t.kind === "runner" ? 0.035 : 0.016;
         item.model.root.position.y = kick + hover + dance * hover;
@@ -178,7 +187,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         item.model.root.rotation.set(0, heading, kick + dance * (t.kind === "chaos" ? 0.05 : 0.025));
         item.model.damage.visible = t.hp < t.maxHp * 0.75;
         item.model.animate(motion.matches ? 0 : modelTime);
-        item.ice.visible = frozen; item.burn.visible = burning.has(t.id); item.glow.visible = !!t.glowing;
+        item.ice.visible = frozen; item.burn.visible = burning.has(t.id); item.glow.visible = !!t.glowing || !!t.bonusLoot; item.glow.material = t.glowing ? glowMaterial : extraMaterial;
       }
       cursor.visible = (round.version >= 5 || aim.active) && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);
@@ -198,6 +207,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         } else dummy.scale.setScalar(0);
         dummy.updateMatrix(); particleMesh.setMatrixAt(i, dummy.matrix); particleMesh.setColorAt(i, p.color);
       }
+      techniques.update(dt, active);
       for (const wave of waves) {
         if (active) wave.life = Math.max(0, wave.life - dt);
         wave.ring.visible = wave.life > 0;
@@ -226,7 +236,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     });
   } catch (error) {
     combatText.destroy(); renderer.dispose(); observer.disconnect(); host.replaceChildren();
-    geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); art.dispose(); throw error;
+    geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); techniques.dispose(); art.dispose(); throw error;
   }
   return {
     aim(clientX, clientY) {
@@ -236,7 +246,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     impact(frame) {
       if (!frame.strike && !frame.impacts.length && !frame.effects?.length) return;
       const now = performance.now(); if (frame.strike) { strikeAt = now; strikeAim = frame.strikePosition ? { ...frame.strikePosition, active: true } : null; }
-      queued.push({ frame, at: now + (frame.strike ? FOUNDRY_IMPACT_DELAY_MS : 0) }); queued.sort((a, b) => a.at - b.at);
+      queued.push({ frame, at: now + (frame.strike || options.state().version >= 11 ? FOUNDRY_IMPACT_DELAY_MS : 0) }); queued.sort((a, b) => a.at - b.at);
     },
     destroy() {
       if (destroyed) return; destroyed = true;

@@ -16,7 +16,7 @@ export function createFoundryCombatText(host: HTMLElement, capacity: number) {
   function emit(hit: FoundryImpact, loot: boolean) {
     const label = labels[cursor++ % labels.length]!;
     Object.assign(label, { x: hit.x, z: hit.z, life: loot ? 1.25 : 0.95, duration: loot ? 1.25 : 0.95, loot });
-    label.element.textContent = loot ? `+${(hit.loot >= 1000000 ? compact : format).format(hit.loot)} ◇` : `${format.format(hit.damage)}${hit.critical ? " !" : ""}`;
+    label.element.textContent = loot ? `+${(hit.loot >= 1000 ? compact : format).format(hit.loot)} ◇` : `${(hit.damage >= 1000 ? compact : format).format(hit.damage)}${hit.critical ? " !" : ""}`;
     label.element.className = `foundry-hit-number ${loot ? "is-loot" : hit.critical ? "is-critical" : "is-damage"}`;
     label.element.hidden = false;
   }
@@ -37,4 +37,15 @@ export function createFoundryCombatText(host: HTMLElement, capacity: number) {
     },
     destroy() { layer.remove(); },
   };
+}
+
+/** Coalesce same-tick techniques so each relic shows one readable damage and loot total. */
+export function mergeFoundryImpacts(impacts: readonly FoundryImpact[]): FoundryImpact[] {
+  const totals = new Map<number, FoundryImpact>();
+  for (const impact of impacts) {
+    const previous = totals.get(impact.targetId);
+    if (previous) { previous.damage += impact.damage; previous.loot += impact.loot; previous.critical ||= impact.critical; previous.broken ||= impact.broken; }
+    else totals.set(impact.targetId, { ...impact });
+  }
+  return [...totals.values()];
 }
