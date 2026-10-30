@@ -18,7 +18,9 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
-| `guardian-village-mines.webp` | Refuge panoramique et mines |
+| `hub/refuge-landscape-v2.webp` | Paysage du refuge, sans bâtiments, en panorama 3:1 |
+| `hub/*-v2.webp` | Sept bâtiments indépendants : archives, maison des gardiens, sanctuaire, atelier, arène et deux mines |
+| `guardian-village-mines.webp` | Ancien refuge avec bâtiments intégrés, conservé pour l’aperçu de l’accueil public |
 | `foundry-building.webp` | Bâtiment transparent de la Fonderie des Échos, superposé au panorama |
 | `foundry-interior-v1.webp` | Intérieur peint de la fonderie, grand établi accueillant les objets 3D |
 | `duel-arena-overhead.webp` | Terrain de combat |
@@ -28,6 +30,8 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `deck-workshop.webp`, `guardian-house.webp`, `play-lobby.webp`, `sanctuary.webp` | Décors des pages du jeu |
 
 Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par faction et un accent par lignée. Les personnages conservent une identité commune entre les raretés, avec des poses, silhouettes et équipements progressifs. Les sprites restent transparents ; les statistiques et commandes sont rendues par l’interface.
+
+Le refuge utilise désormais un paysage de 2172 × 724 généré avec ImageGen intégré, sans aucun bâtiment : terrasses forestières, chemins, ruisseaux, cascades et ponts de pierre. Les sept nouveaux bâtiments ont chacun été générés séparément, puis exportés en WebP à leur définition native avec les marges transparentes retirées et le canal alpha conservé. La fonderie et le téléporteur existants complètent ces sept éléments. Les références d’images sont regroupées dans `components/hub/hub-art.ts` ; les bâtiments, leurs libellés et leurs liens partagent les mêmes coordonnées dans `village-hub.tsx`, tandis que les deux mines restent dans `mine-building.tsx` et `hub.css`. Tous les prompts exacts figurent dans le manifeste. Le paysage et chaque bâtiment peuvent être remplacés indépendamment.
 
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
