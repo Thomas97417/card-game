@@ -2,7 +2,7 @@ import { redirect } from "@tanstack/react-router";
 
 export function safeReturnTo(value: unknown): string {
   return typeof value === "string" &&
-    /^\/(?:hub|dashboard|arena|play|decks|sanctuary|guardian|settings|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
+    /^\/(?:hub|world|dashboard|arena|play|decks|sanctuary|guardian|settings|game\/[^/?#]+)(?:[?#].*)?$/.test(value)
     ? value
     : "/hub";
 }

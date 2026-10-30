@@ -1,0 +1,116 @@
+.world-page {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  color: #f3edda;
+  background: #132b24;
+  font-family: var(--font-sans, sans-serif);
+}
+.world-header { position: absolute; inset: 0 0 auto; z-index: 5; background: linear-gradient(#112a22b3, transparent); pointer-events: none; }
+.world-header > * { pointer-events: auto; }
+.world-layout { --world-panel-width: 364px; position: absolute; inset: 0; }
+.world-cartography { position: absolute; inset: 0; min-width: 0; min-height: 0; overflow: hidden; background: #355b53; }
+.world-viewport { position: absolute; inset: 0; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; overflow-anchor: none; scrollbar-width: none; cursor: grab; outline-offset: -4px; }
+.world-viewport::-webkit-scrollbar { display: none; }
+.world-viewport.is-dragging, .world-viewport.is-dragging :is(a,button) { cursor: grabbing; }
+.world-canvas { position: relative; flex-shrink: 0; width: max(100%, 840px, calc(100svh * 1.5)); aspect-ratio: 3/2; }
+.world-landscape { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; user-select: none; }
+.world-map-error { position: absolute; left: 20%; top: 30%; width: 60%; text-align: center; }
+.world-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.world-trail path { fill: none; stroke: #fff0b9; stroke-width: 2; stroke-dasharray: 3 7; stroke-linecap: round; filter: drop-shadow(0 1px 2px #183b28); opacity: .65; }
+.world-destination, .world-home { position: absolute; z-index: 1; display: flex; flex-direction: column; align-items: center; width: max-content; transform: translate(-50%, -50%); background: none; border: 0; color: #fff4d9; text-decoration: none; cursor: pointer; }
+.world-destination { gap: 9px; padding: 8px; }
+.world-marker { display: grid; place-items: center; width: 50px; height: 50px; border: 2px solid #e9cd88; border-radius: 50%; color: #fff2cd; background: radial-gradient(circle at 40% 20%, #48654d, #173b2e 75%); box-shadow: 0 3px 0 #594d2f, 0 6px 18px #071e25aa, inset 0 0 0 4px #203b2e; font: bold 23px/1 Georgia, serif; transition: transform 180ms, box-shadow 180ms; }
+.world-destination[data-locked] .world-marker { color: #d8d5c4; background: radial-gradient(circle at 40% 20%, #636c69, #293b38 75%); border-color: #a9ac9c; box-shadow: 0 3px 0 #414944, 0 6px 18px #071e25aa, inset 0 0 0 4px #344843; }
+.world-destination[data-complete] .world-marker { color: #e9dca9; }
+.world-destination:is(:hover,:focus-visible) .world-marker, .world-destination[data-selected] .world-marker { transform: translateY(-3px); box-shadow: 0 3px 0 #594d2f, 0 0 0 5px #fff0b92b, 0 0 25px var(--marker-color), inset 0 0 0 4px #203b2e; }
+.world-destination[data-selected] { z-index: 2; }
+.world-destination-name { padding: 5px 11px 6px; border: 1px solid #d7c38b8a; border-radius: 5px; background: #142e27ed; box-shadow: 0 3px 12px #071e2566; color: #fff0cf; font: 14px/1.2 Georgia, serif; white-space: nowrap; }
+.world-home { gap: 2px; }
+.world-home > img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 3px 6px #102b20b3); }
+.world-home > span { padding: 7px 14px; border: 1px solid #d8c088; border-radius: 5px; background: #18362beb; font: 17px/1.1 Georgia,serif; box-shadow: 0 3px 12px #071e2566; }
+.world-home small { display: block; margin-top: 4px; color: #c9d9ba; text-align: center; font: 9px/1.2 sans-serif; }
+.world-map-footer { position: absolute; z-index: 2; inset: auto 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 20px 26px; background: linear-gradient(transparent, #102c25e8); pointer-events: none; font-size: 10px; color: #e1dfcd; }
+.world-map-footer strong { font-size: 14px; color: #f3deaa; }
+.world-map-controls { display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+.world-map-controls button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #c9b57988; border-radius: 50%; color: #efdcaa; background: #17372ddd; cursor: pointer; }
+.world-journey { position: absolute; z-index: 4; top: var(--game-header-height); right: 0; bottom: 0; width: var(--world-panel-width); min-height: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #c6ae6e66; border-right: 0; border-bottom: 0; border-radius: 14px 0 0; background: linear-gradient(135deg, #234334, #142d25 65%); box-shadow: -12px 10px 40px #081e244d; scrollbar-width: thin; scrollbar-color: #8c8d6590 transparent; }
+.world-journey-tools { position: sticky; z-index: 2; top: 12px; display: flex; justify-content: flex-end; height: 0; padding-right: 12px; }
+.world-journey-close { display: grid; flex-shrink: 0; place-items: center; width: 36px; height: 36px; border: 1px solid #c6ae6e8c; border-radius: 50%; color: #f2dfb1; background: #142e27ed; box-shadow: 0 3px 12px #071e2566; cursor: pointer; }
+.world-journey-close:hover { background: #355540; color: #fff5dc; }
+.world-region-art { position: relative; height: 148px; overflow: hidden; }
+.world-region-art::after { position: absolute; inset: 0; background: linear-gradient(transparent 45%, #203e30); content: ""; }
+.world-region-art > img { width: 100%; height: 100%; object-fit: cover; }
+.world-region-art > span { position: absolute; z-index: 1; bottom: 12px; left: 24px; color: #ead3a1; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.world-region-content { padding: 6px 24px 24px; }
+.world-region-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 9px; letter-spacing: .05em; color: #aebb9e; }
+.world-region-heading > span:last-child { color: var(--region-color); font-variant-numeric: tabular-nums; }
+.world-region-content h2 { margin: 0; color: #f6e5bc; font: 26px/1.2 Georgia, serif; }
+.world-region-description { margin: 10px 0 21px; font-size: 11px; line-height: 1.7; color: #c0cdb9; }
+.world-stages { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 9px 7px; }
+.world-stages button { position: relative; display: flex; min-width: 0; min-height: 94px; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 12px 3px 9px; border: 1px solid #a9bd8b40; border-radius: 10px; background: linear-gradient(150deg, #234636, #17352a); color: #dfebcf; cursor: pointer; transition: border-color 160ms, background 160ms, transform 160ms; }
+.world-stage-number { font: 600 17px/1.2 Georgia, serif; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.world-stage-state { margin-top: 4px; color: #a9bca1; font-size: 8px; white-space: nowrap; }
+.world-stage-status { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; color: #b6ce9f; }
+.world-stage-status i { width: 5px; height: 5px; border-radius: 50%; background: #d7e6a3; box-shadow: 0 0 7px #d7e6a344; }
+.world-stage-art { display: grid; place-items: center; height: 29px; }
+.world-stage-art > img { width: 40px; height: 32px; object-fit: contain; }
+.world-stage-art > .emerald-icon { width: 28px; height: 28px; }
+.world-stage-bonus { display: inline-flex; align-items: center; justify-content: center; gap: 1px; color: #b7e5bf; font-size: 10px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.world-stage-bonus .emerald-icon { width: 15px; height: 15px; }
+.world-stages button[data-milestone] { padding-top: 10px; border-color: #86b29a66; background: linear-gradient(150deg, #2b4b36, #18362b); }
+.world-stages button[data-locked] { color: #a7b5a2; border-color: #7a927340; background: #112a2266; }
+.world-stages button[data-locked] .world-stage-status { color: #8e9f8e; }
+.world-stages button[data-locked] .world-stage-art { opacity: .75; }
+.world-stages button[data-locked] .world-stage-bonus { color: #9ebfa7; }
+.world-stages button[data-complete] { color: #bfd7a6; }
+.world-stages button[data-next] { border-color: #b1ca87; box-shadow: inset 0 0 16px #b1ca8710; }
+.world-stages button[data-current] { border-color: #ead295; background: linear-gradient(145deg, #40573a, #294531); color: #fff0c7; box-shadow: 0 0 0 2px #e8cc8b1a, inset 0 0 15px #e2c48412; }
+.world-stages button[data-current][data-locked] { background: linear-gradient(145deg, #3a4638, #253d30); color: #e0dcc7; }
+.world-stages button[data-chest-ready] .world-stage-art { filter: drop-shadow(0 0 5px #c997e577); }
+.world-stages button:hover { border-color: #d4c793; transform: translateY(-1px); }
+.world-encounter { margin-top: 21px; padding: 16px 0 18px; border-top: 1px solid #d4bc7b33; border-bottom: 1px solid #d4bc7b33; }
+.world-encounter-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.world-encounter-heading > span { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #bfc9b1; }
+.world-encounter-heading > strong { color: #f1dca7; font: 20px/1 Georgia, serif; }
+.world-encounter h3 { margin: 10px 0; font: 18px/1.3 Georgia,serif; color: #efe1c2; }
+.world-loot { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; min-height: 44px; margin-top: 8px; }
+.world-loot > span { display: inline-flex; align-items: center; gap: 5px; color: #f2d99f; font-size: 13px; }
+.world-loot :is(.gold-icon,.emerald-icon) { width: 27px; height: 27px; }
+.world-epic-loot > img { width: 44px; height: 44px; object-fit: contain; }
+.world-loot > .world-claimed { color: #b7cca9; font-size: 11px; }
+.world-chest-claim { position: relative; display: grid; place-items: center; width: 64px; height: 62px; border: 1px solid #c395dd66; border-radius: 12px; background: radial-gradient(ellipse, #bc83e226, #bc83e206 75%); cursor: pointer; }
+.world-chest-claim > img { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 0 7px #bc83e233); }
+.world-chest-claim > span { position: absolute; right: -3px; bottom: -3px; display: grid; place-items: center; width: 21px; height: 21px; border: 1px solid #d2b777; border-radius: 50%; color: #f6e0a9; background: #294232; }
+.world-chest-claim:hover { border-color: #dfb7f4; background-color: #bc83e212; }
+.world-chest-claim:disabled { opacity: .6; cursor: default; }
+.world-stage-hint { margin: 5px 0 13px; font-size: 10px; line-height: 1.6; color: #a8b99e; }
+.world-stage-hint a { text-decoration: underline; }
+.world-start.sylve-button { display: flex; width: 100%; min-height: 45px; align-items: center; justify-content: center; gap: 9px; border: 1px solid #d7be7f; background: linear-gradient(#e0c68a,#b89b5f); color: #243a29; box-shadow: 0 3px 0 #77623c, 0 5px 12px #081f1a33; font-size: 12px; }
+.world-start.sylve-button:disabled { opacity: .45; cursor: default; box-shadow: none; }
+.world-deck-link { display: flex; align-items: center; justify-content: center; gap: 8px; width: max-content; margin: 21px auto 0; color: #becbb2; font-size: 10px; text-decoration: none; }
+.world-deck-link:hover { color: #f3dba5; }
+.world-complete { display: flex; gap: 7px; margin-top: 16px; color: #c6dc9f; font-size: 11px; line-height: 1.6; }
+.world-page :is(button,a,[tabindex]):focus-visible { outline: 2px solid #f4db9e; outline-offset: 3px; }
+@media (min-width: 1500px) { .world-layout { --world-panel-width: 400px; } .world-region-content { padding-inline: 30px; } .world-region-art { height: 180px; } }
+@media (min-width: 701px) {
+  .world-layout[data-panel-side="left"] .world-journey { right: auto; left: 0; border-right: 1px solid #c6ae6e66; border-left: 0; border-radius: 0 14px 0 0; box-shadow: 12px 10px 40px #081e244d; }
+  .world-layout[data-details-open][data-panel-side="right"] .world-map-footer { padding-right: calc(var(--world-panel-width) + 26px); }
+  .world-layout[data-details-open][data-panel-side="left"] .world-map-footer { padding-left: calc(var(--world-panel-width) + 26px); }
+}
+@media (max-width: 900px) { .world-layout { --world-panel-width: 320px; } .world-region-content { padding-inline: 18px; } .world-map-controls > span { display: none; } }
+@media (max-width: 700px) {
+  .world-map-footer { padding: 10px 18px; min-height: 52px; }
+  .world-marker { width: 43px; height: 43px; font-size: 20px; }
+  .world-destination-name { padding-inline: 8px; font-size: 12px; }
+  .world-journey { top: auto; left: 0; width: 100%; max-height: min(70svh, 680px); border: 1px solid #c6ae6e66; border-bottom: 0; border-radius: 18px 18px 0 0; box-shadow: 0 -12px 40px #081e2466; }
+  .world-region-art { height: 104px; }
+  .world-region-content { padding: 6px 22px 28px; }
+  .world-region-description { max-width: 480px; }
+  .world-stages { gap: 10px; }
+  .world-stages button { min-height: 94px; }
+}
+@media (prefers-reduced-motion: reduce) { .world-page *, .hub-teleporter > img { transition: none; scroll-behavior: auto; } }

@@ -95,6 +95,7 @@ function appliedStatLoss(
 }
 
 export function DuelArena({
+  background = "/art/duel-arena-overhead.webp",
   mine,
   enemy,
   me,
@@ -109,6 +110,7 @@ export function DuelArena({
   onInspectHero,
   onInspectField,
 }: {
+  background?: string;
   mine: Player;
   enemy: Player;
   me: number;
@@ -357,6 +359,7 @@ export function DuelArena({
         aria-label="Terrain de duel de la Sylve"
         style={
           {
+            "--arena-background": `url("${background}")`,
             "--damage-duration": `${COMBAT_TIMING.damage}ms`,
             "--cast-duration": `${current?.type === "hero_ability" ? COMBAT_TIMING.heroAbility : COMBAT_TIMING.ability}ms`,
             "--cast-impact": `${current?.type === "summon" ? COMBAT_TIMING.summon : COMBAT_TIMING.abilityImpact}ms`,
@@ -388,7 +391,7 @@ export function DuelArena({
           </defs>
           <image
             className="arena-background"
-            href="/art/duel-arena-overhead.webp"
+            href={background}
             width={ARENA_WIDTH}
             height={ARENA_HEIGHT}
           />
@@ -398,7 +401,7 @@ export function DuelArena({
               <g clipPath={`url(#arena-camp-${camp.camp})`}>
                 <image
                   className="ground-camp-texture"
-                  href="/art/duel-arena-overhead.webp"
+                  href={background}
                   width={ARENA_WIDTH}
                   height={ARENA_HEIGHT}
                   transform={camp.textureTransform}

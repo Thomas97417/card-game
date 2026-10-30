@@ -191,6 +191,13 @@ export function VillageHub({
           />
 
           <nav aria-label="Bâtiments du refuge">
+            <Link to="/world" className="hub-teleporter group" aria-label="Le téléporteur — Explorer la carte du monde">
+              <img src="/art/campaign/teleporter.webp" alt="Un portail de pierre ancienne traversé de magie turquoise et violette" width={640} height={640} draggable={false} />
+              <span className="hub-teleporter-label">
+                <span>Le téléporteur</span>
+                <small>Explorer le monde</small>
+              </span>
+            </Link>
             <MineBuildings
               {...(mines ?? { pending: [], onCollect: () => {} })}
             />

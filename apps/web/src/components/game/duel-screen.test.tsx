@@ -71,6 +71,26 @@ function setup(data = matchData()) {
   return { ...result, data, actions };
 }
 
+it("uses the saved campaign region for both battlefield textures and the mobile background", () => {
+  const { container } = setup({ ...matchData(), campaign: { region: 3, stage: 4 } });
+  const images = container.querySelectorAll(".arena-background, .ground-camp-texture");
+  expect(images.length).toBe(3);
+  for (const image of images) expect(image.getAttribute("href")).toBe("/art/campaign/arena-3.webp");
+  expect(container.querySelector<HTMLElement>(".arena")!.style.getPropertyValue("--arena-background")).toContain("arena-3.webp");
+  expect(screen.getByLabelText("Étape d’aventure").textContent).toBe("3-4");
+});
+
+it("shows campaign currency and the boss chest and returns the winner to the world map", async () => {
+  const data = matchData();
+  setup({ ...data, status: "finished", winner: data.me,
+    campaign: { region: 1, stage: 10 }, campaignReward: { firstClear: true, gold: 345, emeralds: 25, chestId: "boss-chest" } });
+  expect(await screen.findByRole("dialog", { name: "Victoire !" })).toBeTruthy();
+  expect(screen.getByText("+345")).toBeTruthy();
+  expect(screen.getByText("+25")).toBeTruthy();
+  expect(screen.getByText("Ton coffre t’attend sur la carte du monde.")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Carte du monde" }).getAttribute("href")).toBe("/world");
+});
+
 it("drags a character at its deployed size, follows row perspective and drops it into the hovered cell", async () => {
   const capture = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "setPointerCapture");
   const point = Object.getOwnPropertyDescriptor(document, "elementFromPoint");
