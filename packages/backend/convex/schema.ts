@@ -24,6 +24,19 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  campaignProgress: defineTable({
+    ownerId: v.string(),
+    completedStages: v.number(),
+  }).index("by_owner", ["ownerId"]),
+  campaignChests: defineTable({
+    ownerId: v.string(),
+    region: v.number(),
+    gameId: v.id("games"),
+    contents: v.array(lootValidator),
+    gold: v.number(),
+    reveals: v.optional(v.array(revealValidator)),
+    openedAt: v.optional(v.number()),
+  }).index("by_owner_region", ["ownerId", "region"]),
   guilds: defineTable({
     name: v.string(),
     nameKey: v.string(),
@@ -259,6 +272,13 @@ export default defineSchema({
     queueId: v.optional(v.id("matchmakingQueue")),
   }).index("by_user", ["userId"]),
   games: defineTable({
+    campaign: v.optional(v.object({ region: v.number(), stage: v.number() })),
+    campaignReward: v.optional(v.object({
+      firstClear: v.boolean(),
+      gold: v.number(),
+      emeralds: v.number(),
+      chestId: v.optional(v.id("campaignChests")),
+    })),
     soloRecentCards: v.optional(v.array(v.string())),
     trophyChanges: v.optional(
       v.array(

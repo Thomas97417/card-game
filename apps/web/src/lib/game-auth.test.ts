@@ -5,6 +5,7 @@ describe("hub authentication destinations", () => {
   it("defaults to the hub and accepts its legacy address", () => {
     expect(safeReturnTo(undefined)).toBe("/hub");
     expect(safeReturnTo("/hub")).toBe("/hub");
+    expect(safeReturnTo("/world")).toBe("/world");
     expect(safeReturnTo("/dashboard")).toBe("/dashboard");
   });
 

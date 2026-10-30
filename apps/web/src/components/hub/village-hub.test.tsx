@@ -52,6 +52,9 @@ describe("le refuge", () => {
       screen.getByRole("link", { name: /L’arène/ }).getAttribute("href"),
     ).toBe("/arena");
     expect(
+      screen.getByRole("link", { name: /Le téléporteur — Explorer la carte du monde/ }).getAttribute("href"),
+    ).toBe("/world");
+    expect(
       screen
         .getByRole("link", { name: /Maison des gardiens/ })
         .getAttribute("href"),

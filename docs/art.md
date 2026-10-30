@@ -20,6 +20,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
 | `duel-arena-overhead.webp` | Terrain de combat |
+| `campaign/` | Téléporteur du refuge, carte du monde et quatre terrains régionaux de l’aventure |
 | `forest-arena.png` | Fond de la page d’accueil |
 | `screenshots/duel-in-progress.jpg` | Capture d’une vraie partie au tour 13, présentée sur l’accueil public |
 | `deck-workshop.webp`, `guardian-house.webp`, `play-lobby.webp`, `sanctuary.webp` | Décors des pages du jeu |
@@ -33,6 +34,8 @@ Les trois premières places du classement des joueurs et des guildes partagent l
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 
 La capture du duel provient de l’interface réelle du terrain d’entraînement, après plusieurs tours joués. Sa provenance figure dans la section `captures` du manifeste.
+
+Les illustrations de l’[aventure](campaign.md) ont été générées avec ImageGen intégré. Le téléporteur est exporté en WebP 640 × 640 en conservant sa transparence. La carte est une illustration 1536 × 1024 ; ses points et libellés sont ajoutés par l’interface. La Sylve occupe la forêt et le premier niveau se déroule dans la bourgade de Clairval. Les quatre terrains reprennent la projection du plateau original avec des décors de bourgade, de rivages, de givre et de braise. `arena-1-clairval.webp` remplace le premier terrain forestier pour les combats du niveau 1. Le terrain choisi suit le combat enregistré sur ordinateur comme sur mobile.
 
 ## Maintenance
 

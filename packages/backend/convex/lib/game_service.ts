@@ -19,6 +19,7 @@ import { migratePlayerCatalogue } from "./catalogue";
 import { recordMissionProgress } from "./missions";
 import { observeHero, readHeroProgress } from "./heroes";
 import { COMBAT_EVENT_RETENTION_MS } from "./combat_retention";
+import { awardCampaignRewards } from "./campaign";
 
 export async function requirePlayer(ctx: QueryCtx | MutationCtx) {
   const user = await authComponent.safeGetAuthUser(ctx);
@@ -247,7 +248,8 @@ export async function saveTransition(
       });
   }
   if (state.status === "finished") {
-    await awardMatchRewards(ctx, game, state);
+    if (game.campaign) await awardCampaignRewards(ctx, game, state);
+    else await awardMatchRewards(ctx, game, state);
     for (const player of state.players) {
       const activity = await getActivity(ctx, player.userId);
       if (activity?.gameId === gameId)

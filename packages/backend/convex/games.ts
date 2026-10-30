@@ -31,8 +31,11 @@ import {
   setActivity,
   startMatch,
 } from "./lib/game_service";
-import { playerLeague } from "./lib/progression";
+import { grantGold, grantLoot, playerLeague } from "./lib/progression";
 import { readHeroProgress } from "./lib/heroes";
+import { campaignOpponent, campaignStage } from "@sylve/game/campaign";
+import { campaignProgress } from "./lib/campaign";
+import { recordMissionProgress } from "./lib/missions";
 
 export const activity = query({
   args: {},
@@ -162,6 +165,7 @@ export const get = query({
     return {
       ...view,
       mode: game.mode ?? "private",
+      ...(game.campaign ? { campaign: game.campaign, campaignReward: game.campaignReward ?? null } : {}),
       reward: game.reward?.ownerId === user.userId ? game.reward : null,
       trophyChange:
         game.trophyChanges?.find((change) => change.ownerId === user.userId) ??
@@ -331,6 +335,65 @@ export const createSolo = mutation({
     });
     await setActivity(ctx, user.userId, { gameId });
     return gameId;
+  },
+});
+
+export const campaignBoard = query({
+  args: {},
+  handler: async (ctx) => {
+    const { userId } = await requirePlayer(ctx);
+    const progress = await campaignProgress(ctx, userId);
+    const chests = await ctx.db.query("campaignChests")
+      .withIndex("by_owner_region", (q) => q.eq("ownerId", userId)).collect();
+    return {
+      completedStages: progress?.completedStages ?? 0,
+      chests: chests.map((chest) => ({ id: chest._id, region: chest.region, opened: chest.openedAt !== undefined })),
+    };
+  },
+});
+
+export const createCampaign = mutation({
+  args: { deckId: v.id("decks"), region: v.number(), stage: v.number() },
+  handler: async (ctx, { deckId, region, stage }) => {
+    const user = await requirePlayer(ctx);
+    const encounter = campaignStage(region, stage);
+    if (!encounter) throw new ConvexError("Cette étape n’existe pas.");
+    const progress = await campaignProgress(ctx, user.userId);
+    if (encounter.index > (progress?.completedStages ?? 0))
+      throw new ConvexError("Termine d’abord l’étape précédente.");
+    await requireIdle(ctx, user.userId);
+    const cards = await deckSnapshot(ctx, deckId, user.userId);
+    const hero = await readHeroProgress(ctx, user.userId, cards);
+    const opponent = campaignOpponent(region, stage, cards.length, Math.random);
+    const state = createGame([
+      { ...user, cards, heroLevel: hero.level, heroId: hero.heroId },
+      { userId: PRACTICE_COMPUTER_ID, name: opponent.name, cards: opponent.cards,
+        heroLevel: opponent.level, heroId: opponent.heroId },
+    ], Date.now(), Math.random);
+    state.activePlayer = 0;
+    state.turnEndsAt = PRACTICE_DEADLINE;
+    const gameId = await ctx.db.insert("games", {
+      mode: "solo", campaign: { region, stage }, status: "active",
+      hostId: user.userId, hostName: user.name, hostCards: cards,
+      guestId: PRACTICE_COMPUTER_ID, state,
+    });
+    await setActivity(ctx, user.userId, { gameId });
+    return gameId;
+  },
+});
+
+export const openCampaignChest = mutation({
+  args: { chestId: v.id("campaignChests") },
+  handler: async (ctx, { chestId }) => {
+    const { userId } = await requirePlayer(ctx);
+    const chest = await ctx.db.get(chestId);
+    if (!chest || chest.ownerId !== userId) throw new ConvexError("Ce coffre ne t’appartient pas.");
+    if (chest.reveals !== undefined) return { rarity: "epic" as const, reveals: chest.reveals, gold: chest.gold };
+    const reveals = await grantLoot(ctx, userId, chest.contents);
+    await grantGold(ctx, userId, chest.gold);
+    await ctx.db.patch(chestId, { reveals, openedAt: Date.now() });
+    await recordMissionProgress(ctx, userId, { chestsOpened: 1 });
+    return { rarity: "epic" as const, reveals, gold: chest.gold };
   },
 });
 

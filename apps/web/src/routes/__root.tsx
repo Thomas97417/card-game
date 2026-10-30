@@ -119,6 +119,7 @@ function RootDocument() {
       return (
         [
           "/hub",
+          "/world",
           "/decks",
           "/sanctuary",
           "/arena",
