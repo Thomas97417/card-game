@@ -56,6 +56,7 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
   const panel = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const regionTrigger = useRef<HTMLButtonElement>(null);
+  const stageButtons = useRef<(HTMLButtonElement | null)[]>([]);
   const mapRegion = useRef(nextRegion);
   const panelId = useId();
   const { dragHandlers, isDragging } = useHorizontalDrag(true);
@@ -165,17 +166,40 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
           <div className="world-region-heading"><span>Les terres à découvrir</span><span>{cleared} / 10</span></div>
           <h2>{region.name}</h2>
           <p className="world-region-description">{region.description}</p>
-          <nav className="world-stages" aria-label={`Sous-niveaux du niveau ${region.id}`}>
+          <nav className="world-stages" aria-label={`Sous-niveaux du niveau ${region.id}`}
+            onKeyDown={(event) => {
+              const focusedStage = Number((event.target as HTMLElement).closest<HTMLButtonElement>("button[data-stage]")?.dataset.stage);
+              if (!focusedStage) return;
+              const offsets: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 5, ArrowUp: -5 };
+              const target = event.key === "Home" ? 1 : event.key === "End" ? CAMPAIGN_STAGES_PER_REGION
+                : offsets[event.key] !== undefined ? Math.max(1, Math.min(CAMPAIGN_STAGES_PER_REGION, focusedStage + offsets[event.key]!)) : null;
+              if (target === null) return;
+              event.preventDefault();
+              setSelectedStage(target);
+              stageButtons.current[target - 1]?.focus({ preventScroll: true });
+            }}>
             {Array.from({ length: 10 }, (_, i) => {
               const number = i + 1;
               const index = (region.id - 1) * 10 + i;
               const done = index < completed;
               const unavailable = index > completed;
-              return <button type="button" key={number} aria-label={`Étape ${region.id}-${number}${number === 10 ? ", boss et coffre épique" : ""}${unavailable ? ", verrouillée" : done ? ", terminée" : ", disponible"}`} aria-pressed={stage === number}
+              const reward = campaignStageReward(region.id, number);
+              const milestone = number === 5 || number === CAMPAIGN_STAGES_PER_REGION;
+              const awaitingChest = number === CAMPAIGN_STAGES_PER_REGION && chest && !chest.opened;
+              const status = done ? "Terminée" : unavailable ? "À venir" : "À jouer";
+              return <button type="button" key={number} ref={(node) => { stageButtons.current[i] = node; }} data-stage={number}
+                aria-label={`Étape ${region.id}-${number}${number === 10 ? ", boss et coffre épique" : ""}${milestone ? `, ${reward.emeralds} émeraudes` : ""}${awaitingChest ? ", coffre à ouvrir" : ""}${unavailable ? ", verrouillée" : done ? ", terminée" : ", disponible"}`}
+                title={`${region.id}-${number} · ${status}${milestone ? ` · ${reward.emeralds} émeraudes` : ""}${awaitingChest ? " · Coffre à ouvrir" : ""}`}
+                aria-pressed={stage === number} aria-current={index === completed ? "step" : undefined}
                 data-locked={unavailable || undefined} data-complete={done || undefined} data-current={stage === number || undefined}
+                data-next={index === completed || undefined} data-milestone={milestone || undefined} data-chest-ready={awaitingChest || undefined}
                 onClick={() => setSelectedStage(number)}>
-                {number === 10 ? <img src="/art/chests/epic.webp" alt="" width={36} height={36} /> : unavailable ? <LockKeyhole size={15} /> : done ? <Check size={18} /> : <Swords size={18} />}
-                <span>{region.id}-{number}</span>
+                <span className="world-stage-status" aria-hidden="true">{done ? <Check size={12} /> : unavailable ? <LockKeyhole size={10} /> : <i />}</span>
+                <span className="world-stage-number">{region.id}-{number}</span>
+                {milestone ? <>
+                  <span className="world-stage-art" aria-hidden="true">{number === 10 ? <img src={`/art/chests/epic${chest?.opened ? "-open" : ""}.webp`} alt="" width={40} height={32} /> : <EmeraldIcon />}</span>
+                  <span className="world-stage-bonus" aria-hidden="true">{number === 10 && <EmeraldIcon />} +{reward.emeralds}</span>
+                </> : <span className="world-stage-state" aria-hidden="true">{status}</span>}
               </button>;
             })}
           </nav>
@@ -187,8 +211,12 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
               {won ? <span className="world-claimed"><Check size={14} /> Récompenses déjà obtenues</span> : <>
                 <span><GoldIcon /> {loot.gold.toLocaleString("fr-FR")}</span>
                 {loot.emeralds > 0 && <span><EmeraldIcon /> {loot.emeralds}</span>}
-                {loot.chest && <span className="world-epic-loot"><img src="/art/chests/epic.webp" alt="" width={38} height={38} /> Coffre épique</span>}
+                {loot.chest && <span className="world-epic-loot" title="Coffre épique"><img src="/art/chests/epic.webp" alt="Coffre épique" width={44} height={44} /></span>}
               </>}
+              {encounter.boss && chest && !chest.opened && <button type="button" className="world-chest-claim" aria-label="Ouvrir le coffre" title="Ouvrir le coffre" disabled={pending} aria-busy={pending} onClick={() => onOpenChest(chest.id)}>
+                <img src="/art/chests/epic.webp" alt="" width={58} height={58} />
+                <span aria-hidden="true">{pending ? <LoaderCircle size={13} className="animate-spin" /> : <ArrowRight size={13} />}</span>
+              </button>}
             </div>
             {locked && <p className="world-stage-hint">Termine les étapes précédentes pour débloquer ce combat.</p>}
             {!locked && !won && <p className="world-stage-hint">Récompenses garanties à la première victoire.</p>}
@@ -201,12 +229,6 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
             {occupied && !activeGame && <p className="world-stage-hint">Termine ou annule ta recherche de duel dans <Link to="/arena">l’arène</Link>.</p>}
           </section>
 
-          <div className="world-chest">
-            <img src={`/art/chests/epic${chest?.opened ? "-open" : ""}.webp`} alt="" width={72} height={72} />
-            <div><strong>{chest?.opened ? "Trésor récupéré" : "Le trésor de la région"}</strong><p>{chest?.opened ? "Ton alliance s’agrandit." : chest ? "Ton coffre épique t’attend !" : `Un coffre épique après le combat ${regionId}-10.`}</p>
-              {chest && !chest.opened && <button className="world-open-chest" type="button" disabled={pending} onClick={() => onOpenChest(chest.id)}>Ouvrir le coffre <ArrowRight size={14} /></button>}
-            </div>
-          </div>
           {completed === CAMPAIGN_TOTAL_STAGES && <p className="world-complete"><Check size={16} /> Toutes les régions sont libérées. Tu peux rejouer les combats.</p>}
           <Link to="/decks" className="world-deck-link">Préparer mon alliance <ArrowRight size={13} /></Link>
         </div>

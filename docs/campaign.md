@@ -19,9 +19,18 @@ La région et le sous-niveau sont enregistrés dans `games.campaign`, avec l’�
 
 ## Récompenses
 
-Pour l’index global `i` de 0 à 39, une première victoire donne `60 + 15 × i` pièces d’or. Le dixième combat ajoute `150 × région` pièces d’or et `25 × région` émeraudes. Le cinquième combat donne aussi `5 × région` émeraudes. Les autres étapes donnent de l’or. Les récompenses sont annoncées avant le départ et créditées dans la transaction qui termine le duel.
+Pour l’index global `i` de 0 à 39, une première victoire donne `60 + 15 × i` pièces d’or. Le dixième combat ajoute `150 × région` pièces d’or et `150 × région` émeraudes. Le cinquième combat donne aussi `50 × région` émeraudes. Les autres étapes donnent de l’or. Les récompenses sont annoncées avant le départ et créditées dans la transaction qui termine le duel.
 
-Chaque victoire `N-10` garantit également un coffre **épique**, sans délai ni occupation des emplacements de l’arène. Son contenu et son or sont tirés une seule fois d’après le meilleur palier du joueur à l’obtention, avec les tables de coffres existantes. Le coffre reste dans `campaignChests` jusqu’à son ouverture depuis la carte ; revenir sur la carte centre en priorité une région dont le coffre attend d’être ouvert, sans ouvrir son panneau. Cliquer sur cette destination révèle le bouton d’ouverture du coffre. Son contenu est caché par les requêtes publiques. L’ouverture crédite les cartes et l’or, compte pour les missions de coffres et conserve le résultat pour les réessais. Les clics concurrents ne recréditent rien.
+| Région | Étape x-5 | Étape x-10 |
+| --- | ---: | ---: |
+| 1 | 50 émeraudes | 150 émeraudes |
+| 2 | 100 émeraudes | 300 émeraudes |
+| 3 | 150 émeraudes | 450 émeraudes |
+| 4 | 200 émeraudes | 600 émeraudes |
+
+Le sélecteur distingue l’étape à jouer, les étapes terminées et celles à venir. Les paliers 5 et 10 montrent directement leur bonus d’émeraudes, avec le coffre illustré sur le dixième combat. Les flèches du clavier parcourent les cases ; Début et Fin sélectionnent les extrémités. La sélection d’une étape verrouillée en révèle les récompenses sans autoriser le départ.
+
+Chaque victoire `N-10` garantit également un coffre **épique**, sans délai ni occupation des emplacements de l’arène. Son contenu et son or sont tirés une seule fois d’après le meilleur palier du joueur à l’obtention, avec les tables de coffres existantes. Le coffre reste dans `campaignChests` jusqu’à son ouverture depuis la carte ; revenir sur la carte centre en priorité une région dont le coffre attend d’être ouvert, sans ouvrir son panneau. L’étape 10 montre le coffre sous forme d’icône, sans bloc d’annonce séparé ; une fois gagné, cette icône devient le bouton d’ouverture dans les récompenses du combat. Son contenu est caché par les requêtes publiques. L’ouverture crédite les cartes et l’or, compte pour les missions de coffres et conserve le résultat pour les réessais. Les clics concurrents ne recréditent rien.
 
 `campaignProgress.completedStages` enregistre le nombre de premières victoires consécutives. La fin d’un combat, les récompenses et le déblocage suivant sont atomiques. Un abandon ou une défaite ne donne rien et ne retire aucune progression. Une étape terminée peut être rejouée ; elle ne redonne ni monnaie ni coffre.
 

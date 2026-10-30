@@ -47,7 +47,7 @@ export function campaignStageReward(region: number, stage: number) {
   if (!encounter) throw new Error("Étape d’aventure introuvable.");
   return {
     gold: 60 + encounter.index * 15 + (encounter.boss ? region * 150 : 0),
-    emeralds: encounter.boss ? region * 25 : stage === 5 ? region * 5 : 0,
+    emeralds: encounter.boss ? region * 150 : stage === 5 ? region * 50 : 0,
     chest: encounter.boss ? "epic" as const : null,
   };
 }

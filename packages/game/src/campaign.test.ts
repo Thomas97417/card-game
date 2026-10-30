@@ -21,7 +21,7 @@ describe("aventure", () => {
         const reward = campaignStageReward(region, stage);
         expect(reward.gold).toBeGreaterThan(0);
         expect(reward.chest).toBe(stage === 10 ? "epic" : null);
-        if (stage === 10) expect(reward.emeralds).toBe(region * 25);
+        expect(reward.emeralds).toBe(stage === 10 ? region * 150 : stage === 5 ? region * 50 : 0);
         if (stage === 1) { expect(reward.gold).toBeGreaterThan(previousGold); previousGold = reward.gold; }
       }
     }

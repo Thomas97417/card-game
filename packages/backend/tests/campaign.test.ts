@@ -105,6 +105,20 @@ describe("campagne autoritaire", () => {
     expect(extra).toEqual({ trophies: [], chests: [], victory: [] });
   });
 
+  it("credits the larger emerald milestone only on its first victory", async () => {
+    const t = setup();
+    const alice = await player(t, "alice");
+    await t.run((ctx) => ctx.db.insert("campaignProgress", { ownerId: alice.ownerId, completedStages: 4 }));
+    const initial = await wallet(t, alice.ownerId);
+    const gameId = await win(t, alice, 1, 5);
+    expect((await alice.client.query(api.games.get, { gameId })).campaignReward).toMatchObject({ firstClear: true, emeralds: 50 });
+    expect((await wallet(t, alice.ownerId))!.diamonds).toBe((initial?.diamonds ?? 3000) + 50);
+    const replay = await win(t, alice, 1, 5);
+    expect((await alice.client.query(api.games.get, { gameId: replay })).campaignReward).toMatchObject({ firstClear: false, emeralds: 0 });
+    expect((await wallet(t, alice.ownerId))!.diamonds).toBe((initial?.diamonds ?? 3000) + 50);
+    expect((await alice.client.query(api.games.campaignBoard, {})).chests).toEqual([]);
+  });
+
   it("keeps a guaranteed boss chest across visits, hides its loot, and opens it atomically once", async () => {
     const t = setup();
     const alice = await player(t, "alice");
@@ -113,11 +127,11 @@ describe("campagne autoritaire", () => {
     const initial = await wallet(t, alice.ownerId);
     const gameId = await win(t, alice, 1, 10);
     const result = (await alice.client.query(api.games.get, { gameId })).campaignReward!;
-    expect(result).toMatchObject({ firstClear: true, ...{ gold: campaignStageReward(1,10).gold, emeralds: 25 } });
+    expect(result).toMatchObject({ firstClear: true, ...{ gold: campaignStageReward(1,10).gold, emeralds: 150 } });
     expect(result.chestId).toBeTruthy();
     const board = await alice.client.query(api.games.campaignBoard, {});
     expect(board).toEqual({ completedStages: 10, chests: [{ id: result.chestId, region: 1, opened: false }] });
-    expect((await wallet(t, alice.ownerId))!.diamonds).toBe((initial?.diamonds ?? 3000) + 25);
+    expect((await wallet(t, alice.ownerId))!.diamonds).toBe((initial?.diamonds ?? 3000) + 150);
     const chestId = result.chestId as Id<"campaignChests">;
     await expect(t.mutation(api.games.openCampaignChest, { chestId })).rejects.toThrow("Connecte-toi");
     await expect(bob.client.mutation(api.games.openCampaignChest, { chestId })).rejects.toThrow("appartient pas");

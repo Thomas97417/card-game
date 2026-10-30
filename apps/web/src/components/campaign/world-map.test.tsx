@@ -97,4 +97,26 @@ describe("carte du monde", () => {
     fireEvent.click(screen.getByRole("button", { name: "Fermer les détails du niveau" }));
     expect(map.scrollLeft).toBe(60);
   });
+
+  it("highlights emerald milestones and previews stages with the arrow keys", () => {
+    render(<WorldMap board={{ completedStages: 0, chests: [] }} activity={idle} deckReady pending={false} onStart={vi.fn()} onOpenChest={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 1 —/ }));
+    const first = screen.getByRole("button", { name: /Étape 1-1,/ });
+    const fifth = screen.getByRole("button", { name: /Étape 1-5, 50 émeraudes/ });
+    const tenth = screen.getByRole("button", { name: /Étape 1-10, boss et coffre épique, 150 émeraudes/ });
+    expect(first.getAttribute("aria-current")).toBe("step");
+    first.focus();
+    fireEvent.keyDown(first, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: /Étape 1-6,/ }));
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowLeft" });
+    expect(document.activeElement).toBe(fifth);
+    expect(fifth.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.keyDown(fifth, { key: "End" });
+    expect(document.activeElement).toBe(tenth);
+    expect(tenth.getAttribute("aria-pressed")).toBe("true");
+    expect((screen.getByRole("button", { name: "Étape verrouillée" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.keyDown(tenth, { key: "Home" });
+    expect(document.activeElement).toBe(first);
+    expect(first.getAttribute("aria-pressed")).toBe("true");
+  });
 });
