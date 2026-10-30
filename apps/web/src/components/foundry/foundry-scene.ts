@@ -64,15 +64,17 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
 
   const iceMaterial = new THREE.MeshBasicMaterial({ color: 0xa2e0e0, transparent: true, opacity: 0.48, depthWrite: false });
   const burnMaterial = new THREE.MeshBasicMaterial({ color: 0xffaf62, transparent: true, opacity: 0.6, depthWrite: false });
-  materials.add(iceMaterial); materials.add(burnMaterial);
-  const relics = new Map<number, { group: THREE.Group; model: FoundryRelicArt; ice: THREE.Mesh; burn: THREE.Mesh; kick: number }>();
+  const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xffdf76, transparent: true, opacity: 0.7, depthWrite: false });
+  materials.add(iceMaterial); materials.add(burnMaterial); materials.add(glowMaterial);
+  const relics = new Map<number, { group: THREE.Group; model: FoundryRelicArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
   function makeRelic(t: FoundryRelic) {
     const group = new THREE.Group(); const model = art.relic(t.kind);
     const ice = new THREE.Mesh(ringGeo, iceMaterial); const burn = new THREE.Mesh(ringGeo, burnMaterial);
     ice.rotation.x = burn.rotation.x = -Math.PI / 2; ice.position.y = 0.04; burn.position.y = 0.07;
     ice.scale.setScalar(RELICS[t.kind].radius + 0.04); burn.scale.setScalar(RELICS[t.kind].radius * 0.8);
-    group.position.set(t.x, 0, t.z); group.add(art.shadow(), ice, burn, model.root);
-    scene.add(group); const item = { group, model, ice, burn, kick: -1000 }; relics.set(t.id, item); return item;
+    const glow = new THREE.Mesh(ringGeo, glowMaterial); glow.rotation.x = -Math.PI / 2; glow.position.y = 0.055; glow.scale.setScalar(RELICS[t.kind].radius + 0.12); glow.visible = !!t.glowing;
+    group.position.set(t.x, 0, t.z); group.add(art.shadow(), ice, burn, glow, model.root);
+    scene.add(group); const item = { group, model, ice, burn, glow, kick: -1000 }; relics.set(t.id, item); return item;
   }
   const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xf9d78b, transparent: true, opacity: 0.65, depthWrite: false }); materials.add(cursorMaterial);
   const cursor = new THREE.Mesh(ringGeo, cursorMaterial); cursor.rotation.x = -Math.PI / 2; scene.add(cursor);
@@ -176,7 +178,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         item.model.root.rotation.set(0, heading, kick + dance * (t.kind === "chaos" ? 0.05 : 0.025));
         item.model.damage.visible = t.hp < t.maxHp * 0.75;
         item.model.animate(motion.matches ? 0 : modelTime);
-        item.ice.visible = frozen; item.burn.visible = burning.has(t.id);
+        item.ice.visible = frozen; item.burn.visible = burning.has(t.id); item.glow.visible = !!t.glowing;
       }
       cursor.visible = (round.version >= 5 || aim.active) && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);

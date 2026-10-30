@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { FOUNDRY, TOOL_IDS, TOOLS, LEGACY_TOOLS, FOUNDRY_SKILL_IDS, buyFoundrySkill, buyFoundryTool, createFoundryRound,
-  foundryOrderCost, foundrySkillCost, foundryStats, foundryStrikeCost, foundryToolDefinition, foundryTools, newFoundryCycle, stepFoundry } from "./foundry";
+import { FOUNDRY, TOOL_IDS, TOOLS, LEGACY_TOOLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, buyFoundrySkill, buyFoundryTool, createFoundryRound,
+  foundryOrderCost, foundrySkillCost, foundryStats, foundryStrikeCost, foundryToolDefinition, foundryTools, newFoundryCycle as currentCycle, stepFoundry, type FoundryCycle } from "./foundry";
 import { simulateFoundryRun } from "./test-fixtures/foundry-run";
 
 describe("les marteaux de référence et la nouvelle économie", () => {
@@ -63,15 +63,17 @@ describe("les marteaux de référence et la nouvelle économie", () => {
   });
   it("allows progressive weapon purchases and bills while requiring investment", () => {
     for (const seed of [1, 7, 17, 25]) {
-      const invested = simulateFoundryRun(seed);
+      const invested = simulateFoundryRun(seed, { economy: 3 });
       expect(invested.status).toBe("completed"); expect(invested.rounds).toBe(15);
       expect(invested.purchases.map((p) => p.tool)).toEqual(["swift", "precision", "resonance", "heavy", "spiked", "gilded"]);
       expect(invested.purchases[0]!.round).toBeLessThanOrEqual(3); expect(invested.purchases.at(-1)!.round).toBeGreaterThanOrEqual(13);
-      const basic = simulateFoundryRun(seed, { invest: false }); expect(basic.status).toBe("failed");
+      const basic = simulateFoundryRun(seed, { invest: false, economy: 3 }); expect(basic.status).toBe("failed");
       expect(basic.history.at(-1)!.order).toBeGreaterThan(1);
     }
-    const careful = simulateFoundryRun(1, { missEvery: 5, reserveBill: true });
+    const careful = simulateFoundryRun(1, { missEvery: 5, reserveBill: true, economy: 3 });
     expect(careful.status).toBe("completed");
     for (const round of careful.history) expect(round.emptySwings).toBe(Math.floor(round.strikes / 5));
   });
 });
+
+function newFoundryCycle(): FoundryCycle { return { ...currentCycle(), economy: 3 }; }

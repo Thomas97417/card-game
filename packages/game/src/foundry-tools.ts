@@ -30,8 +30,8 @@ export function legacyFoundryTool(tool: FoundryTool): FoundryToolDefinition {
   return tool === "spiked" ? TOOLS.spiked : LEGACY_TOOLS[tool];
 }
 export function foundryTools(cycle: { economy?: number }): readonly FoundryTool[] {
-  return cycle.economy === 3 ? TOOL_IDS : LEGACY_TOOL_IDS;
+  return (cycle.economy ?? 0) >= 3 ? TOOL_IDS : LEGACY_TOOL_IDS;
 }
 export function foundryToolDefinition(cycle: { economy?: number }, tool: FoundryTool): FoundryToolDefinition {
-  return cycle.economy === 3 ? TOOLS[tool] : legacyFoundryTool(tool);
+  return (cycle.economy ?? 0) >= 3 ? TOOLS[tool] : legacyFoundryTool(tool);
 }

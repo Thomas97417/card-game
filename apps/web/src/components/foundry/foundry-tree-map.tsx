@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { Anvil, AudioLines, Axe, Check, Clover, CloudLightning, Coins, Crown, Crosshair, Droplets, Flame, FlameKindling, Gem, Hammer, Heart, Layers, Leaf, Link2, Maximize, Minus, Mountain, Move, Network, Orbit, Pickaxe, Plus, Radio, Shapes, Sparkles, Sprout, Swords, Target, Timer, Waves, Wind, Zap, type LucideIcon } from "lucide-react";
-import { FOUNDRY_BRANCHES, FOUNDRY_BRANCH_IDS, FOUNDRY_SKILLS, type FoundrySkillId } from "@sylve/game/foundry";
+import { FOUNDRY_BRANCHES, FOUNDRY_BRANCH_IDS, FOUNDRY_SKILLS, foundrySkill, foundrySkills, type FoundrySkillId } from "@sylve/game/foundry";
 import { FOUNDRY_TREE, FOUNDRY_TREE_POINTS, boundTreeView, centerTreeView, fitTreeView, treeConnection, zoomTreeView, type TreePoint, type TreeSize, type TreeView } from "./foundry-tree-model";
 
-const skillIcons: Record<FoundrySkillId, LucideIcon> = {
+const skillIcons: Partial<Record<FoundrySkillId, LucideIcon>> = {
   "forge-grip": Hammer, "forge-first": Pickaxe, "forge-crit": Crosshair, "forge-crushing": Axe, "forge-finisher": Swords, "forge-mastery": Crown,
   "sap-breath": Wind, "sap-recovery": Leaf, "sap-spring": Droplets, "sap-second": Sprout, "sap-flow": Waves, "sap-heart": Heart,
   "storm-tempo": Timer, "storm-lightning": Zap, "storm-burn": Flame, "storm-chain": Network, "storm-fury": FlameKindling, "storm-tempest": CloudLightning,
   "fortune-touch": Gem, "fortune-critical": Target, "fortune-geode": Mountain, "fortune-lucky": Clover, "fortune-purity": Sparkles, "fortune-overflow": Coins,
   "echo-reach": Radio, "echo-company": Shapes, "echo-wave": Orbit, "echo-gathering": Layers, "echo-chain": Link2, "echo-harmony": AudioLines,
 };
-interface Props { costs?: Partial<Record<FoundrySkillId, number>>; visible: FoundrySkillId[]; owned: readonly FoundrySkillId[]; selected: FoundrySkillId; onSelect(id: FoundrySkillId): void }
+const branchIcons = { forge: Hammer, sap: Leaf, storm: Zap, fortune: Gem, echo: Shapes };
+const technique = (id: FoundrySkillId) => foundrySkill(id).kind === "technique" || (!foundrySkill(id).kind && foundrySkill(id).cost === 240);
+interface Props { economy?: number; costs?: Partial<Record<FoundrySkillId, number>>; visible: FoundrySkillId[]; owned: readonly FoundrySkillId[]; selected: FoundrySkillId; onSelect(id: FoundrySkillId): void }
 interface Gesture { view: TreeView; points: TreePoint[] }
 const middle = (points: TreePoint[]) => ({ x: points.reduce((sum, p) => sum + p.x, 0) / points.length, y: points.reduce((sum, p) => sum + p.y, 0) / points.length });
 const distance = (points: TreePoint[]) => Math.hypot(points[0]!.x - points[1]!.x, points[0]!.y - points[1]!.y);
 
-export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {} }: Props) {
+export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {}, economy = 3 }: Props) {
   const viewport = useRef<HTMLDivElement>(null);
   const size = useRef<TreeSize>({ width: 900, height: 520 });
   const [view, setView] = useState<TreeView>({ x: 0, y: 0, scale: 0.8 });
@@ -95,7 +97,7 @@ export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {} 
   }
   const known = new Set(visible);
   return <div className="foundry-map-shell">
-    <div className="foundry-map-legend" aria-label="Les cinq voies de l’arbre">{FOUNDRY_BRANCH_IDS.map((branch) => <span key={branch} style={{ "--branch-color": FOUNDRY_BRANCHES[branch].color } as CSSProperties}><i /><strong>{FOUNDRY_BRANCHES[branch].name}</strong><small>{owned.filter((id) => FOUNDRY_SKILLS[id].branch === branch).length}/6</small></span>)}</div>
+    <div className="foundry-map-legend" aria-label="Les cinq voies de l’arbre">{FOUNDRY_BRANCH_IDS.map((branch) => <span key={branch} style={{ "--branch-color": FOUNDRY_BRANCHES[branch].color } as CSSProperties}><i /><strong>{FOUNDRY_BRANCHES[branch].name}</strong><small>{owned.filter((id) => FOUNDRY_SKILLS[id].branch === branch).length}/{foundrySkills({ economy }).filter((id) => FOUNDRY_SKILLS[id].branch === branch).length}</small></span>)}</div>
     <div className="foundry-map-viewport" ref={viewport} tabIndex={0} role="region" aria-label="Grand arbre de compétences" aria-describedby={hintId} data-dragging={dragging} data-zoom={Math.round(view.scale * 100)}
       onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={(event) => { if (event.target === event.currentTarget) pointerEnd(event); }}
       onScroll={(event) => { event.currentTarget.scrollLeft = 0; event.currentTarget.scrollTop = 0; }}
@@ -112,19 +114,19 @@ export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {} 
         <svg className="foundry-map-connections" width={FOUNDRY_TREE.width} height={FOUNDRY_TREE.height} aria-hidden="true">
           <g className="foundry-map-orbits">{[175, 350, 525, 700].map((radius) => <circle key={radius} cx={FOUNDRY_TREE.center.x} cy={FOUNDRY_TREE.center.y} r={radius} />)}</g>
           {visible.flatMap((id) => {
-            const skill = FOUNDRY_SKILLS[id], parents = skill.requires.length ? skill.requires.filter((parent) => known.has(parent as FoundrySkillId)).map((parent) => FOUNDRY_TREE_POINTS[parent as FoundrySkillId]) : [FOUNDRY_TREE.center];
-            return parents.map((parent, index) => <path key={`${id}-${index}`} className={`foundry-map-link ${owned.includes(id) ? "is-owned" : ""}`} stroke={FOUNDRY_BRANCHES[skill.branch].color} d={treeConnection(parent, FOUNDRY_TREE_POINTS[id], skill.requires.length ? 33 : 46, skill.cost === 240 ? 36 : 31)} />);
+            const skill = foundrySkill(id), prerequisites = [...skill.requires, ...(skill.requiresAny ?? [])], parents = prerequisites.length ? prerequisites.filter((parent) => known.has(parent as FoundrySkillId)).map((parent) => FOUNDRY_TREE_POINTS[parent as FoundrySkillId]) : economy === 4 ? [] : [FOUNDRY_TREE.center];
+            return parents.map((parent, index) => <path key={`${id}-${index}`} className={`foundry-map-link ${owned.includes(id) ? "is-owned" : ""}`} strokeDasharray={skill.requiresAny?.length ? "6 5" : undefined} stroke={FOUNDRY_BRANCHES[skill.branch].color} d={treeConnection(parent, FOUNDRY_TREE_POINTS[id], skill.requires.length ? 33 : 46, technique(id) ? 36 : 31)} />);
           })}
-          {visible.filter((id) => !owned.includes(id) && Object.values(FOUNDRY_SKILLS).some((skill) => skill.requires.includes(id))).map((id) => {
-            const skill = FOUNDRY_SKILLS[id], p = FOUNDRY_TREE_POINTS[id], dx = p.x - FOUNDRY_TREE.center.x, dy = p.y - FOUNDRY_TREE.center.y, length = Math.hypot(dx, dy);
+          {visible.filter((id) => !owned.includes(id) && foundrySkills({ economy }).some((key) => { const skill = foundrySkill(key); return [...skill.requires, ...(skill.requiresAny ?? [])].includes(id); })).map((id) => {
+            const skill = foundrySkill(id), p = FOUNDRY_TREE_POINTS[id], dx = p.x - FOUNDRY_TREE.center.x, dy = p.y - FOUNDRY_TREE.center.y, length = Math.max(1, Math.hypot(dx, dy));
             const next = { x: p.x + dx / length * 92, y: p.y + dy / length * 92 };
             return <path key={`mist-${id}`} className="foundry-map-mist-link" stroke={FOUNDRY_BRANCHES[skill.branch].color} d={treeConnection(p, next, 40, 0)} />;
           })}
         </svg>
-        <div className="foundry-map-heart" style={{ left: FOUNDRY_TREE.center.x, top: FOUNDRY_TREE.center.y }} aria-hidden="true"><Anvil size={32} /><span>Le premier écho</span></div>
+        {economy !== 4 && <div className="foundry-map-heart" style={{ left: FOUNDRY_TREE.center.x, top: FOUNDRY_TREE.center.y }} aria-hidden="true"><Anvil size={32} /><span>Le premier écho</span></div>}
         {visible.map((id) => {
-          const skill = FOUNDRY_SKILLS[id], Icon = skillIcons[id], acquired = owned.includes(id), position = FOUNDRY_TREE_POINTS[id], cost = costs[id] ?? skill.cost;
-          return <button key={id} type="button" className={`foundry-map-node ${acquired ? "is-owned" : "is-frontier"} ${selected === id ? "is-selected" : ""} ${skill.cost === 240 ? "is-keystone" : ""}`} style={{ left: position.x, top: position.y, "--branch-color": FOUNDRY_BRANCHES[skill.branch].color } as CSSProperties} data-root={!skill.requires.length} aria-pressed={selected === id} aria-label={`${skill.name}, ${acquired ? "acquis" : `${new Intl.NumberFormat("fr-FR").format(cost)} éclats`}`}
+          const skill = foundrySkill(id), Icon = skillIcons[id] ?? (id.includes("crit") ? Crosshair : id.includes("burn") || id.includes("ignite") ? Flame : id.includes("luck") ? Clover : id.includes("glow") || id.includes("golden") ? Sparkles : branchIcons[skill.branch]), acquired = owned.includes(id), position = FOUNDRY_TREE_POINTS[id], cost = costs[id] ?? skill.cost;
+          return <button key={id} type="button" className={`foundry-map-node ${acquired ? "is-owned" : "is-frontier"} ${selected === id ? "is-selected" : ""} ${technique(id) ? "is-keystone" : ""}`} style={{ left: position.x, top: position.y, "--branch-color": FOUNDRY_BRANCHES[skill.branch].color } as CSSProperties} data-root={!skill.requires.length && !skill.requiresAny?.length} aria-pressed={selected === id} aria-label={`${skill.name}, ${acquired ? "acquis" : `${new Intl.NumberFormat("fr-FR").format(cost)} ${cost === 1 ? "éclat" : "éclats"}`}`}
             onClick={() => onSelect(id)} onFocus={(event) => { if (event.currentTarget.matches(":focus-visible")) keepVisible(id); }}>
             <span className="foundry-map-node-ring"><Icon size={25} />{acquired ? <i className="foundry-map-node-check"><Check size={12} /></i> : <small title={`${new Intl.NumberFormat("fr-FR").format(cost)} éclats`}>{new Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 1 }).format(cost)}</small>}</span>
             <span className="foundry-map-node-label">{!skill.requires.length && <small>{FOUNDRY_BRANCHES[skill.branch].name}</small>}<strong>{skill.name}</strong></span>

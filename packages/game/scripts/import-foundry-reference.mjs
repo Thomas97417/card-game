@@ -1,6 +1,8 @@
 /** Public numeric reference only; no executable third-party code or artwork is imported. */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 const expected = { 'skill-tree': 211, 'street-smarts': 67, hammers: 7, 'prestige-items': 22, piggies: 18, bills: 20, gadgets: 6, 'collectible-coins': 10, 'piggy-unlocks': 7 };
+const selected = process.argv.find((arg) => arg.startsWith('--category='))?.slice('--category='.length);
+if (selected && !(selected in expected)) throw new Error(`Unknown category: ${selected}`);
 const omit = new Set(['description', 'img', 'image', 'behavior', 'creditor', 'text']);
 function facts(value) {
   if (typeof value === 'string' && /^\$(?:undefined|[0-9a-f]+:)/.test(value)) return undefined;
@@ -11,7 +13,7 @@ function facts(value) {
   if (typeof value.description === 'string') result.effectNumbers = value.description.match(/[+-]?\d+(?:\.\d+)?(?:%|x|s)?/g) ?? [];
   return result;
 }
-const categories = await Promise.all(Object.entries(expected).map(async ([category, count]) => {
+const categories = await Promise.all(Object.entries(expected).filter(([category]) => !selected || category === selected).map(async ([category, count]) => {
   const url = `https://justgameguides.com/game/bills-must-be-paid/${category}`;
   const response = await fetch(url); if (!response.ok) throw new Error(`${category}: ${response.status}`);
   const html = await response.text(), chunks = [];
@@ -30,9 +32,10 @@ const categories = await Promise.all(Object.entries(expected).map(async ([catego
   }
   const items = arrays.sort((a, b) => b.length - a.length)[0];
   if (items?.length !== count) throw new Error(`${category}: expected ${count} records, found ${items?.length ?? 0}`);
-  return [category, { source: url, declaredUpdated: html.match(/<time dateTime="([^"]+)"/)?.[1] ?? null, count, items: items.map(facts) }];
+  return [category, { source: url, declaredUpdated: html.match(/<time dateTime="([^"]+)"/)?.[1] ?? null, retrievedAt: new Date().toISOString(), count, items: items.map(facts) }];
 }));
 const destination = new URL('../../../docs/references/bills-must-be-paid/build-24759944.json', import.meta.url);
 mkdirSync(new URL('.', destination), { recursive: true });
-writeFileSync(destination, JSON.stringify({ game: 'Bills Must Be Paid', source: 'JustGameGuides (independent, not official)', declaredBuild: '24759944', retrievedAt: new Date().toISOString(), scope: 'Numeric facts, identifiers and prerequisites; editorial prose and artwork excluded. Values are a reference, not imported directly into Sylve balance.', categories: Object.fromEntries(categories) }, null, 2) + '\n');
+const previous = selected ? JSON.parse(readFileSync(destination, 'utf8')) : { game: 'Bills Must Be Paid', source: 'JustGameGuides (independent, not official)', declaredBuild: '24759944', retrievedAt: new Date().toISOString(), scope: 'Numeric facts, identifiers and prerequisites; editorial prose and artwork excluded. Values are a reference, not imported directly into Sylve balance.', categories: {} };
+writeFileSync(destination, JSON.stringify({ ...previous, categories: { ...previous.categories, ...Object.fromEntries(categories) } }, null, 2) + '\n');
 console.log(`Saved ${categories.reduce((sum, [, category]) => sum + category.count, 0)} numeric reference records.`);

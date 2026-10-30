@@ -24,7 +24,7 @@ export function FoundryEquipment({ cycle, charms, tool, assistant, assistants, l
         <div><dt>Dégâts</dt><dd>{number.format(stats.damage)}</dd></div>
         <div><dt>Frappes / s</dt><dd>{number.format(1000 / (stats.interval * FOUNDRY.stepMs))}</dd></div>
         <div><dt>Portée</dt><dd>{number.format(stats.radius)}</dd></div>
-        <div><dt>Stamina / coup</dt><dd>{number.format(foundryToolStrikeCost(id, modifiers.drain, false, item.stamina))}</dd></div>
+        <div><dt>Stamina / coup</dt><dd>{number.format(Math.max(cycle.economy === 4 ? 0.25 : 0, foundryToolStrikeCost(id, modifiers.drain, false, stats.stamina ?? item.stamina)))}</dd></div>
         <div><dt>Critiques</dt><dd>{number.format(stats.critical * 100)} %</dd></div>
         <div><dt>Butin</dt><dd>×{number.format(stats.loot)}</dd></div>
       </dl>

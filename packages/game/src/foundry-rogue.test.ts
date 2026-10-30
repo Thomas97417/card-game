@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BLESSINGS, FOUNDRY, FOUNDRY_SKILLS, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, buyFoundrySkill, buyFoundryCharm,
+import { BLESSINGS, FOUNDRY, FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, buyFoundrySkill, buyFoundryCharm,
   createFoundryRound, newFoundryCycle, deliverFoundryOrder, chooseFoundryBlessing, foundryOrderCost, foundryStats, settleFoundryRound, stepFoundry } from "./foundry";
 const idle = { x: 5.6, z: 3.4, active: false };
 function isolated() {

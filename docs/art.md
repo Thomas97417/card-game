@@ -52,3 +52,5 @@ Les anciennes captures de validation, planches d’essai et générations rempla
 Les marteaux du chantier partagent les matériaux peints et les géométries procédurales de la fonderie : tête de pierre renforcée de fer pour le Brise-roche, tête fine et améthystes pour le Marteau du graveur, cuivre doré et sceaux floraux pour le Marteau d’ambre. La face métallique reste ancrée sur la visée à l’impact pour les sept outils actuels et les modèles des anciennes manches.
 
 Le Marteau à panne reprend le profil Cross Peen avec une panne en fer biseautée ; le Marteau à pointes ajoute des cônes lissés et des attaches arrondies à la tête de fer. L’ancienne couronne de résonance reste visible dans les manches sauvegardées antérieures à V9. Ces variantes réutilisent les textures peintes et les ressources partagées de la scène.
+
+Les reliques lumineuses de l’arbre V4 réutilisent les modèles peints avec un anneau doré procédural, mutualisé et libéré avec les autres effets de la scène. Aucun visuel de Bills Must Be Paid n’est importé.

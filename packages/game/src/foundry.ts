@@ -1,17 +1,19 @@
 import { TOOLS, foundryTools, foundryToolDefinition, legacyFoundryTool, type FoundryTool } from "./foundry-tools";
 export * from "./foundry-tools";
 import { BLESSINGS, BLESSING_IDS, FOUNDRY_SKILLS, FOUNDRY_CHARMS, FOUNDRY_RARITY, foundryModifiers,
+  foundrySkills, foundrySkill, foundrySkillReady, foundryReferenceModifiers, type FoundryReferenceModifiers,
   type FoundryBlessing, type FoundrySkillId, type FoundryCharmId, type FoundryModifiers } from "./foundry-catalog";
 export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 9, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 10, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
   recoveryRefundLimit: 0.5,
   upgradeCosts: [1000, 20000, 400000], skillCosts: [300, 4000, 80000, 2000000],
+  referenceLootMultipliers: [10, 20, 40, 80, 160],
   lootMultipliers: [10, 80, 400, 2000, 14000], resistances: [1, 3, 10, 35, 90],
   orderCosts: [2000, 20000, 150000, 1000000, 5000000],
   previousUpgradeCosts: [50, 100, 200], previousOrderCosts: [100, 250, 500, 900, 1500],
@@ -46,18 +48,19 @@ export const RELICS = {
 export interface FoundryCycle {
   number: number; shards: number; orderIndex: number; roundsLeft: number;
   upgrades: Record<FoundryUpgrade, number>; blessings: FoundryBlessing[];
-  choices: FoundryBlessing[]; skills?: FoundrySkillId[]; seed?: number; economy?: 2 | 3; status: "active" | "failed" | "completed" | "abandoned";
+  choices: FoundryBlessing[]; skills?: FoundrySkillId[]; seed?: number; economy?: 2 | 3 | 4; status: "active" | "failed" | "completed" | "abandoned";
   purchasedTools?: FoundryTool[]; selectedTool?: FoundryTool;
 }
 export interface FoundryStats { damage: number; interval: number; radius: number; critical: number; loot: number; concentration: number; stamina?: number }
-export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number }
+export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
   rogue?: { modifiers: FoundryModifiers; capacity: number; pressure: number; frenzyUntil: number; frozenUntil: number; nextFreeze: number; strikes: number; jackpots: number; wealth?: number; recoveryReserve?: number;
+    reference?: { modifiers: FoundryReferenceModifiers; spent: number; combo: number; previousKind?: RelicKind; firstHitUsed: boolean };
     burns: { id: number; until: number; next: number }[] };
 
 }
@@ -71,11 +74,12 @@ export function foundryToolStrikeCost(tool: FoundryTool, drain = 0, furious = fa
 }
 export function foundryStrikeCost(round: FoundryRound): number {
   const rogue = round.rogue;
-  return foundryToolStrikeCost(round.tool, rogue?.modifiers.drain, !!rogue && rogue.frenzyUntil > round.tick, round.stats.stamina ?? legacyFoundryTool(round.tool).stamina);
+  const cost = foundryToolStrikeCost(round.tool, rogue?.modifiers.drain, !!rogue && rogue.frenzyUntil > round.tick, round.stats.stamina ?? legacyFoundryTool(round.tool).stamina);
+  return round.version >= 10 ? Math.max(0.25, cost) : cost;
 }
 
 export function newFoundryCycle(number = 1, seed = Math.imul(number, 2654435761) >>> 0): FoundryCycle {
-  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], purchasedTools: [], selectedTool: "mallet", seed, economy: 3, status: "active" };
+  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], purchasedTools: [], selectedTool: "mallet", seed, economy: 4, status: "active" };
 }
 export function ownsFoundryTool(cycle: FoundryCycle, tool: FoundryTool): boolean {
   return tool === "mallet" || !!cycle.purchasedTools?.includes(tool);
@@ -101,17 +105,18 @@ function random(state: { rng: number }) {
   return state.rng / 4294967296;
 }
 export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant, charms: readonly FoundryCharmId[] = []): FoundryStats {
-  const modifiers = foundryModifiers(cycle, charms); const base = foundryToolDefinition(cycle, tool); const modern = cycle.economy === 3;
+  const modifiers = foundryModifiers(cycle, charms); const base = foundryToolDefinition(cycle, tool); const modern = (cycle.economy ?? 0) >= 3;
+  const reference = foundryReferenceModifiers(cycle.economy === 4 ? cycle.skills ?? [] : []);
   const powerBonus = cycle.upgrades.power * 0.25 + modifiers.power;
   return {
     // The loaned smith amplifies acquired bonuses, leaving a fresh mallet at 1 damage.
-    damage: base.damage * Math.max(0.25, 1 + powerBonus * (assistant === "smith" && powerBonus > 0 ? 1.15 : 1)),
+    damage: (base.damage + reference.flatDamage) * Math.max(0.25, 1 + powerBonus * (assistant === "smith" && powerBonus > 0 ? 1.15 : 1)),
     interval: Math.max(2, modern ? base.interval / Math.max(0.3, 1 + modifiers.cadence + base.cadence) : Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
-    radius: base.radius * Math.max(0.4, 1 + modifiers.radius),
+    radius: (base.radius + reference.flatRadius) * Math.max(0.4, 1 + modifiers.radius),
     critical: Math.max(0, Math.min(0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical + base.critical)),
     loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * (assistant === "feline" ? 1.15 : 1) * (1 + cycle.orderIndex * 0.08),
-    concentration: Math.max(30, Math.round(100 * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus) * (assistant === "dryad" ? 1.15 : 1))),
-    ...(modern ? { stamina: base.stamina } : {}),
+    concentration: Math.max(30, Math.round((100 + reference.flatStamina) * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus) * (assistant === "dryad" ? 1.15 : 1))),
+    ...(modern ? { stamina: Math.max(0.25, base.stamina + reference.flatDrain) } : {}),
   };
 }
 function spawn(state: FoundryRound): FoundryRelic {
@@ -160,7 +165,8 @@ function spawn(state: FoundryRound): FoundryRelic {
   return { id: state.nextId++, kind, x, z, hp, maxHp: hp,
     vx: Math.cos(angle) * speed,
     vz: state.version === 1 ? kind === "runner" ? Math.sin(angle) * 0.027 : 0 : Math.sin(angle) * speed * (0.027 / 0.033),
-    phase: random(state) * Math.PI * 2 };
+    phase: random(state) * Math.PI * 2,
+    ...(state.rogue?.reference?.modifiers.glowingChance && random(state) < state.rogue.reference.modifiers.glowingChance ? { glowing: true } : {}) };
 }
 function confineRelic(t: FoundryRelic) {
   const radius = RELICS[t.kind].radius;
@@ -206,10 +212,11 @@ export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: Foun
   const stats = foundryStats(cycle, tool, assistant, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
-  const state: FoundryRound = { version: cycle.economy === 3 ? FOUNDRY.version : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: cycle.economy === 4 ? FOUNDRY.version : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, assistant, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
-    rogue: { modifiers, capacity: Math.min(FOUNDRY.maxTargets, FOUNDRY.baseTargets + modifiers.capacity), pressure: cycle.economy === 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
-      ...(cycle.economy === 3 ? { wealth: FOUNDRY.lootMultipliers[stage]!, recoveryReserve: 0 } : {}),
+    rogue: { modifiers, capacity: Math.min(FOUNDRY.maxTargets, FOUNDRY.baseTargets + modifiers.capacity), pressure: (cycle.economy ?? 0) >= 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
+      ...(cycle.economy && cycle.economy >= 3 ? { wealth: (cycle.economy === 4 ? FOUNDRY.referenceLootMultipliers : FOUNDRY.lootMultipliers)[stage]!, recoveryReserve: 0 } : {}),
+      ...(cycle.economy === 4 ? { reference: { modifiers: foundryReferenceModifiers(cycle.skills ?? []), spent: 0, combo: 0, firstHitUsed: false } } : {}),
       frenzyUntil: 0, frozenUntil: 0, nextFreeze: FOUNDRY.freezeEveryTicks, strikes: 0, jackpots: 0, burns: [] } };
   for (let i = 0; i < state.rogue!.capacity; i++) state.targets.push(spawn(state));
   resolveRelicContacts(state.targets, false);
@@ -274,6 +281,7 @@ export function stepFoundry(state: FoundryRound, input: FoundryInput): FoundryFr
 function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFrame {
   const frame: FoundryFrame = { strike: false, impacts: [], effects: [] };
   const rogue = state.rogue!; const mods = rogue.modifiers;
+  const reference = rogue.reference, extra = reference?.modifiers;
   state.tick++;
   const fury = rogue.frenzyUntil > state.tick;
   if (state.version < 6) state.concentration = Math.max(0, state.concentration - FOUNDRY.drainPerTick * Math.max(0.25, 1 + mods.drain) * (fury ? 0.5 : 1));
@@ -290,7 +298,8 @@ function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFram
     for (const target of state.targets) { target.x += target.vx; target.z += target.vz; confineRelic(target); }
     resolveRelicContacts(state.targets);
   }
-  const base = state.stats.damage * (fury ? 1.2 : 1) * (1 + Math.min(0.25, state.broken * mods.damageGrowth));
+  const base = state.stats.damage * (fury ? 1.2 : 1) * (1 + Math.min(0.25, state.broken * mods.damageGrowth))
+    * (1 + (reference ? reference.spent * extra!.staminaDamage + reference.combo * extra!.comboDamage + state.targets.length * extra!.crowdDamage : 0));
   type Hit = { target: FoundryRelic; damage: number; critical: boolean; direct?: boolean };
   const queue: Hit[] = [];
   for (const burn of rogue.burns) if (burn.until >= state.tick && burn.next <= state.tick) {
@@ -303,34 +312,47 @@ function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFram
     frame.strike = true; rogue.strikes++;
     if (state.version >= 6) {
       const cost = foundryStrikeCost(state);
+      if (reference) reference.spent += Math.min(state.concentration, cost);
       if (state.version >= 9) rogue.recoveryReserve = (rogue.recoveryReserve ?? 0) + Math.min(state.concentration, cost) * FOUNDRY.recoveryRefundLimit;
       state.concentration = Math.max(0, state.concentration - cost);
     }
     if (state.version >= 5) frame.strikePosition = { x: input.x, z: input.z };
-    const interval = Math.max(2, state.stats.interval / (fury ? 1.5 : 1));
+    const interval = Math.max(2, state.stats.interval / ((fury ? 1.5 + (extra?.rageSpeed ?? 0) : 1) + (reference ? reference.spent * extra!.staminaSpeed : 0)));
     state.nextStrike = state.version >= 9 ? (rogue.strikes === 1 ? state.tick : state.nextStrike) + interval : state.tick + Math.round(interval);
-    const critical = direct.length > 0 && roll(state.stats.critical);
+    const critical = direct.length > 0 && !reference && roll(state.stats.critical);
+    const doubleHit = !!reference && direct.length > 0 && roll(extra!.doubleHitChance);
+    const firstHit = !!reference && direct.length > 0 && !reference.firstHitUsed;
+    if (reference) { reference.combo = direct.length ? reference.combo + 1 : 0; if (firstHit) reference.firstHitUsed = true; }
     for (const target of direct) {
-      queue.push({ target, damage: base * (critical ? Math.max(1.2, 2 + mods.criticalDamage) : 1) * (target.hp === target.maxHp ? 1 + mods.firstHitBonus : 1), critical, direct: true });
+      const low = target.hp / target.maxHp < 0.25;
+      const crit = reference ? roll(state.stats.critical + (low ? extra!.lowHpCritical : 0)) : critical;
+      const damage = reference ? base * ((crit ? Math.max(1.2, 2 + mods.criticalDamage) : 1)
+        + (target.hp === target.maxHp ? mods.firstHitBonus : 0) + (low ? extra!.lowHpDamage : 0)
+        + (direct.length > 1 ? extra!.multiHitDamage : 0) + (reference.previousKind && reference.previousKind !== target.kind ? extra!.switchDamage : 0)) * (firstHit ? 1 + extra!.firstStrikeDamage : 1)
+        : base * (crit ? Math.max(1.2, 2 + mods.criticalDamage) : 1) * (target.hp === target.maxHp ? 1 + mods.firstHitBonus : 1);
+      queue.push({ target, damage, critical: crit, direct: true });
+      if (doubleHit) queue.push({ target, damage, critical: crit, direct: true });
       if (roll(mods.burnChance)) {
+        const until = state.tick + FOUNDRY.burnTicks + (extra?.burnDuration ?? 0) * 20;
         const previous = rogue.burns.find((burn) => burn.id === target.id);
-        if (previous) previous.until = state.tick + FOUNDRY.burnTicks;
-        else rogue.burns.push({ id: target.id, until: state.tick + FOUNDRY.burnTicks, next: state.tick + FOUNDRY.burnEveryTicks });
+        if (previous) previous.until = until;
+        else rogue.burns.push({ id: target.id, until, next: state.tick + FOUNDRY.burnEveryTicks });
         frame.effects!.push({ kind: "burn", x: target.x, z: target.z });
       }
     }
+    if (reference && direct.length) reference.previousKind = direct[0]!.kind;
     if (roll(mods.lightningChance)) {
       const targets = state.targets.filter((target) => !direct.includes(target) && Math.hypot(target.x - input.x, target.z - input.z) <= 4)
         .sort((a, b) => Math.hypot(a.x - input.x, a.z - input.z) - Math.hypot(b.x - input.x, b.z - input.z) || a.id - b.id)
         .slice(0, 2 + mods.lightningTargets);
-      for (const target of targets) {
+      for (let ray = 0; ray < 1 + (extra?.lightningRays ?? 0); ray++) for (const target of targets) {
         queue.push({ target, damage: base * mods.lightningDamage, critical: false });
         frame.effects!.push({ kind: "lightning", x: input.x, z: input.z, toX: target.x, toZ: target.z });
       }
     }
     const firstWave = mods.firstWave > 0 && rogue.strikes === 1;
     if (firstWave || roll(mods.shockwaveChance)) {
-      const radius = 2 + mods.shockwaveRadius;
+      const radius = extra?.globalWave ? 14 : 2 + mods.shockwaveRadius;
       for (const target of state.targets) if (Math.hypot(target.x - input.x, target.z - input.z) <= radius)
         queue.push({ target, damage: base * (firstWave ? 1 : mods.shockwaveDamage), critical: false });
       frame.effects!.push({ kind: "shockwave", x: input.x, z: input.z, radius });
@@ -350,18 +372,32 @@ function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFram
     if (broken) {
       destroyed.add(target.id); state.broken++;
       const [low, high] = RELICS[target.kind].loot;
-      const bonus = 1 + (hit.critical ? mods.criticalLoot : 0) + (target.kind === "geode" ? mods.geodeLoot : 0)
+      const bonus = 1 + (hit.critical ? mods.criticalLoot : 0) + (target.kind === "geode" ? mods.geodeLoot : 0) + (extra?.lootPerType ?? 0) * ACTIVE_RELIC_KINDS.length
         + (intact && hit.direct ? mods.oneShotLoot : 0) + Math.min(0.25, (state.broken - 1) * mods.lootGrowth);
       const jackpot = roll(mods.jackpotChance);
-      loot = Math.max(1, Math.round((low + Math.floor(random(state) * (high - low + 1))) * state.stats.loot * (rogue.wealth ?? 1) * bonus * (jackpot ? 2 : 1)));
+      let amount = low + Math.floor(random(state) * (high - low + 1));
+      if (extra && roll(extra.luck)) amount = Math.max(amount, low + Math.floor(random(state) * (high - low + 1)));
+      if (target.glowing) amount = high;
+      const luminous = target.glowing && extra && roll(extra.glowingBonusChance) ? 1 + extra.glowingBonus : 1;
+      loot = Math.max(1, Math.round(amount * state.stats.loot * (rogue.wealth ?? 1) * bonus * (jackpot ? 2 : 1) * luminous));
       state.shards += loot;
       if (jackpot) { rogue.jackpots++; frame.effects!.push({ kind: "jackpot", x: target.x, z: target.z }); }
       if (state.version < 7 && target.kind === "spring") restore(8 + mods.springRecovery);
       if (state.broken === 1) restore(mods.firstKillRecovery);
       if (roll(mods.recoveryChance)) {
-        const amount = state.version >= 9 ? Math.min(2 + mods.recoveryAmount, rogue.recoveryReserve ?? 0, state.stats.concentration - state.concentration) : 2 + mods.recoveryAmount;
+        const requested = reference ? Math.max(2, mods.recoveryAmount) : 2 + mods.recoveryAmount;
+        const amount = state.version >= 9 ? Math.min(requested, rogue.recoveryReserve ?? 0, state.stats.concentration - state.concentration) : requested;
         restore(amount);
         if (state.version >= 9) rogue.recoveryReserve = (rogue.recoveryReserve ?? 0) - amount;
+      }
+      if (extra && rogue.burns.some((burn) => burn.id === target.id) && roll(extra.fireSpreadChance)) {
+        for (const neighbour of state.targets) if (!destroyed.has(neighbour.id) && Math.hypot(neighbour.x - target.x, neighbour.z - target.z) <= extra.fireSpreadRange) {
+          const until = state.tick + FOUNDRY.burnTicks + extra.burnDuration * 20;
+          const previous = rogue.burns.find((burn) => burn.id === neighbour.id);
+          if (previous) previous.until = Math.max(previous.until, until);
+          else rogue.burns.push({ id: neighbour.id, until, next: state.tick + FOUNDRY.burnEveryTicks });
+          frame.effects!.push({ kind: "burn", x: neighbour.x, z: neighbour.z });
+        }
       }
       if (roll(mods.berserkChance)) {
         rogue.frenzyUntil = Math.max(rogue.frenzyUntil, state.tick + FOUNDRY.berserkTicks + mods.berserkDuration);
@@ -391,7 +427,7 @@ export function foundrySummary(round: FoundryRound): FoundrySummary {
   return { shards: round.shards, broken: round.broken, hits: round.hits, criticals: round.criticals, seconds: round.tick * FOUNDRY.stepMs / 1000 };
 }
 export function foundryOrderCost(cycle: FoundryCycle) {
-  return (cycle.economy === 3 ? FOUNDRY.orderCosts : cycle.economy === 2 ? FOUNDRY.previousOrderCosts : FOUNDRY.legacyOrderCosts)[cycle.orderIndex];
+  return ((cycle.economy ?? 0) >= 3 ? FOUNDRY.orderCosts : cycle.economy === 2 ? FOUNDRY.previousOrderCosts : FOUNDRY.legacyOrderCosts)[cycle.orderIndex];
 }
 export function settleFoundryRound(cycle: FoundryCycle, round: FoundryRound): FoundryCycle {
   if (!round.ended || cycle.status !== "active" || cycle.choices.length || cycle.roundsLeft <= 0) throw new Error("Cette manche ne peut pas être terminée.");
@@ -401,7 +437,7 @@ export function settleFoundryRound(cycle: FoundryCycle, round: FoundryRound): Fo
 }
 export function buyFoundryUpgrade(cycle: FoundryCycle, upgrade: FoundryUpgrade): FoundryCycle {
   if (cycle.status !== "active" || cycle.choices.length || !cycle.roundsLeft) throw new Error("Livre d’abord la commande en cours.");
-  const level = cycle.upgrades[upgrade]; const cost = (cycle.economy === 3 ? FOUNDRY.upgradeCosts : FOUNDRY.previousUpgradeCosts)[level];
+  const level = cycle.upgrades[upgrade]; const cost = ((cycle.economy ?? 0) >= 3 ? FOUNDRY.upgradeCosts : FOUNDRY.previousUpgradeCosts)[level];
   if (cost === undefined) throw new Error("Cette amélioration est au maximum.");
   if (cycle.shards < cost) throw new Error("Il manque des éclats.");
   return { ...cycle, shards: cycle.shards - cost, upgrades: { ...cycle.upgrades, [upgrade]: level + 1 } };
@@ -432,15 +468,16 @@ export function chooseFoundryBlessing(cycle: FoundryCycle, blessing: FoundryBles
   return { ...cycle, blessings: [...cycle.blessings, blessing], choices: [] };
 }
 export function foundrySkillCost(cycle: FoundryCycle, id: FoundrySkillId): number {
-  const cost = FOUNDRY_SKILLS[id].cost;
+  const cost = foundrySkill(id).cost;
+  if (cycle.economy === 4) return cost;
   return cycle.economy === 3 ? FOUNDRY.skillCosts[([30, 60, 120, 240] as number[]).indexOf(cost)]! : cost;
 }
 export function buyFoundrySkill(cycle: FoundryCycle, id: FoundrySkillId): FoundryCycle {
   if (cycle.status !== "active" || cycle.choices.length || !cycle.roundsLeft) throw new Error("Livre d’abord la commande ou choisis ta bénédiction.");
   const skill = FOUNDRY_SKILLS[id]; const owned = cycle.skills ?? [];
-  if (!skill) throw new Error("Ce savoir est inconnu.");
+  if (!skill || !foundrySkills(cycle).includes(id)) throw new Error("Ce savoir est inconnu pour ce chantier.");
   if (owned.includes(id)) throw new Error("Ce savoir est déjà acquis.");
-  if (!skill.requires.every((parent) => owned.includes(parent as FoundrySkillId))) throw new Error("Apprends d’abord les savoirs reliés à ce nœud.");
+  if (!foundrySkillReady(id, owned)) throw new Error("Apprends d’abord les savoirs reliés à ce nœud.");
   const cost = foundrySkillCost(cycle, id);
   if (cycle.shards < cost) throw new Error("Il manque des éclats.");
   return { ...cycle, shards: cycle.shards - cost, skills: [...owned, id] };

@@ -60,3 +60,24 @@ describe("l’arbre explorable de la fonderie", () => {
 
 // Saved V8 chantiers keep their original prices, profiles and simulation.
 function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCycle> { return { ...newFoundryCycle(number, seed), economy: 2 as const }; }
+
+describe('l’arbre de référence', () => {
+  it('starts with the 1-shard common root and reveals the four source entrances only after confirmation', () => {
+    const fresh={...newFoundryCycle(),shards:100}; const view=render(<FoundrySkillTree {...props} cycle={fresh} />);
+    expect(screen.getByRole('button',{name:'Poigne de cuivre, 1 éclat'})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:'Main d’ambre, 12 éclats'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'Apprendre Poigne de cuivre'}));expect(onSkill).toHaveBeenCalledWith('smash-damage-1');
+    view.rerender(<FoundrySkillTree {...props} cycle={{...fresh,shards:99,skills:['smash-damage-1']}} />);
+    for(const name of ['Marteau élargi','Main d’ambre','Souffle des fougères','Danse des braises']) expect(screen.getByRole('button',{name:`${name}, 12 éclats`})).toBeTruthy();
+    expect(screen.queryByRole('button',{name:/Appel des reliques,/})).toBeNull();expect(screen.queryByRole('button',{name:/Arc de cuivre,/})).toBeNull();
+  });
+  it('reveals the OR entrance and retains zoom and map navigation for the denser tree', () => {
+    render(<FoundrySkillTree {...props} cycle={{...newFoundryCycle(),shards:100,skills:['smash-damage-1','frenzy-speed-1']}} />);
+    fireEvent.click(screen.getByRole('button',{name:'Appel des reliques, 30 éclats'}));
+    expect(screen.getByText('Un de ces savoirs suffit')).toBeTruthy();
+    expect((screen.getByRole('button',{name:'Apprendre Appel des reliques'}) as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(screen.getByRole('button',{name:'Apprendre Appel des reliques'}));expect(onSkill).toHaveBeenCalledWith('piggy-spawn-amount');
+    const region=screen.getByRole('region',{name:'Grand arbre de compétences'}),initial=Number(region.dataset.zoom);
+    fireEvent.click(screen.getByRole('button',{name:'Zoomer dans l’arbre'}));expect(Number(region.dataset.zoom)).toBeGreaterThan(initial);
+  });
+});

@@ -2,7 +2,7 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -39,13 +39,13 @@ describe("la fonderie connectée", () => {
     const t = setup();
     for (const tool of TOOL_IDS.filter((id) => id !== "mallet")) {
       const p = await player(t, `source-${tool}`, true), board = await p.client.query(api.foundry.board, {});
-      expect(board.progress!.cycle.economy).toBe(3);
+      expect(board.progress!.cycle.economy).toBe(4);
       const spec = foundryToolDefinition(board.progress!.cycle, tool);
       await t.run((ctx) => ctx.db.patch(board.progress!._id, { mastery: 500, cycle: { ...board.progress!.cycle, shards: spec.cost } }));
       await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool });
       expect((await p.client.query(api.foundry.board, {})).progress!.cycle.shards).toBe(0);
       const round = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: `reference-${tool}`, tool, assistant: "smith" });
-      expect(round.state.version).toBe(9); expect(round.state.stats.damage).toBe(spec.damage); expect(round.state.stats.stamina).toBe(spec.stamina);
+      expect(round.state.version).toBe(10); expect(round.state.stats.damage).toBe(spec.damage); expect(round.state.stats.stamina).toBe(spec.stamina);
       expect(round.state.rogue!.wealth).toBe(10);
       const expected = structuredClone(round.state), inputs = [];
       for (let i = 0; i < 40; i++) { const target = expected.targets.reduce((a, b) => a.hp < b.hp ? a : b), input = { x: target.x, z: target.z, active: true }; inputs.push(input); stepFoundry(expected, input); }
@@ -58,10 +58,10 @@ describe("la fonderie connectée", () => {
   it("replays high-value relics and limited recovery identically over several saved batches", async () => {
     const t = setup(), p = await player(t, "endgame", true), board = await p.client.query(api.foundry.board, {});
     await t.run((ctx) => ctx.db.patch(board.progress!._id, { cycle: { ...board.progress!.cycle, orderIndex: 4, shards: 10000000,
-      skills: FOUNDRY_SKILL_IDS, blessings: ["recovery", "efficient", "berserk", "power"] } }));
+      skills: FOUNDRY_REFERENCE_SKILL_IDS, blessings: ["recovery", "efficient", "berserk", "power"] } }));
     await p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 0, tool: "gilded" });
     const round = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: "final-deposit", tool: "gilded", assistant: "smith" });
-    expect(round.state.rogue).toMatchObject({ pressure: 90, wealth: 14000, recoveryReserve: 0 });
+    expect(round.state.rogue).toMatchObject({ pressure: 90, wealth: 160, recoveryReserve: 0 });
     const expected = structuredClone(round.state);
     for (let startTick = 0; startTick < 320; startTick += 40) {
       const inputs = [];
@@ -78,7 +78,7 @@ describe("la fonderie connectée", () => {
     await p.client.mutation(api.foundry.abandonChantier, { expectedOwnerId: p.ownerId, revision: 0 });
     await p.client.mutation(api.foundry.newChantier, { expectedOwnerId: p.ownerId, revision: 1 });
     const fresh = await p.client.query(api.foundry.board, {});
-    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 3, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
+    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 4, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
     await expect(p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 2, tool: "heavy" })).rejects.toThrow("éclats");
   });
   it("requires buying swift and resonance even with high mastery and funds them with run shards", async () => {
@@ -370,3 +370,29 @@ describe("la fonderie connectée", () => {
 
 // Saved V8 chantiers keep their original prices, profiles and simulation.
 function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCycle> { return { ...newFoundryCycle(number, seed), economy: 2 as const }; }
+
+describe('les apprentissages de référence autoritaires', () => {
+  it('charges the source costs, rejects concurrent purchases and accepts either source Piggy prerequisite', async () => {
+    const t=setup(),p=await player(t,'reference-skills',true);let b=await p.client.query(api.foundry.board,{});
+    await t.run(ctx=>ctx.db.patch(b.progress!._id,{cycle:{...b.progress!.cycle,shards:100}}));
+    const args={expectedOwnerId:p.ownerId,revision:0,skill:'smash-damage-1' as const};
+    await expect(p.client.mutation(api.foundry.purchaseSkill,{...args,skill:'piggy-spawn-amount'})).rejects.toThrow('reliés');
+    const raced=await Promise.allSettled([p.client.mutation(api.foundry.purchaseSkill,args),p.client.mutation(api.foundry.purchaseSkill,args)]);
+    expect(raced.filter(r=>r.status==='fulfilled')).toHaveLength(1);
+    b=await p.client.query(api.foundry.board,{});expect(b.progress!.cycle.shards).toBe(99);
+    await p.client.mutation(api.foundry.purchaseSkill,{...args,revision:1,skill:'frenzy-speed-1'});
+    await p.client.mutation(api.foundry.purchaseSkill,{...args,revision:2,skill:'piggy-spawn-amount'});
+    b=await p.client.query(api.foundry.board,{});expect(b.progress!.cycle.shards).toBe(57);
+    await expect(p.client.mutation(api.foundry.purchaseSkill,{...args,revision:3,skill:'forge-grip'})).rejects.toThrow('chantier');
+    const r=await begin(p,'reference-build');expect(r.state.version).toBe(10);expect(r.state.targets).toHaveLength(14);expect(r.state.stats.damage).toBe(2);
+    expect(r.state.rogue!.reference).toMatchObject({spent:0,combo:0,firstHitUsed:false});
+  });
+  it('leaves an existing V9 chantier on its learning prices and frozen combat rules', async () => {
+    const t=setup(),p=await player(t,'previous-tree',true);let b=await p.client.query(api.foundry.board,{});
+    await t.run(ctx=>ctx.db.patch(b.progress!._id,{cycle:{...b.progress!.cycle,economy:3,shards:500}}));
+    await p.client.mutation(api.foundry.purchaseSkill,{expectedOwnerId:p.ownerId,revision:0,skill:'forge-grip'});
+    b=await p.client.query(api.foundry.board,{});expect(b.progress!.cycle.shards).toBe(200);
+    await expect(p.client.mutation(api.foundry.purchaseSkill,{expectedOwnerId:p.ownerId,revision:1,skill:'smash-damage-1'})).rejects.toThrow('chantier');
+    const r=await begin(p,'v9-still-active');expect(r.state.version).toBe(9);expect(r.state.rogue!.reference).toBeUndefined();expect(r.state.stats.damage).toBeCloseTo(1.23);
+  });
+});

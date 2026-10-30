@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FOUNDRY_SKILLS, FOUNDRY_SKILL_IDS, type FoundrySkillId } from "@sylve/game/foundry";
+import { FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_REFERENCE_SKILL_IDS, type FoundrySkillId } from "@sylve/game/foundry";
 import { FOUNDRY_TREE, FOUNDRY_TREE_POINTS, boundTreeView, fitTreeView, visibleFoundrySkills, zoomTreeView } from "./foundry-tree-model";
 
 describe("la découverte du grand arbre", () => {
@@ -17,7 +17,7 @@ describe("la découverte du grand arbre", () => {
     expect(visibleFoundrySkills(FOUNDRY_SKILL_IDS)).toHaveLength(30); expect(visibleFoundrySkills([])).toHaveLength(5);
   });
   it("keeps every node inside the world and separates the five branches", () => {
-    const points = Object.values(FOUNDRY_TREE_POINTS); expect(points).toHaveLength(30);
+    const points = FOUNDRY_SKILL_IDS.map((id) => FOUNDRY_TREE_POINTS[id]); expect(points).toHaveLength(30);
     for (const p of points) { expect(p.x).toBeGreaterThan(60); expect(p.y).toBeGreaterThan(60); expect(p.x).toBeLessThan(FOUNDRY_TREE.width - 60); expect(p.y).toBeLessThan(FOUNDRY_TREE.height - 60); }
     for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) expect(Math.hypot(points[i]!.x - points[j]!.x, points[i]!.y - points[j]!.y)).toBeGreaterThan(120);
   });
@@ -35,5 +35,18 @@ describe("la découverte du grand arbre", () => {
       for (const id of ids) { const p = FOUNDRY_TREE_POINTS[id]; expect(p.x * fitted.scale + fitted.x).toBeGreaterThan(25); expect(p.x * fitted.scale + fitted.x).toBeLessThan(size.width - 25); expect(p.y * fitted.scale + fitted.y).toBeGreaterThan(25); expect(p.y * fitted.scale + fitted.y).toBeLessThan(size.height - 25); }
       const bounded = boundTreeView({ x: 1e9, y: -1e9, scale: 1 }, size); expect(bounded.x).toBeLessThanOrEqual(180); expect(bounded.y).toBeGreaterThan(-FOUNDRY_TREE.height);
     }
+  });
+});
+
+
+describe("la disposition des 104 compétences de référence",()=>{
+  it("starts with the common root, preserves the OR frontier and keeps every source node separated",()=>{
+    expect(visibleFoundrySkills([],4)).toEqual(["smash-damage-1"]);
+    expect(visibleFoundrySkills(["smash-damage-1"],4)).toHaveLength(5);
+    expect(visibleFoundrySkills(["smash-damage-1","frenzy-speed-1"],4)).toContain("piggy-spawn-amount");
+    const points=FOUNDRY_REFERENCE_SKILL_IDS.map(id=>FOUNDRY_TREE_POINTS[id]);
+    expect(points).toHaveLength(104);
+    for(const p of points){expect(p.x).toBeGreaterThan(60);expect(p.y).toBeGreaterThan(60);expect(p.x).toBeLessThan(FOUNDRY_TREE.width-60);expect(p.y).toBeLessThan(FOUNDRY_TREE.height-60);}
+    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++)expect(Math.hypot(points[i]!.x-points[j]!.x,points[i]!.y-points[j]!.y)).toBeGreaterThanOrEqual(170);
   });
 });

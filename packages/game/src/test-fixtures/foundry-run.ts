@@ -1,4 +1,4 @@
-import { TOOLS, TOOL_IDS, FOUNDRY_SKILLS, buyFoundryTool, buyFoundrySkill, foundrySkillCost, foundryOrderCost,
+import { TOOLS, TOOL_IDS, FOUNDRY_SKILLS, foundrySkills, foundrySkillReady, buyFoundryTool, buyFoundrySkill, foundrySkillCost, foundryOrderCost,
   FOUNDRY, newFoundryCycle, createFoundryRound, stepFoundry, settleFoundryRound, deliverFoundryOrder, chooseFoundryBlessing,
   type FoundrySkillId, type FoundryTool, type FoundryCycle, type FoundryBlessing } from "../foundry";
 
@@ -16,9 +16,10 @@ export function planFoundryRunPurchases(cycle: FoundryCycle, reserveBill = false
   if (upgrade) cycle = buyFoundryTool(cycle, upgrade);
   let skillBudget = Math.min(cycle.shards - reserve, Math.max(300, cycle.shards * 0.2)), learned = 0;
   const skills: FoundrySkillId[] = [];
-  for (const id of skillPlan) {
-    if (learned === 2) break;
-    if (!cycle.skills!.includes(id) && FOUNDRY_SKILLS[id].requires.every((p) => cycle.skills!.includes(p as FoundrySkillId)) && foundrySkillCost(cycle, id) <= skillBudget) {
+  const plan = cycle.economy === 4 ? [...foundrySkills(cycle)].sort((a,b) => FOUNDRY_SKILLS[a].cost - FOUNDRY_SKILLS[b].cost) : skillPlan;
+  for (const id of plan) {
+    if (learned === (cycle.economy === 4 ? 4 : 2)) break;
+    if (!cycle.skills!.includes(id) && foundrySkillReady(id, cycle.skills!) && foundrySkillCost(cycle, id) <= skillBudget) {
       const cost = foundrySkillCost(cycle, id); cycle = buyFoundrySkill(cycle, id); skillBudget -= cost; learned++; skills.push(id);
     }
   }
@@ -26,8 +27,8 @@ export function planFoundryRunPurchases(cycle: FoundryCycle, reserveBill = false
 }
 
 /** Deterministic, affordable decisions against moving relics; no state or loot cheats. */
-export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean } = {}) {
-  let cycle = newFoundryCycle(1, seed), tool: FoundryTool = "mallet", rounds = 0;
+export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean; economy?: 3 | 4 } = {}) {
+  let cycle: FoundryCycle = { ...newFoundryCycle(1, seed), economy: options.economy ?? 4 }; let tool: FoundryTool = "mallet", rounds = 0;
   const purchases: { tool: FoundryTool; round: number }[] = [];
   const history: { round: number; order: number; tool: FoundryTool; income: number; bank: number; skills: number; ticks: number; strikes: number; emptySwings: number }[] = [];
   while (cycle.status === "active") {
@@ -46,9 +47,9 @@ export function simulateFoundryRun(seed: number, options: { invest?: boolean; mi
         const candidates = [-1, 0, 1].flatMap((x) => [-1, 0, 1].map((z) => ({ x: x * FOUNDRY.width / 2, z: z * FOUNDRY.depth / 2, active: false })));
         const clearance = (p: { x: number; z: number }) => Math.min(...state.targets.map((t) => Math.hypot(t.x - p.x, t.z - p.z)));
         input = candidates.sort((a, b) => clearance(b) - clearance(a))[0]!;
-        if (clearance(input) <= state.stats.radius + 0.1) throw new Error("No clear missed-swing position in the fixture");
+        if (clearance(input) <= state.stats.radius + 0.1 && options.economy === 3) throw new Error("No clear missed-swing position in the fixture");
       }
-      const frame = stepFoundry(state, input); if (frame.strike && miss) emptySwings++;
+      const frame = stepFoundry(state, input); if (frame.strike && miss && !frame.impacts.some((hit) => Math.hypot(hit.x - input.x, hit.z - input.z) <= state.stats.radius)) emptySwings++;
     }
     if (!state.ended) throw new Error(`Non-exhausting build in seed ${seed}, order ${order}`);
     cycle = settleFoundryRound(cycle, state); rounds++;

@@ -4,11 +4,11 @@ import { simulateFoundryRun } from "../src/test-fixtures/foundry-run.ts";
 
 const seeds = Array.from({ length: 24 }, (_, i) => i + 1);
 const profiles = {
-  investment: {},
-  careful: { missEvery: 5, reserveBill: true },
-  noInvestment: { invest: false },
+  investment: { economy: 3 },
+  careful: { economy: 3, missEvery: 5, reserveBill: true },
+  noInvestment: { economy: 3, invest: false },
 };
-const report = { engineVersion: FOUNDRY.version, economy: 3, seeds, settings: {
+const report = { engineVersion: 9, economy: 3, seeds, settings: {
   orders: FOUNDRY.orderCosts, lootMultipliers: FOUNDRY.lootMultipliers, resistances: FOUNDRY.resistances, skillCosts: FOUNDRY.skillCosts,
 }, profiles: {} };
 for (const [name, options] of Object.entries(profiles)) {

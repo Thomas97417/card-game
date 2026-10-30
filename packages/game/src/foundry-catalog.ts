@@ -1,3 +1,5 @@
+import { FOUNDRY_REFERENCE_SKILLS, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_MODIFIERS, type FoundryReferenceModifiers } from "./foundry-skill-reference";
+export * from "./foundry-skill-reference";
 /** Sylve balance, adapted from the versioned numeric reference in docs/references. */
 export const FOUNDRY_MODIFIERS = {
   power: 0, cadence: 0, focus: 0, radius: 0, loot: 0, critical: 0, criticalDamage: 0, drain: 0,
@@ -17,12 +19,14 @@ export const FOUNDRY_BRANCHES = {
   fortune: { name: "L’Ambre", detail: "Butin, jackpots et précision", symbol: "✦", color: "#edcb74" },
   echo: { name: "Les Échos", detail: "Portée et réactions en chaîne", symbol: "◎", color: "#bda2d4" },
 } as const;
-interface Skill {
+export interface FoundrySkill {
   branch: FoundryBranch; name: string; detail: string; cost: number; requires: string[];
   effects: Partial<FoundryModifiers>; source: string;
+  requiresAny?: string[]; kind?: "upgrade" | "passive" | "technique"; reference?: Partial<FoundryReferenceModifiers>;
+  originalName?: string; point?: { x: number; y: number }; adaptation?: string;
 }
-const skill = (branch: FoundryBranch, name: string, detail: string, cost: number, requires: string[], effects: Partial<FoundryModifiers>, source: string): Skill => ({ branch, name, detail, cost, requires, effects, source });
-export const FOUNDRY_SKILLS = {
+const skill = (branch: FoundryBranch, name: string, detail: string, cost: number, requires: string[], effects: Partial<FoundryModifiers>, source: string): FoundrySkill => ({ branch, name, detail, cost, requires, effects, source });
+export const LEGACY_FOUNDRY_SKILLS = {
   "forge-grip": skill("forge", "Poigne de cuivre", "+20 % de dégâts.", 30, [], { power: 0.2 }, "skill-tree/smash-damage-1"),
   "forge-first": skill("forge", "Premier éclat", "+35 % de dégâts sur une relique intacte.", 60, ["forge-grip"], { firstHitBonus: 0.35 }, "skill-tree/first-hit-multiplier"),
   "forge-crit": skill("forge", "Frappe précise", "+5 points de chance critique.", 60, ["forge-grip"], { critical: 0.05 }, "street-smarts/crit-chance"),
@@ -54,8 +58,21 @@ export const FOUNDRY_SKILLS = {
   "echo-chain": skill("echo", "Mémoire en chaîne", "Chaque destruction a 15 % de chance de toucher les voisines à moins de 2 : 60 % des dégâts de base.", 120, ["echo-wave"], { chainChance: 0.15, chainDamage: 0.6 }, "street-smarts/chain-reaction"),
   "echo-harmony": skill("echo", "Accord du refuge", "+15 points de chance d’onde et +0,5 à son rayon.", 240, ["echo-gathering", "echo-chain"], { shockwaveChance: 0.15, shockwaveRadius: 0.5 }, "skill-tree/smash-shockwave-radius"),
 } as const;
+export const FOUNDRY_SKILLS = { ...LEGACY_FOUNDRY_SKILLS, ...FOUNDRY_REFERENCE_SKILLS } satisfies Record<string, FoundrySkill>;
 export type FoundrySkillId = keyof typeof FOUNDRY_SKILLS;
 export const FOUNDRY_SKILL_IDS = Object.keys(FOUNDRY_SKILLS) as FoundrySkillId[];
+export const LEGACY_FOUNDRY_SKILL_IDS = Object.keys(LEGACY_FOUNDRY_SKILLS) as FoundrySkillId[];
+export function foundrySkills(cycle: { economy?: number }): readonly FoundrySkillId[] { return cycle.economy === 4 ? FOUNDRY_REFERENCE_SKILL_IDS : LEGACY_FOUNDRY_SKILL_IDS; }
+export function foundrySkill(id: FoundrySkillId): FoundrySkill { return FOUNDRY_SKILLS[id]; }
+export function foundrySkillReady(id: FoundrySkillId, owned: readonly FoundrySkillId[]): boolean {
+  const skill = foundrySkill(id);
+  return skill.requires.every((parent) => owned.includes(parent as FoundrySkillId)) && (!skill.requiresAny?.length || skill.requiresAny.some((parent) => owned.includes(parent as FoundrySkillId)));
+}
+export function foundryReferenceModifiers(skills: readonly FoundrySkillId[]): FoundryReferenceModifiers {
+  const result = { ...FOUNDRY_REFERENCE_MODIFIERS };
+  for (const id of skills) for (const [key, value] of Object.entries(foundrySkill(id).reference ?? {})) result[key as keyof FoundryReferenceModifiers] += value;
+  return result;
+}
 
 type Rarity = "common" | "uncommon" | "rare";
 interface Blessing { name: string; detail: string; symbol: string; branch: FoundryBranch; rarity: Rarity; maxStacks: number; kind: "passive" | "technique" | "pact"; effects: Partial<FoundryModifiers>; source: string }

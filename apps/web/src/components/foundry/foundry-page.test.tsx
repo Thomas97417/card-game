@@ -49,7 +49,7 @@ describe("la fonderie à l’écran", () => {
     expect(board.progress!.cycle.shards).toBe(9000); expect(screen.getByRole("button", { name: "Martelet vif équipé" })).toBeTruthy();
   });
   it("uses the current learning prices rather than the legacy catalogue prices", async () => {
-    board = { ...board, progress: { ...board.progress!, cycle: { ...newFoundryCycle(), shards: 100 } } };
+    board = { ...board, progress: { ...board.progress!, cycle: { ...newFoundryCycle(), economy: 3, shards: 100 } } };
     const view = render(<FoundryPage />); await ready();
     fireEvent.click(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" }));
     expect(disabled(screen.getByRole("button", { name: "Apprendre Poigne de cuivre" }))).toBe(true);
