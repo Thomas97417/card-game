@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Compass, Flag, LoaderCircle, LockKeyhole, Swords, X } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Flag, LoaderCircle, LockKeyhole, Swords, X } from "lucide-react";
 import { CAMPAIGN_REGIONS, CAMPAIGN_STAGES_PER_REGION, CAMPAIGN_TOTAL_STAGES, campaignStage, campaignStageReward } from "@sylve/game/campaign";
 import type { FunctionReturnType } from "convex/server";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -21,11 +21,23 @@ interface WorldMapProps {
   onOpenChest: (chestId: Id<"campaignChests">) => void;
 }
 
+function panelSideFor(trigger: HTMLButtonElement, map: HTMLDivElement): "left" | "right" {
+  const bounds = map.getBoundingClientRect();
+  const marker = trigger.getBoundingClientRect();
+  const panelWidth = Number.parseFloat(window.getComputedStyle(map).getPropertyValue("--world-panel-width")) || 364;
+  const overlap = (left: number, right: number) =>
+    Math.max(0, Math.min(marker.right, right) - Math.max(marker.left, left));
+  const leftOverlap = overlap(bounds.left, bounds.left + panelWidth + 12);
+  const rightOverlap = overlap(bounds.right - panelWidth - 12, bounds.right);
+  return rightOverlap > leftOverlap ? "left" : "right";
+}
+
 export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenChest }: WorldMapProps) {
   const completed = board?.completedStages ?? 0;
   const nextRegion = board?.chests.find((chest) => !chest.opened)?.region ?? Math.min(CAMPAIGN_REGIONS.length, Math.floor(completed / CAMPAIGN_STAGES_PER_REGION) + 1);
   const [selected, setSelected] = useState<number | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [panelSide, setPanelSide] = useState<"left" | "right">("right");
   const [selectedStage, setSelectedStage] = useState<number | null>(null);
   const regionId = selected ?? nextRegion;
   const region = CAMPAIGN_REGIONS[regionId - 1]!;
@@ -44,6 +56,7 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
   const panel = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const regionTrigger = useRef<HTMLButtonElement>(null);
+  const mapRegion = useRef(nextRegion);
   const panelId = useId();
   const { dragHandlers, isDragging } = useHorizontalDrag(true);
   useHorizontalWheel(viewport);
@@ -53,18 +66,18 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
     const map = viewport.current;
     const image = canvas.current;
     if (!map || !image) return;
+    if (!regionTrigger.current) mapRegion.current = nextRegion;
     const center = () => {
-      const coveredWidth = detailsOpen && window.matchMedia("(min-width: 701px)").matches
-        ? (panel.current?.clientWidth ?? 0) : 0;
-      map.scrollLeft = Math.max(0, image.clientWidth * region.position.x / 100 - (map.clientWidth - coveredWidth) / 2);
+      const destination = CAMPAIGN_REGIONS[mapRegion.current - 1]!;
+      map.scrollLeft = Math.max(0, image.clientWidth * destination.position.x / 100 - map.clientWidth / 2);
+      if (regionTrigger.current) setPanelSide(panelSideFor(regionTrigger.current, map));
     };
     center();
     const observer = new ResizeObserver(center);
     observer.observe(map);
     observer.observe(image);
-    if (panel.current) observer.observe(panel.current);
     return () => observer.disconnect();
-  }, [region.id, detailsOpen]);
+  }, [nextRegion]);
 
   useEffect(() => {
     if (!detailsOpen) return;
@@ -74,6 +87,8 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
 
   function chooseRegion(id: number, trigger: HTMLButtonElement) {
     regionTrigger.current = trigger;
+    mapRegion.current = id;
+    if (viewport.current) setPanelSide(panelSideFor(trigger, viewport.current));
     setSelected(id);
     setSelectedStage(null);
     setDetailsOpen(true);
@@ -91,18 +106,17 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
         closeDetails();
       }
     }}>
+    <h1 className="sr-only">Carte du monde</h1>
     <GameHeader className="world-header" />
-    <div className="world-layout" data-details-open={detailsOpen || undefined}>
+    <div className="world-layout" data-details-open={detailsOpen || undefined} data-panel-side={panelSide}>
       <section className="world-cartography" aria-label="Exploration du monde"
         onClick={(event) => {
           if (detailsOpen && !(event.target as Element).closest("button, a")) closeDetails();
         }}>
-        <header className="world-title">
-          <span><Compass size={14} /> L’appel de l’aventure</span>
-          <h1>Au-delà de la Sylve</h1>
-          <p>Quatre terres. Un chemin à tracer.</p>
-        </header>
-        <div ref={viewport} {...dragHandlers} className={`world-viewport ${isDragging ? "is-dragging" : ""}`} tabIndex={0} role="region" aria-label="Carte du monde, fais défiler pour explorer les régions">
+        <div ref={viewport} {...dragHandlers} className={`world-viewport ${isDragging ? "is-dragging" : ""}`} tabIndex={0} role="region" aria-label="Carte du monde, fais défiler pour explorer les régions"
+          onScroll={() => {
+            if (detailsOpen && regionTrigger.current && viewport.current) setPanelSide(panelSideFor(regionTrigger.current, viewport.current));
+          }}>
           <div ref={canvas} className="world-canvas">
             <img className="world-landscape" src="/art/campaign/world-map.webp" alt="Le refuge de la Sylve au cœur de la forêt, la bourgade de Clairval au sud-ouest, puis les rivages turquoise, les montagnes enneigées et les terres volcaniques, reliés par des sentiers." draggable={false} onError={() => setMapFailed(true)} />
             {mapFailed && <p role="status" className="world-map-error">La carte n’a pas pu être chargée. Les régions restent accessibles.</p>}

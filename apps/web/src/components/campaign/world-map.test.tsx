@@ -74,4 +74,27 @@ describe("carte du monde", () => {
     fireEvent.click(screen.getByRole("img", { name: /Le refuge de la Sylve au cœur de la forêt/ }));
     expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
   });
+
+  it("opens opposite the visible destination without changing the map scroll position", () => {
+    const { container } = render(<WorldMap board={{ completedStages: 0, chests: [] }} activity={idle} deckReady pending={false} onStart={vi.fn()} onOpenChest={vi.fn()} />);
+    const map = screen.getByRole("region", { name: /Carte du monde, fais défiler/ });
+    const canvas = container.querySelector<HTMLElement>(".world-canvas")!;
+    const first = screen.getByRole("button", { name: /Niveau 1 —/ });
+    const fourth = screen.getByRole("button", { name: /Niveau 4 —/ });
+    Object.defineProperty(map, "clientWidth", { configurable: true, value: 1200 });
+    Object.defineProperty(canvas, "clientWidth", { configurable: true, value: 1400 });
+    map.getBoundingClientRect = () => new DOMRect(0, 0, 1200, 800);
+    first.getBoundingClientRect = () => new DOMRect(130, 450, 130, 100);
+    fourth.getBoundingClientRect = () => new DOMRect(1010, 350, 150, 100);
+    map.scrollLeft = 60;
+
+    fireEvent.click(first);
+    expect(container.querySelector(".world-layout")!.getAttribute("data-panel-side")).toBe("right");
+    expect(map.scrollLeft).toBe(60);
+    fireEvent.click(fourth);
+    expect(container.querySelector(".world-layout")!.getAttribute("data-panel-side")).toBe("left");
+    expect(map.scrollLeft).toBe(60);
+    fireEvent.click(screen.getByRole("button", { name: "Fermer les détails du niveau" }));
+    expect(map.scrollLeft).toBe(60);
+  });
 });

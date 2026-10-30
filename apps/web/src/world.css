@@ -1,5 +1,7 @@
 .world-page {
   position: relative;
+  width: 100%;
+  min-width: 0;
   height: 100%;
   overflow: hidden;
   isolation: isolate;
@@ -11,13 +13,7 @@
 .world-header > * { pointer-events: auto; }
 .world-layout { --world-panel-width: 364px; position: absolute; inset: 0; }
 .world-cartography { position: absolute; inset: 0; min-width: 0; min-height: 0; overflow: hidden; background: #355b53; }
-.world-title { position: absolute; z-index: 2; top: calc(var(--game-header-height) + 22px); left: 32px; pointer-events: none; text-shadow: 0 2px 10px #102f2b, 0 2px 20px #102f2b; }
-.world-title::before { position: absolute; z-index: -1; inset: -28px -70px -35px -32px; background: radial-gradient(ellipse at top left, #102c24dc, #102c2400 72%); content: ""; }
-.world-title > span { display: flex; align-items: center; gap: 8px; color: #e1ce9b; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; }
-.world-title h1 { margin: 9px 0 5px; color: #fff3d7; font: 34px/1.2 Georgia, serif; }
-.world-title p { margin: 0; font-size: 11px; color: #d9e1cf; }
 .world-viewport { position: absolute; inset: 0; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; overflow-anchor: none; scrollbar-width: none; cursor: grab; outline-offset: -4px; }
-.world-layout[data-details-open] .world-viewport::after { flex: 0 0 var(--world-panel-width); height: 1px; content: ""; }
 .world-viewport::-webkit-scrollbar { display: none; }
 .world-viewport.is-dragging, .world-viewport.is-dragging :is(a,button) { cursor: grabbing; }
 .world-canvas { position: relative; flex-shrink: 0; width: max(100%, 840px, calc(100svh * 1.5)); aspect-ratio: 3/2; }
@@ -39,7 +35,6 @@
 .world-home small { display: block; margin-top: 4px; color: #c9d9ba; text-align: center; font: 9px/1.2 sans-serif; }
 .world-map-footer { position: absolute; z-index: 2; inset: auto 0 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 20px 26px; background: linear-gradient(transparent, #102c25e8); pointer-events: none; font-size: 10px; color: #e1dfcd; }
 .world-map-footer strong { font-size: 14px; color: #f3deaa; }
-.world-layout[data-details-open] .world-map-footer { padding-right: calc(var(--world-panel-width) + 26px); }
 .world-map-controls { display: flex; align-items: center; gap: 8px; pointer-events: auto; }
 .world-map-controls button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #c9b57988; border-radius: 50%; color: #efdcaa; background: #17372ddd; cursor: pointer; }
 .world-journey { position: absolute; z-index: 4; top: var(--game-header-height); right: 0; bottom: 0; width: var(--world-panel-width); min-height: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #c6ae6e66; border-right: 0; border-bottom: 0; border-radius: 14px 0 0; background: linear-gradient(135deg, #234334, #142d25 65%); box-shadow: -12px 10px 40px #081e244d; scrollbar-width: thin; scrollbar-color: #8c8d6590 transparent; }
@@ -88,14 +83,13 @@
 .world-complete { display: flex; gap: 7px; margin-top: 16px; color: #c6dc9f; font-size: 11px; line-height: 1.6; }
 .world-page :is(button,a,[tabindex]):focus-visible { outline: 2px solid #f4db9e; outline-offset: 3px; }
 @media (min-width: 1500px) { .world-layout { --world-panel-width: 400px; } .world-region-content { padding-inline: 30px; } .world-region-art { height: 180px; } }
-@media (max-width: 900px) { .world-layout { --world-panel-width: 320px; } .world-region-content { padding-inline: 18px; } .world-title { left: 22px; } .world-title h1 { font-size: 29px; } .world-map-controls > span { display: none; } }
+@media (min-width: 701px) {
+  .world-layout[data-panel-side="left"] .world-journey { right: auto; left: 0; border-right: 1px solid #c6ae6e66; border-left: 0; border-radius: 0 14px 0 0; box-shadow: 12px 10px 40px #081e244d; }
+  .world-layout[data-details-open][data-panel-side="right"] .world-map-footer { padding-right: calc(var(--world-panel-width) + 26px); }
+  .world-layout[data-details-open][data-panel-side="left"] .world-map-footer { padding-left: calc(var(--world-panel-width) + 26px); }
+}
+@media (max-width: 900px) { .world-layout { --world-panel-width: 320px; } .world-region-content { padding-inline: 18px; } .world-map-controls > span { display: none; } }
 @media (max-width: 700px) {
-  .world-layout[data-details-open] .world-viewport::after { display: none; }
-  .world-layout[data-details-open] .world-map-footer { padding-right: 18px; }
-  .world-title { top: calc(var(--game-header-height) + 20px); left: 20px; }
-  .world-title h1 { margin-top: 6px; font-size: 26px; }
-  .world-title p { font-size: 10px; }
-  .world-title > span { font-size: 8px; }
   .world-map-footer { padding: 10px 18px; min-height: 52px; }
   .world-marker { width: 43px; height: 43px; font-size: 20px; }
   .world-destination-name { padding-inline: 8px; font-size: 12px; }
