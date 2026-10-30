@@ -15,6 +15,10 @@ describe("carte du monde", () => {
     const start = vi.fn();
     render(<WorldMap board={{ completedStages: 0, chests: [] }} activity={idle} deckReady pending={false} onStart={start} onOpenChest={vi.fn()} />);
     expect(screen.getByRole("link", { name: /La Sylve/ }).getAttribute("href")).toBe("/hub");
+    expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 1 —/ }));
+    expect(screen.getByRole("complementary", { name: "Détails du niveau" })).toBeTruthy();
+    expect(screen.queryByRole("progressbar")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Partir à l’aventure" }));
     expect(start).toHaveBeenCalledWith(1, 1);
     fireEvent.click(screen.getByRole("button", { name: /Étape 1-10/ }));
@@ -25,10 +29,12 @@ describe("carte du monde", () => {
     expect((screen.getByRole("button", { name: "Étape verrouillée" }) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("selects a pending region chest on return and offers an idempotent opening action", () => {
+  it("keeps the map unobstructed on return and reveals a pending chest when its destination is opened", () => {
     const open = vi.fn();
     const chestId = "campaign-chest" as Id<"campaignChests">;
     render(<WorldMap board={{ completedStages: 10, chests: [{ id: chestId, region: 1, opened: false }] }} activity={idle} deckReady pending={false} onStart={vi.fn()} onOpenChest={open} />);
+    expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 1 —.*coffre à ouvrir/ }));
     expect(screen.getByRole("heading", { name: "La Bourgade de Clairval" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Ouvrir le coffre" }));
     expect(open).toHaveBeenCalledWith(chestId);
@@ -39,10 +45,33 @@ describe("carte du monde", () => {
   it("resumes an existing combat and keeps launch disabled while loading or queued", () => {
     const props = { board: { completedStages: 0, chests: [] }, deckReady: true, pending: false, onStart: vi.fn(), onOpenChest: vi.fn() };
     const { rerender } = render(<WorldMap {...props} activity={{ ...idle, gameId: "existing-game" as Id<"games">, status: "active" }} />);
+    fireEvent.click(screen.getByRole("button", { name: /Niveau 1 —/ }));
     expect(screen.getByRole("link", { name: /Reprendre le combat/ })).toBeTruthy();
     rerender(<WorldMap {...props} activity={{ ...idle, queued: true }} />);
     expect((screen.getByRole("button", { name: "Partir à l’aventure" }) as HTMLButtonElement).disabled).toBe(true);
     rerender(<WorldMap {...props} board={undefined} activity={idle} />);
     expect((screen.getByRole("button", { name: "Partir à l’aventure" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("closes the details with the close control, Escape or the map and restores focus to the destination", () => {
+    render(<WorldMap board={{ completedStages: 0, chests: [] }} activity={idle} deckReady pending={false} onStart={vi.fn()} onOpenChest={vi.fn()} />);
+    const first = screen.getByRole("button", { name: /Niveau 1 —/ });
+    const second = screen.getByRole("button", { name: /Niveau 2 —/ });
+    fireEvent.click(first);
+    expect(first.getAttribute("aria-expanded")).toBe("true");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Fermer les détails du niveau" }));
+    fireEvent.click(screen.getByRole("button", { name: "Fermer les détails du niveau" }));
+    expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
+    expect(first.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(first);
+
+    fireEvent.click(second);
+    fireEvent.keyDown(screen.getByRole("button", { name: "Fermer les détails du niveau" }), { key: "Escape" });
+    expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
+    expect(document.activeElement).toBe(second);
+
+    fireEvent.click(first);
+    fireEvent.click(screen.getByRole("img", { name: /Le refuge de la Sylve au cœur de la forêt/ }));
+    expect(screen.queryByRole("complementary", { name: "Détails du niveau" })).toBeNull();
   });
 });

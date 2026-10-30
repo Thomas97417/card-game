@@ -2,6 +2,8 @@
 
 Le téléporteur est un bâtiment indépendant posé dans la clairière à droite de la mine d’or. Son portail de pierre moussue, d’or ancien et de magie turquoise/violette ouvre `/world`. La carte conserve les coordonnées de ses destinations lors du défilement et propose un retour vers la Sylve. Le refuge se trouve dans la forêt ancienne au nord-ouest ; la bourgade fortifiée représentée au sud-ouest accueille le premier niveau, Clairval.
 
+La carte remplit l’écran dès l’arrivée. Les informations d’un niveau s’ouvrent au clic sur sa destination dans un panneau superposé à droite, ou en bas sur mobile. Le bouton de fermeture, la touche Échap ou un clic sur le décor rendent toute la carte visible. Les étapes et le compteur numérique restent consultables dans ce panneau ; la barre de progression régionale a été retirée.
+
 La campagne comporte quatre niveaux de dix sous-niveaux. Le premier chiffre désigne la région, le second son combat : `1-1` à `1-10`, puis `2-1`, jusqu’à `4-10`. Chaque région possède un nouveau terrain généré avec ImageGen intégré, décliné depuis le terrain de duel pour conserver la géométrie du plateau et les placements.
 
 | Niveau | Région | Gardien final | Terrain |
@@ -19,7 +21,7 @@ La région et le sous-niveau sont enregistrés dans `games.campaign`, avec l’�
 
 Pour l’index global `i` de 0 à 39, une première victoire donne `60 + 15 × i` pièces d’or. Le dixième combat ajoute `150 × région` pièces d’or et `25 × région` émeraudes. Le cinquième combat donne aussi `5 × région` émeraudes. Les autres étapes donnent de l’or. Les récompenses sont annoncées avant le départ et créditées dans la transaction qui termine le duel.
 
-Chaque victoire `N-10` garantit également un coffre **épique**, sans délai ni occupation des emplacements de l’arène. Son contenu et son or sont tirés une seule fois d’après le meilleur palier du joueur à l’obtention, avec les tables de coffres existantes. Le coffre reste dans `campaignChests` jusqu’à son ouverture depuis la carte ; revenir sur la carte sélectionne en priorité une région dont le coffre attend d’être ouvert. Son contenu est caché par les requêtes publiques. L’ouverture crédite les cartes et l’or, compte pour les missions de coffres et conserve le résultat pour les réessais. Les clics concurrents ne recréditent rien.
+Chaque victoire `N-10` garantit également un coffre **épique**, sans délai ni occupation des emplacements de l’arène. Son contenu et son or sont tirés une seule fois d’après le meilleur palier du joueur à l’obtention, avec les tables de coffres existantes. Le coffre reste dans `campaignChests` jusqu’à son ouverture depuis la carte ; revenir sur la carte centre en priorité une région dont le coffre attend d’être ouvert, sans ouvrir son panneau. Cliquer sur cette destination révèle le bouton d’ouverture du coffre. Son contenu est caché par les requêtes publiques. L’ouverture crédite les cartes et l’or, compte pour les missions de coffres et conserve le résultat pour les réessais. Les clics concurrents ne recréditent rien.
 
 `campaignProgress.completedStages` enregistre le nombre de premières victoires consécutives. La fin d’un combat, les récompenses et le déblocage suivant sont atomiques. Un abandon ou une défaite ne donne rien et ne retire aucune progression. Une étape terminée peut être rejouée ; elle ne redonne ni monnaie ni coffre.
 

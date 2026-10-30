@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Check, ChevronLeft, ChevronRight, Compass, Flag, LoaderCircle, LockKeyhole, Swords } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Compass, Flag, LoaderCircle, LockKeyhole, Swords, X } from "lucide-react";
 import { CAMPAIGN_REGIONS, CAMPAIGN_STAGES_PER_REGION, CAMPAIGN_TOTAL_STAGES, campaignStage, campaignStageReward } from "@sylve/game/campaign";
 import type { FunctionReturnType } from "convex/server";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
@@ -25,6 +25,7 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
   const completed = board?.completedStages ?? 0;
   const nextRegion = board?.chests.find((chest) => !chest.opened)?.region ?? Math.min(CAMPAIGN_REGIONS.length, Math.floor(completed / CAMPAIGN_STAGES_PER_REGION) + 1);
   const [selected, setSelected] = useState<number | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedStage, setSelectedStage] = useState<number | null>(null);
   const regionId = selected ?? nextRegion;
   const region = CAMPAIGN_REGIONS[regionId - 1]!;
@@ -40,6 +41,10 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
   const loading = !board || !activity;
   const viewport = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const regionTrigger = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
   const { dragHandlers, isDragging } = useHorizontalDrag(true);
   useHorizontalWheel(viewport);
   const [mapFailed, setMapFailed] = useState(false);
@@ -48,19 +53,50 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
     const map = viewport.current;
     const image = canvas.current;
     if (!map || !image) return;
-    const center = () => { map.scrollLeft = Math.max(0, image.clientWidth * region.position.x / 100 - map.clientWidth / 2); };
+    const center = () => {
+      const coveredWidth = detailsOpen && window.matchMedia("(min-width: 701px)").matches
+        ? (panel.current?.clientWidth ?? 0) : 0;
+      map.scrollLeft = Math.max(0, image.clientWidth * region.position.x / 100 - (map.clientWidth - coveredWidth) / 2);
+    };
     center();
     const observer = new ResizeObserver(center);
     observer.observe(map);
+    observer.observe(image);
+    if (panel.current) observer.observe(panel.current);
     return () => observer.disconnect();
-  }, [region.id]);
+  }, [region.id, detailsOpen]);
 
-  function chooseRegion(id: number) { setSelected(id); setSelectedStage(null); }
+  useEffect(() => {
+    if (!detailsOpen) return;
+    if (panel.current) panel.current.scrollTop = 0;
+    closeButton.current?.focus({ preventScroll: true });
+  }, [detailsOpen, region.id]);
 
-  return <main className="world-page" style={{ "--region-color": region.color } as CSSProperties}>
+  function chooseRegion(id: number, trigger: HTMLButtonElement) {
+    regionTrigger.current = trigger;
+    setSelected(id);
+    setSelectedStage(null);
+    setDetailsOpen(true);
+  }
+
+  function closeDetails() {
+    setDetailsOpen(false);
+    regionTrigger.current?.focus({ preventScroll: true });
+  }
+
+  return <main className="world-page" style={{ "--region-color": region.color } as CSSProperties}
+    onKeyDown={(event) => {
+      if (event.key === "Escape" && detailsOpen && !event.defaultPrevented && event.currentTarget.contains(event.target as Node)) {
+        event.stopPropagation();
+        closeDetails();
+      }
+    }}>
     <GameHeader className="world-header" />
-    <div className="world-layout">
-      <section className="world-cartography" aria-label="Exploration du monde">
+    <div className="world-layout" data-details-open={detailsOpen || undefined}>
+      <section className="world-cartography" aria-label="Exploration du monde"
+        onClick={(event) => {
+          if (detailsOpen && !(event.target as Element).closest("button, a")) closeDetails();
+        }}>
         <header className="world-title">
           <span><Compass size={14} /> L’appel de l’aventure</span>
           <h1>Au-delà de la Sylve</h1>
@@ -83,9 +119,10 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
                 const regionDone = completed >= place.id * CAMPAIGN_STAGES_PER_REGION;
                 const awaitingChest = board?.chests.some((item) => item.region === place.id && !item.opened);
                 return <button key={place.id} type="button" className="world-destination" style={{ left: `${place.position.x}%`, top: `${place.position.y}%`, "--marker-color": place.color } as CSSProperties}
-                  data-selected={regionId === place.id || undefined} data-locked={regionLocked || undefined} data-complete={regionDone || undefined}
-                  aria-label={`Niveau ${place.id} — ${place.name}${regionLocked ? ", verrouillé" : regionDone ? ", terminé" : ""}${awaitingChest ? ", coffre à ouvrir" : ""}`} aria-pressed={regionId === place.id}
-                  onClick={() => chooseRegion(place.id)}>
+                  data-selected={(detailsOpen && regionId === place.id) || undefined} data-locked={regionLocked || undefined} data-complete={regionDone || undefined}
+                  aria-label={`Niveau ${place.id} — ${place.name}${regionLocked ? ", verrouillé" : regionDone ? ", terminé" : ""}${awaitingChest ? ", coffre à ouvrir" : ""}`}
+                  aria-expanded={detailsOpen && regionId === place.id} aria-controls={detailsOpen ? panelId : undefined}
+                  onClick={(event) => chooseRegion(place.id, event.currentTarget)}>
                   <span className="world-marker">{awaitingChest ? <img src="/art/chests/epic.webp" alt="" width={38} height={38} /> : regionLocked ? <LockKeyhole size={19} /> : regionDone ? <Check size={22} /> : <span>{place.id}</span>}</span>
                   <span className="world-destination-name">{place.shortName}</span>
                 </button>;
@@ -103,14 +140,17 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
         </footer>
       </section>
 
-      <aside className="world-journey" aria-label="Détails du niveau">
+      {detailsOpen && <aside ref={panel} id={panelId} className="world-journey" aria-label="Détails du niveau">
+        <div className="world-journey-tools">
+          <button ref={closeButton} className="world-journey-close" type="button" aria-label="Fermer les détails du niveau" onClick={closeDetails}>
+            <X size={19} aria-hidden="true" />
+          </button>
+        </div>
         <div className="world-region-art"><img src={region.arena} alt={`Terrain de combat : ${region.name}`} draggable={false} /><span>Niveau {region.id}</span></div>
         <div className="world-region-content">
           <div className="world-region-heading"><span>Les terres à découvrir</span><span>{cleared} / 10</span></div>
           <h2>{region.name}</h2>
           <p className="world-region-description">{region.description}</p>
-          <div className="world-region-progress" role="progressbar" aria-label={`Progression du niveau ${region.id}`} aria-valuemin={0} aria-valuemax={10} aria-valuenow={cleared}><span style={{ width: `${cleared * 10}%` }} /></div>
-
           <nav className="world-stages" aria-label={`Sous-niveaux du niveau ${region.id}`}>
             {Array.from({ length: 10 }, (_, i) => {
               const number = i + 1;
@@ -156,7 +196,7 @@ export function WorldMap({ board, activity, pending, deckReady, onStart, onOpenC
           {completed === CAMPAIGN_TOTAL_STAGES && <p className="world-complete"><Check size={16} /> Toutes les régions sont libérées. Tu peux rejouer les combats.</p>}
           <Link to="/decks" className="world-deck-link">Préparer mon alliance <ArrowRight size={13} /></Link>
         </div>
-      </aside>
+      </aside>}
     </div>
   </main>;
 }
