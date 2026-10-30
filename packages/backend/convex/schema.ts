@@ -48,6 +48,9 @@ export default defineSchema({
     finished: v.boolean(), state: foundryRound,
     batches: v.array(v.object({ startTick: v.number(), endTick: v.number(), digest: v.number() })),
   }).index("by_owner_request", ["ownerId", "requestId"]),
+  foundryInputReceipts: defineTable({
+    roundId: v.id("foundryRounds"), startTick: v.number(), endTick: v.number(), digest: v.number(),
+  }).index("by_round_start", ["roundId", "startTick"]),
   foundryDaily: defineTable({
     ownerId: v.string(), day: v.string(), delivered: v.number(), seen: v.boolean(),
     receipt: v.optional(v.object({ rarity: v.literal("common"), gold: v.number(), reveals: v.array(revealValidator), awardedAt: v.number() })),

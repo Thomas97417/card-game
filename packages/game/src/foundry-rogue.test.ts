@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BLESSINGS, FOUNDRY, FOUNDRY_SKILLS, FOUNDRY_SKILL_IDS, FOUNDRY_CHARM_IDS, buyFoundrySkill, buyFoundryCharm,
   createFoundryRound, newFoundryCycle, deliverFoundryOrder, chooseFoundryBlessing, foundryOrderCost, foundryStats, settleFoundryRound, stepFoundry } from "./foundry";
-const idle = { x: 0, z: 0, active: false };
+const idle = { x: 5.6, z: 3.4, active: false };
 function isolated() {
   const round = createFoundryRound(123, newFoundryCycle(), "mallet", "smith");
   round.targets = round.targets.slice(0, 3).map((t, i) => ({ ...t, kind: "urn" as const, x: i * 1.3, z: 0, hp: 100, maxHp: 100, vx: 0, vz: 0 }));

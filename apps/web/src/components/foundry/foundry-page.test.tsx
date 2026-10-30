@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { createFoundryRound, newFoundryCycle } from "@sylve/game/foundry";
+import { createFoundryRound, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { createFoundryScene } from "./foundry-scene";
 import { FoundryPage } from "./foundry-page";
 
@@ -36,6 +36,18 @@ afterEach(() => { vi.useRealTimers(); vi.clearAllMocks(); vi.unstubAllGlobals();
 const disabled = (element: HTMLElement) => (element as HTMLButtonElement).disabled;
 async function ready() { await waitFor(() => expect(disabled(screen.getByRole("button", { name: "Commencer une manche" }))).toBe(false)); }
 describe("la fonderie à l’écran", () => {
+  it("returns the menus only after stamina reaches zero and the round is saved", async () => {
+    render(<FoundryPage />); await ready(); vi.useFakeTimers();
+    const state = createFoundryRound(1, newFoundryCycle(), "mallet", "smith"); state.concentration = 0.1; state.targets = [];
+    mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "last-strike", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "last-strike", startedAt: 0, finished: false, batches: [], state });
+    mutations.get("foundry:submitInputs")!.mockImplementation(async ({ inputs }) => { inputs.forEach((input: Parameters<typeof stepFoundry>[1]) => stepFoundry(state, input)); return structuredClone(state); });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
+    expect(screen.queryByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeNull();
+    act(() => vi.advanceTimersByTime(3000));
+    await act(async () => { sceneOptions.frame(performance.now() + 50); });
+    expect(mutations.get("foundry:finishRound")).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeTruthy(); expect(screen.getByRole("link", { name: "Retour au refuge" })).toBeTruthy();
+  });
   it("shows locked permanent tools, owned assistants and the daily contract counter", async () => {
     render(<FoundryPage />); await ready();
     expect(screen.getByText("0 / 3 commandes livrées aujourd’hui")).toBeTruthy();
@@ -83,6 +95,7 @@ describe("la fonderie à l’écran", () => {
     mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "round-1", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "round-1", startedAt: 0, finished: false, batches: [], state: createFoundryRound(1, newFoundryCycle(), "mallet", "smith") });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
     expect(screen.getByText("Prépare ton marteau")).toBeTruthy();
+    expect(screen.queryByRole("complementary", { name: "Commandes et améliorations" })).toBeNull(); expect(screen.queryByRole("button", { name: /Ouvrir l’arbre/ })).toBeNull(); expect(screen.queryByRole("link", { name: "Retour au refuge" })).toBeNull();
     act(() => vi.advanceTimersByTime(3000));
     const stage = screen.getByRole("application");
     fireEvent.keyDown(stage, { key: "ArrowRight" }); expect(sceneOptions.input()).toMatchObject({ active: true, x: 0.28 });
@@ -90,6 +103,7 @@ describe("la fonderie à l’écran", () => {
     expect(sceneOptions.state().tick).toBe(6);
     fireEvent.keyDown(stage, { key: "Escape" });
     expect(screen.getByRole("button", { name: "Reprendre la manche" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Livrer la commande" })).toBeNull(); expect(screen.getByRole("progressbar", { name: "Stamina" })).toBeTruthy();
     const before = sceneOptions.state().tick;
     act(() => sceneOptions.frame(4000)); expect(sceneOptions.state().tick).toBe(before);
   });

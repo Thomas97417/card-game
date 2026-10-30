@@ -4,6 +4,7 @@ import { RELICS, type FoundryEffect, type FoundryFrame, type FoundryInput, type 
 import { createFoundryArt, type FoundryRelicArt } from "./foundry-art";
 import { FOUNDRY_IMPACT_DELAY_MS, poseFoundryHammer } from "./foundry-hammer";
 import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim } from "./foundry-projection";
+import { createFoundryCombatText } from "./foundry-combat-text";
 
 export interface FoundryScene {
   aim(clientX: number, clientY: number): FoundryInput;
@@ -35,6 +36,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   renderer.autoClear = false;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.append(renderer.domElement);
+  const combatText = createFoundryCombatText(host, mobile ? 40 : 72);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(39, 1, 0.1, 100);
@@ -120,7 +122,8 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     wave.mat.color.setHex(event.kind === "freeze" ? 0x9bd9e2 : 0xdfc18b); wave.ring.visible = true;
   }
   const queued: { frame: FoundryFrame; at: number }[] = [];
-  let strikeAt = -1000; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0; let wasFrozen = false; let freezeVisualTime = 0;
+  let strikeAt = -1000; let strikeAim: FoundryInput | null = null; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0; let wasFrozen = false; let freezeVisualTime = 0;
+  const textPoint = new THREE.Vector3();
   const resize = () => {
     canvasWidth = Math.max(1, host.clientWidth); canvasHeight = Math.max(1, host.clientHeight);
     renderer.setSize(canvasWidth, canvasHeight, false);
@@ -140,10 +143,11 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       while (queued.length && queued[0]!.at <= time) {
         const next = queued.shift()!;
         const critical = next.frame.impacts.some((hit) => hit.critical);
-        if (next.frame.impacts.length) options.sound(critical, next.frame.impacts.some((hit) => hit.broken));
+        if (next.frame.strike || next.frame.impacts.length) options.sound(critical, next.frame.impacts.some((hit) => hit.broken));
         next.frame.effects?.forEach(effect);
         if (!motion.matches) shakeAt = critical ? time : shakeAt;
         for (const hit of next.frame.impacts) {
+          combatText.impact(hit);
           const obj = relics.get(hit.targetId); if (obj) obj.kick = time;
           emit(hit.x, hit.z, RELICS[hit.kind].color, hit.broken ? 8 : 3, false);
           if (hit.loot) emit(hit.x, hit.z, 0xffd878, Math.min(7, hit.loot), true);
@@ -174,11 +178,12 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         item.model.animate(motion.matches ? 0 : modelTime);
         item.ice.visible = frozen; item.burn.visible = burning.has(t.id);
       }
-      cursor.visible = aim.active && active;
+      cursor.visible = (round.version >= 5 || aim.active) && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);
-      hammer.root.visible = aim.active || !active;
+      hammer.root.visible = round.version >= 5 || aim.active || !active;
       hammer.tool(round.tool);
-      poseFoundryHammer(hammer, aim, time - strikeAt);
+      const elapsed = time - strikeAt;
+      poseFoundryHammer(hammer, strikeAim && elapsed <= FOUNDRY_IMPACT_DELAY_MS + 50 ? strikeAim : aim, elapsed);
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]!;
         if (p.life > 0) {
@@ -206,12 +211,19 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       camera.position.copy(cameraBase);
       if (!motion.matches && time - shakeAt < 160) camera.position.x += Math.sin((time - shakeAt) * 0.1) * 0.035;
       camera.lookAt(target);
+      camera.updateMatrixWorld();
+      if (!active && !round.tick) combatText.clear();
+      combatText.render(active ? dt : 0, (x, z) => {
+        textPoint.set(x, 0.8, z).project(camera);
+        return { x: viewport.left + (textPoint.x + 1) / 2 * viewport.width, y: viewport.top + (1 - textPoint.y) / 2 * viewport.height,
+          visible: Math.abs(textPoint.x) <= 1.1 && Math.abs(textPoint.y) <= 1.1 && textPoint.z >= -1 && textPoint.z <= 1 };
+      }, motion.matches);
       renderer.setViewport(0, 0, canvasWidth, canvasHeight); renderer.clear();
       renderer.setViewport(viewport.left, canvasHeight - viewport.top - viewport.height, viewport.width, viewport.height);
       renderer.render(scene, camera);
     });
   } catch (error) {
-    renderer.dispose(); observer.disconnect(); host.replaceChildren();
+    combatText.destroy(); renderer.dispose(); observer.disconnect(); host.replaceChildren();
     geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); art.dispose(); throw error;
   }
   return {
@@ -221,7 +233,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     nudge(input, dx, dz) { return nudgeFoundryAim(input, dx, dz, viewport.portrait); },
     impact(frame) {
       if (!frame.strike && !frame.impacts.length && !frame.effects?.length) return;
-      const now = performance.now(); if (frame.strike) strikeAt = now;
+      const now = performance.now(); if (frame.strike) { strikeAt = now; strikeAim = frame.strikePosition ? { ...frame.strikePosition, active: true } : null; }
       queued.push({ frame, at: now + (frame.strike ? FOUNDRY_IMPACT_DELAY_MS : 0) }); queued.sort((a, b) => a.at - b.at);
     },
     destroy() {
@@ -230,7 +242,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       renderer.domElement.removeEventListener("webglcontextlost", onContextLost);
       queued.length = 0; particleMesh.dispose(); sun.shadow.dispose();
       geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose());
-      art.dispose(); scene.clear(); renderer.dispose(); renderer.domElement.remove();
+      combatText.destroy(); art.dispose(); scene.clear(); renderer.dispose(); renderer.domElement.remove();
     },
   };
 }

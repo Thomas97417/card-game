@@ -141,3 +141,25 @@
 @media(max-height:720px) and (max-width:760px){.foundry-tree-content{grid-template-rows:minmax(140px,1fr) 146px}.foundry-tree-heading .foundry-eyebrow{display:none}.foundry-tree-heading [data-slot=dialog-title]{font-size:23px;margin:0 0 9px}.foundry-map-hint{display:none}.foundry-tree-footer>span{display:none}.foundry-tree-footer{justify-content:flex-end;margin-top:6px;padding-top:6px}.foundry-skill-description h3{font-size:19px}}
 
 @media(min-width:761px) and (max-width:1100px){.foundry-tree-wallet>small{display:none}.foundry-tree-content{grid-template-columns:minmax(0,1fr) 250px}.foundry-map-legend{gap:7px 12px}.foundry-map-legend>span{font-size:9px}}
+
+/* A running round owns the full worktop; progression returns between rounds. */
+.foundry-page[data-in-round=true]{height:100svh;overflow:hidden}
+.foundry-page[data-in-round=true] .foundry-layout{position:absolute;inset:0;display:block;padding:0}
+.foundry-page[data-in-round=true] .foundry-play-column{height:100%;min-height:0}
+.foundry-page[data-in-round=true] .foundry-background-shade{background:linear-gradient(180deg,#101d1940,transparent 32%,transparent 85%,#151c1a40)}
+.foundry-page[data-in-round=true] .foundry-stage-top{top:20px;left:24px;right:24px}
+.foundry-page[data-in-round=true] .foundry-run-hud{top:20px;left:24px;right:78px}
+.foundry-page[data-in-round=true] .foundry-active-effects{top:108px;left:24px;right:24px}
+.foundry-page[data-in-round=true] .foundry-pause-button{bottom:28px;right:24px}
+.foundry-page[data-in-round=true] .foundry-curtain{inset:0}
+.foundry-combat-text{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none;z-index:1}
+.foundry-hit-number{position:absolute;top:0;left:0;white-space:nowrap;font:700 21px/1.2 Georgia,serif;color:#fff3d8;text-shadow:0 2px 2px #25170e,1px 0 2px #25170e,-1px 0 2px #25170e,0 0 8px #281a14;will-change:transform,opacity}
+.foundry-hit-number.is-critical{font-size:28px;color:#ffda7d;text-shadow:0 2px 3px #4a2412,1px 0 3px #4a2412,-1px 0 3px #4a2412,0 0 12px #5c2c13}
+.foundry-hit-number.is-loot{font-size:19px;color:#c6f4b2;text-shadow:0 2px 3px #18301b,1px 0 3px #18301b,-1px 0 3px #18301b,0 0 9px #1b3c20}
+@media(max-width:760px){
+ .foundry-page[data-in-round=true] .foundry-stage-top{top:15px;left:15px;right:15px}
+ .foundry-page[data-in-round=true] .foundry-run-hud{top:15px;left:15px;right:60px}
+ .foundry-page[data-in-round=true] .foundry-active-effects{top:101px;left:15px;right:15px}
+ .foundry-page[data-in-round=true] .foundry-pause-button{bottom:34px;right:15px}
+ .foundry-hit-number{font-size:18px}.foundry-hit-number.is-critical{font-size:23px}.foundry-hit-number.is-loot{font-size:17px}
+}

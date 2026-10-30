@@ -29,7 +29,7 @@ export class FoundrySession {
     try {
       const draft = JSON.parse(options.storage?.getItem(this.key) ?? "null");
       if (draft?.version === 1 && Number.isSafeInteger(draft.baseTick) && Array.isArray(draft.inputs)
-        && draft.inputs.length <= FOUNDRY.maxTicks && draft.inputs.every((input: FoundryInput) => input && validFoundryInput(input))
+        && draft.baseTick >= 0 && draft.inputs.length <= FOUNDRY.maxDraftInputs && draft.inputs.every((input: FoundryInput) => input && validFoundryInput(input))
         && draft.baseTick <= this.confirmedTick && draft.baseTick + draft.inputs.length >= this.confirmedTick) {
         for (const input of draft.inputs.slice(this.confirmedTick - draft.baseTick) as FoundryInput[]) {
           if (this.state.ended) break;
@@ -54,6 +54,11 @@ export class FoundrySession {
       input.x = Math.max(-FOUNDRY.width / 2, Math.min(FOUNDRY.width / 2, input.x));
       input.z = Math.max(-FOUNDRY.depth / 2, Math.min(FOUNDRY.depth / 2, input.z));
       this.inputs.push(input); const frame = stepFoundry(this.state, input); this.options.impact(frame);
+      if (this.inputs.length >= FOUNDRY.maxDraftInputs && !this.state.ended) {
+        this.running = false; this.accumulator = 0; this.persist();
+        this.options.error("La connexion tarde à confirmer tes frappes. La manche est en pause ; reprends-la après la sauvegarde.");
+        break;
+      }
     }
     if (now - this.lastPersist >= 500) { this.persist(); this.lastPersist = now; }
     if (this.state.ended) { this.running = false; this.persist(); void this.flush(); }

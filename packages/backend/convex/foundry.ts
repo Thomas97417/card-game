@@ -83,7 +83,9 @@ export const submitInputs = mutation({
     if (!round || round.ownerId !== userId) throw new ConvexError("Cette manche est introuvable.");
     if (!Number.isSafeInteger(args.startTick) || args.startTick < 0 || !args.inputs.length || args.inputs.length > FOUNDRY.maxBatchTicks || !args.inputs.every(validFoundryInput)) throw new ConvexError("Lot de visée invalide.");
     const digest = foundryInputDigest(args.inputs);
-    const previous = round.batches.find((batch) => batch.startTick === args.startTick);
+    const previous = round.state.version >= 5
+      ? await ctx.db.query("foundryInputReceipts").withIndex("by_round_start", (q) => q.eq("roundId", round._id).eq("startTick", args.startTick)).unique()
+      : round.batches.find((batch) => batch.startTick === args.startTick);
     if (previous) {
       if (previous.digest !== digest) throw new ConvexError("Cette manche est pilotée dans un autre onglet.");
       return round.state;
@@ -94,7 +96,11 @@ export const submitInputs = mutation({
     if ((args.startTick + args.inputs.length) * FOUNDRY.stepMs > Date.now() - round.startedAt + 100) throw new ConvexError("Les frappes arrivent trop vite.");
     const state = round.state;
     for (const input of args.inputs) { stepFoundry(state, input); if (state.ended) break; }
-    await ctx.db.patch(round._id, { state, batches: [...round.batches, { startTick: args.startTick, endTick: state.tick, digest }] });
+    const receipt = { startTick: args.startTick, endTick: state.tick, digest };
+    if (state.version >= 5) {
+      await ctx.db.insert("foundryInputReceipts", { roundId: round._id, ...receipt });
+      await ctx.db.patch(round._id, { state });
+    } else await ctx.db.patch(round._id, { state, batches: [...round.batches, receipt] });
     return state;
   },
 });

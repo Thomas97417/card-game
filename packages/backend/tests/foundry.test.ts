@@ -24,13 +24,32 @@ async function emptyRound(p: Awaited<ReturnType<typeof player>>, requestId: stri
   const round = await begin(p, requestId);
   vi.setSystemTime(round.startedAt + 80000);
   for (let startTick = 0; startTick < 1000; startTick += 100)
-    await p.client.mutation(api.foundry.submitInputs, { expectedOwnerId: p.ownerId, roundId: round._id, startTick, inputs: Array.from({ length: 100 }, () => ({ x: 0, z: 0, active: false })) });
+    await p.client.mutation(api.foundry.submitInputs, { expectedOwnerId: p.ownerId, roundId: round._id, startTick, inputs: Array.from({ length: 100 }, () => ({ x: 5.6, z: 3.4, active: false })) });
   return round;
 }
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:59:58Z")); });
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("la fonderie connectée", () => {
+  it("saves uncapped rounds in separate receipts and finalizes only when stamina is exhausted", async () => {
+    const t = setup(); const alice = await player(t, "alice"), round = await begin(alice);
+    const initial = structuredClone(round.state); initial.concentration = initial.stats.concentration = 400; initial.targets = [];
+    await t.run((ctx) => ctx.db.patch(round._id, { state: initial }));
+    const expected = structuredClone(initial), inputs = Array.from({ length: 100 }, () => ({ x: 5.6, z: 3.4, active: false }));
+    const first = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick: 0, inputs };
+    for (let startTick = 0; startTick < 4000; startTick += 100) {
+      vi.setSystemTime(round.startedAt + (startTick + 100) * 50); inputs.forEach((input) => stepFoundry(expected, input));
+      expect(await alice.client.mutation(api.foundry.submitInputs, { ...first, startTick })).toEqual(expected);
+      if (startTick === 1900) { expect(expected.ended).toBe(false); await expect(alice.client.mutation(api.foundry.finishRound, { expectedOwnerId: alice.ownerId, roundId: round._id })).rejects.toThrow("terminée"); }
+    }
+    expect(expected.concentration).toBe(0); expect(expected.ended).toBe(true);
+    expect(await alice.client.mutation(api.foundry.submitInputs, first)).toEqual(expected);
+    await expect(alice.client.mutation(api.foundry.submitInputs, { ...first, inputs: inputs.map((input) => ({ ...input, x: 0 })) })).rejects.toThrow("autre onglet");
+    const stored = await t.run((ctx) => ctx.db.get(round._id)); expect(stored?.batches).toHaveLength(0);
+    expect(await t.run((ctx) => ctx.db.query("foundryInputReceipts").collect())).toHaveLength(40);
+    const finish = { expectedOwnerId: alice.ownerId, roundId: round._id };
+    expect(await alice.client.mutation(api.foundry.finishRound, finish)).toEqual(await alice.client.mutation(api.foundry.finishRound, finish));
+  });
   it("requires authentication, initializes once, and checks owned assistants and permanent tool unlocks", async () => {
     const t = setup(); await expect(t.query(api.foundry.board, {})).rejects.toThrow("Connecte-toi");
     const alice = await player(t, "alice");
@@ -62,7 +81,7 @@ describe("la fonderie connectée", () => {
   it("replays moving relics exactly and can resume a persisted V1 round", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const round = await begin(alice);
-    expect(round.state.version).toBe(4);
+    expect(round.state.version).toBe(5);
     expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
     const inputs = Array.from({ length: 40 }, (_, i) => ({ x: Math.sin(i / 8) * 4, z: Math.cos(i / 9) * 2, active: true }));
     const expected = structuredClone(round.state); inputs.forEach((input) => stepFoundry(expected, input));
@@ -82,7 +101,7 @@ describe("la fonderie connectée", () => {
     const initial = structuredClone(round.state);
     initial.targets = initial.targets.slice(0, 2).map((relic, i) => ({ ...relic, kind: "urn", x: i ? 0.56 : -0.56, z: 0, vx: i ? -0.03 : 0.03, vz: 0 }));
     await t.run((ctx) => ctx.db.patch(round._id, { state: initial }));
-    const inputs = Array.from({ length: 40 }, () => ({ x: 0, z: 0, active: false }));
+    const inputs = Array.from({ length: 40 }, () => ({ x: 5.6, z: 3.4, active: false }));
     const expected = structuredClone(initial); inputs.forEach((input) => stepFoundry(expected, input));
     vi.setSystemTime(Date.now() + 2000);
     const args = { expectedOwnerId: alice.ownerId, roundId: round._id, startTick: 0, inputs };
