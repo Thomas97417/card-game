@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { createFoundryRound, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
+import { buyFoundryTool, createFoundryRound, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { createFoundryScene } from "./foundry-scene";
 import { FoundryPage } from "./foundry-page";
 
@@ -36,6 +36,39 @@ afterEach(() => { vi.useRealTimers(); vi.clearAllMocks(); vi.unstubAllGlobals();
 const disabled = (element: HTMLElement) => (element as HTMLButtonElement).disabled;
 async function ready() { await waitFor(() => expect(disabled(screen.getByRole("button", { name: "Commencer une manche" }))).toBe(false)); }
 describe("la fonderie à l’écran", () => {
+  it("buys an affordable run hammer, equips it after confirmation and restores it on revisit", async () => {
+    board = { ...board, progress: { ...board.progress!, revision: 4, cycle: { ...newFoundryCycle(), shards: 100 } } };
+    const view = render(<FoundryPage />); await ready();
+    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    expect(disabled(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" }))).toBe(false);
+    expect(disabled(screen.getByRole("button", { name: "Acheter Marteau du graveur — 180 éclats" }))).toBe(true);
+    expect(disabled(screen.getByRole("button", { name: "Acheter Marteau d’ambre — 420 éclats" }))).toBe(true);
+    mutations.get("foundry:purchaseTool")!.mockImplementation(async () => {
+      board = { ...board, progress: { ...board.progress!, revision: 5, cycle: buyFoundryTool(board.progress!.cycle, "heavy") } };
+    });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" })); });
+    expect(mutations.get("foundry:purchaseTool")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 4, tool: "heavy" });
+    expect(screen.getByText("20 éclats")).toBeTruthy(); expect(screen.getByRole("button", { name: "Brise-roche équipé" })).toBeTruthy();
+    expect(mutations.get("foundry:equipTool")).not.toHaveBeenCalled();
+    view.unmount(); render(<FoundryPage />); await ready();
+    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    expect(screen.getByRole("button", { name: "Brise-roche équipé" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Équiper Maillet de cuivre" }));
+    await waitFor(() => expect(mutations.get("foundry:equipTool")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 5, tool: "mallet" }));
+  });
+  it("clears the equipped purchase on the next chantier and hides the shop during a round", async () => {
+    board = { ...board, progress: { ...board.progress!, cycle: buyFoundryTool({ ...newFoundryCycle(), shards: 80 }, "heavy") } };
+    const view = render(<FoundryPage />); await ready();
+    board = { ...board, progress: { ...board.progress!, revision: 1, cycle: newFoundryCycle(2) } }; view.rerender(<FoundryPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    expect(screen.getByRole("button", { name: "Maillet de cuivre équipé" })).toBeTruthy();
+    expect(disabled(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" }))).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
+    const state = createFoundryRound(11, newFoundryCycle(2), "mallet", "smith");
+    board = { ...board, round: { _id: "active" as Id<"foundryRounds">, _creationTime: 1000, ownerId: "alice", cycleNumber: 2, requestId: "active", startedAt: 1000, finished: false, batches: [], state } }; view.rerender(<FoundryPage />);
+    expect(screen.queryByRole("button", { name: "Choisir les outils et compagnons" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Acheter Brise-roche/ })).toBeNull();
+  });
   it("returns the menus only after stamina reaches zero and the round is saved", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
     const state = createFoundryRound(1, newFoundryCycle(), "mallet", "smith"); state.concentration = 0.1; state.targets = [];

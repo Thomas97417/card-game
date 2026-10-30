@@ -195,12 +195,12 @@ export function createFoundryArt(mobile: boolean) {
     mesh(ball, gold, root, 0, -0.79, 0, 0.12, 0.075, 0.12);
     for (let i = 0; i < 8; i++) hoop(root, i % 3 ? leather : copper, -0.68 + i * 0.105, 0.107, 1.5);
     hoop(root, gold, 0.86, 0.12); hoop(root, gold, 0.96, 0.12);
-    mesh(bevel, copper, head, 0, 0, 0, 1.12, 0.6, 0.65);
+    const body = mesh(bevel, copper, head, 0, 0, 0, 1.12, 0.6, 0.65);
     for (const side of [-1, 1]) {
       mesh(bevel, gold, head, side * 0.51, 0, 0, 0.13, 0.61, 0.68);
       mesh(bevel, iron, head, side * 0.578, 0, 0, 0.035, 0.48, 0.52);
     }
-    mesh(bevel, patina, head, 0, 0, 0, 0.3, 0.66, 0.72);
+    const collar = mesh(bevel, patina, head, 0, 0, 0, 0.3, 0.66, 0.72);
     for (const side of [-1, 1]) {
       mesh(bevel, gold, head, side * 0.17, 0, 0, 0.035, 0.64, 0.7);
       for (const y of [-0.19, 0.19]) for (const z of [-0.32, 0.32]) mesh(bead, gold, head, side * 0.35, y, z, 0.045, 0.045, 0.02);
@@ -216,7 +216,29 @@ export function createFoundryArt(mobile: boolean) {
     const resonance = new THREE.Group(); head.add(resonance);
     const halo = mesh(ring, crystal, resonance, 0, 0, 0, 0.45, 0.45, 0.45); halo.rotation.y = Math.PI / 2;
     for (const side of [-1, 1]) mesh(crystalGeo, crystalLight, resonance, side * 0.32, 0.3, 0, 0.12, 0.25, 0.12);
-    return { root, strikeFace, tool(tool: FoundryTool) { head.scale.x = tool === "swift" ? 0.72 : tool === "resonance" ? 1.2 : 1; resonance.visible = tool === "resonance"; } };
+    const heavy = new THREE.Group(); head.add(heavy);
+    for (const side of [-1, 1]) mesh(bevel, iron, heavy, side * 0.34, 0, 0, 0.13, 0.7, 0.75);
+    const precision = new THREE.Group(); head.add(precision);
+    for (const z of [-0.4, 0.4]) {
+      mesh(crystalGeo, amethyst, precision, 0, 0.24, z, 0.15, 0.3, 0.13);
+      mesh(bead, violetLight, precision, 0, 0.1, z, 0.1, 0.12, 0.08);
+    }
+    const gilded = new THREE.Group(); head.add(gilded);
+    for (const z of [-0.39, 0.39]) {
+      const seal = mesh(ball, gold, gilded, 0, 0, z, 0.19, 0.19, 0.04);
+      for (let i = 0; i < 5; i++) {
+        const angle = i * Math.PI * 2 / 5;
+        const leaf = mesh(leafGeo, gold, gilded, Math.sin(angle) * 0.13, Math.cos(angle) * 0.13, z, 0.09, 0.16, 0.08); leaf.rotation.z = -angle;
+      }
+      seal.castShadow = false;
+    }
+    return { root, strikeFace, tool(tool: FoundryTool) {
+      head.scale.set(tool === "swift" ? 0.72 : tool === "precision" ? 0.78 : tool === "heavy" ? 1.45 : tool === "resonance" || tool === "gilded" ? 1.2 : 1,
+        tool === "heavy" ? 1.12 : tool === "precision" ? 0.86 : 1, tool === "heavy" ? 1.12 : 1);
+      body.material = tool === "heavy" ? stone : tool === "precision" ? patina : tool === "gilded" ? gold : copper;
+      collar.material = tool === "heavy" ? iron : tool === "precision" ? amethyst : patina;
+      resonance.visible = tool === "resonance"; heavy.visible = tool === "heavy"; precision.visible = tool === "precision"; gilded.visible = tool === "gilded";
+    } };
   }
   const shadowSize = 64; const shadowPixels = new Uint8Array(shadowSize * shadowSize * 4);
   for (let y = 0; y < shadowSize; y++) for (let x = 0; x < shadowSize; x++) {

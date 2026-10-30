@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, TOOLS, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
+import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, buyFoundryTool, equipFoundryTool, ownsFoundryTool, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
   deliverFoundryOrder, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryAssistant } from "@sylve/game/foundry";
 import { chestGold, chestLoot } from "@sylve/game/progression";
@@ -68,11 +68,11 @@ export const startRound = mutation({
     if (previous) return previous;
     const saved = await progress(ctx, userId, args.revision); idle(saved);
     if (saved.cycle.status !== "active" || saved.cycle.choices.length || saved.cycle.roundsLeft <= 0) throw new ConvexError("Livre ta commande et choisis ta bénédiction avant de jouer.");
-    if (saved.mastery < TOOLS[args.tool].mastery) throw new ConvexError("Cet outil n’est pas encore débloqué.");
+    if (!ownsFoundryTool(saved.cycle, saved.mastery, args.tool)) throw new ConvexError("Cet outil doit être acheté ou débloqué avant de jouer.");
     if (!(await assistants(ctx, userId)).includes(args.assistant)) throw new ConvexError("Découvre ce compagnon dans ta collection pour l’inviter.");
     const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, saved.cycle, args.tool, args.assistant, saved.charms ?? []);
     const id = await ctx.db.insert("foundryRounds", { ownerId: userId, cycleNumber: saved.cycle.number, requestId: args.requestId, startedAt: Date.now(), finished: false, state, batches: [] });
-    await ctx.db.patch(saved._id, { activeRoundId: id, revision: saved.revision + 1 });
+    await ctx.db.patch(saved._id, { cycle: { ...saved.cycle, selectedTool: args.tool }, activeRoundId: id, revision: saved.revision + 1 });
     return (await ctx.db.get(id))!;
   },
 });
@@ -117,6 +117,22 @@ export const finishRound = mutation({
     await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1, activeRoundId: undefined, lastSummary: summary });
     await ctx.db.patch(round._id, { finished: true });
     return summary;
+  },
+});
+export const purchaseTool = mutation({
+  args: { ...revisionArgs, tool: foundryTool },
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
+    const cycle = rules(() => buyFoundryTool(saved.cycle, args.tool));
+    await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
+  },
+});
+export const equipTool = mutation({
+  args: { ...revisionArgs, tool: foundryTool },
+  handler: async (ctx, args) => {
+    const userId = await owner(ctx, args.expectedOwnerId); const saved = await progress(ctx, userId, args.revision); idle(saved);
+    const cycle = rules(() => equipFoundryTool(saved.cycle, saved.mastery, args.tool));
+    await ctx.db.patch(saved._id, { cycle, revision: saved.revision + 1 });
   },
 });
 export const purchaseUpgrade = mutation({

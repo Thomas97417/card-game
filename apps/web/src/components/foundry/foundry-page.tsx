@@ -2,16 +2,17 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, LockKeyhole, RotateCcw, Wifi, BookOpen, Gem } from "lucide-react";
+import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, RotateCcw, Wifi, BookOpen, Gem } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { ASSISTANTS, ASSISTANT_IDS, BLESSINGS, FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, TOOLS, TOOL_IDS, FOUNDRY_SKILL_IDS, FOUNDRY_RARITY,
-  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, type FoundryAssistant, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
+import { ASSISTANTS, BLESSINGS, FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, TOOLS, FOUNDRY_SKILL_IDS, FOUNDRY_RARITY,
+  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryAssistant, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 import { FoundrySkillTree } from "./foundry-skill-tree";
+import { FoundryEquipment } from "./foundry-equipment";
 import type { FoundryScene } from "./foundry-scene";
 
 const ChestRevealDialog = lazy(() => import("@/components/play/chest-reveal-dialog").then((m) => ({ default: m.ChestRevealDialog })));
@@ -33,6 +34,8 @@ export function FoundryPage() {
   const finish = useMutation(api.foundry.finishRound);
   const purchaseSkill = useMutation(api.foundry.purchaseSkill);
   const purchaseCharm = useMutation(api.foundry.purchaseCharm);
+  const purchaseTool = useMutation(api.foundry.purchaseTool);
+  const equipTool = useMutation(api.foundry.equipTool);
   const abandon = useMutation(api.foundry.abandonChantier);
   const pay = useMutation(api.foundry.payOrder);
   const choose = useMutation(api.foundry.chooseBlessing);
@@ -110,6 +113,10 @@ export function FoundryPage() {
     if (!board.progress) void ensure({ expectedOwnerId: board.ownerId }).catch(showGameError);
     if (board.round && !completed.current.has(board.round._id) && attachedId.current !== board.round._id) attach(board.round, board.ownerId);
     if (!board.round && session.current && !session.current.saving) { session.current.destroy(); session.current = null; attachedId.current = null; setPhase("idle"); }
+    if (!board.round && !session.current && board.progress) {
+      const selected = board.progress.cycle.selectedTool ?? "mallet";
+      setTool(ownsFoundryTool(board.progress.cycle, board.progress.mastery, selected) ? selected : "mallet");
+    }
   }, [board, ensure]);
   useEffect(() => {
     const saved = latest.current.board?.progress;
@@ -212,7 +219,7 @@ export function FoundryPage() {
           </div>
           <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : inRound ? "Manche sauvegardée au fil des frappes" : "Progression sauvegardée"}</span><span>{live ? `${live.broken} reliques · ${live.criticals} critiques` : "Des manches courtes, des choix qui comptent"}</span></div>
 
-          {!inRound && <div className="foundry-preparation"><button type="button" aria-label="Choisir les outils et compagnons" disabled={inRound || busy} onClick={() => setEquipment(true)}><Hammer size={17} /><span><strong>{TOOLS[tool].name}</strong><small>Outils et compagnons</small></span><img src={`/art/characters/${ASSISTANTS[assistant].art}.webp`} alt={ASSISTANTS[assistant].short} /><ArrowUpRight size={15} /></button></div>}
+          {!inRound && <div className="foundry-preparation"><button type="button" aria-label="Choisir les outils et compagnons" disabled={inRound || busy} onClick={() => setEquipment(true)}><Hammer size={17} /><span><strong>{TOOLS[tool].name}</strong><small>Marteaux à acheter et compagnons</small></span><img src={`/art/characters/${ASSISTANTS[assistant].art}.webp`} alt={ASSISTANTS[assistant].short} /><ArrowUpRight size={15} /></button></div>}
           {!inRound && <button type="button" className="foundry-mobile-orders" onClick={() => { pause(); sidebar.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }}>Commandes et améliorations <ArrowUpRight size={14} /></button>}
         </section>
         {!inRound && <aside className="foundry-sidebar" ref={sidebar} aria-label="Commandes et améliorations">
@@ -235,18 +242,13 @@ export function FoundryPage() {
       <Dialog open={closing && !inRound} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs et bénédictions de ce chantier seront perdus. Tu conserves ta maîtrise, tes outils et tes talismans pour le prochain essai.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
       <Dialog open={help && !inRound} onOpenChange={setHelp}>
         <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les gestes de l’artisan</DialogTitle>
-          <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Le marteau frappe à sa cadence, même dans le vide.</strong> Déplace la souris ou glisse le doigt pour viser. Les flèches déplacent aussi la visée. Chaque coup consomme de la stamina, même dans le vide. Elle ne diminue pas entre les frappes. La manche continue tant qu’il en reste : les améliorations de récupération peuvent la prolonger. Le maillet commence à 1 dégât hors critique ; les améliorations renforcent ensuite ses frappes. Échap met en pause.</p><p>Chaque commande te donne trois manches. Investis tes éclats dans les cinq voies de l’arbre, ou garde-les pour la livraison. Chaque livraison propose trois bénédictions, dont une technique. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise, les outils et les talismans restent acquis.</p><div>{ACTIVE_RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>
+          <section className="foundry-guide" aria-label="Guide de la fonderie"><p><strong>Le marteau frappe à sa cadence, même dans le vide.</strong> Déplace la souris ou glisse le doigt pour viser. Les flèches déplacent aussi la visée. Chaque coup consomme de la stamina, même dans le vide. Elle ne diminue pas entre les frappes. La manche continue tant qu’il en reste : les améliorations de récupération peuvent la prolonger. Le maillet commence à 1 dégât hors critique ; les améliorations renforcent ensuite ses frappes. Échap met en pause.</p><p>Chaque commande te donne trois manches. Entre deux manches, dépense tes éclats dans les marteaux du chantier ou les cinq voies de l’arbre, ou garde-les pour la livraison. Les marteaux achetés sont conservés jusqu’à la clôture du chantier ; les outils du refuge restent débloqués pour toujours. Chaque livraison propose trois bénédictions, dont une technique. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise, les outils et les talismans restent acquis.</p><div>{ACTIVE_RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div></section>
         </DialogContent>
       </Dialog>
       <Dialog open={equipment && !inRound} onOpenChange={setEquipment}>
-        <DialogContent className="foundry-preparation-dialog"><DialogTitle>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Un outil et un compagnon, pour faire résonner l’établi.</p>
-          <section className="foundry-equipment" aria-label="Préparer la manche"><div className="foundry-section-title"><h2>Les outils de l’artisan</h2><span>Acquis pour toujours</span></div><div className="foundry-tools">{TOOL_IDS.map((id) => {
-            const item = TOOLS[id]; const unlocked = (progress?.mastery ?? 0) >= item.mastery;
-            return <button key={id} type="button" className={`foundry-tool ${tool === id ? "is-selected" : ""}`} disabled={inRound || !unlocked || busy} onClick={() => setTool(id)} aria-pressed={tool === id}><span className={`foundry-tool-art tool-${id}`}><Hammer size={29} /></span><strong>{item.name}</strong><span>{unlocked ? item.detail : `${item.mastery} commande${item.mastery > 1 ? "s" : ""} à livrer`}</span>{!unlocked ? <LockKeyhole className="foundry-choice-check" size={14} /> : tool === id ? <Check className="foundry-choice-check" size={15} /> : null}</button>;
-          })}</div><div className="foundry-section-title"><h2>Un compagnon à tes côtés</h2><span>Un talent, à chaque manche</span></div><div className="foundry-assistants">{ASSISTANT_IDS.map((id) => {
-            const item = ASSISTANTS[id]; const unlocked = board?.availableAssistants.includes(id);
-            return <button key={id} type="button" className={assistant === id ? "is-selected" : ""} disabled={inRound || !unlocked || busy} onClick={() => setAssistant(id)} aria-pressed={assistant === id}><img src={`/art/characters/${item.art}.webp`} alt="" /><div><strong>{item.short}</strong><span>{unlocked ? item.detail : "À découvrir dans la collection"}</span></div>{!unlocked ? <LockKeyhole size={14} /> : assistant === id ? <Check size={15} /> : null}</button>;
-          })}</div></section>
+        <DialogContent className="foundry-preparation-dialog foundry-equipment-dialog"><DialogTitle>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Investis tes éclats dans un marteau, puis choisis ton compagnon.</p>
+          {cycle && <FoundryEquipment cycle={cycle} mastery={progress?.mastery ?? 0} charms={progress?.charms ?? []} tool={tool} assistant={assistant} assistants={board?.availableAssistants ?? []} locked={locked || !cycle.roundsLeft}
+            onTool={(id, purchase) => action(async (b) => { await (purchase ? purchaseTool : equipTool)({ ...revision(b), tool: id }); setTool(id); })} onAssistant={setAssistant} />}
           <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour la forge <Check size={16} /></button>
         </DialogContent>
       </Dialog>

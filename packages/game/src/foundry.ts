@@ -4,7 +4,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 7, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 8, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -12,12 +12,21 @@ export const FOUNDRY = {
   legacyOrderCosts: [100, 200, 350, 550, 850],
   orders: ["Rallumer la balise", "Renforcer les portes", "Accorder le sanctuaire", "Réparer les sentinelles", "Éveiller le cœur du refuge"],
 } as const;
-export const TOOL_IDS = ["mallet", "swift", "resonance"] as const;
+export const TOOL_IDS = ["mallet", "swift", "resonance", "heavy", "precision", "gilded"] as const;
 export type FoundryTool = (typeof TOOL_IDS)[number];
+interface FoundryToolDefinition {
+  name: string; detail: string; damage: number; interval: number; radius: number; mastery: number;
+  cost: number; stamina: number; critical: number; criticalDamage: number; loot: number; source: string;
+}
+const defineTool = (spec: Pick<FoundryToolDefinition, "name" | "detail" | "damage" | "interval" | "radius"> & Partial<FoundryToolDefinition>): FoundryToolDefinition =>
+  ({ mastery: 0, cost: 0, stamina: 1, critical: 0, criticalDamage: 0, loot: 0, source: "hammers/basic-hammer", ...spec });
 export const TOOLS = {
-  mallet: { name: "Maillet de cuivre", detail: "Une frappe solide et équilibrée", damage: 1, interval: 11, radius: 0.72, mastery: 0 },
-  swift: { name: "Martelet vif", detail: "Léger, précis et très rapide", damage: 1.8, interval: 5, radius: 0.55, mastery: 1 },
-  resonance: { name: "Marteau de résonance", detail: "Une onde qui touche les objets voisins", damage: 2.4, interval: 16, radius: 1.65, mastery: 3 },
+  mallet: defineTool({ name: "Maillet de cuivre", detail: "Une frappe solide et équilibrée", damage: 1, interval: 11, radius: 0.72 }),
+  swift: defineTool({ name: "Martelet vif", detail: "Léger, précis et très rapide", damage: 1.8, interval: 5, radius: 0.55, mastery: 1, source: "hammers/toy-hammer" }),
+  resonance: defineTool({ name: "Marteau de résonance", detail: "Une onde qui touche les objets voisins", damage: 2.4, interval: 16, radius: 1.65, mastery: 3, source: "skill-tree/smash-hit-radius" }),
+  heavy: defineTool({ name: "Brise-roche", detail: "Une tête massive, des coups puissants, plus d’endurance dépensée", damage: 3, interval: 16, radius: 0.9, cost: 80, stamina: 1.4, source: "hammers/heavy-hammer" }),
+  precision: defineTool({ name: "Marteau du graveur", detail: "+15 points de critiques et +60 % de dégâts critiques", damage: 2.2, interval: 8, radius: 0.58, cost: 180, critical: 0.15, criticalDamage: 0.6, source: "hammers/ultra-crit" }),
+  gilded: defineTool({ name: "Marteau d’ambre", detail: "+25 % d’éclats sur les reliques, une frappe ample et puissante", damage: 4, interval: 12, radius: 1.1, cost: 420, stamina: 1.2, loot: 0.25, source: "hammers/golden-hammer" }),
 } as const;
 export const ASSISTANT_IDS = ["smith", "dryad", "feline"] as const;
 export type FoundryAssistant = (typeof ASSISTANT_IDS)[number];
@@ -48,12 +57,13 @@ export interface FoundryCycle {
   number: number; shards: number; orderIndex: number; roundsLeft: number;
   upgrades: Record<FoundryUpgrade, number>; blessings: FoundryBlessing[];
   choices: FoundryBlessing[]; skills?: FoundrySkillId[]; seed?: number; economy?: 2; status: "active" | "failed" | "completed" | "abandoned";
+  purchasedTools?: FoundryTool[]; selectedTool?: FoundryTool;
 }
 export interface FoundryStats { damage: number; interval: number; radius: number; critical: number; loot: number; concentration: number }
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
@@ -66,13 +76,32 @@ export interface FoundryEffect { kind: "freeze" | "lightning" | "burn" | "frenzy
 export interface FoundryFrame { strike: boolean; impacts: FoundryImpact[]; effects?: FoundryEffect[]; strikePosition?: { x: number; z: number } }
 export interface FoundrySummary { shards: number; broken: number; hits: number; criticals: number; seconds: number }
 
+export function foundryToolStrikeCost(tool: FoundryTool, drain = 0, furious = false): number {
+  return FOUNDRY.staminaPerStrike * TOOLS[tool].stamina * Math.max(0.25, 1 + drain) * (furious ? 0.5 : 1);
+}
 export function foundryStrikeCost(round: FoundryRound): number {
   const rogue = round.rogue;
-  return FOUNDRY.staminaPerStrike * Math.max(0.25, 1 + (rogue?.modifiers.drain ?? 0)) * (rogue && rogue.frenzyUntil > round.tick ? 0.5 : 1);
+  return foundryToolStrikeCost(round.tool, rogue?.modifiers.drain, !!rogue && rogue.frenzyUntil > round.tick);
 }
 
 export function newFoundryCycle(number = 1, seed = Math.imul(number, 2654435761) >>> 0): FoundryCycle {
-  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], seed, economy: 2, status: "active" };
+  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], purchasedTools: [], selectedTool: "mallet", seed, economy: 2, status: "active" };
+}
+export function ownsFoundryTool(cycle: FoundryCycle, mastery: number, tool: FoundryTool): boolean {
+  return TOOLS[tool].cost > 0 ? !!cycle.purchasedTools?.includes(tool) : mastery >= TOOLS[tool].mastery;
+}
+export function equipFoundryTool(cycle: FoundryCycle, mastery: number, tool: FoundryTool): FoundryCycle {
+  if (cycle.status !== "active" || cycle.choices.length || cycle.roundsLeft <= 0) throw new Error("Livre d’abord la commande ou choisis ta bénédiction.");
+  if (!ownsFoundryTool(cycle, mastery, tool)) throw new Error("Cet outil doit être acheté ou débloqué avant de l’équiper.");
+  return { ...cycle, selectedTool: tool };
+}
+export function buyFoundryTool(cycle: FoundryCycle, tool: FoundryTool): FoundryCycle {
+  if (cycle.status !== "active" || cycle.choices.length || cycle.roundsLeft <= 0) throw new Error("Livre d’abord la commande ou choisis ta bénédiction.");
+  const cost = TOOLS[tool].cost;
+  if (!cost) throw new Error("Cet outil se débloque avec les commandes livrées.");
+  if (cycle.purchasedTools?.includes(tool)) throw new Error("Cet outil est déjà acheté pour ce chantier.");
+  if (cycle.shards < cost) throw new Error("Il manque des éclats pour ce marteau.");
+  return { ...cycle, shards: cycle.shards - cost, purchasedTools: [...(cycle.purchasedTools ?? []), tool], selectedTool: tool };
 }
 function random(state: { rng: number }) {
   let x = state.rng | 0;
@@ -88,8 +117,8 @@ export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, assistant: 
     damage: base.damage * Math.max(0.25, 1 + powerBonus * (assistant === "smith" && powerBonus > 0 ? 1.15 : 1)),
     interval: Math.max(2, Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
     radius: base.radius * Math.max(0.4, 1 + modifiers.radius),
-    critical: Math.max(0, Math.min(0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical)),
-    loot: Math.max(0.25, 1 + modifiers.loot) * (assistant === "feline" ? 1.15 : 1) * (1 + cycle.orderIndex * 0.08),
+    critical: Math.max(0, Math.min(0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical + base.critical)),
+    loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * (assistant === "feline" ? 1.15 : 1) * (1 + cycle.orderIndex * 0.08),
     concentration: Math.max(30, Math.round(100 * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus) * (assistant === "dryad" ? 1.15 : 1))),
   };
 }
@@ -183,6 +212,7 @@ function resolveRelicContacts(targets: FoundryRelic[], bounce = true) {
 export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant, charms: readonly FoundryCharmId[] = []): FoundryRound {
   const stats = foundryStats(cycle, tool, assistant, charms);
   const modifiers = foundryModifiers(cycle, charms);
+  modifiers.criticalDamage += TOOLS[tool].criticalDamage;
   const state: FoundryRound = { version: FOUNDRY.version, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, assistant, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
     rogue: { modifiers, capacity: Math.min(FOUNDRY.maxTargets, FOUNDRY.baseTargets + modifiers.capacity), pressure: 1 + cycle.orderIndex * 0.2,

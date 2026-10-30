@@ -62,7 +62,7 @@ describe("la fonderie déterministe", () => {
     expect(new Set(state.targets.map((t) => t.kind)).size).toBe(ACTIVE_RELIC_KINDS.length);
     const before = structuredClone(state.targets);
     for (let tick = 0; tick < 80; tick++) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
-    expect(state.version).toBe(7);
+    expect(state.version).toBe(FOUNDRY.version);
     for (const relic of state.targets) {
       const original = before.find((t) => t.id === relic.id)!;
       expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
