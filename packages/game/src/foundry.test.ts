@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FOUNDRY, TOOLS, buyFoundryUpgrade, chooseFoundryBlessing, createFoundryRound, deliverFoundryOrder,
-  RELICS, RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
+  RELICS, ACTIVE_RELIC_KINDS, foundryInputDigest, foundryStats, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
   type FoundryInput, type FoundryRound } from "./foundry";
 
 const aim: FoundryInput = { x: 0, z: 0, active: true };
@@ -56,13 +56,13 @@ describe("la fonderie déterministe", () => {
   });
   it("moves every relic kind with the runner fastest and bounces at the board edges", () => {
     const state = round();
-    for (let seed = 1; seed <= 100 && new Set(state.targets.map((t) => t.kind)).size < RELIC_KINDS.length; seed++) {
+    for (let seed = 1; seed <= 100 && new Set(state.targets.map((t) => t.kind)).size < ACTIVE_RELIC_KINDS.length; seed++) {
       state.targets = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith").targets;
     }
-    expect(new Set(state.targets.map((t) => t.kind)).size).toBe(RELIC_KINDS.length);
+    expect(new Set(state.targets.map((t) => t.kind)).size).toBe(ACTIVE_RELIC_KINDS.length);
     const before = structuredClone(state.targets);
     for (let tick = 0; tick < 80; tick++) stepFoundry(state, { x: 5.6, z: 3.4, active: false });
-    expect(state.version).toBe(6);
+    expect(state.version).toBe(7);
     for (const relic of state.targets) {
       const original = before.find((t) => t.id === relic.id)!;
       expect(Math.hypot(relic.x - original.x, relic.z - original.z)).toBeGreaterThan(0.1);
@@ -90,6 +90,7 @@ describe("la fonderie déterministe", () => {
   });
   it("applies area damage, bounded chaos chains, spring recovery, and the tool cooldown", () => {
     const state = createFoundryRound(7, newFoundryCycle(), "resonance", "smith");
+    state.version = 6; // Only saved rounds retain sources and their recovery.
     state.concentration = 40;
     state.targets = state.targets.slice(0, 4);
     state.targets.forEach((target, i) => { target.x = [0, 1.31, 0, -1.31][i]!; target.z = i === 2 ? 1.24 : 0; target.vx = 0; target.vz = 0; });
@@ -111,11 +112,46 @@ describe("la fonderie déterministe", () => {
   });
   it("applies assistant and upgrade bonuses independently of collection combat stats", () => {
     const cycle = newFoundryCycle();
-    expect(foundryStats(cycle, "mallet", "smith").damage).toBeCloseTo(TOOLS.mallet.damage * 1.15);
+    for (const assistant of ["smith", "dryad", "feline"] as const) expect(foundryStats(cycle, "mallet", assistant).damage).toBe(1);
     expect(foundryStats(cycle, "mallet", "dryad").concentration).toBe(115);
     expect(foundryStats(cycle, "mallet", "feline").loot).toBe(1.15);
     const upgraded = buyFoundryUpgrade({ ...cycle, shards: 350 }, "power");
-    expect(upgraded.shards).toBe(300); expect(foundryStats(upgraded, "mallet", "smith").damage).toBeGreaterThan(foundryStats(cycle, "mallet", "smith").damage);
+    expect(upgraded.shards).toBe(300); expect(foundryStats(upgraded, "mallet", "smith").damage).toBeCloseTo(1.2875);
+    expect(foundryStats(upgraded, "mallet", "dryad").damage).toBe(1.25);
+    for (const tool of ["swift", "resonance"] as const) expect(foundryStats(cycle, tool, "smith").damage).toBe(TOOLS[tool].damage);
+  });
+  it("deals exactly one damage before upgrades and increases with acquired power", () => {
+    const state = round(); state.stats.critical = 0;
+    state.targets = [{ ...state.targets[0]!, kind: "urn", x: 0, z: 0, vx: 0, vz: 0, hp: 4, maxHp: 4 }];
+    expect(stepFoundry(state, aim).impacts[0]?.damage).toBe(1); expect(state.targets[0]!.hp).toBe(3);
+    expect(foundryStats({ ...newFoundryCycle(), skills: ["forge-grip"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
+    expect(foundryStats({ ...newFoundryCycle(), blessings: ["power"] }, "mallet", "smith").damage).toBeCloseTo(1.23);
+    expect(foundryStats(newFoundryCycle(), "mallet", "smith", ["ember"]).damage).toBeCloseTo(1.115);
+    expect(foundryStats({ ...newFoundryCycle(), blessings: ["haste"] }, "mallet", "smith").damage).toBe(0.85);
+  });
+  it("never spawns stamina sources in new rounds, including replacement relics", () => {
+    const kinds = new Set<string>(); let broken = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith");
+      for (const target of state.targets) kinds.add(target.kind);
+      while (!state.ended) {
+        const target = state.targets.reduce((a, b) => a.hp < b.hp ? a : b);
+        stepFoundry(state, { x: target.x, z: target.z, active: true });
+        for (const target of state.targets) kinds.add(target.kind);
+      }
+      broken += state.broken;
+      expect(state.concentration).toBe(0); expect(state.rogue!.strikes).toBe(100);
+    }
+    expect(kinds).toEqual(new Set(ACTIVE_RELIC_KINDS)); expect(broken).toBeGreaterThan(400);
+  });
+  it("retains stamina sources among the replacements of saved V6 rounds", () => {
+    let sources = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const state = createFoundryRound(seed, newFoundryCycle(), "mallet", "smith"); state.version = 6;
+      state.stats.radius = 20; state.targets.forEach((target) => { target.hp = 1; });
+      stepFoundry(state, aim); sources += state.targets.filter((target) => target.kind === "spring").length;
+    }
+    expect(sources).toBeGreaterThan(0);
   });
   it("makes the first order affordable with the starting tool", () => {
     let cycle = newFoundryCycle();

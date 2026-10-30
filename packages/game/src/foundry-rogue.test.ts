@@ -44,6 +44,13 @@ describe("les builds de la fonderie", () => {
     expect(() => buyFoundryCharm(3, 1, permanent.charms, "ember")).toThrow("déjà"); expect(() => buyFoundryCharm(3, 1, permanent.charms, "echo")).toThrow("maîtrise");
     expect(foundryStats(newFoundryCycle(2), "mallet", "smith", permanent.charms).damage).toBeGreaterThan(base.damage); expect(FOUNDRY_CHARM_IDS).toHaveLength(6);
   });
+  it("replaces the source skill with a stamina reserve without depending on removed relics", () => {
+    let cycle = buyFoundrySkill({ ...newFoundryCycle(), shards: 100 }, "sap-breath");
+    expect(foundryStats(cycle, "mallet", "smith").concentration).toBe(115);
+    cycle = buyFoundrySkill(cycle, "sap-spring");
+    expect(foundryStats(cycle, "mallet", "smith").concentration).toBe(125);
+    expect(FOUNDRY_SKILLS["sap-spring"].detail).not.toContain("sources");
+  });
   it("freezes movement for 2.5 seconds, then restores the unchanged velocity", () => {
     const round = isolated(); round.targets[0]!.vx = 0.012; round.rogue!.modifiers.freezeChance = 1; round.rogue!.nextFreeze = 1;
     const result = stepFoundry(round, idle), x = round.targets[0]!.x;

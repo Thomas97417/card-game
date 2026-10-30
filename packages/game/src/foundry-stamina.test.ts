@@ -34,6 +34,7 @@ describe("la stamina par frappe", () => {
     expect(foundryStrikeCost(round)).toBeCloseTo(0.7); round.rogue!.frenzyUntil = 100;
     expect(foundryStrikeCost(round)).toBeCloseTo(0.35); const before = round.concentration; stepFoundry(round, air); expect(before - round.concentration).toBeCloseTo(0.35);
     const spring = createFoundryRound(4, newFoundryCycle(), "mallet", "smith"); spring.concentration = 1;
+    spring.version = 6;
     spring.targets = [{ ...spring.targets[0]!, kind: "spring", x: 0, z: 0, vx: 0, vz: 0, hp: 1, maxHp: 1 }];
     stepFoundry(spring, { x: 0, z: 0, active: true }); expect(spring.concentration).toBe(8); expect(spring.ended).toBe(false);
   });

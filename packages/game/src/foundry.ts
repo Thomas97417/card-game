@@ -4,7 +4,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 6, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 7, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -15,14 +15,14 @@ export const FOUNDRY = {
 export const TOOL_IDS = ["mallet", "swift", "resonance"] as const;
 export type FoundryTool = (typeof TOOL_IDS)[number];
 export const TOOLS = {
-  mallet: { name: "Maillet de cuivre", detail: "Une frappe solide et équilibrée", damage: 3, interval: 11, radius: 0.72, mastery: 0 },
+  mallet: { name: "Maillet de cuivre", detail: "Une frappe solide et équilibrée", damage: 1, interval: 11, radius: 0.72, mastery: 0 },
   swift: { name: "Martelet vif", detail: "Léger, précis et très rapide", damage: 1.8, interval: 5, radius: 0.55, mastery: 1 },
   resonance: { name: "Marteau de résonance", detail: "Une onde qui touche les objets voisins", damage: 2.4, interval: 16, radius: 1.65, mastery: 3 },
 } as const;
 export const ASSISTANT_IDS = ["smith", "dryad", "feline"] as const;
 export type FoundryAssistant = (typeof ASSISTANT_IDS)[number];
 export const ASSISTANTS = {
-  smith: { name: "Forgeron de la citadelle", short: "Le Forgeron", detail: "+15 % de dégâts · prêté par le refuge", art: "gnome", family: "gnome" },
+  smith: { name: "Forgeron de la citadelle", short: "Le Forgeron", detail: "+15 % aux bonus de dégâts · prêté par le refuge", art: "gnome", family: "gnome" },
   dryad: { name: "Dryade des fougères", short: "La Dryade", detail: "+15 % de concentration", art: "mushroom", family: "mushroom" },
   feline: { name: "Féline des clairières", short: "La Féline", detail: "+15 % d’éclats", art: "lynx", family: "lynx" },
 } as const;
@@ -35,6 +35,8 @@ export const UPGRADES = {
 } as const;
 export const RELIC_KINDS = ["urn", "geode", "runner", "spring", "chaos"] as const;
 export type RelicKind = (typeof RELIC_KINDS)[number];
+// Sources remain readable only for the deterministic replay of saved V1–V6 rounds.
+export const ACTIVE_RELIC_KINDS = ["urn", "geode", "runner", "chaos"] as const;
 export const RELICS = {
   urn: { name: "Urne d’ambre", hp: 4, loot: [3, 6], weight: 48, color: 0xc68a49, speed: 0.012, radius: 0.55, mass: 1, detail: "Fragile et généreuse" },
   geode: { name: "Géode ancienne", hp: 14, loot: [14, 23], weight: 20, color: 0x75c9cf, speed: 0.008, radius: 0.68, mass: 2.8, detail: "Résistante, riche en éclats" },
@@ -51,7 +53,7 @@ export interface FoundryStats { damage: number; interval: number; radius: number
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
@@ -80,8 +82,10 @@ function random(state: { rng: number }) {
 }
 export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant, charms: readonly FoundryCharmId[] = []): FoundryStats {
   const modifiers = foundryModifiers(cycle, charms); const base = TOOLS[tool];
+  const powerBonus = cycle.upgrades.power * 0.25 + modifiers.power;
   return {
-    damage: base.damage * Math.max(0.25, 1 + cycle.upgrades.power * 0.25 + modifiers.power) * (assistant === "smith" ? 1.15 : 1),
+    // The loaned smith amplifies acquired bonuses, leaving a fresh mallet at 1 damage.
+    damage: base.damage * Math.max(0.25, 1 + powerBonus * (assistant === "smith" && powerBonus > 0 ? 1.15 : 1)),
     interval: Math.max(2, Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
     radius: base.radius * Math.max(0.4, 1 + modifiers.radius),
     critical: Math.max(0, Math.min(0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical)),
@@ -90,8 +94,9 @@ export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, assistant: 
   };
 }
 function spawn(state: FoundryRound): FoundryRelic {
-  let roll = random(state) * 100;
-  const kind = RELIC_KINDS.find((id) => (roll -= RELICS[id].weight) < 0) ?? "urn";
+  const kinds = state.version >= 7 ? ACTIVE_RELIC_KINDS : RELIC_KINDS;
+  let roll = random(state) * kinds.reduce((total, id) => total + RELICS[id].weight, 0);
+  const kind = kinds.find((id) => (roll -= RELICS[id].weight) < 0) ?? "urn";
   let x = 0; let z = 0;
   if (state.version >= 3) {
     const radius = RELICS[kind].radius;
@@ -322,7 +327,7 @@ function stepFoundryRogue(state: FoundryRound, input: FoundryInput): FoundryFram
       loot = Math.max(1, Math.round((low + Math.floor(random(state) * (high - low + 1))) * state.stats.loot * bonus * (jackpot ? 2 : 1)));
       state.shards += loot;
       if (jackpot) { rogue.jackpots++; frame.effects!.push({ kind: "jackpot", x: target.x, z: target.z }); }
-      if (target.kind === "spring") restore(8 + mods.springRecovery);
+      if (state.version < 7 && target.kind === "spring") restore(8 + mods.springRecovery);
       if (state.broken === 1) restore(mods.firstKillRecovery);
       if (roll(mods.recoveryChance)) restore(2 + mods.recoveryAmount);
       if (roll(mods.berserkChance)) {

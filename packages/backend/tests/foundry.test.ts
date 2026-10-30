@@ -84,7 +84,9 @@ describe("la fonderie connectée", () => {
   it("replays moving relics exactly and can resume a persisted V1 round", async () => {
     const t = setup(); const alice = await player(t, "alice");
     const round = await begin(alice);
-    expect(round.state.version).toBe(6);
+    expect(round.state.version).toBe(7);
+    expect(round.state.stats.damage).toBe(1);
+    expect(round.state.targets.some((relic) => relic.kind === "spring")).toBe(false);
     expect(round.state.targets.every((relic) => Math.hypot(relic.vx, relic.vz) > 0)).toBe(true);
     const inputs = Array.from({ length: 40 }, (_, i) => ({ x: Math.sin(i / 8) * 4, z: Math.cos(i / 9) * 2, active: true }));
     const expected = structuredClone(round.state); inputs.forEach((input) => stepFoundry(expected, input));
