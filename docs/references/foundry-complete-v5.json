@@ -1,0 +1,563 @@
+{
+  "engineVersion": 11,
+  "economy": 5,
+  "nodes": 211,
+  "totalSkillCost": 1354174029,
+  "settings": {
+    "loot": [
+      10,
+      20,
+      40,
+      80,
+      160
+    ],
+    "orders": [
+      2000,
+      20000,
+      150000,
+      1000000,
+      5000000
+    ]
+  },
+  "profiles": {
+    "investment": {
+      "options": {},
+      "completed": 24,
+      "total": 24,
+      "golden": {
+        "count": 24,
+        "earliest": 14,
+        "latest": 14
+      },
+      "example": {
+        "seed": 1,
+        "status": "completed",
+        "delivered": 5,
+        "learned": 56,
+        "freeRounds": 0,
+        "rounds": 15,
+        "bank": 71786558,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 2
+          },
+          {
+            "tool": "precision",
+            "round": 3
+          },
+          {
+            "tool": "resonance",
+            "round": 6
+          },
+          {
+            "tool": "heavy",
+            "round": 7
+          },
+          {
+            "tool": "spiked",
+            "round": 10
+          },
+          {
+            "tool": "gilded",
+            "round": 14
+          }
+        ],
+        "history": [
+          {
+            "round": 1,
+            "order": 1,
+            "tool": "mallet",
+            "income": 1470,
+            "bank": 1470,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 2,
+            "order": 1,
+            "tool": "swift",
+            "income": 14814,
+            "bank": 15247,
+            "skills": 4,
+            "ticks": 971,
+            "strikes": 120,
+            "emptySwings": 0
+          },
+          {
+            "round": 3,
+            "order": 1,
+            "tool": "precision",
+            "income": 11299,
+            "bank": 22444,
+            "skills": 8,
+            "ticks": 1053,
+            "strikes": 130,
+            "emptySwings": 0
+          },
+          {
+            "round": 4,
+            "order": 2,
+            "tool": "precision",
+            "income": 17789,
+            "bank": 38013,
+            "skills": 12,
+            "ticks": 917,
+            "strikes": 130,
+            "emptySwings": 0
+          },
+          {
+            "round": 5,
+            "order": 2,
+            "tool": "precision",
+            "income": 42885,
+            "bank": 79938,
+            "skills": 16,
+            "ticks": 1840,
+            "strikes": 260,
+            "emptySwings": 0
+          },
+          {
+            "round": 6,
+            "order": 2,
+            "tool": "resonance",
+            "income": 276628,
+            "bank": 304816,
+            "skills": 20,
+            "ticks": 2723,
+            "strikes": 434,
+            "emptySwings": 0
+          },
+          {
+            "round": 7,
+            "order": 3,
+            "tool": "heavy",
+            "income": 347379,
+            "bank": 380085,
+            "skills": 24,
+            "ticks": 813,
+            "strikes": 119,
+            "emptySwings": 0
+          },
+          {
+            "round": 8,
+            "order": 3,
+            "tool": "heavy",
+            "income": 463901,
+            "bank": 840936,
+            "skills": 28,
+            "ticks": 813,
+            "strikes": 119,
+            "emptySwings": 0
+          },
+          {
+            "round": 9,
+            "order": 3,
+            "tool": "heavy",
+            "income": 642888,
+            "bank": 1479124,
+            "skills": 32,
+            "ticks": 1232,
+            "strikes": 180,
+            "emptySwings": 0
+          },
+          {
+            "round": 10,
+            "order": 4,
+            "tool": "spiked",
+            "income": 1421664,
+            "bank": 1745438,
+            "skills": 36,
+            "ticks": 1729,
+            "strikes": 268,
+            "emptySwings": 0
+          },
+          {
+            "round": 11,
+            "order": 4,
+            "tool": "spiked",
+            "income": 1865222,
+            "bank": 3604360,
+            "skills": 40,
+            "ticks": 1884,
+            "strikes": 292,
+            "emptySwings": 0
+          },
+          {
+            "round": 12,
+            "order": 4,
+            "tool": "spiked",
+            "income": 2382815,
+            "bank": 5980775,
+            "skills": 44,
+            "ticks": 2130,
+            "strikes": 330,
+            "emptySwings": 0
+          },
+          {
+            "round": 13,
+            "order": 5,
+            "tool": "spiked",
+            "income": 9374622,
+            "bank": 14347297,
+            "skills": 48,
+            "ticks": 2400,
+            "strikes": 398,
+            "emptySwings": 0
+          },
+          {
+            "round": 14,
+            "order": 5,
+            "tool": "gilded",
+            "income": 34612865,
+            "bank": 38948162,
+            "skills": 52,
+            "ticks": 6689,
+            "strikes": 1118,
+            "emptySwings": 0
+          },
+          {
+            "round": 15,
+            "order": 5,
+            "tool": "gilded",
+            "income": 37850796,
+            "bank": 76786558,
+            "skills": 56,
+            "ticks": 6755,
+            "strikes": 1117,
+            "emptySwings": 0
+          }
+        ]
+      }
+    },
+    "offCenter": {
+      "options": {
+        "missEvery": 5,
+        "reserveBill": true
+      },
+      "completed": 23,
+      "total": 24,
+      "golden": {
+        "count": 0,
+        "earliest": null,
+        "latest": null
+      },
+      "example": {
+        "seed": 1,
+        "status": "completed",
+        "delivered": 5,
+        "learned": 56,
+        "freeRounds": 0,
+        "rounds": 15,
+        "bank": 6700567,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 2
+          },
+          {
+            "tool": "precision",
+            "round": 3
+          },
+          {
+            "tool": "resonance",
+            "round": 7
+          },
+          {
+            "tool": "heavy",
+            "round": 8
+          },
+          {
+            "tool": "spiked",
+            "round": 10
+          }
+        ],
+        "history": [
+          {
+            "round": 1,
+            "order": 1,
+            "tool": "mallet",
+            "income": 1090,
+            "bank": 1090,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 20
+          },
+          {
+            "round": 2,
+            "order": 1,
+            "tool": "swift",
+            "income": 11517,
+            "bank": 11570,
+            "skills": 4,
+            "ticks": 971,
+            "strikes": 120,
+            "emptySwings": 24
+          },
+          {
+            "round": 3,
+            "order": 1,
+            "tool": "precision",
+            "income": 9474,
+            "bank": 16942,
+            "skills": 8,
+            "ticks": 1053,
+            "strikes": 130,
+            "emptySwings": 26
+          },
+          {
+            "round": 4,
+            "order": 2,
+            "tool": "precision",
+            "income": 13798,
+            "bank": 28520,
+            "skills": 12,
+            "ticks": 917,
+            "strikes": 130,
+            "emptySwings": 26
+          },
+          {
+            "round": 5,
+            "order": 2,
+            "tool": "precision",
+            "income": 31764,
+            "bank": 59324,
+            "skills": 16,
+            "ticks": 1840,
+            "strikes": 260,
+            "emptySwings": 52
+          },
+          {
+            "round": 6,
+            "order": 2,
+            "tool": "precision",
+            "income": 49651,
+            "bank": 107225,
+            "skills": 20,
+            "ticks": 1677,
+            "strikes": 260,
+            "emptySwings": 52
+          },
+          {
+            "round": 7,
+            "order": 3,
+            "tool": "resonance",
+            "income": 655524,
+            "bank": 690639,
+            "skills": 24,
+            "ticks": 2723,
+            "strikes": 434,
+            "emptySwings": 86
+          },
+          {
+            "round": 8,
+            "order": 3,
+            "tool": "heavy",
+            "income": 392145,
+            "bank": 829734,
+            "skills": 28,
+            "ticks": 813,
+            "strikes": 119,
+            "emptySwings": 23
+          },
+          {
+            "round": 9,
+            "order": 3,
+            "tool": "heavy",
+            "income": 433504,
+            "bank": 1258538,
+            "skills": 32,
+            "ticks": 1060,
+            "strikes": 155,
+            "emptySwings": 31
+          },
+          {
+            "round": 10,
+            "order": 4,
+            "tool": "spiked",
+            "income": 1205675,
+            "bank": 1308863,
+            "skills": 36,
+            "ticks": 1807,
+            "strikes": 280,
+            "emptySwings": 56
+          },
+          {
+            "round": 11,
+            "order": 4,
+            "tool": "spiked",
+            "income": 1634621,
+            "bank": 2937184,
+            "skills": 40,
+            "ticks": 1652,
+            "strikes": 256,
+            "emptySwings": 50
+          },
+          {
+            "round": 12,
+            "order": 4,
+            "tool": "spiked",
+            "income": 1613340,
+            "bank": 4544124,
+            "skills": 44,
+            "ticks": 1975,
+            "strikes": 306,
+            "emptySwings": 61
+          },
+          {
+            "round": 13,
+            "order": 5,
+            "tool": "spiked",
+            "income": 1617051,
+            "bank": 5153075,
+            "skills": 48,
+            "ticks": 1344,
+            "strikes": 235,
+            "emptySwings": 46
+          },
+          {
+            "round": 14,
+            "order": 5,
+            "tool": "spiked",
+            "income": 3211453,
+            "bank": 8352528,
+            "skills": 52,
+            "ticks": 2365,
+            "strikes": 394,
+            "emptySwings": 72
+          },
+          {
+            "round": 15,
+            "order": 5,
+            "tool": "spiked",
+            "income": 3360439,
+            "bank": 11700567,
+            "skills": 56,
+            "ticks": 2351,
+            "strikes": 393,
+            "emptySwings": 74
+          }
+        ]
+      }
+    },
+    "noInvestment": {
+      "options": {
+        "invest": false
+      },
+      "completed": 0,
+      "total": 24,
+      "golden": {
+        "count": 0,
+        "earliest": null,
+        "latest": null
+      },
+      "example": {
+        "seed": 1,
+        "status": "failed",
+        "delivered": 1,
+        "learned": 0,
+        "freeRounds": 0,
+        "rounds": 6,
+        "bank": 5803,
+        "purchases": [],
+        "history": [
+          {
+            "round": 1,
+            "order": 1,
+            "tool": "mallet",
+            "income": 1470,
+            "bank": 1470,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 2,
+            "order": 1,
+            "tool": "mallet",
+            "income": 1490,
+            "bank": 2960,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 3,
+            "order": 1,
+            "tool": "mallet",
+            "income": 1450,
+            "bank": 4410,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 4,
+            "order": 2,
+            "tool": "mallet",
+            "income": 1189,
+            "bank": 3599,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 5,
+            "order": 2,
+            "tool": "mallet",
+            "income": 950,
+            "bank": 4549,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          },
+          {
+            "round": 6,
+            "order": 2,
+            "tool": "mallet",
+            "income": 1254,
+            "bank": 5803,
+            "skills": 0,
+            "ticks": 1090,
+            "strikes": 100,
+            "emptySwings": 0
+          }
+        ]
+      }
+    }
+  },
+  "freeplay": [
+    {
+      "seed": 1,
+      "delivered": 5,
+      "learned": 211,
+      "rounds": 27,
+      "freeRounds": 12,
+      "bank": 1867171386
+    },
+    {
+      "seed": 7,
+      "delivered": 5,
+      "learned": 211,
+      "rounds": 27,
+      "freeRounds": 12,
+      "bank": 2122681925
+    },
+    {
+      "seed": 17,
+      "delivered": 5,
+      "learned": 211,
+      "rounds": 27,
+      "freeRounds": 12,
+      "bank": 2852391530
+    }
+  ]
+}

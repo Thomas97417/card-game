@@ -16,6 +16,7 @@ import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as HubRouteImport } from './routes/hub'
 import { Route as GuardianRouteImport } from './routes/guardian'
+import { Route as FoundryRouteImport } from './routes/foundry'
 import { Route as DecksRouteImport } from './routes/decks'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArenaRouteImport } from './routes/arena'
@@ -63,6 +64,11 @@ const HubRoute = HubRouteImport.update({
 const GuardianRoute = GuardianRouteImport.update({
   id: '/guardian',
   path: '/guardian',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoundryRoute = FoundryRouteImport.update({
+  id: '/foundry',
+  path: '/foundry',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DecksRoute = DecksRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
+  '/foundry': typeof FoundryRoute
   '/guardian': typeof GuardianRoute
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByTo {
   '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
+  '/foundry': typeof FoundryRoute
   '/guardian': typeof GuardianRoute
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/arena': typeof ArenaRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
+  '/foundry': typeof FoundryRoute
   '/guardian': typeof GuardianRoute
   '/hub': typeof HubRoute
   '/play': typeof PlayRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/arena'
     | '/dashboard'
     | '/decks'
+    | '/foundry'
     | '/guardian'
     | '/hub'
     | '/play'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/arena'
     | '/dashboard'
     | '/decks'
+    | '/foundry'
     | '/guardian'
     | '/hub'
     | '/play'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/arena'
     | '/dashboard'
     | '/decks'
+    | '/foundry'
     | '/guardian'
     | '/hub'
     | '/play'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   ArenaRoute: typeof ArenaRoute
   DashboardRoute: typeof DashboardRoute
   DecksRoute: typeof DecksRoute
+  FoundryRoute: typeof FoundryRoute
   GuardianRoute: typeof GuardianRoute
   HubRoute: typeof HubRoute
   PlayRoute: typeof PlayRoute
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       path: '/guardian'
       fullPath: '/guardian'
       preLoaderRoute: typeof GuardianRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/foundry': {
+      id: '/foundry'
+      path: '/foundry'
+      fullPath: '/foundry'
+      preLoaderRoute: typeof FoundryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/decks': {
@@ -440,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArenaRoute: ArenaRoute,
   DashboardRoute: DashboardRoute,
   DecksRoute: DecksRoute,
+  FoundryRoute: FoundryRoute,
   GuardianRoute: GuardianRoute,
   HubRoute: HubRoute,
   PlayRoute: PlayRoute,

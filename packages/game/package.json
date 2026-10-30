@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./foundry": "./src/foundry.ts",
     ".": "./src/index.ts",
     "./practice": "./src/practice.ts",
     "./campaign": "./src/campaign.ts",

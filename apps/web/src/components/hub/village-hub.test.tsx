@@ -51,6 +51,7 @@ describe("le refuge", () => {
     expect(
       screen.getByRole("link", { name: /L’arène/ }).getAttribute("href"),
     ).toBe("/arena");
+    expect(screen.getByRole("link", { name: /Fonderie des Échos/ }).getAttribute("href")).toBe("/foundry");
     expect(
       screen.getByRole("link", { name: /Le téléporteur — Explorer la carte du monde/ }).getAttribute("href"),
     ).toBe("/world");

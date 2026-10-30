@@ -19,6 +19,8 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
 | `guardian-village-mines.webp` | Refuge panoramique et mines |
+| `foundry-building.webp` | Bâtiment transparent de la Fonderie des Échos, superposé au panorama |
+| `foundry-interior-v1.webp` | Intérieur peint de la fonderie, grand établi accueillant les objets 3D |
 | `duel-arena-overhead.webp` | Terrain de combat |
 | `campaign/` | Téléporteur du refuge, carte du monde et quatre terrains régionaux de l’aventure |
 | `forest-arena.png` | Fond de la page d’accueil |
@@ -30,6 +32,8 @@ Les cartes utilisent les aplats CSS de `FactionBackdrop`, avec une teinte par fa
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
 Les trois premières places du classement des joueurs et des guildes partagent les médailles `ui/podium-gold.webp`, `ui/podium-silver.webp` et `ui/podium-bronze.webp`, générées avec ImageGen intégré. Le chiffre est intégré à chaque médaille ; un libellé de rang reste accessible aux lecteurs d’écran. À partir de la quatrième place, le rang est affiché en texte.
+
+Le bâtiment de la Fonderie des Échos a été généré avec ImageGen intégré, en prenant le panorama comme référence de style et de perspective. Le WebP de 640 × 640 conserve sa transparence ; son prompt exact figure dans le manifeste. Le décor intérieur `foundry-interior-v1.webp` (1672 × 941) a aussi été généré avec ImageGen intégré, avec les intérieurs de l’atelier et de la maison des gardiens comme références de style et le bâtiment comme référence architecturale. Son prompt exact figure dans le manifeste. Son établi volontairement vide accueille les sept marteaux du nouvel arsenal, les quatre reliques actuelles et la source vivante conservée pour les anciennes manches, leurs ombres et les fragments en 3D procédurale Three.js, dans un canvas transparent. Ces modèles utilisent des volumes lissés et biseautés, des ornements sculptés, des matériaux à grain peint générés par le code et des ombres de contact dégradées.
 
 Les quatre marqueurs de terrain v2 ont été générés avec ImageGen intégré d’après la référence de combat fournie par l’utilisateur, puis exportés en WebP 256 × 256 avec leur transparence. Les runes utilisent `rune-health-orb-v2.webp` et `rune-attack-orb-v2.webp` ; les pentagrammes utilisent `pentagram-health-glyph-v2.webp` et `pentagram-attack-glyph-v2.webp`. Les valeurs sont ajoutées par l’interface. Les anciennes gravures en pierre sont conservées comme sources remplacées dans le manifeste.
 
@@ -44,3 +48,13 @@ Les chemins de personnages sont construits depuis `artId` ou `baseId`. Les capac
 Les parties enregistrées conservent leurs instantanés de cartes. Les portraits de secours et les anciennes variantes encore nécessaires sont conservés avec les [données de compatibilité](legacy-data.md). Les références du catalogue dans `docs/references/cunt-wars/` servent aux imports et aux tests indépendants.
 
 Les anciennes captures de validation, planches d’essai et générations remplacées sont retirées du projet. Leur historique reste accessible dans Git. Lors d’une modification, mettre à jour le manifeste, contrôler les images affichées sur ordinateur et mobile, puis lancer les tests, la vérification TypeScript et la compilation.
+
+Les marteaux du chantier partagent les matériaux peints et les géométries procédurales de la fonderie : tête de pierre renforcée de fer pour le Brise-roche, tête fine et améthystes pour le Marteau du graveur, cuivre doré et sceaux floraux pour le Marteau d’ambre. La face métallique reste ancrée sur la visée à l’impact pour les sept outils actuels et les modèles des anciennes manches.
+
+Le Marteau à panne reprend le profil Cross Peen avec une panne en fer biseautée ; le Marteau à pointes ajoute des cônes lissés et des attaches arrondies à la tête de fer. L’ancienne couronne de résonance reste visible dans les manches sauvegardées antérieures à V9. Ces variantes réutilisent les textures peintes et les ressources partagées de la scène.
+
+Les reliques lumineuses de l’arbre V4 réutilisent les modèles peints avec un anneau doré procédural, mutualisé et libéré avec les autres effets de la scène. Aucun visuel de Bills Must Be Paid n’est importé.
+
+Les techniques de l’arbre complet V11 ajoutent une main spectrale aux doigts arrondis, des piliers de lumière et des roches peintes. Ces volumes procéduraux réutilisent les textures de la fonderie ; aucun dessin du jeu de référence n’est importé. Les réserves graphiques sont bornées à 8 mains, 20 roches et 8 rayons sur ordinateur, et 4 / 12 / 4 sur mobile. La pause fige leur animation ; les animations réduites remplacent la chute et les flashes par des marques discrètes. Les ressources partagées sont libérées avec la scène.
+
+Les reliques V11 ont un volume et un rayon de collision réduits ensemble à 80 % pour conserver un plateau lisible jusqu’à 32 cibles. Un halo turquoise distingue les éclats enfouis ; le halo doré reste celui des reliques lumineuses. Les dommages simultanés d’une même relique sont additionnés dans un seul nombre, avec un gain d’éclats séparé.
