@@ -2,6 +2,18 @@
   z-index: 1;
   -webkit-tap-highlight-color: transparent;
 }
+.hub-workshop-ground {
+  position: absolute;
+  object-fit: fill;
+  pointer-events: none;
+  mask-image:
+    linear-gradient(to right, transparent, #000 12%, #000 86%, transparent),
+    linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  mask-composite: intersect;
+}
+.hub-building-art.hub-workshop-study-art {
+  filter: drop-shadow(2px 3px 2px #18302233);
+}
 .hub-building-art,
 .hub-mine-art {
   position: absolute;

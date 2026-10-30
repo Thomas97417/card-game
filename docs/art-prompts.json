@@ -991,6 +991,48 @@
       "height": 1039,
       "transparentBackground": true,
       "export": "WebP, définition native, marges transparentes retirées, alpha conservé."
+    },
+    {
+      "path": "docs/art-references/workshop-integration-v3.webp",
+      "prompt": "Use case: compositing.\nAsset type: coherent local art-direction study for the workshop area of the Sylve woodland fantasy game, landscape composition approximately 510:399.\nInput images: Image 1 is the EXACT local terrain area to edit. Image 2 is the current isolated workshop, used as the architectural identity reference. Create one unified painted scene showing that workshop properly built into THIS terrain.\nPrimary request: solve the floating/collage effect and the fact the workshop's foundations overlap a stream. Make a beautiful genuinely inhabited-looking dry plot on the meadow bank, with the workshop firmly founded on dry limestone and packed earth, a curved dirt footpath from its front steps to the existing stone bridge at the RIGHT edge, ground-level vegetation and coherent sunlight. The stream remains to the LEFT side and along the LOW foreground, clearly separated from the building's foundations by a generous continuous strip of dry earth and meadow. The stairs must end on DRY GROUND with at least 10% of the canvas height of walkable dry land in front before reaching any water. Do not simply place a stone object on water or build a raised rectangular pedestal.\nBuilding identity: retain the charming terracotta-tiled roof, ivory limestone and carved walnut beams, one chimney, warm doorway, small teal awning over the card-maker's bench, and the hanging round card emblem. Retouch the building as part of the same painting as the land: more elevated strategy-game camera looking down about 35 degrees, roof planes visible, subtle soft outdoor light from upper LEFT, muted warm cream stone with cool green reflected shadows, less orange saturation, restrained window light. Detailed painterly textures and fine natural edges matching the landscape. No black contour, no sharp cutout look, no overly bright studio highlights.\nComposition invariant: terrain landmarks and framing stay the SAME as Image 1. Do not zoom or change viewpoint. Place the building within x=25% to 75% of the canvas and y=8% to 69%, at roughly the existing size; do NOT enlarge it to fill the scene. Open ground extends around it. Retain the little falls at upper left, the curved stone bridge fragment at right, and the foreground stream and ferns. Retouch the central bank beneath and in front of the workshop to make the dry plot, with feathered natural boundaries in the meadow, uneven rock edges, fine moss, grasses and tiny white flowers crossing the foundation at a few places. Add a soft directional shadow on the dry ground to the lower right and concentrated contact shadows at the actual feet. Leave the front doorway and walkable path clear.\nStyle: one continuous high-quality painterly woodland fantasy strategy-game environment, consistent brushwork and detail between building and ground. Crisp detailed land as well as architecture. Natural organic placement, no symmetrical garden beds or formal landscaping.\nConstraints: ONE opaque local landscape scene, edge-to-edge. No characters, other buildings, portals, text, labels, UI, frames, watermarks. No grid. Preserve the approximate content and color of the outermost 8% edges of terrain reference to permit a seamless local patch. Do not add new distant scenery or sky.",
+      "tool": "Built-in ImageGen",
+      "width": 1418,
+      "height": 1109,
+      "transparentBackground": false,
+      "status": "workshop-study",
+      "export": "WebP, définition native.",
+      "references": [
+        "apps/web/public/art/hub/refuge-landscape-v2.webp",
+        "apps/web/public/art/hub/workshop-v2.webp"
+      ],
+      "terrainReferenceRegion": {
+        "left": 560,
+        "top": 325,
+        "width": 510,
+        "height": 399
+      }
+    },
+    {
+      "path": "apps/web/public/art/hub/workshop-ground-v3.webp",
+      "prompt": "Use case: precise-object-edit.\nAsset type: terrain-only ground layer for a separately composited fantasy village workshop.\nEdit target: the supplied coherent local workshop scene.\nPrimary request: remove ONLY the workshop building and everything attached to it, including roof, walls, chimney, teal awning, steps, pots, hanging sign, lanterns and workbench. Remove its building cast shadow as well. Fill its precise former footprint with a coherent empty dry limestone-and-packed-earth clearing, fine small grass, a few scattered pebbles, continuing the existing ground textures. This is the empty buildable plot that will receive the exact same workshop as a separate transparent sprite.\nCritical invariants: preserve EXACTLY the full rectangular canvas, camera, crop, scale, position and all surrounding terrain of the supplied image. The left-hand waterfalls and stream, the low foreground water and large fern-covered rocks, the right-hand partial stone bridge, the curved dirt paths, the bands of meadow and flowers must remain in precisely the same places, with the same colors and fine painted detail. Preserve every pixel possible outside the former workshop footprint. Keep the dry strip in front of the former stairs. No new bridges, no new buildings, no added structures, no sky, no text, no labels, no UI. One opaque landscape tile of the SAME landscape aspect ratio as the reference. Do not zoom, do not reframe, do not center another subject.",
+      "tool": "Built-in ImageGen",
+      "width": 1418,
+      "height": 1109,
+      "transparentBackground": false,
+      "status": "workshop-study",
+      "export": "WebP, définition native.",
+      "reference": "docs/art-references/workshop-integration-v3.webp"
+    },
+    {
+      "path": "apps/web/public/art/hub/workshop-building-v3.webp",
+      "prompt": "Use case: background-extraction.\nAsset type: exact aligned transparent building layer extracted from the supplied coherent workshop scene for a 2D fantasy game.\nEdit target: the supplied finished local workshop scene.\nPrimary request: isolate ONLY the EXISTING workshop building from this exact image, keeping the complete terracotta roof, limestone and walnut walls, chimney, teal awning, round hanging card emblem, workbench, lanterns, pots, front stairs, ivy and the small flowers physically touching the building's foundations. Keep a very narrow irregular fringe of ground-level grasses crossing the foundation and a subtle semi-transparent contact shadow immediately below the feet.\nCritical alignment: preserve the SAME entire rectangular canvas and aspect ratio as the input. The building must stay at EXACTLY its current position, size, angle and proportions within that canvas: about x=37% to 79%, y=4% to 52%. The large left, bottom and right margins become genuinely transparent, they are intentional alignment margins. Do NOT recenter the building. Do NOT enlarge it or fill the canvas. Do NOT trim the transparent margins. No redesign, no change to architecture, colors, brushwork or lighting. This layer must register exactly over the original scene.\nMake ALL other content genuinely transparent alpha: remove the stream, bridge, trees, meadow, paths, rocks, large foreground ferns, entire surrounding landscape and background. Interior openings such as the actual warm interior behind the doorway remain part of the opaque building. Keep the original natural painterly edge without white fringe, thick outline, broad glow, background color or checkerboard pattern. Do not include a large terrain island. No text, no watermark, no UI. The result is only the precisely aligned existing building and its tiny natural foundation fringe on true transparent alpha.",
+      "tool": "Built-in ImageGen",
+      "width": 686,
+      "height": 574,
+      "transparentBackground": true,
+      "status": "workshop-study",
+      "export": "WebP, marges transparentes retirées, alpha conservé.",
+      "reference": "docs/art-references/workshop-integration-v3.webp"
     }
   ],
   "captures": [

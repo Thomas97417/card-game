@@ -38,7 +38,8 @@ const ChestRevealDialog = lazy(() =>
 export const Route = createFileRoute("/hub")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { offerCheckout?: string } => ({
+  ): { offerCheckout?: string; atelier?: "essai" } => ({
+    atelier: search.atelier === "essai" ? "essai" : undefined,
     offerCheckout:
       typeof search.offerCheckout === "string" &&
       /^[a-zA-Z0-9_-]{1,128}$/.test(search.offerCheckout)
@@ -81,7 +82,7 @@ function HubPage() {
 }
 
 function HubContent() {
-  const { offerCheckout } = Route.useSearch();
+  const { offerCheckout, atelier } = Route.useSearch();
   const navigate = Route.useNavigate();
   const legendaryOffers = useQuery(api.payments.legendaryOffers, {});
   const createLegendaryCheckout = useAction(
@@ -223,6 +224,7 @@ function HubContent() {
   return (
     <>
       <VillageHub
+        workshopStudy={atelier === "essai"}
         legendaryOffers={{
           board: legendaryOffers,
           onPurchase: async (offerId) => {

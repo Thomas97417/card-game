@@ -22,3 +22,16 @@ export const HUB_BUILDING_ART = {
   gold: { src: "/art/hub/gold-mine-v2.webp", width: 1432, height: 968 },
   emeralds: { src: "/art/hub/emerald-mine-v2.webp", width: 1475, height: 1039 },
 } satisfies Record<string, HubArtwork>;
+
+// Local art study: the terrain and the workshop remain independent layers.
+// Both placements derive from the same 510 × 399 area of the original map.
+export const HUB_WORKSHOP_STUDY = {
+  terrain: { src: "/art/hub/workshop-ground-v3.webp", width: 1418, height: 1109 },
+  terrainArea: {
+    left: "25.7827%", top: "44.8895%", width: "23.4807%", height: "55.1105%",
+  },
+  building: { src: "/art/hub/workshop-building-v3.webp", width: 686, height: 574 },
+  buildingArea: {
+    left: "33.8304%", top: "47.1754%", width: "11.3595%", height: "28.5243%",
+  },
+};

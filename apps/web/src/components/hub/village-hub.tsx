@@ -14,7 +14,7 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import type { HubLegendaryOffersProps } from "./legendary-offers";
-import { HUB_BUILDING_ART, HUB_LANDSCAPE } from "./hub-art";
+import { HUB_BUILDING_ART, HUB_LANDSCAPE, HUB_WORKSHOP_STUDY } from "./hub-art";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry";
 type Place = {
@@ -85,6 +85,7 @@ const hotspotStyle = cn(
 );
 
 interface VillageHubProps {
+  workshopStudy?: boolean;
   dailyRewards?: HubDailyRewardsProps;
   legendaryOffers?: HubLegendaryOffersProps;
   missions?: HubMissionsProps;
@@ -97,6 +98,7 @@ interface VillageHubProps {
 }
 
 export function VillageHub({
+  workshopStudy = false,
   activity,
   missions,
   mines,
@@ -175,6 +177,16 @@ export function VillageHub({
               accessibles.
             </p>
           )}
+          {workshopStudy && (
+            <img
+              {...HUB_WORKSHOP_STUDY.terrain}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="hub-workshop-ground"
+              style={HUB_WORKSHOP_STUDY.terrainArea}
+            />
+          )}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#12291f]/40 via-transparent to-transparent"
@@ -192,14 +204,17 @@ export function VillageHub({
               {...(mines ?? { pending: [], onCollect: () => {} })}
             />
             {PLACES.map((place) => {
+              const isWorkshopStudy = workshopStudy && place.id === "workshop";
+              const art = isWorkshopStudy ? HUB_WORKSHOP_STUDY.building : HUB_BUILDING_ART[place.id];
+              const area = isWorkshopStudy ? HUB_WORKSHOP_STUDY.buildingArea : place.area;
               const content = (
                 <>
                   <img
-                    {...HUB_BUILDING_ART[place.id]}
+                    {...art}
                     alt=""
                     aria-hidden="true"
                     draggable={false}
-                    className="hub-building-art"
+                    className={cn("hub-building-art", isWorkshopStudy && "hub-workshop-study-art")}
                   />
                   <BuildingLabel
                     place={place}
@@ -216,7 +231,7 @@ export function VillageHub({
                     params={{ gameId: activeGame }}
                     aria-label="L’arène — Reprendre le duel"
                     className={hotspotStyle}
-                    style={place.area}
+                    style={area}
                   >
                     {content}
                   </Link>
@@ -228,7 +243,7 @@ export function VillageHub({
                   to={place.to}
                   aria-label={label}
                   className={hotspotStyle}
-                  style={place.area}
+                  style={area}
                 >
                   {content}
                 </Link>
