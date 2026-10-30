@@ -35,10 +35,13 @@ import { BattleDragPreview } from "./battle-drag-preview";
 import { DuelResult } from "./duel-result";
 import { HeroAbilityStack } from "./hero-ability-stack";
 import type { TrophyChange } from "@sylve/game/leagues";
+import { campaignStage } from "@sylve/game/campaign";
 
 export type DuelData = GameView & {
   events: GameEvent[];
   mode?: "solo" | "public" | "private";
+  campaign?: { region: number; stage: number } | null;
+  campaignReward?: { firstClear: boolean; gold: number; emeralds: number; chestId?: string } | null;
   trophyChange?: TrophyChange | null;
   reward?: {
     status: "awarded" | "lost";
@@ -293,6 +296,7 @@ export function DuelScreen({
           />
           <span role="status">{statusText}</span>
           <span className="turn-number">Tour {display.turn}</span>
+          {data.campaign && <span className="turn-number" aria-label="Étape d’aventure">{data.campaign.region}-{data.campaign.stage}</span>}
           <span
             className={`turn-clock ${seconds <= 10 ? "urgent" : ""}`}
             aria-label={practice ? "Sans chronomètre" : "Temps restant"}
@@ -346,6 +350,7 @@ export function DuelScreen({
         </div>
       </div>
       <DuelArena
+        background={data.campaign ? campaignStage(data.campaign.region, data.campaign.stage)?.region.arena : undefined}
         mine={mine}
         enemy={enemy}
         me={data.me}

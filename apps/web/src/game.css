@@ -2785,12 +2785,16 @@ button:disabled {
     padding: 22px;
   }
 }
+.campaign-result-loot { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin: 8px 0 18px; }
+.campaign-result-loot > span { display: flex; align-items: center; gap: 6px; color: #ead098; font-size: 17px; }
+.campaign-result-loot img { width: 34px; height: 34px; object-fit: contain; }
+.campaign-result-caption { color: #c7d4ba; text-align: center; font-size: 12px; margin: 0 0 14px; }
 @media (max-aspect-ratio: 4 / 5) {
   .arena::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: url("/art/duel-arena-overhead.webp") center / cover no-repeat;
+    background: var(--arena-background, url("/art/duel-arena-overhead.webp")) center / cover no-repeat;
   }
   .arena-ground > .arena-background {
     opacity: 0;

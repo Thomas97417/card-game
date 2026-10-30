@@ -22,6 +22,7 @@ import type * as guilds from "../guilds.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as lib_authEmail from "../lib/authEmail.js";
+import type * as lib_campaign from "../lib/campaign.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
 import type * as lib_chat from "../lib/chat.js";
 import type * as lib_combat_retention from "../lib/combat_retention.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   healthCheck: typeof healthCheck;
   http: typeof http;
   "lib/authEmail": typeof lib_authEmail;
+  "lib/campaign": typeof lib_campaign;
   "lib/catalogue": typeof lib_catalogue;
   "lib/chat": typeof lib_chat;
   "lib/combat_retention": typeof lib_combat_retention;

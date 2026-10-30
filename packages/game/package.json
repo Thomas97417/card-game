@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./practice": "./src/practice.ts",
+    "./campaign": "./src/campaign.ts",
     "./progression": "./src/progression.ts",
     "./leagues": "./src/leagues.ts",
     "./summoning": "./src/summoning.ts",

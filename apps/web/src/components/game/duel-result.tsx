@@ -10,6 +10,9 @@ import {
 import { LeagueUnlocks } from "@/components/leagues/league-unlocks";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type { DuelData } from "./duel-screen";
+import { campaignStage } from "@sylve/game/campaign";
+import { GoldIcon } from "@/components/gold-balance";
+import { EmeraldIcon } from "@/components/emerald-balance";
 
 export function DuelResult({
   data,
@@ -22,6 +25,7 @@ export function DuelResult({
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const won = data.winner === data.me;
+  const adventure = data.campaign ? campaignStage(data.campaign.region, data.campaign.stage) : null;
   const reward = data.trophyChange ?? (won ? data.reward : null);
   const current = leagueAt(reward?.trophiesTotal ?? 0);
   const promoted =
@@ -81,6 +85,15 @@ export function DuelResult({
             {promoted ? current.label : won ? "Victoire !" : "Défaite"}
           </DialogTitle>
         </header>
+        {adventure && <p className="campaign-result-caption">{adventure.region.name} · Étape {adventure.label}</p>}
+        {won && data.campaignReward && <>
+          {data.campaignReward.firstClear ? <div className="campaign-result-loot">
+            <span><GoldIcon /> +{data.campaignReward.gold.toLocaleString("fr-FR")}</span>
+            {data.campaignReward.emeralds > 0 && <span><EmeraldIcon /> +{data.campaignReward.emeralds}</span>}
+            {data.campaignReward.chestId && <span><img src="/art/chests/epic.webp" alt="" /> Coffre épique</span>}
+          </div> : <p className="campaign-result-caption">Étape déjà terminée · Récompenses déjà obtenues</p>}
+          {data.campaignReward.chestId && <p className="campaign-result-caption">Ton coffre t’attend sur la carte du monde.</p>}
+        </>}
         {reward && <LeagueResult reward={reward} />}
         {won && data.trophyChange && (
           <LeagueUnlocks reward={data.trophyChange} />
@@ -159,10 +172,10 @@ export function DuelResult({
             </button>
           )}
           <Link
-            to="/arena"
+            to={adventure ? "/world" : "/arena"}
             className={`sylve-button ${practice && onRestart ? "secondary" : ""}`}
           >
-            Retour au salon <ArrowRight size={17} aria-hidden="true" />
+            {adventure ? "Carte du monde" : "Retour au salon"} <ArrowRight size={17} aria-hidden="true" />
           </Link>
         </div>
       </DialogContent>
