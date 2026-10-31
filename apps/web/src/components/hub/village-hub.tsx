@@ -241,7 +241,7 @@ export function VillageHub({
                   key={place.id}
                   to={place.to}
                   aria-label={label}
-                  className={hotspotStyle}
+                  className={cn(hotspotStyle, place.id === "workshop" && "hub-building-workshop")}
                   style={area}
                 >
                   {content}

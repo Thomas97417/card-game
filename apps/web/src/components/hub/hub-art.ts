@@ -66,9 +66,9 @@ export const HUB_BUILDING_ART = {
     "height": 988
   },
   "workshop": {
-    "src": "/art/hub/workshop-building-v3.webp",
-    "width": 686,
-    "height": 574
+    "src": "/art/hub/workshop-building-v7.webp",
+    "width": 1477,
+    "height": 783
   }
 } satisfies Record<string, HubArtwork>;
 
@@ -122,15 +122,15 @@ export const HUB_BUILDING_AREAS = {
     "height": "29.4116%"
   },
   "workshop": {
-    "left": "32.4000%",
-    "top": "40.8000%",
-    "width": "15.3000%",
-    "height": "38.4000%"
+    "left": "33.4000%",
+    "top": "57.5000%",
+    "width": "13.0000%",
+    "height": "20.6000%"
   }
 } satisfies Record<keyof typeof HUB_BUILDING_ART, CSSProperties>;
 
 // Shared district terrain keeps the paths and elevation changes continuous.
-// The courtyard remains between the west approach and the eastern village.
+// Local crossings are applied last to keep both dry approaches continuous.
 export const HUB_GROUND_PATCHES: readonly HubGroundPatch[] = [
   {
     "id": "western",
@@ -201,5 +201,22 @@ export const HUB_GROUND_PATCHES: readonly HubGroundPatch[] = [
     "solidEnd": 100,
     "solidLeft": 3,
     "solidRight": 100
+  },
+  {
+    "id": "workshop-crossing",
+    "art": {
+      "src": "/art/hub/workshop-crossing-ground-v7.webp",
+      "width": 1684,
+      "height": 934
+    },
+    "area": {
+      "left": "14.7330%",
+      "top": "38.6740%",
+      "width": "36.8324%",
+      "height": "61.3260%"
+    },
+    "fadeStart": 0,
+    "solidStart": 10,
+    "solidRight": 97
   }
 ];

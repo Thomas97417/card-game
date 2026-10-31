@@ -40,6 +40,14 @@
   width: max-content;
   transform: translateX(-50%);
 }
+.hub-building-workshop .hub-building-caption {
+  bottom: -56px;
+}
+@media (max-height: 700px) {
+  .hub-building-workshop .hub-building-caption {
+    bottom: -12px;
+  }
+}
 .hub-teleporter {
   position: absolute;
   z-index: 1;
