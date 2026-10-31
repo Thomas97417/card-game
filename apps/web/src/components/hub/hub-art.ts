@@ -6,6 +6,15 @@ export interface HubArtwork {
   height: number;
 }
 
+interface HubGroundPatch {
+  id: string;
+  art: HubArtwork;
+  area: CSSProperties;
+  fadeStart: number;
+  solidStart: number;
+  solidEnd?: number;
+}
+
 // Terrain and landmarks stay independent. Areas use the original 2172 × 724 map.
 export const HUB_LANDSCAPE: HubArtwork = {
   src: "/art/hub/refuge-landscape-v2.webp",
@@ -69,10 +78,10 @@ export const HUB_BUILDING_AREAS = {
     "height": "30.8782%"
   },
   "home": {
-    "left": "45.1197%",
-    "top": "6.0476%",
-    "width": "12.2007%",
-    "height": "32.8474%"
+    "left": "43.6000%",
+    "top": "1.2000%",
+    "width": "16.4000%",
+    "height": "44.1000%"
   },
   "sanctuary": {
     "left": "62.9328%",
@@ -111,14 +120,14 @@ export const HUB_BUILDING_AREAS = {
     "height": "22.6243%"
   },
   "workshop": {
-    "left": "33.8304%",
-    "top": "47.1754%",
-    "width": "11.3595%",
-    "height": "28.5243%"
+    "left": "32.4000%",
+    "top": "40.8000%",
+    "width": "15.3000%",
+    "height": "38.4000%"
   }
 } satisfies Record<keyof typeof HUB_BUILDING_ART, CSSProperties>;
 
-export const HUB_GROUND_PATCHES = [
+export const HUB_GROUND_PATCHES: readonly HubGroundPatch[] = [
   {
     "id": "archives",
     "art": {
@@ -134,22 +143,6 @@ export const HUB_GROUND_PATCHES = [
     },
     "fadeStart": 25,
     "solidStart": 42
-  },
-  {
-    "id": "home",
-    "art": {
-      "src": "/art/hub/home-ground-v4.webp",
-      "width": 1337,
-      "height": 1176
-    },
-    "area": {
-      "left": "38.4438%",
-      "top": "0.0000%",
-      "width": "23.0203%",
-      "height": "60.7735%"
-    },
-    "fadeStart": 29,
-    "solidStart": 46
   },
   {
     "id": "sanctuary",
@@ -248,25 +241,22 @@ export const HUB_GROUND_PATCHES = [
     "solidStart": 40
   },
   {
-    "id": "workshop",
+    // One continuous terrain connects both entrances, their shared courtyard
+    // and both bridge approaches. Keep the near bank opaque at the map edge.
+    "id": "courtyard",
     "art": {
-      "src": "/art/hub/workshop-ground-v3.webp",
-      "width": 1418,
-      "height": 1109
+      "src": "/art/hub/courtyard-ground-v5.webp",
+      "width": 1327,
+      "height": 1186
     },
     "area": {
       "left": "25.7827%",
-      "top": "44.8895%",
-      "width": "23.4807%",
-      "height": "55.1105%"
+      "top": "0.0000%",
+      "width": "37.2928%",
+      "height": "100.0000%"
     },
     "fadeStart": 0,
-    "solidStart": 10
+    "solidStart": 7,
+    "solidEnd": 100
   }
-] satisfies readonly {
-  id: string;
-  art: HubArtwork;
-  area: CSSProperties;
-  fadeStart: number;
-  solidStart: number;
-}[];
+];

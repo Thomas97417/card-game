@@ -1,0 +1,95 @@
+{
+  "tool": "Built-in ImageGen",
+  "mapReference": {
+    "width": 2172,
+    "height": 724
+  },
+  "sourceRegion": {
+    "left": 560,
+    "top": 0,
+    "width": 810,
+    "height": 724
+  },
+  "layoutReference": "docs/art-references/hub-courtyard-layout-v5.webp",
+  "integratedReference": "docs/art-references/hub-courtyard-v5.webp",
+  "layoutReferenceBuildingAreas": {
+    "home": {
+      "left": "43.6000%",
+      "top": "0.0000%",
+      "width": "16.4000%",
+      "height": "44.1000%"
+    },
+    "workshop": {
+      "left": "32.4000%",
+      "top": "40.8000%",
+      "width": "15.3000%",
+      "height": "38.4000%"
+    }
+  },
+  "groundPatch": {
+    "id": "courtyard",
+    "art": {
+      "src": "/art/hub/courtyard-ground-v5.webp",
+      "width": 1327,
+      "height": 1186
+    },
+    "area": {
+      "left": "25.7827%",
+      "top": "0.0000%",
+      "width": "37.2928%",
+      "height": "100.0000%"
+    },
+    "fadeStart": 0,
+    "solidStart": 7,
+    "solidEnd": 100
+  },
+  "buildings": [
+    {
+      "id": "home",
+      "art": {
+        "src": "/art/hub/home-building-v4.webp",
+        "width": 1277,
+        "height": 1146
+      },
+      "previousArea": {
+        "left": "45.1197%",
+        "top": "6.0476%",
+        "width": "12.2007%",
+        "height": "32.8474%"
+      },
+      "area": {
+        "left": "43.6000%",
+        "top": "1.2000%",
+        "width": "16.4000%",
+        "height": "44.1000%"
+      },
+      "widthScale": 1.3442
+    },
+    {
+      "id": "workshop",
+      "art": {
+        "src": "/art/hub/workshop-building-v3.webp",
+        "width": 686,
+        "height": 574
+      },
+      "previousArea": {
+        "left": "33.8304%",
+        "top": "47.1754%",
+        "width": "11.3595%",
+        "height": "28.5243%"
+      },
+      "area": {
+        "left": "32.4000%",
+        "top": "40.8000%",
+        "width": "15.3000%",
+        "height": "38.4000%"
+      },
+      "widthScale": 1.3469
+    }
+  ],
+  "replacedPatches": [
+    "home-ground-v4.webp",
+    "workshop-ground-v3.webp"
+  ],
+  "notes": "Un seul terrain commun ; objets décoratifs peints, sans habitants. Le bord inférieur opaque conserve le chemin sur la berge proche du pont. Les autres bâtiments gardent leurs emprises V4."
+}

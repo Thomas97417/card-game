@@ -8,7 +8,7 @@
   pointer-events: none;
   mask-image:
     linear-gradient(to right, transparent, #000 12%, #000 86%, transparent),
-    linear-gradient(to bottom, transparent var(--hub-ground-fade), #000 var(--hub-ground-solid), #000 88%, transparent);
+    linear-gradient(to bottom, transparent var(--hub-ground-fade), #000 var(--hub-ground-solid), #000 var(--hub-ground-solid-end), transparent);
   mask-composite: intersect;
 }
 .hub-building-art,
