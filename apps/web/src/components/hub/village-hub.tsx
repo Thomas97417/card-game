@@ -151,7 +151,7 @@ export function VillageHub({
         <div className="relative mx-auto aspect-[3/1] w-[max(100%,1080px,calc(100svh*3))] shrink-0 bg-[#35553b]">
           <img
             src={HUB_LANDSCAPE.src}
-            alt="Le refuge des gardiens : une vallée forestière ensoleillée, une cour aménagée entre l’atelier et la maison des gardiens, des chemins en terrasses, des ponts de pierre et des cascades, face aux montagnes."
+            alt="Le refuge des gardiens : une vallée forestière ensoleillée, des bâtiments réunis par des cours aménagées, des mines accessibles par des rampes, des chemins en terrasses, des ponts de pierre et des cascades, face aux montagnes."
             width={HUB_LANDSCAPE.width}
             height={HUB_LANDSCAPE.height}
             fetchPriority="high"
@@ -182,6 +182,8 @@ export function VillageHub({
                 "--hub-ground-fade": `${patch.fadeStart}%`,
                 "--hub-ground-solid": `${patch.solidStart}%`,
                 "--hub-ground-solid-end": `${patch.solidEnd ?? 88}%`,
+                "--hub-ground-solid-left": `${patch.solidLeft ?? 12}%`,
+                "--hub-ground-solid-right": `${patch.solidRight ?? 86}%`,
               } as CSSProperties}
             />
           ))}
