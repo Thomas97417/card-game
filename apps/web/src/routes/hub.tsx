@@ -12,6 +12,7 @@ import {
 import { showGameError } from "@/components/game/shared";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { VillageHub } from "@/components/hub/village-hub";
+import { HUB_BUILDING_ART, HUB_LANDSCAPE } from "@/components/hub/hub-art";
 import type { MissionSealGain } from "@/components/hub/missions-dialog";
 import hubCss from "@/hub.css?url";
 import missionsCss from "@/missions.css?url";
@@ -60,8 +61,12 @@ export const Route = createFileRoute("/hub")({
       stylesheet(missionsCss),
       stylesheet(dailyRewardsCss),
       stylesheet(legendaryOffersCss),
-      { rel: "preload", as: "image", href: "/art/guardian-village-mines.webp" },
-      { rel: "preload", as: "image", href: "/art/foundry-building.webp" },
+      { rel: "preload", as: "image", href: HUB_LANDSCAPE.src },
+      ...[HUB_BUILDING_ART.archives, HUB_BUILDING_ART.home, HUB_BUILDING_ART.sanctuary].map((art) => ({
+        rel: "preload",
+        as: "image",
+        href: art.src,
+      })),
     ],
   }),
   component: HubPage,

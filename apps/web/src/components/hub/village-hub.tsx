@@ -14,6 +14,7 @@ import { useHorizontalDrag } from "@/hooks/use-horizontal-drag";
 import { useHorizontalWheel } from "@/hooks/use-horizontal-wheel";
 import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import type { HubLegendaryOffersProps } from "./legendary-offers";
+import { HUB_BUILDING_ART, HUB_BUILDING_AREAS, HUB_GROUND_PATCHES, HUB_LANDSCAPE } from "./hub-art";
 
 type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry";
 type Place = {
@@ -22,11 +23,10 @@ type Place = {
   purpose: string;
   to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena" | "/foundry";
   icon: GameIconKind;
-  area: CSSProperties;
 };
 
-// Coordinates are percentages of the complete illustration. The map keeps its
-// original ratio at every viewport size so buildings and hit areas stay aligned.
+// Each area positions the sprite, its label and its link together. Coordinates
+// are percentages of the terrain, which keeps its 3:1 ratio at every viewport.
 const PLACES: readonly Place[] = [
   {
     id: "foundry",
@@ -34,7 +34,6 @@ const PLACES: readonly Place[] = [
     purpose: "Façonner les reliques du refuge",
     to: "/foundry",
     icon: "goldMine",
-    area: { left: "78.5%", top: "61%", width: "12%", height: "34%" },
   },
   {
     id: "archives",
@@ -42,7 +41,6 @@ const PLACES: readonly Place[] = [
     purpose: "Profil et paramètres",
     to: "/settings",
     icon: "archives",
-    area: { left: "27%", top: "6%", width: "14%", height: "42%" },
   },
   {
     id: "home",
@@ -50,7 +48,6 @@ const PLACES: readonly Place[] = [
     purpose: "Gérer mon Gardien",
     to: "/guardian",
     icon: "guardian",
-    area: { left: "42%", top: "4%", width: "17%", height: "49%" },
   },
   {
     id: "sanctuary",
@@ -58,7 +55,6 @@ const PLACES: readonly Place[] = [
     purpose: "Invoquer des compagnons",
     to: "/sanctuary",
     icon: "sanctuary",
-    area: { left: "60%", top: "13%", width: "15%", height: "38%" },
   },
   {
     id: "workshop",
@@ -66,7 +62,6 @@ const PLACES: readonly Place[] = [
     purpose: "Préparer mon deck",
     to: "/decks",
     icon: "all",
-    area: { left: "25%", top: "49%", width: "20%", height: "31%" },
   },
   {
     id: "arena",
@@ -74,12 +69,11 @@ const PLACES: readonly Place[] = [
     purpose: "Entrer dans le cercle",
     to: "/arena",
     icon: "arena",
-    area: { left: "57%", top: "51%", width: "21%", height: "29%" },
   },
 ];
 
 const hotspotStyle = cn(
-  "group absolute flex flex-col items-center justify-end rounded-[35%] pb-1 outline-none",
+  "hub-building group absolute rounded-[35%] outline-none",
   "focus-visible:ring-2 focus-visible:ring-[#ffe4a0] focus-visible:bg-[#f5d88b]/10",
 );
 
@@ -154,12 +148,12 @@ export function VillageHub({
             "cursor-grabbing [&_a]:cursor-grabbing [&_button]:cursor-grabbing",
         )}
       >
-        <div className="relative mx-auto aspect-[3/1] w-[max(100%,1440px,calc(100svh*3))] shrink-0 bg-[#35553b]">
+        <div className="relative mx-auto aspect-[3/1] w-[max(100%,1080px,calc(100svh*3))] shrink-0 bg-[#35553b]">
           <img
-            src="/art/guardian-village-mines.webp"
-            alt="Un vaste refuge forestier : la mine d’or à l’ouest, les archives, la maison des gardiens, le sanctuaire, l’atelier et l’arène au centre, puis la Fonderie des Échos et la mine d’émeraudes à l’est."
-            width={2172}
-            height={724}
+            src={HUB_LANDSCAPE.src}
+            alt="Le refuge des gardiens : une vallée forestière ensoleillée, des clairières en terrasses reliées par des chemins, des ponts de pierre et des cascades, face aux montagnes."
+            width={HUB_LANDSCAPE.width}
+            height={HUB_LANDSCAPE.height}
             fetchPriority="high"
             draggable={false}
             onError={() => setMapFailed(true)}
@@ -174,25 +168,30 @@ export function VillageHub({
               accessibles.
             </p>
           )}
+          {HUB_GROUND_PATCHES.map((patch) => (
+            <img
+              key={patch.id}
+              {...patch.art}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              decoding="async"
+              className="hub-ground-patch"
+              style={{
+                ...patch.area,
+                "--hub-ground-fade": `${patch.fadeStart}%`,
+                "--hub-ground-solid": `${patch.solidStart}%`,
+              } as CSSProperties}
+            />
+          ))}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#12291f]/40 via-transparent to-transparent"
           />
 
-          <img
-            src="/art/foundry-building.webp"
-            alt=""
-            aria-hidden="true"
-            width={640}
-            height={640}
-            draggable={false}
-            className="pointer-events-none absolute object-contain drop-shadow-[0_7px_5px_#162b2370]"
-            style={{ left: "78.5%", top: "56%", width: "12%", height: "36%" }}
-          />
-
           <nav aria-label="Bâtiments du refuge">
-            <Link to="/world" className="hub-teleporter group" aria-label="Le téléporteur — Explorer la carte du monde">
-              <img src="/art/campaign/teleporter.webp" alt="Un portail de pierre ancienne traversé de magie turquoise et violette" width={640} height={640} draggable={false} />
+            <Link to="/world" className="hub-teleporter group" style={HUB_BUILDING_AREAS.teleporter} aria-label="Le téléporteur — Explorer la carte du monde">
+              <img {...HUB_BUILDING_ART.teleporter} alt="" aria-hidden="true" draggable={false} />
               <span className="hub-teleporter-label">
                 <span>Le téléporteur</span>
                 <small>Explorer le monde</small>
@@ -202,11 +201,22 @@ export function VillageHub({
               {...(mines ?? { pending: [], onCollect: () => {} })}
             />
             {PLACES.map((place) => {
+              const art = HUB_BUILDING_ART[place.id];
+              const area = HUB_BUILDING_AREAS[place.id];
               const content = (
-                <BuildingLabel
-                  place={place}
-                  active={place.id === "arena" && hasActivity}
-                />
+                <>
+                  <img
+                    {...art}
+                    alt=""
+                    aria-hidden="true"
+                    draggable={false}
+                    className="hub-building-art"
+                  />
+                  <BuildingLabel
+                    place={place}
+                    active={place.id === "arena" && hasActivity}
+                  />
+                </>
               );
               const label = `${place.name} — ${place.purpose}`;
               if (place.id === "arena" && activeGame) {
@@ -217,7 +227,7 @@ export function VillageHub({
                     params={{ gameId: activeGame }}
                     aria-label="L’arène — Reprendre le duel"
                     className={hotspotStyle}
-                    style={place.area}
+                    style={area}
                   >
                     {content}
                   </Link>
@@ -229,7 +239,7 @@ export function VillageHub({
                   to={place.to}
                   aria-label={label}
                   className={hotspotStyle}
-                  style={place.area}
+                  style={area}
                 >
                   {content}
                 </Link>
@@ -271,17 +281,17 @@ export function VillageHub({
 
 function BuildingLabel({ place, active }: { place: Place; active?: boolean }) {
   return (
-    <>
+    <span className="hub-building-caption">
       <span
         aria-hidden="true"
         className="mb-3 grid size-8 place-items-center rounded-full border border-[#e4c987]/70 bg-[#1a3429]/85 text-[#f1d28b] opacity-0 shadow-lg transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100 group-focus-visible:-translate-y-1 group-focus-visible:opacity-100"
       >
         <ArrowRight size={15} />
       </span>
-      <span className="relative flex min-w-40 items-center gap-2.5 rounded-lg border border-[#d1be85]/70 bg-[#1a3026]/95 px-4 py-2.5 text-left shadow-[0_4px_16px_#10251d60] transition-[transform,border-color,background-color] duration-200 group-hover:-translate-y-1 group-hover:border-[#f3d791] group-hover:bg-[#304a31] group-focus-visible:-translate-y-1 group-focus-visible:border-[#f3d791]">
+      <span className="hub-building-label relative flex min-w-40 items-center gap-2.5 rounded-lg border border-[#d1be85]/70 bg-[#1a3026]/95 px-4 py-2.5 text-left shadow-[0_4px_16px_#10251d60] transition-[transform,border-color,background-color] duration-200 group-hover:-translate-y-1 group-hover:border-[#f3d791] group-hover:bg-[#304a31] group-focus-visible:-translate-y-1 group-focus-visible:border-[#f3d791]">
         <GameIcon kind={place.icon} size={32} />
         <span>
-          <span className="block font-serif text-[17px] leading-tight text-[#fff6dd]">
+          <span className="hub-building-title block font-serif text-[17px] leading-tight text-[#fff6dd]">
             {place.name}
           </span>
           <span className="mt-1 block text-[9px] tracking-[0.025em] text-[#d0d8ba]">
@@ -292,6 +302,6 @@ function BuildingLabel({ place, active }: { place: Place; active?: boolean }) {
           <span className="absolute -top-1 -right-1 size-3 rounded-full border-2 border-[#1a3026] bg-[#e4c987]" />
         )}
       </span>
-    </>
+    </span>
   );
 }
