@@ -6,6 +6,17 @@ export interface HubArtwork {
   height: number;
 }
 
+interface HubGroundPatch {
+  id: string;
+  art: HubArtwork;
+  area: CSSProperties;
+  fadeStart: number;
+  solidStart: number;
+  solidEnd?: number;
+  solidLeft?: number;
+  solidRight?: number;
+}
+
 // Terrain and landmarks stay independent. Areas use the original 2172 × 724 map.
 export const HUB_LANDSCAPE: HubArtwork = {
   src: "/art/hub/refuge-landscape-v2.webp",
@@ -55,218 +66,157 @@ export const HUB_BUILDING_ART = {
     "height": 988
   },
   "workshop": {
-    "src": "/art/hub/workshop-building-v3.webp",
-    "width": 686,
-    "height": 574
+    "src": "/art/hub/workshop-building-v7.webp",
+    "width": 1477,
+    "height": 783
   }
 } satisfies Record<string, HubArtwork>;
 
 export const HUB_BUILDING_AREAS = {
   "archives": {
-    "left": "31.3536%",
-    "top": "5.5859%",
-    "width": "7.4125%",
-    "height": "30.8782%"
+    "left": "29.1000%",
+    "top": "1.5000%",
+    "width": "9.6363%",
+    "height": "40.1417%"
   },
   "home": {
-    "left": "45.1197%",
-    "top": "6.0476%",
-    "width": "12.2007%",
-    "height": "32.8474%"
+    "left": "43.6000%",
+    "top": "1.2000%",
+    "width": "16.4000%",
+    "height": "44.1000%"
   },
   "sanctuary": {
-    "left": "62.9328%",
-    "top": "15.7588%",
-    "width": "9.0884%",
-    "height": "25.5395%"
+    "left": "63.5000%",
+    "top": "9.6000%",
+    "width": "11.8149%",
+    "height": "33.2014%"
   },
   "arena": {
-    "left": "56.3706%",
-    "top": "48.4475%",
-    "width": "14.5285%",
-    "height": "27.5746%"
+    "left": "59.0000%",
+    "top": "46.0000%",
+    "width": "18.4512%",
+    "height": "35.0197%"
   },
   "foundry": {
-    "left": "74.7618%",
-    "top": "44.8936%",
-    "width": "11.1209%",
-    "height": "30.2196%"
+    "left": "78.1000%",
+    "top": "44.6000%",
+    "width": "14.4572%",
+    "height": "39.2855%"
   },
   "teleporter": {
-    "left": "19.6869%",
-    "top": "35.3669%",
-    "width": "7.9558%",
-    "height": "21.9812%"
+    "left": "18.0000%",
+    "top": "29.0000%",
+    "width": "10.7403%",
+    "height": "29.6746%"
   },
   "gold": {
-    "left": "4.7990%",
-    "top": "26.4365%",
-    "width": "9.4627%",
-    "height": "20.8840%"
+    "left": "3.0000%",
+    "top": "22.0000%",
+    "width": "12.3015%",
+    "height": "27.1492%"
   },
   "emeralds": {
-    "left": "85.6154%",
-    "top": "27.5967%",
-    "width": "11.5335%",
-    "height": "22.6243%"
+    "left": "84.1000%",
+    "top": "12.5000%",
+    "width": "14.9936%",
+    "height": "29.4116%"
   },
   "workshop": {
-    "left": "33.8304%",
-    "top": "47.1754%",
-    "width": "11.3595%",
-    "height": "28.5243%"
+    "left": "33.4000%",
+    "top": "57.5000%",
+    "width": "13.0000%",
+    "height": "20.6000%"
   }
 } satisfies Record<keyof typeof HUB_BUILDING_ART, CSSProperties>;
 
-export const HUB_GROUND_PATCHES = [
+// Shared district terrain keeps the paths and elevation changes continuous.
+// Local crossings are applied last to keep both dry approaches continuous.
+export const HUB_GROUND_PATCHES: readonly HubGroundPatch[] = [
   {
-    "id": "archives",
+    "id": "western",
     "art": {
-      "src": "/art/hub/archives-ground-v4.webp",
-      "width": 1283,
-      "height": 1226
-    },
-    "area": {
-      "left": "23.9411%",
-      "top": "0.0000%",
-      "width": "21.1786%",
-      "height": "60.7735%"
-    },
-    "fadeStart": 25,
-    "solidStart": 42
-  },
-  {
-    "id": "home",
-    "art": {
-      "src": "/art/hub/home-ground-v4.webp",
-      "width": 1337,
-      "height": 1176
-    },
-    "area": {
-      "left": "38.4438%",
-      "top": "0.0000%",
-      "width": "23.0203%",
-      "height": "60.7735%"
-    },
-    "fadeStart": 29,
-    "solidStart": 46
-  },
-  {
-    "id": "sanctuary",
-    "art": {
-      "src": "/art/hub/sanctuary-ground-v4.webp",
-      "width": 1282,
-      "height": 1227
-    },
-    "area": {
-      "left": "57.0902%",
-      "top": "2.7624%",
-      "width": "21.6390%",
-      "height": "62.1547%"
-    },
-    "fadeStart": 27,
-    "solidStart": 44
-  },
-  {
-    "id": "arena",
-    "art": {
-      "src": "/art/hub/arena-ground-v4.webp",
-      "width": 1393,
-      "height": 1129
-    },
-    "area": {
-      "left": "51.5654%",
-      "top": "40.0552%",
-      "width": "24.6317%",
-      "height": "59.9448%"
-    },
-    "fadeStart": 25,
-    "solidStart": 42
-  },
-  {
-    "id": "foundry",
-    "art": {
-      "src": "/art/hub/foundry-ground-v4.webp",
-      "width": 1299,
-      "height": 1211
-    },
-    "area": {
-      "left": "69.5212%",
-      "top": "40.7459%",
-      "width": "21.1786%",
-      "height": "59.2541%"
-    },
-    "fadeStart": 23,
-    "solidStart": 40
-  },
-  {
-    "id": "teleporter",
-    "art": {
-      "src": "/art/hub/teleporter-ground-v4.webp",
-      "width": 1205,
-      "height": 1306
-    },
-    "area": {
-      "left": "17.0350%",
-      "top": "20.7182%",
-      "width": "16.5746%",
-      "height": "53.8674%"
-    },
-    "fadeStart": 33,
-    "solidStart": 50
-  },
-  {
-    "id": "gold",
-    "art": {
-      "src": "/art/hub/gold-ground-v4.webp",
-      "width": 1298,
-      "height": 1212
+      "src": "/art/hub/western-ground-v6.webp",
+      "width": 1269,
+      "height": 1240
     },
     "area": {
       "left": "0.0000%",
-      "top": "16.5746%",
-      "width": "20.7182%",
-      "height": "58.0110%"
+      "top": "0.0000%",
+      "width": "34.0700%",
+      "height": "100.0000%"
     },
-    "fadeStart": 18,
-    "solidStart": 35
+    "fadeStart": 0,
+    "solidStart": 7,
+    "solidEnd": 100,
+    "solidLeft": 0
   },
   {
-    "id": "emeralds",
+    "id": "courtyard",
     "art": {
-      "src": "/art/hub/emeralds-ground-v4.webp",
-      "width": 1196,
-      "height": 1315
-    },
-    "area": {
-      "left": "82.4125%",
-      "top": "16.5746%",
-      "width": "17.5875%",
-      "height": "58.0110%"
-    },
-    "fadeStart": 23,
-    "solidStart": 40
-  },
-  {
-    "id": "workshop",
-    "art": {
-      "src": "/art/hub/workshop-ground-v3.webp",
-      "width": 1418,
-      "height": 1109
+      "src": "/art/hub/courtyard-ground-v5.webp",
+      "width": 1327,
+      "height": 1186
     },
     "area": {
       "left": "25.7827%",
-      "top": "44.8895%",
-      "width": "23.4807%",
-      "height": "55.1105%"
+      "top": "0.0000%",
+      "width": "37.2928%",
+      "height": "100.0000%"
     },
     "fadeStart": 0,
-    "solidStart": 10
+    "solidStart": 7,
+    "solidEnd": 100
+  },
+  {
+    "id": "archives",
+    "art": {
+      "src": "/art/hub/archives-ground-v6.webp",
+      "width": 1289,
+      "height": 1221
+    },
+    "area": {
+      "left": "26.0129%",
+      "top": "0.0000%",
+      "width": "17.4954%",
+      "height": "49.7238%"
+    },
+    "fadeStart": 0,
+    "solidStart": 7
+  },
+  {
+    "id": "eastern",
+    "art": {
+      "src": "/art/hub/eastern-ground-v6.webp",
+      "width": 1423,
+      "height": 1105
+    },
+    "area": {
+      "left": "57.0902%",
+      "top": "0.0000%",
+      "width": "42.9098%",
+      "height": "100.0000%"
+    },
+    "fadeStart": 0,
+    "solidStart": 7,
+    "solidEnd": 100,
+    "solidLeft": 3,
+    "solidRight": 100
+  },
+  {
+    "id": "workshop-crossing",
+    "art": {
+      "src": "/art/hub/workshop-crossing-ground-v7.webp",
+      "width": 1684,
+      "height": 934
+    },
+    "area": {
+      "left": "14.7330%",
+      "top": "38.6740%",
+      "width": "36.8324%",
+      "height": "61.3260%"
+    },
+    "fadeStart": 0,
+    "solidStart": 10,
+    "solidRight": 97
   }
-] satisfies readonly {
-  id: string;
-  art: HubArtwork;
-  area: CSSProperties;
-  fadeStart: number;
-  solidStart: number;
-}[];
+];

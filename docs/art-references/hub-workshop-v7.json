@@ -1,0 +1,120 @@
+{
+  "tool": "Built-in ImageGen",
+  "mapReference": {
+    "width": 2172,
+    "height": 724
+  },
+  "sourceRegion": {
+    "left": 320,
+    "top": 280,
+    "width": 800,
+    "height": 444
+  },
+  "integratedReference": "docs/art-references/hub-workshop-v7.webp",
+  "building": {
+    "id": "workshop",
+    "art": {
+      "src": "/art/hub/workshop-building-v7.webp",
+      "width": 1477,
+      "height": 783
+    },
+    "previousArt": {
+      "src": "/art/hub/workshop-building-v3.webp",
+      "width": 686,
+      "height": 574
+    },
+    "previousArea": {
+      "left": "32.4000%",
+      "top": "40.8000%",
+      "width": "15.3000%",
+      "height": "38.4000%"
+    },
+    "area": {
+      "left": "33.4000%",
+      "top": "57.5000%",
+      "width": "13.0000%",
+      "height": "20.6000%"
+    },
+    "widthScale": 0.8497,
+    "export": {
+      "sourceSize": [
+        1536,
+        1024
+      ],
+      "crop": [
+        32,
+        136,
+        1509,
+        919
+      ],
+      "outputSize": [
+        1477,
+        783
+      ],
+      "alphaPreserved": true
+    }
+  },
+  "groundPatch": {
+    "id": "workshop-crossing",
+    "art": {
+      "src": "/art/hub/workshop-crossing-ground-v7.webp",
+      "width": 1684,
+      "height": 934
+    },
+    "area": {
+      "left": "14.7330%",
+      "top": "38.6740%",
+      "width": "36.8324%",
+      "height": "61.3260%"
+    },
+    "fadeStart": 0,
+    "solidStart": 10,
+    "solidRight": 97
+  },
+  "bridgeGuide": {
+    "reference": "docs/art-references/hub-workshop-bridge-guide-v7.webp",
+    "coordinateSpace": "800 × 444 local crop",
+    "route": [
+      [
+        191,
+        145
+      ],
+      [
+        230,
+        175
+      ],
+      [
+        250,
+        205
+      ],
+      [
+        380,
+        225
+      ],
+      [
+        402,
+        280
+      ],
+      [
+        480,
+        300
+      ]
+    ],
+    "bridgeApproaches": [
+      [
+        250,
+        205
+      ],
+      [
+        380,
+        225
+      ]
+    ]
+  },
+  "caption": {
+    "bottomPx": -56,
+    "compactAtMaxHeightPx": 700,
+    "compactBottomPx": -12
+  },
+  "notes": "Atelier de fabrication de cartes ouvert, de plain-pied, environ 15 % moins large que la V6. Le nouveau pont de bois relie son parvis sec à la place du téléporteur et à la route existante de la mine d’or. Le raccord est posé après les terrains V5/V6. Les autres sprites et leurs emprises sont inchangés. Aucun habitant."
+}
