@@ -7,6 +7,7 @@ const ICON_ARTWORK = {
   cardUpgrade: "card-level-up",
   refuge: "refuge-map",
   sanctuary: "sanctuary-crystal",
+  teleporter: "teleporter-portal",
   arena: "arena-swords",
   archives: "archives-book",
   guardian: "guardian-emblem",

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { GameHeader } from "@/components/game-header";
@@ -193,12 +193,9 @@ export function VillageHub({
           />
 
           <nav aria-label="Bâtiments du refuge">
-            <Link to="/world" className="hub-teleporter group" style={HUB_BUILDING_AREAS.teleporter} aria-label="Le téléporteur — Explorer la carte du monde">
-              <img {...HUB_BUILDING_ART.teleporter} alt="" aria-hidden="true" draggable={false} />
-              <span className="hub-teleporter-label">
-                <span>Le téléporteur</span>
-                <small>Explorer le monde</small>
-              </span>
+            <Link to="/world" className={cn(hotspotStyle, "hub-teleporter")} style={HUB_BUILDING_AREAS.teleporter} aria-label="Le téléporteur — Explorer la carte du monde">
+              <img {...HUB_BUILDING_ART.teleporter} alt="" aria-hidden="true" draggable={false} className="hub-building-art" />
+              <BuildingLabel name="Le téléporteur" purpose="Explorer le monde" icon="teleporter" />
             </Link>
             <MineBuildings
               {...(mines ?? { pending: [], onCollect: () => {} })}
@@ -216,7 +213,9 @@ export function VillageHub({
                     className="hub-building-art"
                   />
                   <BuildingLabel
-                    place={place}
+                    name={place.name}
+                    purpose={place.purpose}
+                    icon={place.icon}
                     active={place.id === "arena" && hasActivity}
                   />
                 </>
@@ -282,27 +281,29 @@ export function VillageHub({
   );
 }
 
-function BuildingLabel({ place, active }: { place: Place; active?: boolean }) {
+function BuildingLabel({ name, purpose, icon, active }: {
+  name: string;
+  purpose: string;
+  icon: GameIconKind;
+  active?: boolean;
+}) {
   return (
     <span className="hub-building-caption">
-      <span
-        aria-hidden="true"
-        className="mb-3 grid size-8 place-items-center rounded-full border border-[#e4c987]/70 bg-[#1a3429]/85 text-[#f1d28b] opacity-0 shadow-lg transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100 group-focus-visible:-translate-y-1 group-focus-visible:opacity-100"
-      >
-        <ArrowRight size={15} />
-      </span>
-      <span className="hub-building-label relative flex min-w-40 items-center gap-2.5 rounded-lg border border-[#d1be85]/70 bg-[#1a3026]/95 px-4 py-2.5 text-left shadow-[0_4px_16px_#10251d60] transition-[transform,border-color,background-color] duration-200 group-hover:-translate-y-1 group-hover:border-[#f3d791] group-hover:bg-[#304a31] group-focus-visible:-translate-y-1 group-focus-visible:border-[#f3d791]">
-        <GameIcon kind={place.icon} size={32} />
-        <span>
-          <span className="hub-building-title block font-serif text-[17px] leading-tight text-[#fff6dd]">
-            {place.name}
+      <span className="hub-plaque hub-building-label">
+        <span className="hub-plaque-emblem" aria-hidden="true">
+          <GameIcon kind={icon} size={32} />
+        </span>
+        <span className="hub-plaque-copy">
+          <span className="hub-plaque-title hub-building-title">
+            {name}
           </span>
-          <span className="mt-1 block text-[9px] tracking-[0.025em] text-[#d0d8ba]">
-            {place.purpose}
+          <span className="hub-plaque-purpose">
+            {purpose}
           </span>
         </span>
+        <ChevronRight className="hub-plaque-arrow" size={14} aria-hidden="true" />
         {active && (
-          <span className="absolute -top-1 -right-1 size-3 rounded-full border-2 border-[#1a3026] bg-[#e4c987]" />
+          <span className="hub-building-activity" aria-hidden="true" />
         )}
       </span>
     </span>

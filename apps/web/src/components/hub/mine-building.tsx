@@ -104,16 +104,18 @@ function MineBuilding({
         </button>
       )}
       <div
-        className="hub-mine-label"
+        className="hub-plaque hub-mine-label"
         title={view ? [
           `Mine niv. ${state!.level ?? state!.heroLevel ?? 1} · Rang ${board!.rank} · ${view.perHour.toLocaleString("fr-FR")} ${unit} / h`,
           `Réserve : ${view.available.toLocaleString("fr-FR")} / ${view.capacity.toLocaleString("fr-FR")} · ${MINE_STORAGE_HOURS} h de stockage`,
           view.full ? "Production en pause" : !ready ? `Prochaine ${kind === "gold" ? "pièce" : "émeraude"} dans ${minutes} min` : "",
         ].filter(Boolean).join("\n") : undefined}
       >
-        <GameIcon kind={kind === "gold" ? "goldMine" : "emeraldMine"} size={32} className="hub-mine-icon" />
-        <div className="hub-mine-content">
-          <h2 className="hub-mine-title">{name}</h2>
+        <span className="hub-plaque-emblem" aria-hidden="true">
+          <GameIcon kind={kind === "gold" ? "goldMine" : "emeraldMine"} size={32} />
+        </span>
+        <div className="hub-plaque-copy hub-mine-content">
+          <h2 className="hub-plaque-title hub-mine-title">{name}</h2>
           <div id={descriptionId} className="hub-mine-details">
             {view ? (
               <>

@@ -1483,6 +1483,20 @@
       },
       "integration": "docs/art-references/hub-workshop-v7.json",
       "export": "WebP, définition native, qualité 94. Pont de bois sur culées de pierre, deux accès secs, parvis relié à la place du téléporteur et à la route de la mine d’or."
+    },
+    {
+      "path": "apps/web/public/art/ui/teleporter-portal.webp",
+      "prompt": "Use case: stylized-concept.\nAsset type: ONE compact square alpha-transparent UI ICON for the TELEPORTER in Sylve, a polished hand-painted woodland fantasy card game.\nInput roles: Image 1 is the actual teleporter building and defines its identity. Image 2 (emerald sanctuary icon) and Image 3 (open archive book icon) define the existing UI icon family's fine painted materials, dimensional shading, antique gold trim and readable isolated composition.\n\nPrimary request: create a distinct TELEPORTER symbol readable at 32–40 pixels: a single compact upright near-circular portal ring of weathered ivory limestone and restrained sculpted aged brass, with two tiny jade/teal gem insets and one simple leaf-shaped gold finial. Its center is filled by ONE bold luminous CYAN-and-VIOLET SPIRAL VORTEX, immediately recognizable as the blue-purple teleporter from Image 1. The main vortex forms a clear broad curl, not a busy starfield. Simplify the architecture into an emblem, matching the sanctuary crystal and archive book icon's visual weight. Very small stone foot, no wide platform or big stairs. Focus on ring plus spiral.\nStyle: exquisite dimensional hand-painted 2D fantasy UI illustration, broad readable materials, warm upper-left light on brass/stone, cool teal reflected shadows, restrained bright inner spiral. Same refined painted rendering and warm antique gold as Images 2 and 3. No cartoon black outline, flat vector look, photographic texture or tiny unreadable clutter.\n\nFraming: square canvas, one centered complete icon filling about 82–88% of the square, generous genuinely TRANSPARENT ALPHA margins, all finials and edges visible. No decorative outer badge or UI frame: the interface supplies its medallion. No surrounding vegetation, buildings, scenery, sky, broad cast shadow, ground island, particles outside the ring, glow cloud, lettering, runic text, words, numbers, label, watermark, people, creatures, background color or fake checkerboard. Only the complete isolated portal emblem on true alpha.",
+      "tool": "Built-in ImageGen",
+      "width": 384,
+      "height": 384,
+      "transparentBackground": true,
+      "references": [
+        "apps/web/public/art/hub/teleporter-building-v4.webp",
+        "apps/web/public/art/ui/sanctuary-crystal.webp",
+        "apps/web/public/art/ui/archives-book.webp"
+      ],
+      "export": "WebP 384 × 384, qualité 95, alpha conservé. Emblème de portail en pierre et laiton, vortex cyan et violet, utilisé dans le médaillon de la plaque du téléporteur."
     }
   ],
   "captures": [

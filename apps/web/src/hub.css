@@ -1,4 +1,5 @@
 .hub-building {
+  --hub-building-glow: #ffe6a44d;
   z-index: 1;
   -webkit-tap-highlight-color: transparent;
 }
@@ -21,23 +22,25 @@
   object-position: center bottom;
   pointer-events: none;
   filter: drop-shadow(2px 3px 2px #18302233);
-  transition: filter 200ms ease;
+  transition: filter 180ms ease;
 }
 .hub-building:is(:hover, :focus-visible) {
   z-index: 3;
 }
 .hub-building:is(:hover, :focus-visible) .hub-building-art {
-  filter: drop-shadow(2px 3px 2px #18302233) drop-shadow(0 0 8px #ffe6a44d);
+  filter: drop-shadow(2px 3px 2px #18302233) drop-shadow(0 0 8px var(--hub-building-glow));
+}
+.hub-teleporter {
+  --hub-building-glow: #92e5e570;
 }
 .hub-building-caption {
   position: absolute;
   z-index: 1;
   bottom: -12px;
   left: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
   width: max-content;
+  max-width: min(264px, calc(100vw - 32px));
   transform: translateX(-50%);
 }
 .hub-building-workshop .hub-building-caption {
@@ -48,46 +51,104 @@
     bottom: -12px;
   }
 }
-.hub-teleporter {
-  position: absolute;
-  z-index: 1;
+.hub-plaque {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex-direction: column;
-  border-radius: 40%;
-  outline: none;
-}
-.hub-teleporter > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(2px 3px 2px #18302233);
-  transition: filter 200ms, transform 200ms;
-}
-.hub-teleporter-label {
-  position: relative;
-  z-index: 1;
-  bottom: -12px;
-  display: grid;
-  gap: 4px;
+  gap: 10px;
   width: max-content;
-  padding: 10px 16px;
-  border: 1px solid #d1be85b3;
-  border-radius: 8px;
-  background: #1a3026f2;
-  box-shadow: 0 4px 16px #10251d60;
-  color: #fff6dd;
-  font: 17px/1.2 Georgia, serif;
+  max-width: 100%;
+  min-height: 64px;
+  padding: 10px 12px 10px 10px;
+  isolation: isolate;
+  border: 1px solid #ba9e62bd;
+  border-radius: 12px;
+  background: linear-gradient(155deg, #2b4338f5, #172e25fa 65%, #10231dfa);
+  box-shadow: 0 6px 16px #06180e66, inset 0 1px 0 #fff0bc24, inset 0 -1px 0 #06190e80;
+  color: #fff2d0;
+  text-align: left;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
-.hub-teleporter-label small { color: #c7d5c9; font: 9px/1.4 sans-serif; }
-.hub-teleporter:is(:hover, :focus-visible) > img {
-  filter: drop-shadow(0 0 12px #92e5e58c);
-  transform: translateY(-3px);
+.hub-plaque::before {
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  border: 1px solid #e1c78c1f;
+  border-radius: 9px;
+  pointer-events: none;
+  content: "";
 }
-.hub-teleporter:focus-visible .hub-teleporter-label { outline: 2px solid #ffe4a0; outline-offset: 3px; }
+.hub-building-label {
+  min-width: 184px;
+}
+.hub-plaque-emblem {
+  display: grid;
+  flex: 0 0 40px;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #c8aa675c;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 22%, #b29b572e, #0c241e 78%);
+  box-shadow: inset 0 1px 3px #0005, 0 1px 0 #fff0be17;
+}
+.hub-plaque-emblem > .game-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #071b14b3);
+}
+.hub-plaque-copy {
+  flex: 1;
+  min-width: 0;
+}
+.hub-plaque-title {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  color: #fff2d0;
+  font: 16px/1.2 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hub-plaque-purpose {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #c6d1bc;
+  font: 11px/1.35 "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hub-plaque-arrow {
+  flex-shrink: 0;
+  color: #d9c28b;
+  opacity: 0.65;
+  transition: opacity 180ms ease;
+}
+.hub-building:is(:hover, :focus-visible) .hub-plaque {
+  border-color: #edcf8c;
+  box-shadow: 0 6px 18px #06180e80, 0 0 12px #e3c07926, inset 0 1px 0 #fff0bc38;
+}
+.hub-building:is(:hover, :focus-visible) .hub-plaque-arrow {
+  opacity: 1;
+}
+.hub-building:focus-visible .hub-plaque {
+  outline: 2px solid #ffe4a0;
+  outline-offset: 3px;
+}
+.hub-building-activity {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #183026;
+  border-radius: 50%;
+  background: #efd391;
+  box-shadow: 0 0 8px #efcf7c66;
+}
 .hub-mine {
   position: absolute;
   z-index: 1;
@@ -112,43 +173,17 @@
   z-index: 2;
   bottom: -32px;
   left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: max-content;
-  min-width: 180px;
-  max-width: 224px;
-  padding: 10px 14px;
-  overflow: hidden;
-  border: 1px solid #d1be85b3;
-  border-radius: var(--radius-lg);
-  background: #1a3026f2;
-  box-shadow: 0 4px 16px #10251d60;
+  min-width: 224px;
+  max-width: 252px;
   transform: translateX(-50%);
-}
-.hub-mine-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-}
-.hub-mine-content {
-  flex: 1;
-  min-width: 0;
-}
-.hub-mine-title {
-  margin: 0;
-  color: #fff6dd;
-  font: 17px/1.2 Georgia, serif;
-  white-space: nowrap;
 }
 .hub-mine-details { margin-top: 4px; }
 .hub-mine-details p {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: #d0d8ba;
-  font-size: 9px;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
   line-height: 1.4;
   white-space: nowrap;
@@ -387,11 +422,13 @@
   transform: rotate(180deg);
 }
 @media (max-height: 560px) and (min-width: 600px) {
-  .hub-building-caption, .hub-teleporter-label { bottom: -4px; }
-  .hub-building-label { min-width: 140px; gap: 6px; padding: 8px 10px; }
-  .hub-building-label > .game-icon { width: 26px; height: 26px; }
-  .hub-building-title { font-size: 15px; }
-  .hub-teleporter-label { padding: 8px 10px; font-size: 15px; }
+  .hub-building-caption { bottom: -4px; }
+  .hub-plaque { min-height: 54px; gap: 8px; padding: 7px 9px; }
+  .hub-building-label { min-width: 166px; }
+  .hub-plaque-emblem { flex-basis: 34px; width: 34px; height: 34px; }
+  .hub-plaque-emblem > .game-icon { width: 28px; height: 28px; }
+  .hub-plaque-title { font-size: 15px; }
+  .hub-plaque-purpose { font-size: 10px; }
   .hub-dock {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(130px, 0.7fr);

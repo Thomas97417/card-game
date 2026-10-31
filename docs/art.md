@@ -18,6 +18,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
+| `ui/teleporter-portal.webp` | Icône transparente du téléporteur : anneau de pierre et laiton, vortex cyan et violet, générée avec ImageGen intégré |
 | `hub/refuge-landscape-v2.webp` | Base du paysage du refuge, sans bâtiments, en panorama 3:1 |
 | `hub/*-ground-v4.webp` | Anciens terrains individuels, conservés comme références des compositions précédentes |
 | `hub/*-building-v4.webp` | Huit bâtiments transparents harmonisés avec leurs terrains, dont la fonderie, le téléporteur et les mines |
@@ -52,6 +53,8 @@ Les sept autres bâtiments suivent désormais cette échelle : +30 % pour les mi
 `components/hub/hub-art.ts` regroupe les images, les emplacements et les paramètres des fondus. L’entrée ouest est posée avant la cour, puis viennent les archives, le quartier est et le raccord du pont de l’atelier. Les fondus latéraux sont réglables pour conserver les objets et les accès aux bords de la carte ; les terrains qui touchent le premier plan restent opaques en bas. Chaque sprite, son libellé et son lien partagent les mêmes coordonnées, y compris pour le téléporteur et les deux mines. Les libellés des mines laissent la place aux commandes de collecte sur les écrans peu hauts.
 
 Cette composition est intégrée par défaut sur `/hub`. `docs/art-references/hub-workshop-v7.webp` montre le nouvel atelier et sa traversée ; les références de quartier V6 et `hub-integration-v6.json` documentent le reste du village. `hub-workshop-v7.json` archive la nouvelle emprise, le cadrage du sprite, le raccord et les repères de passage. Les prompts de génération, de détourage et de terrain figurent dans le manifeste. Les références des phases précédentes restent disponibles pour retravailler chaque zone. Le paysage, ses terrains et chacun des neuf bâtiments peuvent être remplacés indépendamment.
+
+Les neuf plaques du hub partagent un cadre vert sombre à liseré de laiton, une icône en médaillon et une hiérarchie commune entre titre et description. Les plaques de navigation regroupent l’icône, les deux lignes de texte et un chevron ; les mines conservent leurs valeurs de production et leur jauge dans le même cadre. Le téléporteur utilise l’icône `ui/teleporter-portal.webp`, harmonisée avec les autres emblèmes du jeu. Au survol et au focus, l’illustration et la plaque restent fixes ; seuls la lueur, le liseré et le contraste du chevron changent. Les écrans peu hauts utilisent une version compacte des plaques.
 
 Le bouton Guilde utilise `ui/guild-banner.webp`. Le créateur de guilde réunit quatre nouveaux emblèmes et douze illustrations déjà présentes dans le jeu. Les cinq nouveaux fichiers sont exportés en WebP 384 × 384 en conservant leur transparence ; les prompts complets sont conservés dans le manifeste.
 
