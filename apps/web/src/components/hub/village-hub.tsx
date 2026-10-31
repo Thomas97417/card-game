@@ -195,7 +195,7 @@ export function VillageHub({
           <nav aria-label="Bâtiments du refuge">
             <Link to="/world" className={cn(hotspotStyle, "hub-teleporter")} style={HUB_BUILDING_AREAS.teleporter} aria-label="Le téléporteur — Explorer la carte du monde">
               <img {...HUB_BUILDING_ART.teleporter} alt="" aria-hidden="true" draggable={false} className="hub-building-art" />
-              <BuildingLabel name="Le téléporteur" purpose="Explorer le monde" icon="teleporter" />
+              <BuildingLabel name="Le téléporteur" icon="teleporter" />
             </Link>
             <MineBuildings
               {...(mines ?? { pending: [], onCollect: () => {} })}
@@ -214,7 +214,6 @@ export function VillageHub({
                   />
                   <BuildingLabel
                     name={place.name}
-                    purpose={place.purpose}
                     icon={place.icon}
                     active={place.id === "arena" && hasActivity}
                   />
@@ -281,9 +280,8 @@ export function VillageHub({
   );
 }
 
-function BuildingLabel({ name, purpose, icon, active }: {
+function BuildingLabel({ name, icon, active }: {
   name: string;
-  purpose: string;
   icon: GameIconKind;
   active?: boolean;
 }) {
@@ -297,11 +295,7 @@ function BuildingLabel({ name, purpose, icon, active }: {
           <span className="hub-plaque-title hub-building-title">
             {name}
           </span>
-          <span className="hub-plaque-purpose">
-            {purpose}
-          </span>
         </span>
-        <ChevronRight className="hub-plaque-arrow" size={14} aria-hidden="true" />
         {active && (
           <span className="hub-building-activity" aria-hidden="true" />
         )}

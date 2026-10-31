@@ -44,7 +44,7 @@
   transform: translateX(-50%);
 }
 .hub-building-workshop .hub-building-caption {
-  bottom: -56px;
+  bottom: -36px;
 }
 @media (max-height: 700px) {
   .hub-building-workshop .hub-building-caption {
@@ -79,7 +79,17 @@
   content: "";
 }
 .hub-building-label {
-  min-width: 184px;
+  gap: 7px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 9px 5px 7px;
+  border-color: #ba9e6266;
+  border-radius: 8px;
+  background: #14291fe0;
+  box-shadow: 0 3px 8px #07170e3d;
+}
+.hub-building-label::before {
+  display: none;
 }
 .hub-plaque-emblem {
   display: grid;
@@ -98,6 +108,19 @@
   object-fit: contain;
   filter: drop-shadow(0 2px 2px #071b14b3);
 }
+.hub-building-label .hub-plaque-emblem {
+  flex-basis: 24px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.hub-building-label .hub-plaque-emblem > .game-icon {
+  width: 24px;
+  height: 24px;
+}
 .hub-plaque-copy {
   flex: 1;
   min-width: 0;
@@ -112,27 +135,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.hub-plaque-purpose {
-  display: block;
-  margin-top: 4px;
-  overflow: hidden;
-  color: #c6d1bc;
-  font: 11px/1.35 "Avenir Next", Avenir, "Segoe UI", sans-serif;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.hub-plaque-arrow {
-  flex-shrink: 0;
-  color: #d9c28b;
-  opacity: 0.65;
-  transition: opacity 180ms ease;
+.hub-building-label .hub-plaque-title {
+  font-size: 14px;
+  letter-spacing: 0;
 }
 .hub-building:is(:hover, :focus-visible) .hub-plaque {
-  border-color: #edcf8c;
-  box-shadow: 0 6px 18px #06180e80, 0 0 12px #e3c07926, inset 0 1px 0 #fff0bc38;
-}
-.hub-building:is(:hover, :focus-visible) .hub-plaque-arrow {
-  opacity: 1;
+  border-color: #d4b978;
+  box-shadow: 0 4px 10px #06180e66;
 }
 .hub-building:focus-visible .hub-plaque {
   outline: 2px solid #ffe4a0;
@@ -424,11 +433,12 @@
 @media (max-height: 560px) and (min-width: 600px) {
   .hub-building-caption { bottom: -4px; }
   .hub-plaque { min-height: 54px; gap: 8px; padding: 7px 9px; }
-  .hub-building-label { min-width: 166px; }
+  .hub-building-label { min-width: 0; min-height: 32px; gap: 6px; padding: 4px 8px; }
   .hub-plaque-emblem { flex-basis: 34px; width: 34px; height: 34px; }
   .hub-plaque-emblem > .game-icon { width: 28px; height: 28px; }
   .hub-plaque-title { font-size: 15px; }
-  .hub-plaque-purpose { font-size: 10px; }
+  .hub-building-label .hub-plaque-emblem { flex-basis: 22px; width: 22px; height: 22px; }
+  .hub-building-label .hub-plaque-emblem > .game-icon { width: 22px; height: 22px; }
   .hub-dock {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(130px, 0.7fr);
