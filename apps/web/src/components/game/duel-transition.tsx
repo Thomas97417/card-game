@@ -9,10 +9,10 @@ import {
   type ReactNode,
 } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { heroPortrait } from "@sylve/game/hero-metadata";
 import {
   DuelIntro,
   rememberDuelIntro,
+  useDuelIntroAssets,
   type DuelIntroData,
   type IntroPlayer,
 } from "./duel-intro";
@@ -46,13 +46,11 @@ export function useDuelTransition() {
 /** Lives above the routes so navigation never interrupts the presentation. */
 export function DuelTransitionProvider({ children }: { children: ReactNode }) {
   const [duel, setDuel] = useState<Transition | null>(null);
-  const [assetsReady, setAssetsReady] = useState(false);
   const serial = useRef(0);
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
   const start = useCallback((next: StartDuel) => {
-    setAssetsReady(false);
     setDuel({ ...next, id: ++serial.current, boardReady: false });
   }, []);
   const cancel = useCallback(() => setDuel(null), []);
@@ -93,41 +91,12 @@ export function DuelTransitionProvider({ children }: { children: ReactNode }) {
     // A match may have been found while the cancellation was in flight.
     setDuel((current) => (current?.gameId ? current : null));
   }, [duel?.onCancel]);
-  const ownPortrait = heroPortrait(
+  const assetsReady = useDuelIntroAssets(
+    duel?.id,
     duel?.data?.players[duel.data.me]?.heroId ?? duel?.player.heroId,
-  );
-  const enemyPortrait = heroPortrait(
     duel?.data?.players[1 - duel.data.me]?.heroId,
-    true,
   );
 
-  useEffect(() => {
-    if (!duel?.id) return;
-    let mounted = true;
-    setAssetsReady(false);
-    const images = [
-      "/art/duel-arena-overhead.webp",
-      ownPortrait,
-      enemyPortrait,
-    ].map((src) => {
-      const image = new Image();
-      const promise = new Promise<void>((resolve) => {
-        image.onload = image.onerror = () => resolve();
-        image.src = src;
-        if (image.complete) resolve();
-      });
-      return { image, promise };
-    });
-    void Promise.all(images.map(({ promise }) => promise)).then(() => {
-      if (mounted) setAssetsReady(true);
-    });
-    return () => {
-      mounted = false;
-      images.forEach(({ image }) => {
-        image.onload = image.onerror = null;
-      });
-    };
-  }, [duel?.id, ownPortrait, enemyPortrait]);
   useEffect(() => {
     if (
       pathname !== "/arena" &&
