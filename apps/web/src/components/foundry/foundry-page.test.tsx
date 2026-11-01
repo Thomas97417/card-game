@@ -40,7 +40,7 @@ describe("la fonderie à l’écran", () => {
     board = { ...board, progress: { ...board.progress!, mastery: 500, cycle: { ...newFoundryCycle(), shards: 10000 } } };
     render(<FoundryPage />); await ready();
     fireEvent.click(screen.getByRole("button", { name: "Guide de la fonderie" }));
-    expect(screen.getByText(/Filon 1 · butin ×10 · résistance ×1/)).toBeTruthy();
+    expect(screen.getByText(/La manche commence avec 4 reliques/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
@@ -236,7 +236,7 @@ describe('la poursuite de la forge',()=>{
     render(<FoundryPage/>);await ready();expect(screen.getAllByRole('heading',{name:'La forge libre'}).length).toBeGreaterThan(0);expect(screen.queryByRole('button',{name:/Livrer la commande/})).toBeNull();
     expect(screen.getByTitle(/1.200 éclats en réserve/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:'Guide de la fonderie'}));
-    expect(screen.getByText(/Filon 5 · butin ×240 · résistance ×90/)).toBeTruthy();
+    expect(screen.getByText(/La manche commence avec 4 reliques/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:'Fermer la fenêtre'}));
     await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getByRole('button',{name:'Ouvrir l’arbre de compétences'}));expect(screen.getByRole('button',{name:/Arbre de compétences 0 \/ 211/})).toBeTruthy();

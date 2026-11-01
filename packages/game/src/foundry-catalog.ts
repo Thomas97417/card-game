@@ -68,7 +68,7 @@ export const FOUNDRY_SKILLS = { ...LEGACY_FOUNDRY_SKILLS, ...FOUNDRY_REFERENCE_S
 export type FoundrySkillId = keyof typeof FOUNDRY_SKILLS;
 export const FOUNDRY_SKILL_IDS = Object.keys(FOUNDRY_SKILLS) as FoundrySkillId[];
 export const LEGACY_FOUNDRY_SKILL_IDS = Object.keys(LEGACY_FOUNDRY_SKILLS) as FoundrySkillId[];
-export function foundrySkills(cycle: { economy?: number }): readonly FoundrySkillId[] { return cycle.economy === 5 ? FOUNDRY_REFERENCE_SKILL_IDS : cycle.economy === 4 ? V4_IDS : LEGACY_FOUNDRY_SKILL_IDS; }
+export function foundrySkills(cycle: { economy?: number }): readonly FoundrySkillId[] { return (cycle.economy ?? 0) >= 5 ? FOUNDRY_REFERENCE_SKILL_IDS : cycle.economy === 4 ? V4_IDS : LEGACY_FOUNDRY_SKILL_IDS; }
 export function foundrySkill(id: FoundrySkillId, cycle?: { economy?: number }): FoundrySkill { return cycle?.economy === 4 && id in V4_SKILLS ? V4_SKILLS[id as keyof typeof V4_SKILLS] : FOUNDRY_SKILLS[id]; }
 export function foundrySkillReady(id: FoundrySkillId, owned: readonly FoundrySkillId[]): boolean {
   const skill = foundrySkill(id);

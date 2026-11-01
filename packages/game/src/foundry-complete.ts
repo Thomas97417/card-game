@@ -1,6 +1,7 @@
 import { FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, foundryRandom, spawnFoundryRelic, confineFoundryRelic, resolveFoundryContacts,
   foundryToolStrikeCost, type FoundryRound, type FoundryInput, type FoundryFrame, type FoundryRelic } from './foundry';
 import { FOUNDRY_TECHNIQUES as T } from './foundry-complete-rules';
+import { FOUNDRY_POPULATION, foundryReferenceDrop } from './foundry-population';
 
 export function completeCadence(state: FoundryRound): number {
   const rogue=state.rogue!, ref=rogue.reference!, full=rogue.complete!, m=full.modifiers;
@@ -15,7 +16,7 @@ export function completeStrikeCost(state: FoundryRound): number {
   return Math.max(0.25,raw/(full.modifiers.efficientSwings?Math.max(1,completeCadence(state)):1));
 }
 
-/** V11 only: all 211 nodes have executable mechanics, separate from frozen V1–V10 replay. */
+/** V11 keeps its original refills and payouts; V12 uses the sourced population and loot. */
 export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):FoundryFrame {
   const frame:FoundryFrame={strike:false,impacts:[],effects:[]}, rogue=state.rogue!, ref=rogue.reference!, full=rogue.complete!;
   const mods=rogue.modifiers, extra=ref.modifiers, m=full.modifiers;state.tick++;
@@ -93,7 +94,7 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
   full.rocks=full.rocks.filter(r=>r.at>state.tick);
   const destroyed=new Set<number>();let index=0;
   const restore=(amount:number)=>{state.concentration=Math.min(state.stats.concentration,state.concentration+amount);};
-  const lootRoll=(target:FoundryRelic)=>{const [min,max]=RELICS[target.kind].loot;let n=min+Math.floor(foundryRandom(state)*(max-min+1));if(roll(extra.luck))n=Math.max(n,min+Math.floor(foundryRandom(state)*(max-min+1)));return target.glowing?max:n;};
+  const lootRoll=(target:FoundryRelic)=>{if(state.version>=12&&target.kind!=='spring')return foundryReferenceDrop(target.kind,()=>foundryRandom(state),extra.luck,!!target.glowing).amount;const [min,max]=RELICS[target.kind].loot;let n=min+Math.floor(foundryRandom(state)*(max-min+1));if(roll(extra.luck))n=Math.max(n,min+Math.floor(foundryRandom(state)*(max-min+1)));return target.glowing?max:n;};
   while(true){
     if(index>=queue.length){
       if(state.concentration<0.00001){
@@ -112,12 +113,15 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
       const bonus=1+(hit.critical?mods.criticalLoot:0)+(target.kind==='geode'?mods.geodeLoot:0)+extra.lootPerType*ACTIVE_RELIC_KINDS.length
         +(intact&&hit.direct?mods.oneShotLoot:0)+Math.min(0.25,(state.broken-1)*mods.lootGrowth)+(low()?m.lowStaminaLoot:0)+(target.bonusLoot??0);
       const superJackpot=roll(m.superJackpotChance),jackpot=superJackpot||roll(Math.max(mods.jackpotChance,hit.critical?m.luckyStrike:0));
-      const amount=superJackpot?RELICS[target.kind].loot[1]:lootRoll(target);
+      const sourced = state.version >= 12 && target.kind !== 'spring'
+        ? foundryReferenceDrop(target.kind, () => foundryRandom(state), extra.luck, superJackpot || !!target.glowing)
+        : undefined;
+      const amount=sourced?.amount ?? (superJackpot?RELICS[target.kind].loot[1]:lootRoll(target));
       const luminous=target.glowing&&roll(extra.glowingBonusChance)?1+extra.glowingBonus:1;
       let payment=Math.max(1,Math.round(amount*state.stats.loot*(rogue.wealth??1)*bonus*(jackpot?2:1)*luminous));
       if(m.coinRain){full.coinBank+=Math.max(1,Math.round(payment*m.coinGrowth));full.coinCount++;if(full.coinCount>=T.coins.burst){payment+=full.coinBank;full.coinBank=0;full.coinCount=0;frame.effects!.push({kind:'coinrain',x:target.x,z:target.z});}}
       loot+=payment;state.shards+=payment;
-      if(jackpot){rogue.jackpots++;if(superJackpot)full.superJackpots++;frame.effects!.push({kind:'jackpot',x:target.x,z:target.z});}
+      if(jackpot || sourced?.jackpot){rogue.jackpots++;if(superJackpot)full.superJackpots++;frame.effects!.push({kind:'jackpot',x:target.x,z:target.z});}
       if(roll(m.respawnChance))full.pendingSpawns++;
       if(target.glowing&&roll(m.glowingSpreadChance))for(const neighbour of state.targets)if(!destroyed.has(neighbour.id)&&Math.hypot(neighbour.x-target.x,neighbour.z-target.z)<=m.glowingSpreadRange)neighbour.glowing=true;
       if(state.broken===1)restore(mods.firstKillRecovery);
@@ -129,7 +133,19 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
     }
     frame.impacts.push({x:target.x,z:target.z,targetId:target.id,kind:target.kind,damage,critical:hit.critical,broken,loot});
   }
-  if(destroyed.size||full.pendingSpawns){
+  if(state.version >= 12){
+    const nextId=state.nextId;
+    if(destroyed.size)state.targets=state.targets.filter(t=>!destroyed.has(t.id));
+    // A destruction creates a free slot, never an unconditional replacement.
+    full.pendingSpawns=Math.min(rogue.capacity,full.pendingSpawns);
+    if(state.concentration>0){
+      while(full.pendingSpawns>0&&state.targets.length<rogue.capacity){state.targets.push(spawnFoundryRelic(state));full.pendingSpawns--;}
+      if(state.targets.length){full.nextEmptySpawn=0;}
+      else if(!full.nextEmptySpawn){full.nextEmptySpawn=state.tick+Math.round(FOUNDRY_POPULATION.emptyRespawnSeconds*1000/FOUNDRY.stepMs);}
+      else if(state.tick>=full.nextEmptySpawn){state.targets.push(spawnFoundryRelic(state));full.nextEmptySpawn=0;}
+      if(destroyed.size||state.nextId!==nextId)resolveFoundryContacts(state.targets,false,FOUNDRY.fullRelicScale);
+    }
+  }else if(destroyed.size||full.pendingSpawns){
     state.targets=state.targets.filter(t=>!destroyed.has(t.id));while(state.targets.length<rogue.capacity)state.targets.push(spawnFoundryRelic(state));
     while(full.pendingSpawns>0&&state.targets.length<FOUNDRY.fullMaxTargets){state.targets.push(spawnFoundryRelic(state));full.pendingSpawns--;}
     resolveFoundryContacts(state.targets,false,FOUNDRY.fullRelicScale);

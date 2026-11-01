@@ -12,7 +12,7 @@ const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
 
 export function FoundryEquipment({ cycle, charms, tool, locked, onTool }: Props) {
   const modifiers = foundryModifiers(cycle, charms);
-  const efficiency = cycle.economy === 5 && foundryCompleteModifiers(cycle.skills ?? []).efficientSwings > 0;
+  const efficiency = (cycle.economy ?? 0) >= 5 && foundryCompleteModifiers(cycle.skills ?? []).efficientSwings > 0;
   function card(id: FoundryTool) {
     const item = foundryToolDefinition(cycle, id), owned = ownsFoundryTool(cycle, id), equipped = owned && tool === id;
     const shop = item.cost > 0, affordable = cycle.shards >= item.cost;

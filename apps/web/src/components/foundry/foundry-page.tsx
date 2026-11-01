@@ -115,7 +115,7 @@ export function FoundryPage() {
       stopCountdown(); session.current?.destroy(); session.current = null; attachedId.current = null; completed.current.clear(); setPhase("idle"); setTool("mallet");
     }
     localOwner.current = board.ownerId;
-    if (!board.progress) void ensure({ expectedOwnerId: board.ownerId }).catch(showGameError);
+    if (!board.progress || (board.progress.cycle.economy === 5 && !board.round)) void ensure({ expectedOwnerId: board.ownerId }).catch(showGameError);
     if (board.round && !completed.current.has(board.round._id) && attachedId.current !== board.round._id) attach(board.round, board.ownerId);
     if (!board.round && session.current && !session.current.saving) { session.current.destroy(); session.current = null; attachedId.current = null; setPhase("idle"); }
     if (!board.round && !session.current && board.progress) {
@@ -178,7 +178,7 @@ export function FoundryPage() {
   const progress = board?.progress; const cycle = progress?.cycle;
   const runtime = session.current; const live = runtime?.state;
   const inRound = !!board?.round || !!runtime;
-  const locked = busy || inRound || !!cycle?.choices.length || cycle?.status !== "active";
+  const locked = busy || inRound || cycle?.economy === 5 || !!cycle?.choices.length || cycle?.status !== "active";
   const orderCost = cycle ? foundryOrderCost(cycle) : undefined;
   const dailyProgress = Math.min(3, board?.daily.delivered ?? 0);
   const availableMastery = Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0));
@@ -240,7 +240,7 @@ export function FoundryPage() {
               <div className="foundry-order-track" role="progressbar" aria-label="Éclats pour la commande" aria-valuemin={0} aria-valuemax={orderCost} aria-valuenow={Math.min(orderCost, cycle?.shards ?? 0)}><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div>
               <div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Commande à livrer" : `${cycle?.roundsLeft ?? 2} manches restantes`}</div>
             </>}
-            {cycle?.economy === 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre en forge libre <ArrowUpRight size={16} /></button>}
+            {cycle && (cycle.economy ?? 0) >= 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre en forge libre <ArrowUpRight size={16} /></button>}
             {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : !cycle?.freeplay && <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
           </section>
           {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<FoundryShardIcon size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
@@ -260,8 +260,9 @@ export function FoundryPage() {
         <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les gestes de l’artisan</DialogTitle>
           <section className="foundry-guide" aria-label="Guide de la fonderie">
             <p><strong>Le marteau frappe à sa cadence, même dans le vide.</strong> Déplace la souris ou glisse le doigt pour viser. Les flèches déplacent aussi la visée. Chaque coup consomme de la stamina, même dans le vide. Elle ne diminue pas entre les frappes. La manche continue tant qu’il en reste : les améliorations de récupération peuvent la prolonger. Le maillet commence à 1 dégât hors critique ; les améliorations renforcent ensuite ses frappes. Échap met en pause.</p>
-            {cycle && (cycle.economy ?? 0) >= 3 && !endState && <p>Filon {Math.min(5, cycle.orderIndex + 1)} · butin ×{number.format(foundryLootMultiplier(cycle))} · résistance ×{number.format(FOUNDRY.resistances[Math.min(4, cycle.orderIndex)]!)}</p>}
-            {(cycle?.economy ?? 0) >= 3 && <p>Chaque commande ouvre un filon plus riche et plus résistant. Les récupérations aléatoires remboursent au maximum 50 % de la stamina dépensée ; les bonus de première destruction restent fixes.</p>}
+            {cycle && (cycle.economy ?? 0) >= 3 && (cycle.economy ?? 0) < 6 && !endState && <p>Filon {Math.min(5, cycle.orderIndex + 1)} · butin ×{number.format(foundryLootMultiplier(cycle))} · résistance ×{number.format(FOUNDRY.resistances[Math.min(4, cycle.orderIndex)]!)}</p>}
+            {(cycle?.economy ?? 0) >= 6 && <p>La manche commence avec 4 reliques, plus celles apprises dans l’arbre. Une relique revient après 0,5 seconde si l’établi est vide. Éveil régulier ajoute une apparition toutes les 7 secondes, puis 5 secondes avec Éveil accéléré. Les retours à la destruction dépendent de tes savoirs. Chaque famille a ses propres paliers de butin et jackpots.</p>}
+            {(cycle?.economy ?? 0) >= 3 && (cycle?.economy ?? 0) < 6 && <p>Chaque commande ouvre un filon plus riche et plus résistant. Les récupérations aléatoires remboursent au maximum 50 % de la stamina dépensée ; les bonus de première destruction restent fixes.</p>}
             <p>Chaque commande te donne trois manches. Entre deux manches, dépense tes éclats dans les marteaux du chantier ou les cinq voies de l’arbre, ou garde-les pour la livraison. Les marteaux achetés sont conservés jusqu’à la clôture du chantier ; seul le maillet de cuivre est gratuit au début de chaque chantier. Tous les autres marteaux doivent être rachetés avec des éclats. Chaque livraison propose trois bénédictions, dont une technique. Après la cinquième commande, la forge libre permet de poursuivre les achats du chantier et ses 211 savoirs. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise et les talismans restent acquis.</p>
             <p>Trois commandes livrées dans la journée donnent un coffre quotidien. Le compteur est réinitialisé à minuit, heure de Paris.</p>
             <div>{ACTIVE_RELIC_KINDS.map((id) => <span key={id}><i style={{ background: `#${RELICS[id].color.toString(16)}` }} /><strong>{RELICS[id].name}</strong> · {RELICS[id].detail}</span>)}</div>

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { FOUNDRY, FOUNDRY_REFERENCE_SKILLS as SKILLS, FOUNDRY_REFERENCE_SKILL_IDS as IDS, FOUNDRY_V4_SKILL_IDS, FOUNDRY_TECHNIQUES as T,
-  newFoundryCycle, foundrySkills, foundrySkillReady, buyFoundrySkill, foundryCompleteModifiers, foundryStats, createFoundryRound, stepFoundry,
+  newFoundryCycle as latestCycle, foundrySkills, foundrySkillReady, buyFoundrySkill, foundryCompleteModifiers, foundryStats, createFoundryRound, stepFoundry,
   foundryStrikeCost, settleFoundryRound, continueFoundryCycle, foundryLootMultiplier, RELICS, type FoundryRound, type FoundrySkillId, type FoundryCycle, type FoundryInput } from './foundry';
 const aim={x:0,z:0,active:true}, miss={x:5.6,z:3.4,active:false};
 function arena(skills:FoundrySkillId[]=[]):FoundryRound {
@@ -108,3 +108,6 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   expect(foundryLootMultiplier({...settled,freeplayRounds:3})).toBe(240);expect(newFoundryCycle(2).freeplay).toBeUndefined();expect(newFoundryCycle(2).skills).toEqual([]);
  });
 });
+
+// Freeze V11 mechanics; V12 population and payouts have dedicated reference tests.
+function newFoundryCycle(number = 1): FoundryCycle { return { ...latestCycle(number), economy: 5 }; }

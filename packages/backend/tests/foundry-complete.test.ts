@@ -18,22 +18,22 @@ afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();});
 
 describe('les 211 savoirs sur le serveur',()=>{
  it('validates the final Limit Break purchase and replays a complete build, restored checkpoints and its reserve once',async()=>{
-  const {t,client,id}=await player();let b=await client.query(api.foundry.board,{});expect(b.progress!.cycle.economy).toBe(5);
+  const {t,client,id}=await player();let b=await client.query(api.foundry.board,{});expect(b.progress!.cycle.economy).toBe(6);
   let funded={...newFoundryCycle(),shards:2000000000},pending=IDS.filter(id=>id!=='limit-break-damage-3');
   while(pending.length){const ready=pending.filter(skill=>foundrySkillReady(skill,funded.skills!));expect(ready.length).toBeGreaterThan(0);for(const skill of ready)funded=buyFoundrySkill(funded,skill);pending=pending.filter(skill=>!ready.includes(skill));}
   await t.run(ctx=>ctx.db.patch(b.progress!._id,{cycle:funded}));let revision=0;
   await client.mutation(api.foundry.purchaseSkill,{expectedOwnerId:id,revision:revision++,skill:'limit-break-damage-3'});
   b=await client.query(api.foundry.board,{});expect(b.progress!.cycle.skills).toHaveLength(211);expect(b.progress!.cycle.shards).toBe(645825971);
   await client.mutation(api.foundry.purchaseTool,{expectedOwnerId:id,revision:revision++,tool:'gilded'});
-  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded'});expect(round.state.version).toBe(11);expect(round.state.targets).toHaveLength(30);
+  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded'});expect(round.state.version).toBe(12);expect(round.state.targets).toHaveLength(22);
   const expected=structuredClone(round.state);let lastArgs;
   while(!expected.ended){
    if(expected.tick===320){
     // A restored checkpoint from the same legal simulation exercises final exhaustion without repeating every intermediate database write.
-    const checkpoints=[];while(!expected.ended){checkpoints.push(structuredClone(expected));if(checkpoints.length>80)checkpoints.shift();const target=expected.targets.reduce((a,b)=>a.hp<b.hp?a:b);stepFoundry(expected,{x:target.x,z:target.z,active:true});}
+    const checkpoints=[];while(!expected.ended){checkpoints.push(structuredClone(expected));if(checkpoints.length>80)checkpoints.shift();const target=expected.targets.reduce<(typeof expected.targets)[number]|undefined>((a,b)=>!a||b.hp<a.hp?b:a,undefined);stepFoundry(expected,target?{x:target.x,z:target.z,active:true}:{x:0,z:0,active:false});}
     Object.assign(expected,checkpoints[0]!);await t.run(ctx=>ctx.db.patch(round._id,{state:structuredClone(expected)}));
    }
-   const startTick=expected.tick,inputs=[];for(let n=0;n<40&&!expected.ended;n++){const target=expected.targets.reduce((a,b)=>a.hp<b.hp?a:b),input={x:target.x,z:target.z,active:true};inputs.push(input);stepFoundry(expected,input);}vi.setSystemTime(round.startedAt+expected.tick*50);
+   const startTick=expected.tick,inputs=[];for(let n=0;n<40&&!expected.ended;n++){const target=expected.targets.reduce<(typeof expected.targets)[number]|undefined>((a,b)=>!a||b.hp<a.hp?b:a,undefined),input=target?{x:target.x,z:target.z,active:true}:{x:0,z:0,active:false};inputs.push(input);stepFoundry(expected,input);}vi.setSystemTime(round.startedAt+expected.tick*50);
    lastArgs={expectedOwnerId:id,roundId:round._id,startTick,inputs};expect(await client.mutation(api.foundry.submitInputs,lastArgs)).toEqual(expected);expect(await client.mutation(api.foundry.submitInputs,lastArgs)).toEqual(expected);
   }
   expect(expected.rogue!.complete!.windUsed).toBe(true);expect(expected.rogue!.complete!.lastStandUsed).toBe(true);expect(await client.mutation(api.foundry.submitInputs,lastArgs!)).toEqual(expected);

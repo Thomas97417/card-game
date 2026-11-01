@@ -27,7 +27,7 @@ export function planFoundryRunPurchases(cycle: FoundryCycle, reserveBill = false
 }
 
 /** Deterministic, affordable decisions against moving relics; no state or loot cheats. */
-export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean; economy?: 3 | 4 | 5; freeplayRounds?: number; stopWhenMastered?: boolean } = {}) {
+export function simulateFoundryRun(seed: number, options: { invest?: boolean; missEvery?: number; reserveBill?: boolean; economy?: 3 | 4 | 5 | 6; freeplayRounds?: number; stopWhenMastered?: boolean } = {}) {
   let cycle: FoundryCycle = { ...newFoundryCycle(1, seed), economy: options.economy ?? 5 }; let tool: FoundryTool = "mallet", rounds = 0;
   let freeRounds = 0;
   const purchases: { tool: FoundryTool; round: number }[] = [];
@@ -42,9 +42,9 @@ export function simulateFoundryRun(seed: number, options: { invest?: boolean; mi
     const order = cycle.orderIndex + 1, state = createFoundryRound(seed * 7919 + rounds * 9176, cycle, tool);
     let emptySwings = 0;
     while (!state.ended && state.tick < 30000) {
-      const target = state.targets.reduce((a, b) => a.hp < b.hp ? a : b);
+      const target = state.targets.reduce<(typeof state.targets)[number] | undefined>((a, b) => !a || b.hp < a.hp ? b : a, undefined);
       const miss = options.missEvery && state.tick + 1 >= state.nextStrike && state.rogue!.strikes % options.missEvery === options.missEvery - 1;
-      let input = { x: target.x, z: target.z, active: true };
+      let input = target ? { x: target.x, z: target.z, active: true } : { x: 0, z: 0, active: false };
       if (miss) {
         const candidates = [-1, 0, 1].flatMap((x) => [-1, 0, 1].map((z) => ({ x: x * FOUNDRY.width / 2, z: z * FOUNDRY.depth / 2, active: false })));
         const clearance = (p: { x: number; z: number }) => Math.min(...state.targets.map((t) => Math.hypot(t.x - p.x, t.z - p.z)));

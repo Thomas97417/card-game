@@ -35,6 +35,34 @@ beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("la fonderie connectée", () => {
+  it("migrates an idle V11 chantier once without losing purchases, skills or currency", async () => {
+    const t = setup(); const p = await player(t, "population", "full");
+    let b = await p.client.query(api.foundry.board, {});
+    const cycle = { ...b.progress!.cycle, economy: 5 as const, shards: 5000, purchasedTools: ["swift" as const], selectedTool: "swift" as const, skills: ["smash-damage-1" as const] };
+    await t.run((ctx) => ctx.db.patch(b.progress!._id, { cycle }));
+    await Promise.all([p.client.mutation(api.foundry.ensure, { expectedOwnerId: p.ownerId }), p.client.mutation(api.foundry.ensure, { expectedOwnerId: p.ownerId })]);
+    b = await p.client.query(api.foundry.board, {});
+    expect(b.progress).toMatchObject({ revision: 1, cycle: { ...cycle, economy: 6 } });
+    const r = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: "population-v12", tool: "swift" });
+    expect(r.state.version).toBe(12); expect(r.state.targets).toHaveLength(4);
+  });
+  it("keeps a running V11 round on its saved population and migrates only after it is settled", async () => {
+    const t = setup(); const p = await player(t, "saved-population", "full");
+    let b = await p.client.query(api.foundry.board, {});
+    const cycle = { ...b.progress!.cycle, economy: 5 as const };
+    const state = createFoundryRound(19, cycle, "mallet"); state.ended = true; state.concentration = 0; state.shards = 123;
+    const id = await t.run(async (ctx) => {
+      const roundId = await ctx.db.insert("foundryRounds", { ownerId: p.ownerId, cycleNumber: cycle.number, requestId: "saved-v11", startedAt: Date.now(), finished: false, batches: [], state });
+      await ctx.db.patch(b.progress!._id, { cycle, activeRoundId: roundId }); return roundId;
+    });
+    await p.client.mutation(api.foundry.ensure, { expectedOwnerId: p.ownerId });
+    b = await p.client.query(api.foundry.board, {});
+    expect(b.progress!.cycle.economy).toBe(5); expect(b.round!.state.targets).toHaveLength(12);
+    await p.client.mutation(api.foundry.finishRound, { expectedOwnerId: p.ownerId, roundId: id });
+    await p.client.mutation(api.foundry.ensure, { expectedOwnerId: p.ownerId });
+    b = await p.client.query(api.foundry.board, {});
+    expect(b.progress!.cycle).toMatchObject({ economy: 6, shards: 123, roundsLeft: 2 });
+  });
   it("initializes the reference economy and authoritatively buys and replays every source hammer", async () => {
     const t = setup();
     for (const tool of TOOL_IDS.filter((id) => id !== "mallet")) {
@@ -78,7 +106,7 @@ describe("la fonderie connectée", () => {
     await p.client.mutation(api.foundry.abandonChantier, { expectedOwnerId: p.ownerId, revision: 0 });
     await p.client.mutation(api.foundry.newChantier, { expectedOwnerId: p.ownerId, revision: 1 });
     const fresh = await p.client.query(api.foundry.board, {});
-    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 5, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
+    expect(fresh.progress).toMatchObject({ mastery: 3, cycle: { economy: 6, shards: 0, selectedTool: "mallet", purchasedTools: [] } });
     await expect(p.client.mutation(api.foundry.purchaseTool, { expectedOwnerId: p.ownerId, revision: 2, tool: "heavy" })).rejects.toThrow("éclats");
   });
   it("requires buying swift and resonance even with high mastery and funds them with run shards", async () => {

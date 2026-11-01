@@ -36,7 +36,7 @@ export function FoundryTreeMap({ visible, owned, selected, onSelect, costs = {},
       const rect = element.getBoundingClientRect(), previous = size.current;
       size.current = { width: rect.width || 900, height: rect.height || 520 };
       if (!initialized.current) {
-        const initial = economy === 5 ? visibleRef.current.filter((id) => { const node = foundrySkill(id); return !node.limitBreak || node.requires.length > 0 || owned.includes(id); }) : visibleRef.current;
+        const initial = (economy ?? 0) >= 5 ? visibleRef.current.filter((id) => { const node = foundrySkill(id); return !node.limitBreak || node.requires.length > 0 || owned.includes(id); }) : visibleRef.current;
         const fitted = fitTreeView(initial, size.current);
         // Start close enough to read the nodes; the overview button can fit the whole frontier.
         commit(zoomTreeView(fitted, Math.max(fitted.scale, Math.min(0.72, size.current.height / 420)), { x: size.current.width / 2, y: size.current.height / 2 }));
