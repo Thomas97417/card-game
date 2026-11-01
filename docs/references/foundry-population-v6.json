@@ -213,257 +213,307 @@
   },
   "adaptation": "Four existing Sylve relic families use Normalito, The Tourist, Woody and Piñata numeric HP and loot tables. Families become available after the corresponding Sylve deliveries; source unlock purchases and special piggy abilities are not ported. Three-round deadlines and a 32-object safety ceiling remain Sylve rules. Family appearance weights and the progressive access after Sylve deliveries are adaptation choices, not source spawn-rate facts.",
   "simulation": {
-    "engineVersion": 12,
+    "engineVersion": 13,
     "economy": 6,
     "seeds": 24,
-    "completed": 0,
+    "completed": 9,
     "firstOrderCompleted": 24,
     "baseStamina": 100,
     "baseStrikeCost": 7,
+    "pacing": {
+      "attacksPerSecond": 0.75,
+      "hp": {
+        "urn": 3,
+        "runner": 8,
+        "geode": 18,
+        "chaos": 28
+      }
+    },
     "scope": "Automated aiming and affordable purchases through five Sylve deliveries; not a claim about human completion time or full-game parity.",
     "runs": [
       {
         "seed": 1,
-        "delivered": 1,
-        "rounds": 6,
-        "learned": 5,
-        "bank": 43,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 14,
+        "bank": 495,
         "purchases": [],
-        "firstRoundIncome": 5,
+        "firstRoundIncome": 11,
         "firstRoundStrikes": 15
       },
       {
         "seed": 2,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 8,
-        "bank": 125,
-        "purchases": [],
-        "firstRoundIncome": 6,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 17,
+        "bank": 1380,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 11
+          }
+        ],
+        "firstRoundIncome": 19,
         "firstRoundStrikes": 15
       },
       {
         "seed": 3,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 6,
-        "bank": 67,
-        "purchases": [],
-        "firstRoundIncome": 6,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 16,
+        "bank": 1955,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 10
+          }
+        ],
+        "firstRoundIncome": 15,
         "firstRoundStrikes": 15
       },
       {
         "seed": 4,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 6,
-        "bank": 54,
+        "delivered": 4,
+        "rounds": 15,
+        "learned": 13,
+        "bank": 568,
         "purchases": [],
-        "firstRoundIncome": 14,
+        "firstRoundIncome": 13,
         "firstRoundStrikes": 15
       },
       {
         "seed": 5,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 8,
-        "bank": 84,
-        "purchases": [],
-        "firstRoundIncome": 5,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 17,
+        "bank": 2232,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 11
+          }
+        ],
+        "firstRoundIncome": 29,
         "firstRoundStrikes": 15
       },
       {
         "seed": 6,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 6,
-        "bank": 55,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 13,
+        "bank": 600,
         "purchases": [],
-        "firstRoundIncome": 7,
+        "firstRoundIncome": 13,
         "firstRoundStrikes": 15
       },
       {
         "seed": 7,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 9,
-        "bank": 84,
+        "delivered": 4,
+        "rounds": 15,
+        "learned": 15,
+        "bank": 976,
         "purchases": [],
-        "firstRoundIncome": 8,
+        "firstRoundIncome": 35,
         "firstRoundStrikes": 15
       },
       {
         "seed": 8,
         "delivered": 3,
         "rounds": 12,
-        "learned": 9,
-        "bank": 69,
+        "learned": 14,
+        "bank": 696,
         "purchases": [],
-        "firstRoundIncome": 26,
+        "firstRoundIncome": 16,
         "firstRoundStrikes": 15
       },
       {
         "seed": 9,
-        "delivered": 1,
-        "rounds": 6,
-        "learned": 2,
-        "bank": 43,
-        "purchases": [],
-        "firstRoundIncome": 9,
-        "firstRoundStrikes": 15
-      },
-      {
-        "seed": 10,
-        "delivered": 1,
-        "rounds": 6,
-        "learned": 3,
-        "bank": 37,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 13,
+        "bank": 466,
         "purchases": [],
         "firstRoundIncome": 13,
         "firstRoundStrikes": 15
       },
       {
+        "seed": 10,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 17,
+        "bank": 2081,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 10
+          }
+        ],
+        "firstRoundIncome": 28,
+        "firstRoundStrikes": 15
+      },
+      {
         "seed": 11,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 7,
-        "bank": 94,
-        "purchases": [],
-        "firstRoundIncome": 11,
-        "firstRoundStrikes": 15
-      },
-      {
-        "seed": 12,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 8,
-        "bank": 97,
-        "purchases": [],
-        "firstRoundIncome": 8,
-        "firstRoundStrikes": 15
-      },
-      {
-        "seed": 13,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 7,
-        "bank": 84,
-        "purchases": [],
-        "firstRoundIncome": 5,
-        "firstRoundStrikes": 15
-      },
-      {
-        "seed": 14,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 7,
-        "bank": 82,
-        "purchases": [],
-        "firstRoundIncome": 11,
-        "firstRoundStrikes": 15
-      },
-      {
-        "seed": 15,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 6,
-        "bank": 42,
+        "delivered": 4,
+        "rounds": 15,
+        "learned": 15,
+        "bank": 479,
         "purchases": [],
         "firstRoundIncome": 12,
         "firstRoundStrikes": 15
       },
       {
-        "seed": 16,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 7,
-        "bank": 92,
+        "seed": 12,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 16,
+        "bank": 1682,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 11
+          }
+        ],
+        "firstRoundIncome": 16,
+        "firstRoundStrikes": 15
+      },
+      {
+        "seed": 13,
+        "delivered": 4,
+        "rounds": 15,
+        "learned": 14,
+        "bank": 870,
         "purchases": [],
-        "firstRoundIncome": 9,
+        "firstRoundIncome": 12,
+        "firstRoundStrikes": 15
+      },
+      {
+        "seed": 14,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 15,
+        "bank": 626,
+        "purchases": [],
+        "firstRoundIncome": 18,
+        "firstRoundStrikes": 15
+      },
+      {
+        "seed": 15,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 15,
+        "bank": 199,
+        "purchases": [],
+        "firstRoundIncome": 34,
+        "firstRoundStrikes": 15
+      },
+      {
+        "seed": 16,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 14,
+        "bank": 620,
+        "purchases": [],
+        "firstRoundIncome": 7,
         "firstRoundStrikes": 15
       },
       {
         "seed": 17,
         "delivered": 2,
         "rounds": 9,
-        "learned": 5,
-        "bank": 94,
+        "learned": 13,
+        "bank": 155,
         "purchases": [],
-        "firstRoundIncome": 8,
+        "firstRoundIncome": 18,
         "firstRoundStrikes": 15
       },
       {
         "seed": 18,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 5,
-        "bank": 79,
-        "purchases": [],
-        "firstRoundIncome": 8,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 14,
+        "bank": 527,
+        "purchases": [
+          {
+            "tool": "swift",
+            "round": 14
+          }
+        ],
+        "firstRoundIncome": 19,
         "firstRoundStrikes": 15
       },
       {
         "seed": 19,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 7,
-        "bank": 48,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 14,
+        "bank": 639,
+        "purchases": [],
+        "firstRoundIncome": 11,
+        "firstRoundStrikes": 15
+      },
+      {
+        "seed": 20,
+        "delivered": 4,
+        "rounds": 15,
+        "learned": 13,
+        "bank": 883,
         "purchases": [],
         "firstRoundIncome": 5,
         "firstRoundStrikes": 15
       },
       {
-        "seed": 20,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 6,
-        "bank": 91,
-        "purchases": [],
-        "firstRoundIncome": 22,
-        "firstRoundStrikes": 15
-      },
-      {
         "seed": 21,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 5,
-        "bank": 37,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 12,
+        "bank": 673,
         "purchases": [],
-        "firstRoundIncome": 7,
+        "firstRoundIncome": 14,
         "firstRoundStrikes": 15
       },
       {
         "seed": 22,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 8,
-        "bank": 144,
+        "delivered": 5,
+        "rounds": 15,
+        "learned": 15,
+        "bank": 192,
         "purchases": [],
-        "firstRoundIncome": 22,
+        "firstRoundIncome": 14,
         "firstRoundStrikes": 15
       },
       {
         "seed": 23,
-        "delivered": 1,
-        "rounds": 6,
-        "learned": 4,
-        "bank": 43,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 12,
+        "bank": 621,
         "purchases": [],
-        "firstRoundIncome": 12,
+        "firstRoundIncome": 14,
         "firstRoundStrikes": 15
       },
       {
         "seed": 24,
-        "delivered": 2,
-        "rounds": 9,
-        "learned": 9,
-        "bank": 195,
+        "delivered": 3,
+        "rounds": 12,
+        "learned": 12,
+        "bank": 342,
         "purchases": [],
-        "firstRoundIncome": 6,
+        "firstRoundIncome": 13,
         "firstRoundStrikes": 15
       }
     ]
   },
   "baseStamina": 100,
-  "baseStrikeCost": 7
+  "baseStrikeCost": 7,
+  "pacingV13": {
+    "attacksPerSecond": 0.75,
+    "baseIntervalSeconds": 1.3333333333333333,
+    "hp": {
+      "urn": 3,
+      "runner": 8,
+      "geode": 18,
+      "chaos": 28
+    },
+    "scope": "Sylve pacing and HP adaptation requested after comparing the games; source loot, population skills, stamina reserve and swing cost stay unchanged. Saved V12 rounds retain their stored cadence and original family HP."
+  }
 }

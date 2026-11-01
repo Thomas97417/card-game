@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createFoundryRound, newFoundryCycle, stepFoundry, foundryOrderCost, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_SKILLS, FOUNDRY_POPULATION, FOUNDRY_RELIC_PROFILES, foundryReferenceDrop, type FoundryRound } from "./foundry";
+import { createFoundryRound, newFoundryCycle, stepFoundry, foundryOrderCost, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_SKILLS, FOUNDRY_POPULATION, FOUNDRY_PACING, FOUNDRY_RELIC_PROFILES, foundryReferenceDrop, spawnFoundryRelic, type FoundryRound } from "./foundry";
 
 const miss = { x: 5.6, z: 3.4, active: false };
 function round() { const r = createFoundryRound(19, newFoundryCycle(), "mallet"); r.stats.critical = 0; return r; }
@@ -9,10 +9,10 @@ function destroy(r: FoundryRound) {
   return stepFoundry(r, { x: target.x, z: target.z, active: true });
 }
 
-describe("population et butin de référence V12", () => {
-  it("starts with four 5-HP relics and uses the source starting-population increments", () => {
-    const r = round(); expect(r.version).toBe(12); expect(r.targets).toHaveLength(4);
-    expect(r.targets.every((target) => target.kind === "urn" && target.maxHp === 5)).toBe(true);
+describe("population et butin de référence", () => {
+  it("starts with four fragile 3-HP relics and uses the source starting-population increments", () => {
+    const r = round(); expect(r.version).toBe(13); expect(r.targets).toHaveLength(4);
+    expect(r.targets.every((target) => target.kind === "urn" && target.maxHp === 3)).toBe(true);
     const skills = FOUNDRY_REFERENCE_SKILL_IDS.filter((id) => FOUNDRY_REFERENCE_SKILLS[id].branch === "echo");
     expect(createFoundryRound(19, { ...newFoundryCycle(), skills }, "mallet").targets).toHaveLength(22);
   });
@@ -23,6 +23,27 @@ describe("population et butin de référence V12", () => {
     r.nextStrike = 1e9;
     while (r.tick < deadline - 1) stepFoundry(r, miss);
     expect(r.targets).toHaveLength(0); stepFoundry(r, miss); expect(r.targets).toHaveLength(1);
+  });
+  it("uses the revised family HP while preserving source HP in saved V12 replacements", () => {
+    const current = createFoundryRound(41, { ...newFoundryCycle(), orderIndex: 3 }, "mallet");
+    const saved = structuredClone(current); saved.version = 12; delete saved.brokenByKind;
+    const kinds = new Set<string>();
+    for (let index = 0; index < 80; index++) {
+      const relic = spawnFoundryRelic(current), previous = spawnFoundryRelic(saved);
+      expect(relic.kind).toBe(previous.kind); if (relic.kind === "spring") throw new Error("Unexpected stamina source");
+      expect(relic.maxHp).toBe(FOUNDRY_PACING.hp[relic.kind]);
+      expect(previous.maxHp).toBe(FOUNDRY_RELIC_PROFILES[relic.kind].hp); kinds.add(relic.kind);
+    }
+    expect(kinds.size).toBe(4);
+  });
+  it("counts each destroyed relic once and replays the family recap across checkpoints", () => {
+    const current = round(); current.targets.forEach((target) => { target.hp = 1; target.vx = target.vz = 0; });
+    current.stats.radius = 20;
+    const resumed = structuredClone(current);
+    const input = { x: 0, z: 0, active: true };
+    expect(stepFoundry(current, input)).toEqual(stepFoundry(resumed, input));
+    expect(current.broken).toBe(4); expect(current.brokenByKind).toEqual({ urn: 4 }); expect(resumed).toEqual(current);
+    stepFoundry(current, input); expect(current.brokenByKind).toEqual({ urn: 4 });
   });
   it("spawns at the learned 7-second or 5-second interval and caps simultaneous population", () => {
     for (const [skills, ticks] of [[['trickle-spawn'], 140], [['trickle-spawn', 'trickle-spawn-1'], 100]] as const) {

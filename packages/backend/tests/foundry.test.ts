@@ -44,7 +44,7 @@ describe("la fonderie connectée", () => {
     b = await p.client.query(api.foundry.board, {});
     expect(b.progress).toMatchObject({ revision: 1, cycle: { ...cycle, economy: 6 } });
     const r = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: "population-v12", tool: "swift" });
-    expect(r.state.version).toBe(12); expect(r.state.targets).toHaveLength(4);
+    expect(r.state.version).toBe(13); expect(r.state.targets).toHaveLength(4);
     expect(r.state.stats).toMatchObject({ concentration: 100, stamina: 7 });
   });
   it("keeps a running V11 round on its saved population and migrates only after it is settled", async () => {

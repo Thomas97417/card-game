@@ -1,5 +1,5 @@
 import { stepFoundryComplete, completeStrikeCost } from './foundry-complete';
-import { FOUNDRY_POPULATION, FOUNDRY_RELIC_PROFILES } from './foundry-population';
+import { FOUNDRY_POPULATION, FOUNDRY_PACING, FOUNDRY_RELIC_PROFILES } from './foundry-population';
 export * from './foundry-population';
 import { TOOLS, foundryTools, foundryToolDefinition, legacyFoundryTool, type FoundryTool } from "./foundry-tools";
 export * from "./foundry-tools";
@@ -10,7 +10,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 12, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 13, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, fullMaxTargets: 32, fullRelicScale: 0.8, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -51,11 +51,12 @@ export interface FoundryStats { damage: number; interval: number; radius: number
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean; bonusLoot?: number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; nextStrike: number;
   /** Older saved rounds keep their original stats and companion metadata. */
   assistant?: "smith" | "dryad" | "feline";
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
+  brokenByKind?: Partial<Record<RelicKind, number>>;
   targets: FoundryRelic[];
   rogue?: { modifiers: FoundryModifiers; capacity: number; pressure: number; frenzyUntil: number; frozenUntil: number; nextFreeze: number; strikes: number; jackpots: number; wealth?: number; relicStage?: number; recoveryReserve?: number;
     complete?: { modifiers: FoundryCompleteModifiers; baseCadence: number; hits: number; misses: number; guardUsed: boolean; windUsed: boolean; lastStandUsed: boolean; windUntil: number; tantrumUntil: number; rageUntil: number; nextRay: number; nextSpawn: number; pendingSpawns: number; nextEmptySpawn?: number; nextStorm: number; stormUntil: number; coinBank: number; coinCount: number; superJackpots: number; rocks: { at: number; x: number; z: number; announced: boolean }[] };
@@ -114,7 +115,7 @@ export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, charms: rea
   const strikeCost = sourced ? FOUNDRY_POPULATION.baseStrikeCost + base.stamina - 1 : base.stamina;
   return {
     damage: (base.damage + reference.flatDamage) * Math.max(0.25, 1 + powerBonus),
-    interval: Math.max(2, modern ? base.interval / Math.max(0.3, 1 + modifiers.cadence + base.cadence) : Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
+    interval: Math.max(2, modern ? (sourced ? 1000 / (FOUNDRY_PACING.attacksPerSecond * FOUNDRY.stepMs) : base.interval) / Math.max(0.3, 1 + modifiers.cadence + base.cadence) : Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
     radius: (base.radius + reference.flatRadius) * Math.max(0.4, 1 + modifiers.radius),
     critical: Math.max(0, Math.min((cycle.economy ?? 0) >= 5 ? 1 : 0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical + base.critical)),
     loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * ((cycle.economy ?? 0) >= 6 ? 1 : 1 + cycle.orderIndex * 0.08),
@@ -165,7 +166,7 @@ function spawn(state: FoundryRound): FoundryRelic {
   // Persist velocities so pauses, retries and server replays use the same path.
   // Saved rounds finish with their original movement and collision rules.
   const speed = state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
-  const hp = state.version >= 12 && kind !== "spring" ? FOUNDRY_RELIC_PROFILES[kind].hp : state.version >= 4 ? Math.round(RELICS[kind].hp * (state.rogue?.pressure ?? 1)) : RELICS[kind].hp;
+  const hp = state.version >= 13 && kind !== "spring" ? FOUNDRY_PACING.hp[kind] : state.version >= 12 && kind !== "spring" ? FOUNDRY_RELIC_PROFILES[kind].hp : state.version >= 4 ? Math.round(RELICS[kind].hp * (state.rogue?.pressure ?? 1)) : RELICS[kind].hp;
   const relic: FoundryRelic = { id: state.nextId++, kind, x, z, hp, maxHp: hp,
     vx: Math.cos(angle) * speed,
     vz: state.version === 1 ? kind === "runner" ? Math.sin(angle) * 0.027 : 0 : Math.sin(angle) * speed * (0.027 / 0.033),
@@ -227,8 +228,9 @@ export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: Foun
   const stats = foundryStats(cycle, tool, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
-  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 12 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 13 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
+    ...((cycle.economy ?? 0) >= 6 ? { brokenByKind: {} } : {}),
     rogue: { modifiers, capacity: Math.min((cycle.economy ?? 0) >= 5 ? FOUNDRY.fullMaxTargets : FOUNDRY.maxTargets, ((cycle.economy ?? 0) >= 6 ? FOUNDRY_POPULATION.baseTargets : FOUNDRY.baseTargets) + modifiers.capacity), pressure: (cycle.economy ?? 0) >= 6 ? 1 : (cycle.economy ?? 0) >= 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
       ...((cycle.economy ?? 0) >= 6 ? { relicStage: stage } : {}),
       ...(cycle.economy && cycle.economy >= 3 ? { wealth: foundryLootMultiplier(cycle), recoveryReserve: 0 } : {}),

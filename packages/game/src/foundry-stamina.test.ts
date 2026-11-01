@@ -22,6 +22,16 @@ describe("la stamina par frappe", () => {
     expect(foundryStats(newFoundryCycle(), "heavy").stamina).toBeCloseTo(7.6);
     expect(foundryStats(newFoundryCycle(), "spiked").stamina).toBeCloseTo(7.7);
   });
+  it("spaces base swings by 1.33 seconds without spending stamina between swings and retains speed upgrades", () => {
+    const round = createFoundryRound(3, newFoundryCycle(), "mallet");
+    const strikes: number[] = [];
+    while (!round.ended) { if (stepFoundry(round, air).strike) strikes.push(round.tick); }
+    expect(strikes).toHaveLength(15);
+    for (let index = 1; index < strikes.length; index++) expect([26, 27]).toContain(strikes[index]! - strikes[index - 1]!);
+    expect(round.tick * 0.05).toBeCloseTo(18.75);
+    expect(foundryStats(newFoundryCycle(), "swift").interval).toBeCloseTo(round.stats.interval / 1.35);
+    expect(foundryStats({ ...newFoundryCycle(), economy: 5 }, "mallet").interval).toBe(11);
+  });
   it("preserves the strike cost and stamina stored in an existing round after a checkpoint", () => {
     const saved = createFoundryRound(3, newFoundryCycle(), "mallet");
     // A V12 round started before the correction stored its original 1-point cost.

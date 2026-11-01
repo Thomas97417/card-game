@@ -110,6 +110,7 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
     if(hit.shake){loot=Math.max(1,Math.round(lootRoll(target)*state.stats.loot*(rogue.wealth??1)*m.luckySeven));state.shards+=loot;frame.effects!.push({kind:'coinrain',x:target.x,z:target.z});}
     if(broken){
       destroyed.add(target.id);state.broken++;
+      if(state.brokenByKind)state.brokenByKind[target.kind]=(state.brokenByKind[target.kind]??0)+1;
       const bonus=1+(hit.critical?mods.criticalLoot:0)+(target.kind==='geode'?mods.geodeLoot:0)+extra.lootPerType*ACTIVE_RELIC_KINDS.length
         +(intact&&hit.direct?mods.oneShotLoot:0)+Math.min(0.25,(state.broken-1)*mods.lootGrowth)+(low()?m.lowStaminaLoot:0)+(target.bonusLoot??0);
       const superJackpot=roll(m.superJackpotChance),jackpot=superJackpot||roll(Math.max(mods.jackpotChance,hit.critical?m.luckyStrike:0));

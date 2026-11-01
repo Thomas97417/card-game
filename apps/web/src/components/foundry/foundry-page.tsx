@@ -6,7 +6,7 @@ import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, R
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { BLESSINGS, FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, foundryToolDefinition, foundrySkills, foundryLootMultiplier, FOUNDRY_RARITY,
-  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
+  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryInput, type FoundryTool, type FoundryRound } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
@@ -14,6 +14,8 @@ import { FoundryShardIcon, FoundryToolIcon } from "./foundry-icons";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 import { FoundrySkillTree } from "./foundry-skill-tree";
 import { FoundryEquipment } from "./foundry-equipment";
+import { FoundryStamina } from "./foundry-stamina";
+import { FoundryResults } from "./foundry-results";
 import type { FoundryScene } from "./foundry-scene";
 
 const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
@@ -22,7 +24,7 @@ const amount = (value: number) => value >= 1000000 ? compactNumber.format(value)
 const ChestRevealDialog = lazy(() => import("@/components/play/chest-reveal-dialog").then((m) => ({ default: m.ChestRevealDialog })));
 type Board = FunctionReturnType<typeof api.foundry.board>;
 type Audio = ReturnType<typeof import("./foundry-audio").createFoundryAudio>;
-type Phase = "idle" | "countdown" | "running" | "paused";
+type Phase = "idle" | "countdown" | "running" | "paused" | "results";
 
 export function FoundryPage() {
   const [refreshKey, refresh] = useState(Date.now);
@@ -60,6 +62,9 @@ export function FoundryPage() {
   const [equipment, setEquipment] = useState(false);
   const [tree, setTree] = useState<"tree" | "charms" | null>(null);
   const [closing, setClosing] = useState(false);
+  const [roundResult, setRoundResult] = useState<FoundryRound | null>(null);
+  const finalRound = useRef<FoundryRound | null>(null);
+  const resultCommand = useRef<{ name: string; shards: number; cost: number } | undefined>(undefined);
   const [, tick] = useState(0);
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -79,24 +84,32 @@ export function FoundryPage() {
   const localOwner = useRef<string | null>(null);
 
   function stopCountdown() { if (countdownTimer.current) clearInterval(countdownTimer.current); countdownTimer.current = null; }
-  function pause() { stopCountdown(); aim.current.active = false; session.current?.pause(); if (session.current) setPhase("paused"); audio.current?.setHidden(true); }
+  function pause() { stopCountdown(); aim.current.active = false; session.current?.pause(); if (session.current) setPhase(session.current.state.ended ? "results" : "paused"); audio.current?.setHidden(true); }
   function attach(round: Doc<"foundryRounds">, ownerId: string, discardDraft = false) {
     if (session.current && attachedId.current === round._id) return;
     session.current?.destroy();
+    const cycle = latest.current.board?.progress?.cycle;
+    const cost = cycle && foundryOrderCost(cycle);
+    resultCommand.current = cycle && cost !== undefined ? { name: FOUNDRY.orders[cycle.orderIndex]!, cost, shards: cycle.shards } : undefined;
     let storage: Storage | undefined;
     try { storage = window.localStorage; if (discardDraft) storage.removeItem(foundryDraftKey(ownerId, round._id)); } catch { /* Private browsing can disable storage. */ }
     const runtime = new FoundrySession({ ownerId, roundId: round._id, state: round.state, storage,
       submit: (startTick, inputs) => submit({ expectedOwnerId: ownerId, roundId: round._id, startTick, inputs }),
       finish: () => finish({ expectedOwnerId: ownerId, roundId: round._id }),
-      change: () => { if (alive.current && localOwner.current === ownerId) { tick((n) => n + 1); if (session.current?.state.ended && !session.current.settled) setPhase("paused"); } },
+      change: () => { if (alive.current && localOwner.current === ownerId) { tick((n) => n + 1); if (session.current?.state.ended) setPhase("results"); } },
       impact: (frame) => scene.current?.impact(frame),
       finished: () => {
         completed.current.add(round._id);
-        if (alive.current && localOwner.current === ownerId) { session.current?.destroy(); session.current = null; attachedId.current = null; setPhase("idle"); }
+        if (alive.current && localOwner.current === ownerId) {
+          const result = structuredClone(runtime.state);
+          finalRound.current = result; setRoundResult(result);
+          session.current?.destroy(); session.current = null; attachedId.current = null; setPhase("results");
+        }
       },
       error: (message) => { if (alive.current && localOwner.current === ownerId) { setNotice(message); setPhase("paused"); } },
     });
-    session.current = runtime; attachedId.current = round._id; setPhase("paused");
+    session.current = runtime; attachedId.current = round._id; setPhase(runtime.state.ended ? "results" : "paused");
+    if (runtime.state.ended) void runtime.flush();
     setTool(round.state.tool);
   }
   function attachedSession(id: string) { return attachedId.current === id ? session.current : null; }
@@ -112,12 +125,12 @@ export function FoundryPage() {
   useEffect(() => {
     if (!board) return;
     if (localOwner.current && localOwner.current !== board.ownerId) {
-      stopCountdown(); session.current?.destroy(); session.current = null; attachedId.current = null; completed.current.clear(); setPhase("idle"); setTool("mallet");
+      stopCountdown(); session.current?.destroy(); session.current = null; attachedId.current = null; completed.current.clear(); finalRound.current = null; setRoundResult(null); setPhase("idle"); setTool("mallet");
     }
     localOwner.current = board.ownerId;
     if (!board.progress || (board.progress.cycle.economy === 5 && !board.round)) void ensure({ expectedOwnerId: board.ownerId }).catch(showGameError);
     if (board.round && !completed.current.has(board.round._id) && attachedId.current !== board.round._id) attach(board.round, board.ownerId);
-    if (!board.round && session.current && !session.current.saving) { session.current.destroy(); session.current = null; attachedId.current = null; setPhase("idle"); }
+    if (!board.round && session.current && !session.current.saving) { session.current.destroy(); session.current = null; attachedId.current = null; setPhase(finalRound.current ? "results" : "idle"); }
     if (!board.round && !session.current && board.progress) {
       const selected = board.progress.cycle.selectedTool ?? "mallet";
       setTool(ownsFoundryTool(board.progress.cycle, selected) ? selected : "mallet");
@@ -136,7 +149,7 @@ export function FoundryPage() {
         localAudio = sounds.createFoundryAudio(); audio.current = localAudio;
         try { localAudio.setEnabled(localStorage.getItem("sylve.foundry.sound") !== "off"); } catch { /* Default enabled. */ }
         localScene = graphics.createFoundryScene(host.current, {
-          state: () => session.current?.state ?? preview.current,
+          state: () => session.current?.state ?? finalRound.current ?? preview.current,
           input: () => aim.current,
           active: () => session.current?.running ?? false,
           frame: (now) => session.current?.advance(now, aim.current),
@@ -177,7 +190,8 @@ export function FoundryPage() {
   }
   const progress = board?.progress; const cycle = progress?.cycle;
   const runtime = session.current; const live = runtime?.state;
-  const inRound = !!board?.round || !!runtime;
+  const result = roundResult ?? (live?.ended ? live : null);
+  const inRound = !!board?.round || !!runtime || !!result;
   const locked = busy || inRound || cycle?.economy === 5 || !!cycle?.choices.length || cycle?.status !== "active";
   const orderCost = cycle ? foundryOrderCost(cycle) : undefined;
   const dailyProgress = Math.min(3, board?.daily.delivered ?? 0);
@@ -191,6 +205,7 @@ export function FoundryPage() {
     if (next && (next.active || (session.current?.state.version ?? FOUNDRY.version) < 5)) aim.current = next;
   }
   function keys(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (result) return;
     if (event.key === "Escape") { event.preventDefault(); pause(); return; }
     const directions: Record<string, [number, number]> = { ArrowLeft: [-0.28, 0], ArrowRight: [0.28, 0], ArrowUp: [0, -0.28], ArrowDown: [0, 0.28] };
     const direction = directions[event.key]; if (!direction || !runtime?.running) return;
@@ -209,16 +224,21 @@ export function FoundryPage() {
             onKeyDown={keys} onPointerMove={move} onPointerDown={(e) => { if (e.target !== host.current && !(e.target instanceof HTMLCanvasElement)) return; e.currentTarget.setPointerCapture(e.pointerId); move(e); }}
             onPointerUp={(e) => { if (e.pointerType !== "mouse") aim.current.active = false; }} onPointerCancel={() => { aim.current.active = false; }} onLostPointerCapture={() => { aim.current.active = false; }} onPointerLeave={(e) => { if (e.pointerType === "mouse") aim.current.active = false; }}>
             <div className="foundry-canvas" ref={host} />
-            <button type="button" className="foundry-sound-button" aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
-            {live && <div className="foundry-run-hud"><div><span>Stamina</span><strong>{Math.max(0, Math.ceil(live.concentration))}<small> / {live.stats.concentration}</small></strong><div className="foundry-focus-track" role="progressbar" aria-label="Stamina" aria-valuemin={0} aria-valuemax={live.stats.concentration} aria-valuenow={Math.max(0, live.concentration)}><i style={{ width: `${live.concentration / live.stats.concentration * 100}%` }} /></div>{live.version >= 6 && <span className="foundry-strike-cost">{new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 3 }).format(foundryStrikeCost(live))} stamina / coup</span>}</div><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
+            <button type="button" className="foundry-sound-button" disabled={!!result} aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
+            {live && !result && <div className="foundry-run-hud"><FoundryStamina key={attachedId.current} value={live.concentration} maximum={live.stats.concentration} cost={live.version >= 6 ? foundryStrikeCost(live) : undefined} /><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
             {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} reliques embrasées</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}{(live.rogue.reference?.combo ?? 0) > 1 && <span>Combo ×{live.rogue.reference!.combo}</span>}{live.rogue.complete && <>{live.rogue.complete.rageUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.complete.rageUntil-live.tick)/20).toFixed(1)} s</span>}{live.rogue.complete.windUntil > live.tick && <span>❋ Second souffle</span>}{live.rogue.complete.tantrumUntil > live.tick && <span>◆ Colère</span>}{live.rogue.complete.rocks.length > 0 && <span>Pluie de roches</span>}{live.rogue.complete.modifiers.coinRain > 0 && <span>◇ Réserve {amount(live.rogue.complete.coinBank)} · {live.rogue.complete.coinCount}/20</span>}</>}</div>}
             {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Les braises s’éveillent…</p></div>}
             {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>L’établi 3D est indisponible</h2><p>La fonderie a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
             {phase === "countdown" && <div className="foundry-countdown" aria-live="assertive"><strong key={countdown}>{countdown}</strong><span>Prépare ton marteau</span></div>}
-            {phase === "paused" && ready && <div className="foundry-curtain foundry-pause"><Pause size={26} /><h2>{live?.ended ? "Les derniers éclats se déposent" : "Un souffle entre deux frappes"}</h2><p>{runtime?.saving ? "Sauvegarde de la manche en cours…" : notice || "La stamina et les échéances sont en pause."}</p><button type="button" className="foundry-primary" onClick={begin} disabled={!!runtime?.saving}><Play size={16} />{live?.ended ? "Terminer la sauvegarde" : "Reprendre la manche"}</button>{notice && board?.round && <button type="button" className="foundry-quiet" onClick={() => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); }}>Reprendre la sauvegarde du serveur</button>}</div>}
-            {phase === "running" && <button type="button" className="foundry-pause-button" onClick={pause}><Pause size={16} /> Pause</button>}
+            {phase === "paused" && !result && ready && <div className="foundry-curtain foundry-pause"><Pause size={26} /><h2>Un souffle entre deux frappes</h2><p>{runtime?.saving ? "Sauvegarde de la manche en cours…" : notice || "La stamina et les échéances sont en pause."}</p><button type="button" className="foundry-primary" onClick={begin} disabled={!!runtime?.saving}><Play size={16} />Reprendre la manche</button>{notice && board?.round && <button type="button" className="foundry-quiet" onClick={() => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); }}>Reprendre la sauvegarde du serveur</button>}</div>}
+            {phase === "running" && !result && <button type="button" className="foundry-pause-button" onClick={pause}><Pause size={16} /> Pause</button>}
+            {result && <FoundryResults round={result} saved={!!roundResult} notice={notice}
+              command={resultCommand.current ? { ...resultCommand.current, shards: resultCommand.current.shards + result.shards } : undefined}
+              onRetry={() => { setNotice(""); void runtime?.flush(); }}
+              onRestore={board?.round ? () => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); } : undefined}
+              onContinue={() => { finalRound.current = null; setRoundResult(null); setPhase("idle"); requestAnimationFrame(() => stage.current?.focus()); }} />}
           </div>
-          {inRound && <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : "Manche sauvegardée au fil des frappes"}</span>{live && <span>{live.broken} reliques · {live.criticals} critiques</span>}</div>}
+          {inRound && !result && <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : "Manche sauvegardée au fil des frappes"}</span>{live && <span>{live.broken} reliques · {live.criticals} critiques</span>}</div>}
 
           {!inRound && <button type="button" className="foundry-mobile-orders" aria-label="Commandes et améliorations" onClick={() => { pause(); sidebar.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }}><ArrowUpRight size={18} /></button>}
         </section>
@@ -276,7 +296,7 @@ export function FoundryPage() {
           <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour la forge <Check size={16} /></button>
         </DialogContent>
       </Dialog>
-      {notice && phase !== "paused" && <p className="foundry-notice" role="status">{notice}</p>}
+      {notice && !result && phase !== "paused" && <p className="foundry-notice" role="status">{notice}</p>}
       <Dialog open={!inRound && !!cycle?.choices.length && !board?.pendingReward} onOpenChange={() => {}}>
         <DialogContent className="foundry-blessing-popup" showCloseButton={false}>
           <section className="foundry-blessing-dialog"><span className="foundry-eyebrow">Une commande honorée, un savoir partagé</span><DialogTitle>Le refuge te remercie</DialogTitle><p>Choisis une bénédiction pour ce chantier.</p><div>{cycle?.choices.map((id) => <button type="button" autoFocus={id === cycle.choices[0]} key={id} disabled={busy} onClick={() => action((b) => choose({ ...revision(b), blessing: id }))}><small className={`foundry-perk-rarity rarity-${BLESSINGS[id].rarity}`}>{FOUNDRY_RARITY[BLESSINGS[id].rarity].name} · {BLESSINGS[id].kind === "pact" ? "Pacte" : BLESSINGS[id].kind === "technique" ? "Technique" : "Renfort"}</small><b>{BLESSINGS[id].symbol}</b><strong>{BLESSINGS[id].name}</strong><span>{BLESSINGS[id].detail}</span><small className="foundry-perk-level">{BLESSINGS[id].maxStacks > 1 ? `Niveau ${1 + (cycle.blessings.filter((owned) => owned === id).length)} / ${BLESSINGS[id].maxStacks}` : "Effet unique pour ce chantier"}</small></button>)}</div></section>

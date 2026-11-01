@@ -1,11 +1,13 @@
-/** V12 population, stamina and payout report; V11's original report stays frozen. */
+/** Current population, stamina and payout report; V11's original report stays frozen. */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { simulateFoundryRun } from '../src/test-fixtures/foundry-run.ts';
-import { FOUNDRY_POPULATION } from '../src/foundry-population.ts';
+import { FOUNDRY_POPULATION, FOUNDRY_PACING } from '../src/foundry-population.ts';
+import { FOUNDRY } from '../src/foundry.ts';
 const runs = Array.from({ length: 24 }, (_, index) => simulateFoundryRun(index + 1, { economy: 6, reserveBill: true }));
-const result = { engineVersion: 12, economy: 6, seeds: 24, completed: runs.filter(run => run.delivered === 5).length,
+const result = { engineVersion: FOUNDRY.version, economy: 6, seeds: 24, completed: runs.filter(run => run.delivered === 5).length,
   firstOrderCompleted: runs.filter(run => run.delivered >= 1).length,
   baseStamina: FOUNDRY_POPULATION.baseStamina, baseStrikeCost: FOUNDRY_POPULATION.baseStrikeCost,
+  pacing: FOUNDRY_PACING,
   scope: 'Automated aiming and affordable purchases through five Sylve deliveries; not a claim about human completion time or full-game parity.',
   runs: runs.map(({ seed, delivered, rounds, learned, bank, purchases, history }) => ({ seed, delivered, rounds, learned, bank, purchases, firstRoundIncome: history[0].income, firstRoundStrikes: history[0].strikes })) };
 console.log(`${result.firstOrderCompleted}/${result.seeds} first orders paid; ${result.completed}/${result.seeds} five-order chantiers completed with purchases and reserved delivery funds.`);

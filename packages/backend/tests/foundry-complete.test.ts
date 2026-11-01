@@ -25,7 +25,7 @@ describe('les 211 savoirs sur le serveur',()=>{
   await client.mutation(api.foundry.purchaseSkill,{expectedOwnerId:id,revision:revision++,skill:'limit-break-damage-3'});
   b=await client.query(api.foundry.board,{});expect(b.progress!.cycle.skills).toHaveLength(211);expect(b.progress!.cycle.shards).toBe(645825971);
   await client.mutation(api.foundry.purchaseTool,{expectedOwnerId:id,revision:revision++,tool:'gilded'});
-  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded'});expect(round.state.version).toBe(12);expect(round.state.targets).toHaveLength(22);
+  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded'});expect(round.state.version).toBe(13);expect(round.state.targets).toHaveLength(22);
   const expected=structuredClone(round.state);let lastArgs;
   while(!expected.ended){
    if(expected.tick===320){

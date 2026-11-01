@@ -115,7 +115,7 @@ describe("la fonderie à l’écran", () => {
     expect(screen.queryByRole("button", { name: "Choisir le marteau" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Acheter Brise-roche/ })).toBeNull();
   });
-  it("returns the menus only after stamina reaches zero and the round is saved", async () => {
+  it("keeps the final board and results visible after saving until the player opens improvements", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
     const state = createFoundryRound(1, legacyCycle(), "mallet"); state.concentration = 0.1; state.targets = [];
     mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "last-strike", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "last-strike", startedAt: 0, finished: false, batches: [], state });
@@ -125,7 +125,31 @@ describe("la fonderie à l’écran", () => {
     act(() => vi.advanceTimersByTime(3000));
     await act(async () => { sceneOptions.frame(performance.now() + 50); });
     expect(mutations.get("foundry:finishRound")).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "Main fatiguée" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Éclats récoltés" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeNull();
+    expect(sceneOptions.state().ended).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Améliorations" }));
+    expect(screen.queryByRole("dialog", { name: "Main fatiguée" })).toBeNull();
     expect(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeTruthy(); expect(screen.getByRole("link", { name: "Retour au refuge" })).toBeTruthy();
+  });
+  it("shows the recap while saving and lets a failed final save be retried before leaving", async () => {
+    render(<FoundryPage />); await ready(); vi.useFakeTimers();
+    const state = createFoundryRound(1, newFoundryCycle(), "mallet"); state.concentration = 1; state.targets = [];
+    mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "final-save", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "final-save", startedAt: 0, finished: false, batches: [], state });
+    mutations.get("foundry:submitInputs")!.mockImplementation(async ({ inputs }) => { inputs.forEach((input: Parameters<typeof stepFoundry>[1]) => stepFoundry(state, input)); return structuredClone(state); });
+    let finishSave!: () => void;
+    mutations.get("foundry:finishRound")!.mockRejectedValueOnce(new Error("Connexion interrompue")).mockImplementationOnce(() => new Promise<void>((resolve) => { finishSave = resolve; }));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
+    act(() => vi.advanceTimersByTime(3000));
+    await act(async () => { sceneOptions.frame(performance.now() + 50); });
+    expect(screen.getByRole("alert").textContent).toBe("Connexion interrompue");
+    expect(disabled(screen.getByRole("button", { name: "Sauvegarde…" }))).toBe(true);
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Réessayer la sauvegarde" })); });
+    expect(disabled(screen.getByRole("button", { name: "Sauvegarde…" }))).toBe(true);
+    await act(async () => { finishSave(); });
+    expect(disabled(screen.getByRole("button", { name: "Améliorations" }))).toBe(false);
+    expect(mutations.get("foundry:finishRound")).toHaveBeenCalledTimes(2);
   });
   it("shows the priced hammers without companions and the daily contract counter", async () => {
     render(<FoundryPage />); await ready();
