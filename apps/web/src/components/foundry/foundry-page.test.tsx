@@ -39,7 +39,10 @@ describe("la fonderie à l’écran", () => {
   it("shows all seven source hammers, their source prices and the new deposit rewards", async () => {
     board = { ...board, progress: { ...board.progress!, mastery: 500, cycle: { ...newFoundryCycle(), shards: 10000 } } };
     render(<FoundryPage />); await ready();
+    fireEvent.click(screen.getByRole("button", { name: "Guide de la fonderie" }));
     expect(screen.getByText(/Filon 1 · butin ×10 · résistance ×1/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Martelet vif — 1000 éclats" }))).toBe(false);
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau du graveur — 4000 éclats" }))).toBe(false);
@@ -126,7 +129,7 @@ describe("la fonderie à l’écran", () => {
   });
   it("shows the five priced hammers, owned assistants and the daily contract counter", async () => {
     render(<FoundryPage />); await ready();
-    expect(screen.getByText("0 / 3 commandes livrées aujourd’hui")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "Commandes du coffre quotidien" }).getAttribute("aria-valuenow")).toBe("0");
     fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
     expect(screen.getByRole("dialog", { name: "Préparer la manche" })).toBeTruthy();
     expect(disabled(screen.getByRole("button", { name: /Martelet vif/ }))).toBe(true);
@@ -146,7 +149,7 @@ describe("la fonderie à l’écran", () => {
     board.progress!.mastery = 3; board.daily.delivered = 2;
     const view = render(<FoundryPage />); await ready();
     vi.mocked(useQuery).mockReturnValue(undefined); view.rerender(<FoundryPage />);
-    expect(screen.getByText("2 / 3 commandes livrées aujourd’hui")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "Commandes du coffre quotidien" }).getAttribute("aria-valuenow")).toBe("2");
     fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau de résonance — 260 éclats" }))).toBe(true);
   });
@@ -231,7 +234,11 @@ describe('la poursuite de la forge',()=>{
   it('allows another round in freeplay, hides invoices and keeps the complete tree available',async()=>{
     board={...board,progress:{...board.progress!,cycle:{...newFoundryCycle(),orderIndex:5,freeplay:true,freeplayRounds:3,coinBank:1200,coinCount:6}}};
     render(<FoundryPage/>);await ready();expect(screen.getAllByRole('heading',{name:'La forge libre'}).length).toBeGreaterThan(0);expect(screen.queryByRole('button',{name:/Livrer la commande/})).toBeNull();
-    expect(screen.getByText(/Filon 5 · butin ×240 · résistance ×90/)).toBeTruthy();expect(screen.getByText(/Pluie d’éclats · 1.200 en réserve/)).toBeTruthy();
+    expect(screen.getByTitle(/1.200 éclats en réserve/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Guide de la fonderie'}));
+    expect(screen.getByText(/Filon 5 · butin ×240 · résistance ×90/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Fermer la fenêtre'}));
+    await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getByRole('button',{name:'Ouvrir l’arbre de compétences'}));expect(screen.getByRole('button',{name:/Arbre de compétences 0 \/ 211/})).toBeTruthy();
   });
 });
