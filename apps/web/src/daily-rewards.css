@@ -57,6 +57,10 @@
 .hub-daily-rewards {
   height: auto;
 }
+.hub-daily-rewards .hub-panel-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
 .daily-rewards-content {
   min-height: 0;
   padding: 16px;
@@ -225,16 +229,22 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  margin-top: 12px;
+  /* Keep the header stable when the countdown appears or disappears. */
+  visibility: hidden;
   color: #f0d9a2;
   font-size: 13px;
+}
+.daily-rewards-next[data-visible] {
+  visibility: visible;
 }
 .daily-rewards-next > .game-icon {
   object-fit: contain;
 }
 .daily-rewards-next time {
+  width: 8ch;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 @media (max-width: 600px) {
   .hub-rewards-trigger {
@@ -252,6 +262,26 @@
   }
 }
 @media (max-width: 480px) {
+  .hub-daily-rewards .hub-panel-heading {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+  .hub-daily-rewards .hub-panel-heading > .game-icon {
+    grid-row: 1 / 3;
+  }
+  .hub-daily-rewards .hub-panel-title {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .hub-daily-rewards .daily-rewards-next {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+  .hub-daily-rewards .hub-panel-close {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
   .daily-rewards-content {
     padding: 10px;
   }

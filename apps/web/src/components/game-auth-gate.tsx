@@ -6,6 +6,7 @@ import type { NavigationAuth } from "@/lib/navigation-auth";
 import { DeckWorkshopStoreProvider } from "./decks/deck-workshop-state";
 import type { QueryClient } from "@tanstack/react-query";
 import { usePlayerQueryCache } from "@/hooks/use-player-query-cache";
+import { GameConnectionScreen } from "./game-connection-screen";
 
 export function GameAuthGate({
   required,
@@ -34,11 +35,7 @@ export function GameAuthGate({
     );
   }
   if (isLoading || !cacheReady) {
-    return (
-      <div className="flex h-full items-center justify-center" role="status">
-        Connexion en cours…
-      </div>
-    );
+    return <GameConnectionScreen />;
   }
   return (
     <Navigate
