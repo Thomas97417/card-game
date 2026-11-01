@@ -108,14 +108,18 @@ export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, charms: rea
   const modifiers = foundryModifiers(cycle, charms); const base = foundryToolDefinition(cycle, tool); const modern = (cycle.economy ?? 0) >= 3;
   const reference = foundryReferenceModifiers((cycle.economy ?? 0) >= 4 ? cycle.skills ?? [] : [], cycle.economy);
   const powerBonus = cycle.upgrades.power * 0.25 + modifiers.power;
+  const sourced = (cycle.economy ?? 0) >= 6;
+  const stamina = sourced ? FOUNDRY_POPULATION.baseStamina : FOUNDRY.concentration;
+  // Tool stamina values include the old 1-point base; their modifiers stay additive.
+  const strikeCost = sourced ? FOUNDRY_POPULATION.baseStrikeCost + base.stamina - 1 : base.stamina;
   return {
     damage: (base.damage + reference.flatDamage) * Math.max(0.25, 1 + powerBonus),
     interval: Math.max(2, modern ? base.interval / Math.max(0.3, 1 + modifiers.cadence + base.cadence) : Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
     radius: (base.radius + reference.flatRadius) * Math.max(0.4, 1 + modifiers.radius),
     critical: Math.max(0, Math.min((cycle.economy ?? 0) >= 5 ? 1 : 0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical + base.critical)),
     loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * ((cycle.economy ?? 0) >= 6 ? 1 : 1 + cycle.orderIndex * 0.08),
-    concentration: Math.max(30, Math.round((100 + reference.flatStamina) * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus))),
-    ...(modern ? { stamina: Math.max(0.25, base.stamina + reference.flatDrain) } : {}),
+    concentration: Math.max(30, Math.round((stamina + reference.flatStamina) * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus))),
+    ...(modern ? { stamina: Math.max(0.25, strikeCost + reference.flatDrain) } : {}),
   };
 }
 function spawn(state: FoundryRound): FoundryRelic {

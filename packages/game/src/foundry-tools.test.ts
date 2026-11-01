@@ -48,12 +48,13 @@ describe("les marteaux achetés pendant le chantier", () => {
   it("applies tool-specific stamina costs on every swing, including empty swings and efficiency bonuses", () => {
     for (const tool of ["swift", "resonance", "heavy", "precision", "spiked", "gilded"] as FoundryTool[]) {
       const round = createFoundryRound(2, newFoundryCycle(), tool); round.targets = [];
-      expect(foundryStrikeCost(round)).toBe(TOOLS[tool].stamina);
+      const cost = 7 + TOOLS[tool].stamina - 1;
+      expect(foundryStrikeCost(round)).toBeCloseTo(cost);
       while (!round.ended) stepFoundry(round, { x: 5.6, z: 3.4, active: false });
-      expect(round.rogue!.strikes).toBe(Math.ceil(100 / TOOLS[tool].stamina)); expect(round.concentration).toBe(0);
+      expect(round.rogue!.strikes).toBe(Math.ceil(100 / cost)); expect(round.concentration).toBe(0);
       const efficient = createFoundryRound(2, { ...newFoundryCycle(), blessings: ["efficient"] }, tool);
-      expect(foundryStrikeCost(efficient)).toBeCloseTo(TOOLS[tool].stamina * 0.85);
-      efficient.rogue!.frenzyUntil = 100; expect(foundryStrikeCost(efficient)).toBeCloseTo(TOOLS[tool].stamina * 0.85 / 2);
+      expect(foundryStrikeCost(efficient)).toBeCloseTo(cost * 0.85);
+      efficient.rogue!.frenzyUntil = 100; expect(foundryStrikeCost(efficient)).toBeCloseTo(cost * 0.85 / 2);
     }
   });
   it("combines the engraver's critical bonuses with the build and freezes them in the round", () => {

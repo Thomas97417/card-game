@@ -1,5 +1,5 @@
 /** Numeric reference and explicit family mapping: docs/references/foundry-population-v6.json. */
-export const FOUNDRY_POPULATION = { baseTargets: 4, emptyRespawnSeconds: 0.5, orderCosts: [20, 45, 200, 750, 1000] } as const;
+export const FOUNDRY_POPULATION = { baseTargets: 4, emptyRespawnSeconds: 0.5, baseStamina: 100, baseStrikeCost: 7, orderCosts: [20, 45, 200, 750, 1000] } as const;
 export const FOUNDRY_RELIC_PROFILES = {
   "urn": {
     "source": "normalito",

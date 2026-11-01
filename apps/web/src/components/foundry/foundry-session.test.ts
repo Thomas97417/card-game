@@ -14,14 +14,14 @@ function setup() {
 }
 describe("la reprise d’une manche de fonderie", () => {
   it("restores and confirms a long round beyond the former total input limit", async () => {
-    const { options, storage, server } = setup(); server.concentration = server.stats.concentration = 400; server.targets = [];
+    const { options, storage, server } = setup(); server.concentration = server.stats.concentration = 10000; server.targets = [];
     const inputs = Array.from({ length: 2000 }, () => ({ x: 5.6, z: 3.4, active: false }));
     storage.set(foundryDraftKey("alice", "round-1"), JSON.stringify({ version: 1, baseTick: 0, inputs }));
     const session = new FoundrySession(options); expect(session.state.tick).toBe(2000); expect(session.state.ended).toBe(false);
     await session.flush(); expect(session.state).toEqual(server); expect(server.tick).toBe(2000); expect(options.finish).not.toHaveBeenCalled();
   });
   it("pauses a stalled connection without ending the round or losing unconfirmed input", async () => {
-    const { options, server } = setup(); server.concentration = server.stats.concentration = 1000; server.targets = [];
+    const { options, server } = setup(); server.concentration = server.stats.concentration = 10000; server.targets = [];
     let release!: () => void, first = true;
     const session = new FoundrySession({ ...options, submit: async (start, inputs) => { if (first) { first = false; await new Promise<void>((resolve) => { release = resolve; }); } return options.submit(start, inputs); } });
     session.resume(0); for (let tick = 1; tick <= 2500; tick++) session.advance(tick * 50, { x: 5.6, z: 3.4, active: false });

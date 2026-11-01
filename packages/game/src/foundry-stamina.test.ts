@@ -1,7 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { createFoundryRound, newFoundryCycle, stepFoundry, foundryStrikeCost, type FoundryTool } from "./foundry";
+import { createFoundryRound, foundryStats, newFoundryCycle, stepFoundry, foundryStrikeCost, type FoundryTool } from "./foundry";
 const air = { x: 5.6, z: 3.4, active: false };
 describe("la stamina par frappe", () => {
+  it("matches the source's 100-point reserve and 7-point base swing cost, ending on the fifteenth swing", () => {
+    const round = createFoundryRound(3, newFoundryCycle(), "mallet");
+    expect(round.concentration).toBe(100); expect(round.stats.concentration).toBe(100);
+    expect(foundryStrikeCost(round)).toBe(7);
+    let shots = 0;
+    while (!round.ended) {
+      const before = round.concentration, frame = stepFoundry(round, air);
+      if (frame.strike) { shots++; expect(round.concentration).toBe(Math.max(0, before - 7)); }
+      else expect(round.concentration).toBe(before);
+    }
+    expect(shots).toBe(15); expect(round.concentration).toBe(0);
+  });
+  it("adds the original flat stamina bonuses to the source reserve and swing cost", () => {
+    const cycle = { ...newFoundryCycle(), skills: ["endurance-stamina-1", "endurance-cost-1"] as const };
+    const stats = foundryStats({ ...cycle, skills: [...cycle.skills] }, "mallet");
+    expect(stats.concentration).toBe(120); expect(stats.stamina).toBeCloseTo(6.5);
+    expect(foundryStats(newFoundryCycle(), "resonance").stamina).toBeCloseTo(6.8);
+    expect(foundryStats(newFoundryCycle(), "heavy").stamina).toBeCloseTo(7.6);
+    expect(foundryStats(newFoundryCycle(), "spiked").stamina).toBeCloseTo(7.7);
+  });
+  it("preserves the strike cost and stamina stored in an existing round after a checkpoint", () => {
+    const saved = createFoundryRound(3, newFoundryCycle(), "mallet");
+    // A V12 round started before the correction stored its original 1-point cost.
+    saved.stats.stamina = 1; saved.concentration = 80;
+    const resumed = JSON.parse(JSON.stringify(saved));
+    expect(foundryStrikeCost(resumed)).toBe(1);
+    stepFoundry(resumed, air); expect(resumed.concentration).toBe(79);
+    expect(saved.concentration).toBe(80);
+  });
   it("spends the same 100 strikes at every attack speed, with no loss during the cooldown", () => {
     const durations: number[] = [];
     for (const tool of ["swift", "mallet", "resonance"] as FoundryTool[]) {
