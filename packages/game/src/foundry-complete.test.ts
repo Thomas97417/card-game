@@ -5,7 +5,7 @@ import { FOUNDRY, FOUNDRY_REFERENCE_SKILLS as SKILLS, FOUNDRY_REFERENCE_SKILL_ID
   foundryStrikeCost, settleFoundryRound, continueFoundryCycle, foundryLootMultiplier, RELICS, type FoundryRound, type FoundrySkillId, type FoundryCycle, type FoundryInput } from './foundry';
 const aim={x:0,z:0,active:true}, miss={x:5.6,z:3.4,active:false};
 function arena(skills:FoundrySkillId[]=[]):FoundryRound {
- const r=createFoundryRound(17,{...newFoundryCycle(),skills},'mallet','smith');r.stats.critical=0;r.rogue!.capacity=1;
+ const r=createFoundryRound(17,{...newFoundryCycle(),skills},'mallet');r.stats.critical=0;r.rogue!.capacity=1;
  r.targets=[{...r.targets[0]!,kind:'urn',x:0,z:0,hp:1000,maxHp:1000,vx:0,vz:0}];return r;
 }
 function hit(r:FoundryRound,input=aim){r.nextStrike=r.tick+1;return stepFoundry(r,input);}
@@ -27,8 +27,8 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   expect(m.rayStrikes).toBe(7);expect(m.rayRadius).toBe(5);expect(m.rayDamage).toBe(3);expect(m.deathWaveRadius).toBeCloseTo(2.1);
   expect(m.rockCount).toBe(26);expect(m.rockDamage).toBe(3);expect(m.rockRadius).toBeCloseTo(1.6);expect(m.respawnChance).toBeCloseTo(.45);expect(m.spawnSeconds).toBe(5);
   expect(m.windRestore).toBeCloseTo(.3);expect(m.luckySeven).toBeCloseTo(.16);expect(m.superJackpotChance).toBeCloseTo(.02);expect(m.spawnLootChance).toBeCloseTo(.07);expect(m.spawnLootBonus).toBe(1);
-  const c={...newFoundryCycle(),skills:IDS.filter(id=>id.startsWith('limit-break'))},stats=foundryStats(c,'mallet','smith');
-  expect(stats.damage).toBeCloseTo(2.725);expect(stats.critical).toBeCloseTo(.16);expect(stats.interval).toBeCloseTo(11/1.15);
+  const c={...newFoundryCycle(),skills:IDS.filter(id=>id.startsWith('limit-break'))},stats=foundryStats(c,'mallet');
+  expect(stats.damage).toBeCloseTo(2.5);expect(stats.critical).toBeCloseTo(.16);expect(stats.interval).toBeCloseTo(11/1.15);
  });
  it('strikes unique random targets with phantom hands without charging extra stamina',()=>{
   const r=arena(['phantom-hand','phantom-hand-hits-3']);r.rogue!.complete!.modifiers.phantomChance=1;const other=neighbour(r,4);
@@ -53,7 +53,7 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   const instant=arena(['smash-one-punch']);instant.rogue!.complete!.modifiers.shatterChance=1;const kill=hit(instant);expect(kill.impacts[0]!.damage).toBe(1000);expect(instant.broken).toBe(1);expect(instant.shards).toBe(kill.impacts[0]!.loot);
  });
  it('guarantees the bright first relic, spreads its glow and pays bonus loot and super jackpots',()=>{
-  const bright=createFoundryRound(17,{...newFoundryCycle(),skills:['fortune-capstone']},'mallet','smith');expect(bright.targets[0]!.glowing).toBe(true);expect(bright.targets.filter(t=>t.glowing)).toHaveLength(1);
+  const bright=createFoundryRound(17,{...newFoundryCycle(),skills:['fortune-capstone']},'mallet');expect(bright.targets[0]!.glowing).toBe(true);expect(bright.targets.filter(t=>t.glowing)).toHaveLength(1);
   const r=arena(['fortune-golden-chain']);r.rogue!.complete!.modifiers.glowingSpreadChance=1;r.targets[0]!.glowing=true;r.targets[0]!.hp=1;const other=neighbour(r,1.1);hit(r);expect(other.glowing).toBe(true);
   const bonus=arena(['fortune-free-loot']);bonus.rogue!.complete!.modifiers.spawnLootChance=1;bonus.targets[0]!.hp=1;hit(bonus);expect(bonus.targets[0]!.bonusLoot).toBe(.25);
   const jackpot=arena(['fortune-el-gordo-unlock']);jackpot.rogue!.complete!.modifiers.superJackpotChance=1;jackpot.targets[0]!.hp=1;jackpot.targets[0]!.bonusLoot=1;
@@ -68,7 +68,7 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   const cycle={...newFoundryCycle(),skills:['jackpotmeter'] as FoundrySkillId[]},r=arena(cycle.skills);
   for(let i=0;i<19;i++){const t=r.targets[0]!;Object.assign(t,{kind:'urn',hp:1,maxHp:1,vx:0,vz:0});hit(r,{x:t.x,z:t.z,active:true});}
   const reserve=r.rogue!.complete!.coinBank;expect(reserve).toBeGreaterThan(0);expect(r.rogue!.complete!.coinCount).toBe(19);r.ended=true;r.concentration=0;
-  const saved=settleFoundryRound(cycle,r),next=createFoundryRound(22,saved,'mallet','smith');expect(next.rogue!.complete!.coinBank).toBe(reserve);expect(next.rogue!.complete!.coinCount).toBe(19);
+  const saved=settleFoundryRound(cycle,r),next=createFoundryRound(22,saved,'mallet');expect(next.rogue!.complete!.coinBank).toBe(reserve);expect(next.rogue!.complete!.coinCount).toBe(19);
   next.stats.critical=0;next.rogue!.capacity=1;next.targets=[{...next.targets[0]!,kind:'urn',hp:1,maxHp:1,x:0,z:0,vx:0,vz:0}];
   const f=hit(next);expect(f.impacts[0]!.loot).toBeGreaterThan(reserve+29);expect(next.rogue!.complete!.coinBank).toBe(0);expect(next.rogue!.complete!.coinCount).toBe(0);expect(f.effects!.some(e=>e.kind==='coinrain')).toBe(true);
  });
@@ -87,13 +87,13 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   const shards=r.shards;expect(stepFoundry(r,aim).impacts).toHaveLength(0);expect(r.shards).toBe(shards);
  });
  it('applies all spawn upgrades, timers and respawn rolls while retaining collision and particle bounds',()=>{
-  const c={...newFoundryCycle(),skills:IDS.filter(id=>SKILLS[id].branch==='echo')},r=createFoundryRound(17,c,'mallet','smith');expect(r.targets).toHaveLength(30);
+  const c={...newFoundryCycle(),skills:IDS.filter(id=>SKILLS[id].branch==='echo')},r=createFoundryRound(17,c,'mallet');expect(r.targets).toHaveLength(30);
   r.rogue!.complete!.modifiers.respawnChance=1;r.targets[0]!.hp=.1;const t=r.targets[0]!;hit(r,{x:t.x,z:t.z,active:true});expect(r.targets).toHaveLength(31);
   r.nextStrike=1e6;while(r.tick<100)stepFoundry(r,miss);expect(r.targets).toHaveLength(32);
   for(let i=0;i<r.targets.length;i++)for(let j=i+1;j<r.targets.length;j++)expect(Math.hypot(r.targets[i]!.x-r.targets[j]!.x,r.targets[i]!.z-r.targets[j]!.z)).toBeGreaterThan((RELICS[r.targets[i]!.kind].radius+RELICS[r.targets[j]!.kind].radius)*FOUNDRY.fullRelicScale-.03);
  });
  it('keeps a complete build finite and deterministic with at most 32 relics and 26 pending rocks',()=>{
-  const r=createFoundryRound(17,{...newFoundryCycle(),orderIndex:4,skills:[...IDS],blessings:['recovery','efficient','berserk']},'gilded','smith'),resumed=structuredClone(r);
+  const r=createFoundryRound(17,{...newFoundryCycle(),orderIndex:4,skills:[...IDS],blessings:['recovery','efficient','berserk']},'gilded'),resumed=structuredClone(r);
   const inputs:FoundryInput[]=[];
   while(!r.ended&&r.tick<15000){const t=r.targets.reduce((a,b)=>a.hp<b.hp?a:b),input={x:t.x,z:t.z,active:true};inputs.push(input);stepFoundry(r,input);expect(r.targets.length).toBeLessThanOrEqual(32);expect(r.rogue!.complete!.rocks.length).toBeLessThanOrEqual(26);}
   expect(r.ended).toBe(true);expect(r.rogue!.complete!.windUsed).toBe(true);expect(r.rogue!.complete!.lastStandUsed).toBe(true);expect(r.tick*50).toBeGreaterThan(75000);
@@ -103,7 +103,7 @@ describe('les 211 nœuds et leurs mécaniques',()=>{
   const done={...newFoundryCycle(),status:'completed' as const,orderIndex:5,shards:100000000,skills:[...FOUNDRY_V4_SKILL_IDS]};
   const free=continueFoundryCycle(done);expect(free.freeplay).toBe(true);expect(free.skills).toEqual(done.skills);expect(free.shards).toBe(100000000);
   expect(()=>continueFoundryCycle(newFoundryCycle())).toThrow('cinq commandes');
-  const r=createFoundryRound(1,free,'gilded','smith');r.ended=true;r.shards=123;
+  const r=createFoundryRound(1,free,'gilded');r.ended=true;r.shards=123;
   const settled=settleFoundryRound(free,r);expect(settled.orderIndex).toBe(5);expect(settled.roundsLeft).toBe(3);expect(settled.freeplayRounds).toBe(1);expect(settled.shards).toBe(100000123);
   expect(foundryLootMultiplier({...settled,freeplayRounds:3})).toBe(240);expect(newFoundryCycle(2).freeplay).toBeUndefined();expect(newFoundryCycle(2).skills).toEqual([]);
  });

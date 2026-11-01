@@ -2,14 +2,15 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
-import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, RotateCcw, Wifi, BookOpen, Gem } from "lucide-react";
+import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, RotateCcw, Wifi, BookOpen } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
-import { ASSISTANTS, BLESSINGS, FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, foundryToolDefinition, foundrySkills, foundryLootMultiplier, FOUNDRY_RARITY,
-  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryAssistant, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
+import { BLESSINGS, FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, foundryToolDefinition, foundrySkills, foundryLootMultiplier, FOUNDRY_RARITY,
+  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryInput, type FoundryTool } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
+import { FoundryShardIcon, FoundryToolIcon } from "./foundry-icons";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 import { FoundrySkillTree } from "./foundry-skill-tree";
 import { FoundryEquipment } from "./foundry-equipment";
@@ -48,7 +49,6 @@ export function FoundryPage() {
   const upgradeCard = useMutation(api.collection.upgrade);
   const collection = useQuery(api.collection.list, board?.pendingReward ? {} : "skip");
   const [tool, setTool] = useState<FoundryTool>("mallet");
-  const [assistant, setAssistant] = useState<FoundryAssistant>("smith");
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(3);
   const [busy, setBusy] = useState(false);
@@ -72,8 +72,8 @@ export function FoundryPage() {
   const completed = useRef(new Set<string>());
   const countdownTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const aim = useRef<FoundryInput>({ x: 0, z: 0, active: false });
-  const preview = useRef(createFoundryRound(20261029, newFoundryCycle(), "mallet", "smith"));
-  const latest = useRef({ board, tool, assistant }); latest.current = { board, tool, assistant };
+  const preview = useRef(createFoundryRound(20261029, newFoundryCycle(), "mallet"));
+  const latest = useRef({ board, tool }); latest.current = { board, tool };
   const alive = useRef(true);
   const actionLock = useRef(false);
   const localOwner = useRef<string | null>(null);
@@ -97,7 +97,7 @@ export function FoundryPage() {
       error: (message) => { if (alive.current && localOwner.current === ownerId) { setNotice(message); setPhase("paused"); } },
     });
     session.current = runtime; attachedId.current = round._id; setPhase("paused");
-    setTool(round.state.tool); setAssistant(round.state.assistant);
+    setTool(round.state.tool);
   }
   function attachedSession(id: string) { return attachedId.current === id ? session.current : null; }
   function begin() {
@@ -112,7 +112,7 @@ export function FoundryPage() {
   useEffect(() => {
     if (!board) return;
     if (localOwner.current && localOwner.current !== board.ownerId) {
-      stopCountdown(); session.current?.destroy(); session.current = null; attachedId.current = null; completed.current.clear(); setPhase("idle"); setTool("mallet"); setAssistant("smith");
+      stopCountdown(); session.current?.destroy(); session.current = null; attachedId.current = null; completed.current.clear(); setPhase("idle"); setTool("mallet");
     }
     localOwner.current = board.ownerId;
     if (!board.progress) void ensure({ expectedOwnerId: board.ownerId }).catch(showGameError);
@@ -125,8 +125,8 @@ export function FoundryPage() {
   }, [board, ensure]);
   useEffect(() => {
     const saved = latest.current.board?.progress;
-    if (!session.current) preview.current = createFoundryRound(20261029, saved?.cycle ?? newFoundryCycle(), tool, assistant, saved?.charms ?? []);
-  }, [tool, assistant, board?.progress]);
+    if (!session.current) preview.current = createFoundryRound(20261029, saved?.cycle ?? newFoundryCycle(), tool, saved?.charms ?? []);
+  }, [tool, board?.progress]);
   useEffect(() => {
     alive.current = true; let cancelled = false; let localScene: FoundryScene | null = null; let localAudio: Audio | null = null;
     try { setSound(localStorage.getItem("sylve.foundry.sound") !== "off"); } catch { /* Use default sound preference. */ }
@@ -169,7 +169,7 @@ export function FoundryPage() {
     audio.current?.unlock();
     await action(async (current) => {
       if (!current.progress) return;
-      const round = await startRound({ expectedOwnerId: current.ownerId, revision: current.progress.revision, requestId: crypto.randomUUID(), tool, assistant });
+      const round = await startRound({ expectedOwnerId: current.ownerId, revision: current.progress.revision, requestId: crypto.randomUUID(), tool });
       if (!alive.current || localOwner.current !== current.ownerId) return;
       if (!attachedSession(round._id)) attach(round, current.ownerId);
       begin();
@@ -210,7 +210,7 @@ export function FoundryPage() {
             onPointerUp={(e) => { if (e.pointerType !== "mouse") aim.current.active = false; }} onPointerCancel={() => { aim.current.active = false; }} onLostPointerCapture={() => { aim.current.active = false; }} onPointerLeave={(e) => { if (e.pointerType === "mouse") aim.current.active = false; }}>
             <div className="foundry-canvas" ref={host} />
             <button type="button" className="foundry-sound-button" aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
-            {live && <div className="foundry-run-hud"><div><span>Stamina</span><strong>{Math.max(0, Math.ceil(live.concentration))}<small> / {live.stats.concentration}</small></strong><div className="foundry-focus-track" role="progressbar" aria-label="Stamina" aria-valuemin={0} aria-valuemax={live.stats.concentration} aria-valuenow={Math.max(0, live.concentration)}><i style={{ width: `${live.concentration / live.stats.concentration * 100}%` }} /></div>{live.version >= 6 && <span className="foundry-strike-cost">{new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 3 }).format(foundryStrikeCost(live))} stamina / coup</span>}</div><div className="foundry-run-shards"><Gem size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
+            {live && <div className="foundry-run-hud"><div><span>Stamina</span><strong>{Math.max(0, Math.ceil(live.concentration))}<small> / {live.stats.concentration}</small></strong><div className="foundry-focus-track" role="progressbar" aria-label="Stamina" aria-valuemin={0} aria-valuemax={live.stats.concentration} aria-valuenow={Math.max(0, live.concentration)}><i style={{ width: `${live.concentration / live.stats.concentration * 100}%` }} /></div>{live.version >= 6 && <span className="foundry-strike-cost">{new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 3 }).format(foundryStrikeCost(live))} stamina / coup</span>}</div><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
             {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} reliques embrasées</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}{(live.rogue.reference?.combo ?? 0) > 1 && <span>Combo ×{live.rogue.reference!.combo}</span>}{live.rogue.complete && <>{live.rogue.complete.rageUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.complete.rageUntil-live.tick)/20).toFixed(1)} s</span>}{live.rogue.complete.windUntil > live.tick && <span>❋ Second souffle</span>}{live.rogue.complete.tantrumUntil > live.tick && <span>◆ Colère</span>}{live.rogue.complete.rocks.length > 0 && <span>Pluie de roches</span>}{live.rogue.complete.modifiers.coinRain > 0 && <span>◇ Réserve {amount(live.rogue.complete.coinBank)} · {live.rogue.complete.coinCount}/20</span>}</>}</div>}
             {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Les braises s’éveillent…</p></div>}
             {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>L’établi 3D est indisponible</h2><p>La fonderie a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
@@ -226,25 +226,25 @@ export function FoundryPage() {
           <section className="foundry-round-menu" aria-label="Préparer une manche">
             {ready && phase === "idle" && <button type="button" className="foundry-primary" disabled={locked || !cycle?.roundsLeft} onClick={start}><Play size={16} />{busy ? "Préparation…" : "Commencer une manche"}</button>}
             <div className="foundry-round-toolbar">
-              <div className="foundry-preparation"><button type="button" aria-label="Choisir les outils et compagnons" disabled={busy} onClick={() => setEquipment(true)}><Hammer size={17} /><span><strong>{foundryToolDefinition(cycle ?? newFoundryCycle(), tool).name}</strong></span><img src={`/art/characters/${ASSISTANTS[assistant].art}.webp`} alt={ASSISTANTS[assistant].short} /></button></div>
+              <div className="foundry-preparation"><button type="button" aria-label="Choisir le marteau" disabled={busy} onClick={() => setEquipment(true)}><FoundryToolIcon tool={tool} size={38} /><span><strong>{foundryToolDefinition(cycle ?? newFoundryCycle(), tool).name}</strong></span><ArrowUpRight size={14} /></button></div>
               <button type="button" className="foundry-guide-button" aria-label="Guide de la fonderie" title="Guide de la fonderie" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={17} /></button>
             </div>
           </section>
           <section className="foundry-order">
             <div className="foundry-section-title"><span>Chantier {cycle?.number ?? 1}</span><span aria-label={`${Math.min(5, cycle?.orderIndex ?? 0)} commandes livrées sur 5`}>{Math.min(5, cycle?.orderIndex ?? 0)} / 5</span></div>
-            <div className="foundry-shard-total"><Gem size={21} /><strong title={`${number.format(cycle?.shards ?? 0)} éclats`}>{amount(cycle?.shards ?? 0)}</strong><span>éclats</span></div>
+            <div className="foundry-shard-total"><FoundryShardIcon size={21} /><strong title={`${number.format(cycle?.shards ?? 0)} éclats`}>{amount(cycle?.shards ?? 0)}</strong><span>éclats</span></div>
             <div className="foundry-order-divider" />
             <h2>{cycle?.freeplay ? "La forge libre" : endState ? cycle?.status === "completed" ? "Chantier terminé" : "Chantier clos" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
             {orderCost !== undefined && <>
-              <div className="foundry-order-price"><span>À livrer</span><b>{number.format(orderCost)}<Gem size={15} /></b></div>
+              <div className="foundry-order-price"><span>À livrer</span><b>{number.format(orderCost)}<FoundryShardIcon size={15} /></b></div>
               <div className="foundry-order-track" role="progressbar" aria-label="Éclats pour la commande" aria-valuemin={0} aria-valuemax={orderCost} aria-valuenow={Math.min(orderCost, cycle?.shards ?? 0)}><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div>
               <div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Commande à livrer" : `${cycle?.roundsLeft ?? 2} manches restantes`}</div>
             </>}
             {cycle?.economy === 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre en forge libre <ArrowUpRight size={16} /></button>}
             {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : !cycle?.freeplay && <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
           </section>
-          {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<Gem size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
-          {progress?.lastSummary && <div className="foundry-summary" role="status"><span>Dernière récolte</span><strong>+{amount(progress.lastSummary.shards)}<Gem size={14} /></strong></div>}
+          {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<FoundryShardIcon size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
+          {progress?.lastSummary && <div className="foundry-summary" role="status"><span>Dernière récolte</span><strong>+{amount(progress.lastSummary.shards)}<FoundryShardIcon size={14} /></strong></div>}
           <section className="foundry-build-panel" aria-label="Améliorations">
             <button type="button" className="foundry-menu-action" aria-label="Ouvrir l’arbre de compétences" disabled={!cycle} onClick={() => { pause(); setTree("tree"); }}><Hammer size={17} /><span>Compétences</span><b>{cycle?.skills?.length ?? 0} / {foundrySkills(cycle ?? {}).length}</b><ArrowUpRight size={14} /></button>
             <button type="button" className="foundry-menu-action" aria-label={`Talismans permanents, ${availableMastery} points disponibles`} title={`${progress?.charms?.length ?? 0} talismans acquis`} disabled={!cycle} onClick={() => { pause(); setTree("charms"); }}><Sparkles size={17} /><span>Talismans</span><b>{availableMastery}</b><ArrowUpRight size={14} /></button>
@@ -269,9 +269,9 @@ export function FoundryPage() {
         </DialogContent>
       </Dialog>
       <Dialog open={equipment && !inRound} onOpenChange={setEquipment}>
-        <DialogContent className="foundry-preparation-dialog foundry-equipment-dialog" initialFocus={equipmentTitle}><DialogTitle ref={equipmentTitle} tabIndex={-1}>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Investis tes éclats dans un marteau, puis choisis ton compagnon.</p>
-          {cycle && <FoundryEquipment cycle={cycle} charms={progress?.charms ?? []} tool={tool} assistant={assistant} assistants={board?.availableAssistants ?? []} locked={locked || !cycle.roundsLeft}
-            onTool={(id, purchase) => action(async (b) => { await (purchase ? purchaseTool : equipTool)({ ...revision(b), tool: id }); setTool(id); })} onAssistant={setAssistant} />}
+        <DialogContent className="foundry-preparation-dialog foundry-equipment-dialog" initialFocus={equipmentTitle}><DialogTitle ref={equipmentTitle} tabIndex={-1}>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Choisis le marteau de ta prochaine manche.</p>
+          {cycle && <FoundryEquipment cycle={cycle} charms={progress?.charms ?? []} tool={tool} locked={locked || !cycle.roundsLeft}
+            onTool={(id, purchase) => action(async (b) => { await (purchase ? purchaseTool : equipTool)({ ...revision(b), tool: id }); setTool(id); })} />}
           <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour la forge <Check size={16} /></button>
         </DialogContent>
       </Dialog>

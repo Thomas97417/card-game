@@ -25,7 +25,7 @@ describe('les 211 savoirs sur le serveur',()=>{
   await client.mutation(api.foundry.purchaseSkill,{expectedOwnerId:id,revision:revision++,skill:'limit-break-damage-3'});
   b=await client.query(api.foundry.board,{});expect(b.progress!.cycle.skills).toHaveLength(211);expect(b.progress!.cycle.shards).toBe(645825971);
   await client.mutation(api.foundry.purchaseTool,{expectedOwnerId:id,revision:revision++,tool:'gilded'});
-  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded',assistant:'smith'});expect(round.state.version).toBe(11);expect(round.state.targets).toHaveLength(30);
+  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision,requestId:'all-211',tool:'gilded'});expect(round.state.version).toBe(11);expect(round.state.targets).toHaveLength(30);
   const expected=structuredClone(round.state);let lastArgs;
   while(!expected.ended){
    if(expected.tick===320){
@@ -55,7 +55,7 @@ describe('les 211 savoirs sur le serveur',()=>{
   b=await client.query(api.foundry.board,{});expect(b.progress!.revision).toBe(original.revision+1);expect(b.progress!.cycle).toMatchObject({freeplay:true,orderIndex:5,roundsLeft:3,shards:original.cycle.shards});
   await expect(client.mutation(api.foundry.continueChantier,{...args,expectedOwnerId:'another-user'})).rejects.toThrow('autre compte');
   await expect(client.mutation(api.foundry.payOrder,{expectedOwnerId:id,revision:b.progress!.revision,cycleNumber:1,orderIndex:5})).rejects.toThrow('honorées');
-  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision:b.progress!.revision,requestId:'freeplay',tool:'mallet',assistant:'smith'});
+  const round=await client.mutation(api.foundry.startRound,{expectedOwnerId:id,revision:b.progress!.revision,requestId:'freeplay',tool:'mallet'});
   await t.run(ctx=>ctx.db.patch(round._id,{state:{...round.state,ended:true,concentration:0,shards:123}}));await client.mutation(api.foundry.finishRound,{expectedOwnerId:id,roundId:round._id});
   b=await client.query(api.foundry.board,{});expect(b.progress!.cycle).toMatchObject({freeplay:true,freeplayRounds:1,roundsLeft:3,orderIndex:5,shards:original.cycle.shards+123});expect(b.progress!.mastery).toBe(5);expect(b.daily.delivered).toBe(3);expect(await client.query(api.collection.gold,{})).toBe(gold);
  });

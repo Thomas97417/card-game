@@ -21,13 +21,6 @@ export const FOUNDRY = {
   legacyOrderCosts: [100, 200, 350, 550, 850],
   orders: ["Rallumer la balise", "Renforcer les portes", "Accorder le sanctuaire", "Réparer les sentinelles", "Éveiller le cœur du refuge"],
 } as const;
-export const ASSISTANT_IDS = ["smith", "dryad", "feline"] as const;
-export type FoundryAssistant = (typeof ASSISTANT_IDS)[number];
-export const ASSISTANTS = {
-  smith: { name: "Forgeron de la citadelle", short: "Le Forgeron", detail: "+15 % aux bonus de dégâts · prêté par le refuge", art: "gnome", family: "gnome" },
-  dryad: { name: "Dryade des fougères", short: "La Dryade", detail: "+15 % de concentration", art: "mushroom", family: "mushroom" },
-  feline: { name: "Féline des clairières", short: "La Féline", detail: "+15 % d’éclats", art: "lynx", family: "lynx" },
-} as const;
 export const UPGRADE_IDS = ["power", "focus", "fortune"] as const;
 export type FoundryUpgrade = (typeof UPGRADE_IDS)[number];
 export const UPGRADES = {
@@ -57,7 +50,9 @@ export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: numbe
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
   version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11; rng: number; nextId: number; tick: number; concentration: number;
-  stats: FoundryStats; tool: FoundryTool; assistant: FoundryAssistant; nextStrike: number;
+  stats: FoundryStats; tool: FoundryTool; nextStrike: number;
+  /** Older saved rounds keep their original stats and companion metadata. */
+  assistant?: "smith" | "dryad" | "feline";
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   targets: FoundryRelic[];
   rogue?: { modifiers: FoundryModifiers; capacity: number; pressure: number; frenzyUntil: number; frozenUntil: number; nextFreeze: number; strikes: number; jackpots: number; wealth?: number; recoveryReserve?: number;
@@ -107,18 +102,17 @@ function random(state: { rng: number }) {
   state.rng = x >>> 0;
   return state.rng / 4294967296;
 }
-export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant, charms: readonly FoundryCharmId[] = []): FoundryStats {
+export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, charms: readonly FoundryCharmId[] = []): FoundryStats {
   const modifiers = foundryModifiers(cycle, charms); const base = foundryToolDefinition(cycle, tool); const modern = (cycle.economy ?? 0) >= 3;
   const reference = foundryReferenceModifiers((cycle.economy ?? 0) >= 4 ? cycle.skills ?? [] : [], cycle.economy);
   const powerBonus = cycle.upgrades.power * 0.25 + modifiers.power;
   return {
-    // The loaned smith amplifies acquired bonuses, leaving a fresh mallet at 1 damage.
-    damage: (base.damage + reference.flatDamage) * Math.max(0.25, 1 + powerBonus * (assistant === "smith" && powerBonus > 0 ? 1.15 : 1)),
+    damage: (base.damage + reference.flatDamage) * Math.max(0.25, 1 + powerBonus),
     interval: Math.max(2, modern ? base.interval / Math.max(0.3, 1 + modifiers.cadence + base.cadence) : Math.round(base.interval / Math.max(0.3, 1 + modifiers.cadence))),
     radius: (base.radius + reference.flatRadius) * Math.max(0.4, 1 + modifiers.radius),
     critical: Math.max(0, Math.min(cycle.economy === 5 ? 1 : 0.65, 0.1 + cycle.upgrades.fortune * 0.05 + modifiers.critical + base.critical)),
-    loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * (assistant === "feline" ? 1.15 : 1) * (1 + cycle.orderIndex * 0.08),
-    concentration: Math.max(30, Math.round((100 + reference.flatStamina) * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus) * (assistant === "dryad" ? 1.15 : 1))),
+    loot: Math.max(0.25, 1 + modifiers.loot) * (1 + base.loot) * (1 + cycle.orderIndex * 0.08),
+    concentration: Math.max(30, Math.round((100 + reference.flatStamina) * (1 + cycle.upgrades.focus * 0.15 + modifiers.focus))),
     ...(modern ? { stamina: Math.max(0.25, base.stamina + reference.flatDrain) } : {}),
   };
 }
@@ -221,13 +215,13 @@ export function foundryLootMultiplier(cycle: FoundryCycle): number {
   const stage = Math.max(0, Math.min(FOUNDRY.orders.length - 1, cycle.orderIndex));
   return ((cycle.economy ?? 0) >= 4 ? FOUNDRY.referenceLootMultipliers : FOUNDRY.lootMultipliers)[stage]! * (cycle.freeplay ? Math.min(8, 1 + Math.floor((cycle.freeplayRounds ?? 0) / 3) * 0.5) : 1);
 }
-export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: FoundryTool, assistant: FoundryAssistant, charms: readonly FoundryCharmId[] = []): FoundryRound {
+export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: FoundryTool, charms: readonly FoundryCharmId[] = []): FoundryRound {
   const stage = Math.max(0, Math.min(FOUNDRY.orders.length - 1, cycle.orderIndex));
-  const stats = foundryStats(cycle, tool, assistant, charms);
+  const stats = foundryStats(cycle, tool, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
   const state: FoundryRound = { version: cycle.economy === 5 ? FOUNDRY.version : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
-    stats, tool, assistant, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
+    stats, tool, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
     rogue: { modifiers, capacity: Math.min(cycle.economy === 5 ? FOUNDRY.fullMaxTargets : FOUNDRY.maxTargets, FOUNDRY.baseTargets + modifiers.capacity), pressure: (cycle.economy ?? 0) >= 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
       ...(cycle.economy && cycle.economy >= 3 ? { wealth: foundryLootMultiplier(cycle), recoveryReserve: 0 } : {}),
       ...((cycle.economy ?? 0) >= 4 ? { reference: { modifiers: foundryReferenceModifiers(cycle.skills ?? [], cycle.economy), spent: 0, combo: 0, firstHitUsed: false } } : {}),

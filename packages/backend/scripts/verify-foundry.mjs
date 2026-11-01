@@ -58,7 +58,7 @@ try {
     const shopping = planFoundryRunPurchases(board.progress.cycle);
     if (shopping.tool) { await client.mutation(api.foundry.purchaseTool, { ...owner, revision: board.progress.revision, tool: shopping.tool }); board = await client.query(api.foundry.board, {}); }
     for (const skill of shopping.skills) { await client.mutation(api.foundry.purchaseSkill, { ...owner, revision: board.progress.revision, skill }); board = await client.query(api.foundry.board, {}); }
-    const round = await client.mutation(api.foundry.startRound, { ...owner, revision: board.progress.revision, requestId: randomUUID(), tool: board.progress.cycle.selectedTool ?? "mallet", assistant: "smith" });
+    const round = await client.mutation(api.foundry.startRound, { ...owner, revision: board.progress.revision, requestId: randomUUID(), tool: board.progress.cycle.selectedTool ?? "mallet" });
     let state = structuredClone(round.state);
     const began = Date.now();
     while (!state.ended) {

@@ -39,7 +39,7 @@ export function simulateFoundryRun(seed: number, options: { invest?: boolean; mi
       if (planned.tool) { tool = planned.tool; purchases.push({ tool, round: rounds + 1 }); }
     }
     if (options.stopWhenMastered && cycle.skills!.length === foundrySkills(cycle).length) break;
-    const order = cycle.orderIndex + 1, state = createFoundryRound(seed * 7919 + rounds * 9176, cycle, tool, "smith");
+    const order = cycle.orderIndex + 1, state = createFoundryRound(seed * 7919 + rounds * 9176, cycle, tool);
     let emptySwings = 0;
     while (!state.ended && state.tick < 30000) {
       const target = state.targets.reduce((a, b) => a.hp < b.hp ? a : b);

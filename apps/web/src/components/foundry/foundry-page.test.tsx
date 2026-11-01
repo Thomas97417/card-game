@@ -20,7 +20,7 @@ let sceneOptions: Parameters<typeof createFoundryScene>[1];
 const mutations = new Map<string, ReturnType<typeof vi.fn>>();
 beforeEach(() => {
   localStorage.clear(); mutations.clear();
-  board = { ownerId: "alice", serverNow: 1000, daily: { day: "2026-10-29", delivered: 0, claimed: false }, pendingReward: null, round: null, availableAssistants: ["smith", "dryad"],
+  board = { ownerId: "alice", serverNow: 1000, daily: { day: "2026-10-29", delivered: 0, claimed: false }, pendingReward: null, round: null,
     progress: { _id: "progress" as Id<"foundryProgress">, _creationTime: 1000, ownerId: "alice", revision: 0, mastery: 0, cycle: legacyCycle() } };
   vi.mocked(useQuery).mockImplementation(((query: Parameters<typeof useQuery>[0]) => getFunctionName(query) === "foundry:board" ? board : undefined) as typeof useQuery);
   vi.mocked(useMutation).mockImplementation((mutation) => {
@@ -43,7 +43,7 @@ describe("la fonderie à l’écran", () => {
     expect(screen.getByText(/Filon 1 · butin ×10 · résistance ×1/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Martelet vif — 1000 éclats" }))).toBe(false);
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau du graveur — 4000 éclats" }))).toBe(false);
     for (const name of ["Acheter Marteau à panne — 50000 éclats", "Acheter Brise-roche — 250000 éclats", "Acheter Marteau à pointes — 1000000 éclats", "Acheter Marteau d’ambre — 10000000 éclats"]) expect(disabled(screen.getByRole("button", { name }))).toBe(true);
@@ -65,7 +65,7 @@ describe("la fonderie à l’écran", () => {
   it("offers all five hammers for shards at high mastery and falls back from an unpaid legacy selection", async () => {
     board = { ...board, progress: { ...board.progress!, mastery: 500, cycle: { ...legacyCycle(), shards: 500, purchasedTools: undefined, selectedTool: "resonance" } } };
     const view = render(<FoundryPage />); await ready();
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(screen.getByRole("button", { name: "Maillet de cuivre équipé" })).toBeTruthy();
     for (const name of ["Acheter Brise-roche — 80 éclats", "Acheter Martelet vif — 120 éclats", "Acheter Marteau du graveur — 180 éclats", "Acheter Marteau de résonance — 260 éclats", "Acheter Marteau d’ambre — 420 éclats"]) {
       expect(disabled(screen.getByRole("button", { name }))).toBe(false);
@@ -85,7 +85,7 @@ describe("la fonderie à l’écran", () => {
   it("buys an affordable run hammer, equips it after confirmation and restores it on revisit", async () => {
     board = { ...board, progress: { ...board.progress!, revision: 4, cycle: { ...legacyCycle(), shards: 100 } } };
     const view = render(<FoundryPage />); await ready();
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" }))).toBe(false);
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau du graveur — 180 éclats" }))).toBe(true);
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau d’ambre — 420 éclats" }))).toBe(true);
@@ -97,7 +97,7 @@ describe("la fonderie à l’écran", () => {
     expect(screen.getByText("20 éclats")).toBeTruthy(); expect(screen.getByRole("button", { name: "Brise-roche équipé" })).toBeTruthy();
     expect(mutations.get("foundry:equipTool")).not.toHaveBeenCalled();
     view.unmount(); render(<FoundryPage />); await ready();
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(screen.getByRole("button", { name: "Brise-roche équipé" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Équiper Maillet de cuivre" }));
     await waitFor(() => expect(mutations.get("foundry:equipTool")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 5, tool: "mallet" }));
@@ -106,18 +106,18 @@ describe("la fonderie à l’écran", () => {
     board = { ...board, progress: { ...board.progress!, cycle: buyFoundryTool({ ...legacyCycle(), shards: 80 }, "heavy") } };
     const view = render(<FoundryPage />); await ready();
     board = { ...board, progress: { ...board.progress!, revision: 1, cycle: legacyCycle(2) } }; view.rerender(<FoundryPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(screen.getByRole("button", { name: "Maillet de cuivre équipé" })).toBeTruthy();
     expect(disabled(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" }))).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
-    const state = createFoundryRound(11, legacyCycle(2), "mallet", "smith");
+    const state = createFoundryRound(11, legacyCycle(2), "mallet");
     board = { ...board, round: { _id: "active" as Id<"foundryRounds">, _creationTime: 1000, ownerId: "alice", cycleNumber: 2, requestId: "active", startedAt: 1000, finished: false, batches: [], state } }; view.rerender(<FoundryPage />);
-    expect(screen.queryByRole("button", { name: "Choisir les outils et compagnons" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Choisir le marteau" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Acheter Brise-roche/ })).toBeNull();
   });
   it("returns the menus only after stamina reaches zero and the round is saved", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
-    const state = createFoundryRound(1, legacyCycle(), "mallet", "smith"); state.concentration = 0.1; state.targets = [];
+    const state = createFoundryRound(1, legacyCycle(), "mallet"); state.concentration = 0.1; state.targets = [];
     mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "last-strike", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "last-strike", startedAt: 0, finished: false, batches: [], state });
     mutations.get("foundry:submitInputs")!.mockImplementation(async ({ inputs }) => { inputs.forEach((input: Parameters<typeof stepFoundry>[1]) => stepFoundry(state, input)); return structuredClone(state); });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
@@ -127,15 +127,15 @@ describe("la fonderie à l’écran", () => {
     expect(mutations.get("foundry:finishRound")).toHaveBeenCalledOnce();
     expect(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeTruthy(); expect(screen.getByRole("link", { name: "Retour au refuge" })).toBeTruthy();
   });
-  it("shows the five priced hammers, owned assistants and the daily contract counter", async () => {
+  it("shows the priced hammers without companions and the daily contract counter", async () => {
     render(<FoundryPage />); await ready();
     expect(screen.getByRole("progressbar", { name: "Commandes du coffre quotidien" }).getAttribute("aria-valuenow")).toBe("0");
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(screen.getByRole("dialog", { name: "Préparer la manche" })).toBeTruthy();
     expect(disabled(screen.getByRole("button", { name: /Martelet vif/ }))).toBe(true);
     expect(disabled(screen.getByRole("button", { name: /Marteau de résonance/ }))).toBe(true);
-    expect(disabled(screen.getByRole("button", { name: /La Dryade/ }))).toBe(false);
-    expect(disabled(screen.getByRole("button", { name: /La Féline/ }))).toBe(true);
+    expect(screen.queryByRole("button", { name: /La Dryade|La Féline|Le Forgeron/ })).toBeNull();
+    expect(screen.queryByText("Un compagnon à tes côtés")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
@@ -150,7 +150,7 @@ describe("la fonderie à l’écran", () => {
     const view = render(<FoundryPage />); await ready();
     vi.mocked(useQuery).mockReturnValue(undefined); view.rerender(<FoundryPage />);
     expect(screen.getByRole("progressbar", { name: "Commandes du coffre quotidien" }).getAttribute("aria-valuenow")).toBe("2");
-    fireEvent.click(screen.getByRole("button", { name: "Choisir les outils et compagnons" }));
+    fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau de résonance — 260 éclats" }))).toBe(true);
   });
   it("aims by mouse hover and requires a held finger for touch input", async () => {
@@ -171,7 +171,7 @@ describe("la fonderie à l’écran", () => {
   });
   it("starts after a countdown, aims with the keyboard, and pauses with Escape and page visibility", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
-    mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "round-1", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "round-1", startedAt: 0, finished: false, batches: [], state: createFoundryRound(1, legacyCycle(), "mallet", "smith") });
+    mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "round-1", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "round-1", startedAt: 0, finished: false, batches: [], state: createFoundryRound(1, legacyCycle(), "mallet") });
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
     expect(screen.getByText("Prépare ton marteau")).toBeTruthy();
     expect(screen.queryByRole("complementary", { name: "Commandes et améliorations" })).toBeNull(); expect(screen.queryByRole("button", { name: /Ouvrir l’arbre/ })).toBeNull(); expect(screen.queryByRole("link", { name: "Retour au refuge" })).toBeNull();

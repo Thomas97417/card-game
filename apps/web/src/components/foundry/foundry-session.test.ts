@@ -3,7 +3,7 @@ import { createFoundryRound, newFoundryCycle, stepFoundry, type FoundryInput } f
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 
 function setup() {
-  const server = createFoundryRound(7, newFoundryCycle(), "mallet", "smith");
+  const server = createFoundryRound(7, newFoundryCycle(), "mallet");
   const storage = new Map<string, string>();
   const submit = vi.fn(async (startTick: number, inputs: FoundryInput[]) => {
     expect(startTick).toBe(server.tick); inputs.forEach((input) => stepFoundry(server, input)); return structuredClone(server);
@@ -44,7 +44,7 @@ describe("la reprise d’une manche de fonderie", () => {
     expect(session.state.tick).toBe(12); expect(session.running).toBe(false);
     inputs.forEach((input) => stepFoundry(original, input)); expect(session.state).toEqual(original);
     await session.flush(); expect(session.state).toEqual(server); expect(storage.size).toBe(0);
-    const bob = new FoundrySession({ ...options, ownerId: "bob", state: createFoundryRound(7, newFoundryCycle(), "mallet", "smith") });
+    const bob = new FoundrySession({ ...options, ownerId: "bob", state: createFoundryRound(7, newFoundryCycle(), "mallet") });
     expect(bob.state.tick).toBe(0);
   });
   it("keeps the draft and stops gameplay when a competing tab rejects a batch", async () => {

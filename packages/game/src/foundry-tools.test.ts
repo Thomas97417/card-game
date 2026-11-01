@@ -34,7 +34,7 @@ describe("les marteaux achetés pendant le chantier", () => {
   });
   it("keeps purchases across rounds and deliveries, then resets every hammer except the starting mallet", () => {
     const bought = buyFoundryTool({ ...newFoundryCycle(), shards: TOOLS.heavy.cost + 5000 }, "heavy");
-    const round = { ...createFoundryRound(12, bought, "heavy", "smith"), ended: true, shards: 23 };
+    const round = { ...createFoundryRound(12, bought, "heavy"), ended: true, shards: 23 };
     const settled = settleFoundryRound(bought, round), delivered = deliverFoundryOrder(settled);
     const blessed = chooseFoundryBlessing(delivered, delivered.choices[0]!);
     expect(blessed.purchasedTools).toEqual(["heavy"]); expect(blessed.selectedTool).toBe("heavy");
@@ -47,31 +47,31 @@ describe("les marteaux achetés pendant le chantier", () => {
   });
   it("applies tool-specific stamina costs on every swing, including empty swings and efficiency bonuses", () => {
     for (const tool of ["swift", "resonance", "heavy", "precision", "spiked", "gilded"] as FoundryTool[]) {
-      const round = createFoundryRound(2, newFoundryCycle(), tool, "smith"); round.targets = [];
+      const round = createFoundryRound(2, newFoundryCycle(), tool); round.targets = [];
       expect(foundryStrikeCost(round)).toBe(TOOLS[tool].stamina);
       while (!round.ended) stepFoundry(round, { x: 5.6, z: 3.4, active: false });
       expect(round.rogue!.strikes).toBe(Math.ceil(100 / TOOLS[tool].stamina)); expect(round.concentration).toBe(0);
-      const efficient = createFoundryRound(2, { ...newFoundryCycle(), blessings: ["efficient"] }, tool, "smith");
+      const efficient = createFoundryRound(2, { ...newFoundryCycle(), blessings: ["efficient"] }, tool);
       expect(foundryStrikeCost(efficient)).toBeCloseTo(TOOLS[tool].stamina * 0.85);
       efficient.rogue!.frenzyUntil = 100; expect(foundryStrikeCost(efficient)).toBeCloseTo(TOOLS[tool].stamina * 0.85 / 2);
     }
   });
   it("combines the engraver's critical bonuses with the build and freezes them in the round", () => {
-    const cycle = { ...newFoundryCycle(), blessings: ["power" as const] }, round = createFoundryRound(9, cycle, "precision", "smith");
-    expect(round.stats.damage).toBeCloseTo(5 * 1.23); expect(round.stats.critical).toBe(0.25);
+    const cycle = { ...newFoundryCycle(), blessings: ["power" as const] }, round = createFoundryRound(9, cycle, "precision");
+    expect(round.stats.damage).toBeCloseTo(5 * 1.2); expect(round.stats.critical).toBe(0.25);
     expect(round.rogue!.modifiers.criticalDamage).toBe(0.6); round.stats.critical = 1;
     round.targets = [{ ...round.targets[0]!, kind: "urn", hp: 100, maxHp: 100, x: 0, z: 0, vx: 0, vz: 0 }];
     const hit = stepFoundry(round, { x: 0, z: 0, active: true }).impacts[0]!;
     expect(hit.critical).toBe(true); expect(hit.damage).toBeCloseTo(round.stats.damage * 2.6);
   });
-  it("keeps the amber hammer's loot normal while its critical bonuses combine with the feline", () => {
-    const cycle = newFoundryCycle(), plain = createFoundryRound(22, cycle, "mallet", "smith"), gilded = createFoundryRound(22, cycle, "gilded", "smith");
+  it("keeps the amber hammer's loot normal without companion multipliers", () => {
+    const cycle = newFoundryCycle(), plain = createFoundryRound(22, cycle, "mallet"), gilded = createFoundryRound(22, cycle, "gilded");
     for (const round of [plain, gilded]) {
       round.stats.critical = 0;
       round.targets = [{ ...round.targets[0]!, kind: "urn", hp: 1, maxHp: 1, x: 0, z: 0, vx: 0, vz: 0 }];
     }
     const normal = stepFoundry(plain, { x: 0, z: 0, active: true }).impacts[0]!.loot;
     expect(stepFoundry(gilded, { x: 0, z: 0, active: true }).impacts[0]!.loot).toBe(normal);
-    expect(foundryStats(cycle, "gilded", "feline").loot).toBeCloseTo(1.15);
+    expect(foundryStats(cycle, "gilded").loot).toBe(1);
   });
 });

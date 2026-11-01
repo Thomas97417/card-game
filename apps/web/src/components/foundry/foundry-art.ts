@@ -189,65 +189,118 @@ export function createFoundryArt(mobile: boolean) {
     return { root, damage, animate(seconds) { motions.forEach((animate) => animate(seconds)); } };
   }
   function hammer() {
-    const root = new THREE.Group(); const head = new THREE.Group(); head.position.y = 1.15; head.rotation.y = Math.PI / 2; root.add(head);
-    const handle = lathe("hammer-handle", [[0.07, -0.8], [0.12, -0.74], [0.105, -0.3], [0.08, 0.4], [0.11, 1.15]]);
-    mesh(handle, oak, root);
-    mesh(ball, gold, root, 0, -0.79, 0, 0.12, 0.075, 0.12);
-    for (let i = 0; i < 8; i++) hoop(root, i % 3 ? leather : copper, -0.68 + i * 0.105, 0.107, 1.5);
-    hoop(root, gold, 0.86, 0.12); hoop(root, gold, 0.96, 0.12);
-    const body = mesh(bevel, copper, head, 0, 0, 0, 1.12, 0.6, 0.65);
-    for (const side of [-1, 1]) {
-      mesh(bevel, gold, head, side * 0.51, 0, 0, 0.13, 0.61, 0.68);
-      mesh(bevel, iron, head, side * 0.578, 0, 0, 0.035, 0.48, 0.52);
+    const root = new THREE.Group();
+    const head = new THREE.Group(); head.name = "foundry-hammer-head"; head.rotation.y = Math.PI / 2; root.add(head);
+    const strikeFace = new THREE.Object3D(); head.add(strikeFace);
+    const cylinder = geo("hammer-cylinder", () => new THREE.CylinderGeometry(1, 1, 1, mobile ? 16 : 24));
+    const spikeGeo = geo("hammer-spike", () => new THREE.ConeGeometry(1, 1, mobile ? 10 : 16));
+    const wedgeGeo = geo("hammer-peen", () => {
+      const shape = new THREE.Shape();
+      shape.moveTo(-0.5, -0.045); shape.lineTo(0.5, -0.5); shape.lineTo(0.5, 0.5); shape.lineTo(-0.5, 0.045); shape.closePath();
+      const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.025, bevelSegments: 2, steps: 1 });
+      geometry.translate(0, 0, -0.5); return geometry;
+    });
+    const steel = paint(0x98a5a8, "metal", 0.45, 0.42);
+    const blueSteel = paint(0x546e7c, "metal", 0.35, 0.6);
+    const bronze = paint(0xc89b5f, "metal", 0.28, 0.6);
+    const blackIron = paint(0x242a2c, "metal", 0.4, 0.65);
+    const basalt = paint(0x595b59, "stone", 0, 0.97);
+    const amber = paint(0xde870d, "ceramic", 0.05, 0.4, 0xa74c04); amber.emissiveIntensity = 0.55;
+    const greenGrip = paint(0x315f4c, "wood", 0, 0.96);
+    const purpleGrip = paint(0x51385e, "wood", 0, 0.96);
+    const blackGrip = paint(0x292c2b, "wood", 0, 0.96);
+    const redGrip = paint(0x623931, "wood", 0, 0.96);
+    const variants = new Map<FoundryTool, { head: THREE.Group; handle: THREE.Group; height: number; face: number }>();
+    function variant(id: FoundryTool, height: number, face: number, radius: number, bottom: number, grip: THREE.Material, trim: THREE.Material) {
+      const top = new THREE.Group(); top.name = `hammer-head-${id}`; top.visible = false; head.add(top);
+      const handle = new THREE.Group(); handle.name = `hammer-handle-${id}`; handle.visible = false; root.add(handle);
+      const wood = lathe(`hammer-handle-${id}`, [[radius * 0.7, bottom], [radius * 1.15, bottom + 0.08], [radius, bottom + 0.55], [radius * 0.75, height * 0.45], [radius * 1.1, height + 0.14]]);
+      mesh(wood, oak, handle);
+      mesh(cylinder, grip, handle, 0, bottom + 0.4, 0, radius * 1.1, 0.6, radius * 1.1);
+      for (let i = 0; i < 6; i++) hoop(handle, i === 0 || i === 5 ? trim : grip, bottom + 0.1 + i * 0.12, radius * 1.12, 1.3);
+      mesh(ball, trim, handle, 0, bottom + 0.025, 0, radius * 1.22, radius * 0.65, radius * 1.22);
+      hoop(handle, trim, height - 0.3, radius * 1.1); hoop(handle, trim, height - 0.2, radius * 1.1);
+      variants.set(id, { head: top, handle, height, face }); return top;
     }
-    const collar = mesh(bevel, patina, head, 0, 0, 0, 0.3, 0.66, 0.72);
-    for (const side of [-1, 1]) {
-      mesh(bevel, gold, head, side * 0.17, 0, 0, 0.035, 0.64, 0.7);
-      for (const y of [-0.19, 0.19]) for (const z of [-0.32, 0.32]) mesh(bead, gold, head, side * 0.35, y, z, 0.045, 0.045, 0.02);
+    function barrel(parent: THREE.Group, material: THREE.Material, x: number, length: number, radius: number) {
+      const part = mesh(cylinder, material, parent, x, 0, 0, radius, length, radius); part.rotation.z = -Math.PI / 2; return part;
     }
-    for (const z of [-0.371, 0.371]) {
-      const jewel = mesh(ball, crystal, head, 0, 0, z, 0.09, 0.14, 0.03);
-      jewel.rotation.z = 0.15;
-      for (const side of [-1, 1]) {
-        const leaf = mesh(leafGeo, gold, head, side * 0.3, -0.09, z * 0.9, 0.09, 0.14, 0.08); leaf.rotation.z = side * -0.5;
+    function squareFace(parent: THREE.Group, material: THREE.Material, x: number, width: number, height: number, depth: number) {
+      const face = mesh(bevel, material, parent, x, 0, 0, width, height, depth);
+      if (x > 0) face.name = "hammer-striking-face";
+      return face;
+    }
+    // Copper mallet: square faces, a green socket and a plain oak handle.
+    const mallet = variant("mallet", 1.15, 0.67, 0.105, -0.8, greenGrip, gold);
+    mesh(bevel, copper, mallet, 0, 0, 0, 1.05, 0.58, 0.62);
+    mesh(bevel, patina, mallet, 0, 0, 0, 0.27, 0.65, 0.69);
+    for (const side of [-1, 1]) {
+      squareFace(mallet, gold, side * 0.55, 0.18, 0.65, 0.69);
+      squareFace(mallet, iron, side * 0.65, 0.04, 0.5, 0.54);
+      mesh(ball, crystal, mallet, 0, 0, side * 0.36, 0.08, 0.12, 0.035);
+    }
+    // Swift hammer: an unmistakably small cylindrical bronze head.
+    const swift = variant("swift", 1.06, 0.4775, 0.075, -0.76, greenGrip, copper);
+    barrel(swift, bronze, 0, 0.78, 0.235); barrel(swift, patina, 0, 0.18, 0.255);
+    for (const side of [-1, 1]) { barrel(swift, copper, side * 0.4, 0.1, 0.255); const face = barrel(swift, bronze, side * 0.46, 0.035, 0.22); if (side > 0) face.name = "hammer-striking-face"; }
+    // Engraver: a narrow silver striking face and a long pointed peen.
+    const precision = variant("precision", 1.1, 0.51, 0.073, -0.82, purpleGrip, steel);
+    mesh(bevel, steel, precision, 0.02, 0, 0, 0.56, 0.28, 0.3);
+    mesh(wedgeGeo, steel, precision, -0.42, 0, 0, 0.68, 0.25, 0.22);
+    barrel(precision, steel, 0.38, 0.26, 0.195);
+    for (const side of [-1, 1]) {
+      mesh(ball, amethyst, precision, 0.03, 0, side * 0.17, 0.12, 0.155, 0.035);
+      const setting = mesh(ring, steel, precision, 0.03, 0, side * 0.175, 0.13, 0.16, 0.13); setting.scale.z = 0.04;
+    }
+    // Cross-peen: blue forged steel with a broad, genuinely tapered wedge.
+    const peen = variant("resonance", 1.16, 0.6, 0.105, -0.84, leather, copper);
+    mesh(bevel, blueSteel, peen, 0.12, 0, 0, 0.68, 0.52, 0.55);
+    mesh(wedgeGeo, blueSteel, peen, -0.43, 0, 0, 0.9, 0.52, 0.52);
+    squareFace(peen, steel, 0.52, 0.16, 0.57, 0.59);
+    mesh(bevel, iron, peen, 0, 0, 0, 0.24, 0.59, 0.6);
+    // Rock breaker: a broad basalt block and thick reinforcing iron straps.
+    const heavy = variant("heavy", 1.04, 1, 0.14, -0.68, leather, iron);
+    mesh(bevel, basalt, heavy, 0, 0, 0, 1.8, 0.86, 0.93);
+    for (const side of [-1, 1]) {
+      mesh(bevel, iron, heavy, side * 0.52, 0, 0, 0.17, 0.94, 1.01);
+      squareFace(heavy, basalt, side * 0.94, 0.12, 0.83, 0.9);
+      for (const z of [-0.51, 0.51]) mesh(bead, steel, heavy, side * 0.52, 0, z, 0.075, 0.075, 0.035);
+    }
+    // Spiked iron: six lateral steel spikes; the striking ends stay flat.
+    const spiked = variant("spiked", 1.12, 0.77, 0.12, -0.8, blackGrip, iron);
+    mesh(bevel, blackIron, spiked, 0, 0, 0, 1.25, 0.62, 0.68);
+    mesh(bevel, blackIron, spiked, 0, 0, 0, 0.23, 0.7, 0.78);
+    for (const side of [-1, 1]) {
+      squareFace(spiked, blackIron, side * 0.69, 0.16, 0.67, 0.73);
+      for (const x of [-0.4, 0, 0.4]) {
+        const spike = mesh(spikeGeo, steel, spiked, x, 0, side * 0.5, 0.115, 0.42, 0.115); spike.rotation.x = side * Math.PI / 2;
+        mesh(ball, iron, spiked, x, 0, side * 0.35, 0.15, 0.15, 0.075);
       }
     }
-    const strikeFace = new THREE.Object3D(); strikeFace.position.x = 0.5955; head.add(strikeFace);
-    const resonance = new THREE.Group(); head.add(resonance);
-    const halo = mesh(ring, crystal, resonance, 0, 0, 0, 0.45, 0.45, 0.45); halo.rotation.y = Math.PI / 2;
-    for (const side of [-1, 1]) mesh(crystalGeo, crystalLight, resonance, side * 0.32, 0.3, 0, 0.12, 0.25, 0.12);
-    const heavy = new THREE.Group(); head.add(heavy);
-    for (const side of [-1, 1]) mesh(bevel, iron, heavy, side * 0.34, 0, 0, 0.13, 0.7, 0.75);
-    const precision = new THREE.Group(); head.add(precision);
-    for (const z of [-0.4, 0.4]) {
-      mesh(crystalGeo, amethyst, precision, 0, 0.24, z, 0.15, 0.3, 0.13);
-      mesh(bead, violetLight, precision, 0, 0.1, z, 0.1, 0.12, 0.08);
-    }
-    const gilded = new THREE.Group(); head.add(gilded);
-    for (const z of [-0.39, 0.39]) {
-      const seal = mesh(ball, gold, gilded, 0, 0, z, 0.19, 0.19, 0.04);
-      for (let i = 0; i < 5; i++) {
-        const angle = i * Math.PI * 2 / 5;
-        const leaf = mesh(leafGeo, gold, gilded, Math.sin(angle) * 0.13, Math.cos(angle) * 0.13, z, 0.09, 0.16, 0.08); leaf.rotation.z = -angle;
+    // Amber: a luminous crystal block held by golden caps and filigree.
+    const gilded = variant("gilded", 1.18, 0.79, 0.1, -0.82, redGrip, gold);
+    mesh(bevel, amber, gilded, 0, 0, 0, 1.32, 0.7, 0.72);
+    mesh(bevel, gold, gilded, 0, 0, 0, 0.23, 0.78, 0.8);
+    for (const side of [-1, 1]) {
+      squareFace(gilded, gold, side * 0.68, 0.22, 0.76, 0.78);
+      mesh(ball, amber, gilded, 0, 0, side * 0.43, 0.15, 0.2, 0.045);
+      for (const x of [-0.35, 0.35]) {
+        const rib = tube(`amber-rib-${x}-${side}`, [[x, -0.3, side * 0.35], [x * 0.8, 0, side * 0.42], [x, 0.3, side * 0.35]], 0.025);
+        mesh(rib, gold, gilded);
+        const leaf = mesh(leafGeo, gold, gilded, x * 0.5, -0.12, side * 0.42, 0.075, 0.17, 0.075); leaf.rotation.z = x > 0 ? -0.6 : 0.6;
       }
-      seal.castShadow = false;
     }
-    const peen = new THREE.Group(); head.add(peen);
-    const wedge = mesh(bevel, iron, peen, -0.4, 0, 0, 0.7, 0.22, 0.6); wedge.rotation.z = -0.15;
-    const spiked = new THREE.Group(); head.add(spiked);
-    for (const z of [-0.37, 0.37]) for (const x of [-0.35, 0, 0.35]) {
-      const spike = mesh(geo("hammer-spike", () => new THREE.ConeGeometry(0.11, 0.32, mobile ? 10 : 16)), iron, spiked, x, 0, z);
-      spike.rotation.x = z < 0 ? -Math.PI / 2 : Math.PI / 2;
-      mesh(ball, iron, spiked, x, 0, z * 0.9, 0.14, 0.14, 0.07);
+    mesh(ball, amber, variants.get("gilded")!.handle, 0, -0.8, 0, 0.105, 0.08, 0.105);
+    let selected: FoundryTool | undefined;
+    function tool(id: FoundryTool) {
+      if (selected === id) return;
+      if (selected) { const previous = variants.get(selected)!; previous.head.visible = previous.handle.visible = false; }
+      const next = variants.get(id)!; next.head.visible = next.handle.visible = true;
+      head.position.y = next.height; strikeFace.position.set(next.face, 0, 0);
+      selected = id;
     }
-    return { root, strikeFace, tool(tool: FoundryTool, legacy = false) {
-      head.scale.set(tool === "swift" ? 0.72 : tool === "precision" ? 0.78 : tool === "heavy" ? 1.45 : tool === "resonance" || tool === "gilded" ? 1.2 : 1,
-        tool === "heavy" ? 1.12 : tool === "precision" ? 0.86 : 1, tool === "heavy" ? 1.12 : 1);
-      body.material = tool === "heavy" ? stone : tool === "spiked" ? iron : tool === "precision" ? patina : tool === "gilded" ? gold : copper;
-      collar.material = tool === "heavy" ? iron : tool === "precision" ? amethyst : patina;
-      resonance.visible = tool === "resonance" && legacy; peen.visible = tool === "resonance" && !legacy; spiked.visible = tool === "spiked";
-      heavy.visible = tool === "heavy"; precision.visible = tool === "precision"; gilded.visible = tool === "gilded";
-    } };
+    tool("mallet");
+    return { root, strikeFace, tool };
   }
   const shadowSize = 64; const shadowPixels = new Uint8Array(shadowSize * shadowSize * 4);
   for (let y = 0; y < shadowSize; y++) for (let x = 0; x < shadowSize; x++) {
