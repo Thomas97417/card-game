@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   data: undefined as DuelData | undefined,
   mutate: Object.assign(vi.fn(), { withOptimisticUpdate: () => mocks.mutate }),
   soloTurn: vi.fn(),
+  boardReady: true,
 }));
 
 vi.mock("convex/react", () => ({
@@ -48,8 +49,8 @@ vi.mock("@/components/game/duel-screen", () => ({
     onPlaybackSettled: (sequence: number) => void;
   }) => {
     useEffect(() => {
-      onPlaybackSettled(data.sequence);
-    }, [data.sequence, onPlaybackSettled]);
+      if (mocks.boardReady) onPlaybackSettled(data.sequence);
+    }, [data.sequence, onPlaybackSettled, mocks.boardReady]);
     return <button>Jouer une carte</button>;
   },
 }));
@@ -74,8 +75,15 @@ beforeEach(() => {
   vi.clearAllMocks();
   window.sessionStorage.clear();
   mocks.gameId = "first-game";
+  mocks.boardReady = true;
   mocks.data = newGame();
   mocks.soloTurn.mockResolvedValue(undefined);
+  vi.stubGlobal("Image", class {
+    complete = true;
+    src = "";
+    onload = null;
+    onerror = null;
+  });
 });
 
 afterEach(() => {
@@ -84,7 +92,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("entrée en duel depuis l’arène", () => {
+describe("entrée en duel", () => {
   it("keeps the presentation from the click until the real game is ready without replaying it", async () => {
     vi.stubGlobal(
       "Image",
@@ -180,22 +188,60 @@ describe("entrée en duel depuis l’arène", () => {
     ).toBe("Alice");
   });
 
-  it("waits for match data and does not restart the intro on live updates", () => {
+  it("starts before match data and keeps the same intro through loading and live updates", () => {
     mocks.data = undefined;
     const { rerender } = render(<GamePage />);
-    expect(screen.getByRole("status").textContent).toContain(
-      "La forêt s’éveille",
-    );
-    act(() => vi.advanceTimersByTime(4000));
+    const intro = screen.getByRole("status");
+    expect(intro.textContent).toContain("Préparation du duel…");
+    expect(screen.queryByText(/La forêt s’éveille/)).toBeNull();
+    act(() => vi.advanceTimersByTime(1000));
     mocks.data = newGame();
     rerender(<GamePage />);
-    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByRole("status")).toBe(intro);
+    act(() => vi.advanceTimersByTime(500));
     mocks.data = { ...mocks.data, sequence: 1 };
     rerender(<GamePage />);
-    act(() => vi.advanceTimersByTime(1000));
+    act(() => vi.advanceTimersByTime(499));
+    expect(screen.getByRole("status")).toBe(intro);
+    act(() => vi.advanceTimersByTime(1));
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.getByRole("button")).toBeTruthy();
   });
+
+  it("keeps a direct entry covered until the board is ready", () => {
+    mocks.boardReady = false;
+    const { rerender } = render(<GamePage />);
+    act(() => vi.advanceTimersByTime(4000));
+    expect(screen.getByText("Chargement du plateau…")).toBeTruthy();
+    expect(screen.queryByRole("button")).toBeNull();
+    mocks.boardReady = true;
+    rerender(<GamePage />);
+    act(() => vi.advanceTimersByTime(359));
+    expect(screen.queryByRole("button")).toBeNull();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.getByRole("button")).toBeTruthy();
+  });
+
+  it.each(["in progress", "finished", "already presented"])(
+    "removes the loading intro immediately when a match is %s",
+    (state) => {
+      mocks.data = undefined;
+      const { rerender } = render(<GamePage />);
+      act(() => vi.advanceTimersByTime(500));
+      if (state === "already presented")
+        window.sessionStorage.setItem("sylve:duel-intro:first-game", "seen");
+      mocks.data = {
+        ...newGame(),
+        ...(state === "in progress" ? { turn: 4 } : {}),
+        ...(state === "finished" ? { status: "finished" as const } : {}),
+      };
+      rerender(<GamePage />);
+      expect(screen.queryByRole("status")).toBeNull();
+      expect(screen.getByRole("button")).toBeTruthy();
+      act(() => vi.advanceTimersByTime(0));
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
 
   it("waits until the intro ends before letting the solo opponent think", () => {
     mocks.data = { ...newGame("solo"), activePlayer: 1 };

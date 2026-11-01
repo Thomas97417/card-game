@@ -3,12 +3,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { DuelScreen, type DuelData } from "@/components/game/duel-screen";
-import { DuelIntro, useDuelIntro } from "@/components/game/duel-intro";
+import { DuelIntro, useDuelIntro, useDuelIntroAssets } from "@/components/game/duel-intro";
 import { useDuelTransition } from "@/components/game/duel-transition";
-import { GameLoading } from "@/components/game/shared";
 import { requireGameAuth } from "@/lib/game-auth";
 import { showGameError } from "@/components/game/shared";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { COMBAT_TIMING } from "@/components/game/combat-timing";
 import { optimisticallyPlayCard } from "@/lib/optimistic-game";
 
@@ -46,17 +45,13 @@ function GamePage() {
   const { gameId: rawId } = Route.useParams();
   const gameId = rawId as Id<"games">;
   const data = useQuery(api.games.get, { gameId });
-  const transition = useDuelTransition();
-  if (!data)
-    return transition?.active ? (
-      <div className="duel-entry" />
-    ) : (
-      <GameLoading />
-    );
-  return <GameMatch key={gameId} gameId={gameId} data={data} />;
+  return <GameEntry key={gameId} gameId={gameId} data={data} />;
 }
 
-function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
+function GameEntry({ gameId, data }: {
+  gameId: Id<"games">;
+  data: DuelData | undefined;
+}) {
   const transition = useDuelTransition();
   const { showIntro, completeIntro } = useDuelIntro(
     gameId,
@@ -64,6 +59,48 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
     transition?.active,
   );
   const presenting = showIntro || !!transition?.active;
+  const [boardReady, setBoardReady] = useState(false);
+  const onReady = useCallback(() => setBoardReady(true), []);
+  const assetsReady = useDuelIntroAssets(
+    showIntro ? gameId : undefined,
+    data?.players[data.me]?.heroId,
+    data?.players[1 - data.me]?.heroId,
+  );
+  const ready = !!data && boardReady && assetsReady;
+
+  return (
+    <div className="duel-entry">
+      <div
+        className="duel-entry-board"
+        inert={presenting}
+        aria-hidden={presenting || undefined}
+      >
+        {data && (
+          <GameMatch gameId={gameId} data={data} presenting={presenting} onReady={onReady} />
+        )}
+      </div>
+      {showIntro && (
+        <DuelIntro
+          data={data}
+          mode={data ? data.mode ?? "private" : "loading"}
+          ready={ready}
+          message={ready
+            ? "Que le duel commence"
+            : data ? "Chargement du plateau…" : "Préparation du duel…"}
+          onComplete={completeIntro}
+        />
+      )}
+    </div>
+  );
+}
+
+function GameMatch({ gameId, data, presenting, onReady }: {
+  gameId: Id<"games">;
+  data: DuelData;
+  presenting: boolean;
+  onReady: () => void;
+}) {
+  const transition = useDuelTransition();
   const playCard = useMutation(api.games.playCard).withOptimisticUpdate(
     optimisticallyPlayCard,
   );
@@ -73,8 +110,11 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
   const soloTurn = useMutation(api.games.soloTurn);
   const [settledSequence, setSettledSequence] = useState(-1);
   useEffect(() => {
-    if (settledSequence === data.sequence) transition?.boardReady(gameId);
-  }, [settledSequence, data.sequence, gameId, transition?.boardReady]);
+    if (settledSequence === data.sequence) {
+      onReady();
+      transition?.boardReady(gameId);
+    }
+  }, [settledSequence, data.sequence, gameId, transition?.boardReady, onReady]);
   useEffect(() => {
     if (
       presenting ||
@@ -104,27 +144,18 @@ function GameMatch({ gameId, data }: { gameId: Id<"games">; data: DuelData }) {
     gameId,
   ]);
   return (
-    <div className="duel-entry">
-      <div
-        className="duel-entry-board"
-        inert={presenting}
-        aria-hidden={presenting || undefined}
-      >
-        <DuelScreen
-          data={data}
-          practice={data.mode === "solo"}
-          onPlaybackSettled={setSettledSequence}
-          onHeroAbility={(abilityId, expectedUses, expectedTurn) =>
-            playHeroAbility({ gameId, abilityId, expectedUses, expectedTurn })
-          }
-          onPlayCard={(cardId, row, depth, expectedTurn) =>
-            playCard({ gameId, cardId, row, depth, expectedTurn })
-          }
-          onEndTurn={(expectedTurn) => endTurn({ gameId, expectedTurn })}
-          onSurrender={() => surrender({ gameId })}
-        />
-      </div>
-      {showIntro && <DuelIntro data={data} onComplete={completeIntro} />}
-    </div>
+    <DuelScreen
+      data={data}
+      practice={data.mode === "solo"}
+      onPlaybackSettled={setSettledSequence}
+      onHeroAbility={(abilityId, expectedUses, expectedTurn) =>
+        playHeroAbility({ gameId, abilityId, expectedUses, expectedTurn })
+      }
+      onPlayCard={(cardId, row, depth, expectedTurn) =>
+        playCard({ gameId, cardId, row, depth, expectedTurn })
+      }
+      onEndTurn={(expectedTurn) => endTurn({ gameId, expectedTurn })}
+      onSurrender={() => surrender({ gameId })}
+    />
   );
 }

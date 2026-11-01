@@ -37,12 +37,28 @@ export function DailyRewardsPanel({
 }: HubDailyRewardsProps & { id: string; onClose: () => void; now: number }) {
   const ready = board ? canClaimDailyReward(board, now) : false;
   const completed = board?.claimedDays === DAILY_REWARDS.length;
+  const nextClaimAt = board?.nextClaimAt;
+  const showCountdown = !ready && nextClaimAt != null;
+  const remaining = countdown(showCountdown ? nextClaimAt - now : 0);
 
   return (
     <HubPanel
       id={id}
       title="Récompenses"
       icon="rewards"
+      headerAside={
+        <div
+          className="daily-rewards-next"
+          data-visible={showCountdown || undefined}
+          aria-label="Prochain cadeau"
+          aria-hidden={!showCountdown}
+        >
+          <GameIcon kind="rewardClock" size={24} />
+          <time aria-label={`Prochain cadeau dans ${remaining}`}>
+            {remaining}
+          </time>
+        </div>
+      }
       closeLabel="Fermer les récompenses"
       className="hub-daily-rewards"
       onClose={onClose}
@@ -128,17 +144,6 @@ export function DailyRewardsPanel({
               );
             })}
           </ol>
-
-          {!ready && board.nextClaimAt !== null && (
-            <div className="daily-rewards-next" aria-label="Prochain cadeau">
-              <GameIcon kind="rewardClock" size={24} />
-              <time
-                aria-label={`Prochain cadeau dans ${countdown(board.nextClaimAt - now)}`}
-              >
-                {countdown(board.nextClaimAt - now)}
-              </time>
-            </div>
-          )}
           <span className="sr-only" role="status">
             {completed
               ? "7 récompenses récupérées"
