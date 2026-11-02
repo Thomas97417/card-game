@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { newFoundryCycle, FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_REFERENCE_SKILLS, type FoundrySkillId } from "@sylve/game/foundry";
 import { FoundrySkillTree } from "./foundry-skill-tree";
@@ -79,6 +79,76 @@ describe('l’arbre de référence', () => {
     fireEvent.click(screen.getByRole('button',{name:'Apprendre Appel des cochons'}));expect(onSkill).toHaveBeenCalledWith('piggy-spawn-amount');
     const region=screen.getByRole('region',{name:'Grand arbre de compétences'}),initial=Number(region.dataset.zoom);
     fireEvent.click(screen.getByRole('button',{name:'Zoomer dans l’arbre'}));expect(Number(region.dataset.zoom)).toBeGreaterThan(initial);
+  });
+});
+
+describe('la disponibilité et les informations des savoirs', () => {
+  const funded = () => ({ ...newFoundryCycle(), shards: 12, skills: ['smash-damage-1'] as FoundrySkillId[] });
+
+  it('highlights exactly affordable skills, then grays the remaining nodes after a confirmed purchase', () => {
+    const base = funded(), view = render(<FoundrySkillTree {...props} cycle={base} />);
+    const node = () => screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' });
+    expect(screen.getByRole('button', { name: 'Poigne de cuivre, acquis' }).dataset.purchaseState).toBe('owned');
+    for (const name of ['Marteau élargi', 'Main d’ambre', 'Souffle des fougères', 'Danse des braises']) expect(screen.getByRole('button', { name: `${name}, 12 éclats` }).dataset.purchaseState).toBe('available');
+    fireEvent.click(node()); fireEvent.click(screen.getByRole('button', { name: 'Apprendre Main d’ambre' }));
+    expect(onSkill).toHaveBeenCalledWith('fortune-loot-1');
+    expect(node().dataset.purchaseState).toBe('available');
+    const purchased = { ...base, shards: 0, skills: [...base.skills, 'fortune-loot-1'] as FoundrySkillId[] };
+    view.rerender(<FoundrySkillTree {...props} cycle={purchased} />);
+    expect(screen.getByRole('button', { name: 'Main d’ambre, acquis' }).dataset.purchaseState).toBe('owned');
+    const remaining = screen.getByRole('button', { name: 'Marteau élargi, 12 éclats' });
+    expect(remaining.dataset.purchaseState).toBe('unaffordable');
+    fireEvent.click(remaining);
+    expect((screen.getByRole('button', { name: 'Apprendre Marteau élargi' }) as HTMLButtonElement).disabled).toBe(true);
+    view.rerender(<FoundrySkillTree {...props} cycle={{ ...purchased, shards: 12 }} />);
+    expect(remaining.dataset.purchaseState).toBe('available');
+    expect((screen.getByRole('button', { name: 'Apprendre Marteau élargi' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('shows a hover card with the effect and price without selecting or purchasing the hovered skill', async () => {
+    render(<FoundrySkillTree {...props} cycle={funded()} />);
+    const node = screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' });
+    fireEvent.mouseEnter(node); fireEvent.mouseMove(node);
+    const card = await screen.findByRole('tooltip');
+    expect(within(card).getByRole('heading', { name: 'Main d’ambre' })).toBeTruthy();
+    expect(within(card).getByText('+35% d’éclats.')).toBeTruthy();
+    expect(within(card).getByText('12')).toBeTruthy();
+    expect(within(card).getByText('Disponible à l’achat')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Savoir sélectionné' })).getByRole('heading', { name: 'Poigne de cuivre' })).toBeTruthy();
+    expect(onSkill).not.toHaveBeenCalled();
+    fireEvent.keyDown(node, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+    expect(props.onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('keeps unaffordable nodes inspectable by keyboard and displays the missing currency', async () => {
+    const base = { ...funded(), shards: 11 };
+    const view = render(<FoundrySkillTree {...props} cycle={base} />);
+    const node = screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' });
+    expect(node.dataset.purchaseState).toBe('unaffordable');
+    act(() => node.focus());
+    const card = await screen.findByRole('tooltip');
+    expect(within(card).getByText('Il manque 1 éclat.')).toBeTruthy();
+    expect(node.getAttribute('aria-describedby')).toBe(card.id);
+    view.rerender(<FoundrySkillTree {...props} cycle={funded()} />);
+    expect(node.dataset.purchaseState).toBe('available');
+    expect(within(await screen.findByRole('tooltip')).getByText('Disponible à l’achat')).toBeTruthy();
+    view.rerender(<FoundrySkillTree {...props} cycle={base} />);
+    fireEvent.click(node);
+    expect((screen.getByRole('button', { name: 'Apprendre Main d’ambre' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(onSkill).not.toHaveBeenCalled();
+  });
+
+  it('does not advertise a purchase while the round or another purchase prevents learning', () => {
+    const base = funded(), view = render(<FoundrySkillTree {...props} inRound cycle={base} />);
+    const node = screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' });
+    expect(node.dataset.purchaseState).toBe('unavailable');
+    fireEvent.click(node);
+    expect((screen.getByRole('button', { name: 'Apprendre Main d’ambre' }) as HTMLButtonElement).disabled).toBe(true);
+    view.rerender(<FoundrySkillTree {...props} busy cycle={base} />);
+    expect(node.dataset.purchaseState).toBe('unavailable');
+    view.rerender(<FoundrySkillTree {...props} cycle={base} />);
+    expect(node.dataset.purchaseState).toBe('available');
   });
 });
 
