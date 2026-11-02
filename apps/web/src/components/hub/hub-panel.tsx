@@ -8,6 +8,7 @@ export function HubPanel({
   title,
   description,
   icon,
+  headerAside,
   closeLabel,
   onClose,
   className,
@@ -19,6 +20,7 @@ export function HubPanel({
   title: string;
   description?: string;
   icon: GameIconKind;
+  headerAside?: ReactNode;
   closeLabel: string;
   onClose: () => void;
   className: string;
@@ -52,10 +54,11 @@ export function HubPanel({
     >
       <header className="hub-panel-heading">
         <GameIcon kind={icon} size={44} />
-        <div>
+        <div className="hub-panel-title">
           <h2 id={headingId}>{title}</h2>
           {description && <p>{description}</p>}
         </div>
+        {headerAside}
         <button
           ref={closeButton}
           type="button"

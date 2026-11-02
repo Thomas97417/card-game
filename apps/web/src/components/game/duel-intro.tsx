@@ -41,23 +41,78 @@ export function rememberDuelIntro(gameId: string) {
 /** Reconnecting to a duel should take the player straight back to the board. */
 export function useDuelIntro(
   gameId: string,
-  data: Pick<GameView, "status" | "turn">,
+  data: Pick<GameView, "status" | "turn"> | undefined,
   alreadyPresenting = false,
 ) {
-  const [showIntro, setShowIntro] = useState(
-    () => !alreadyPresenting && shouldShowDuelIntro(gameId, data),
-  );
+  const eligible = !!data && shouldShowDuelIntro(gameId, data);
+  const [started, setStarted] = useState(() => !alreadyPresenting && eligible);
+  const [completed, setCompleted] = useState(false);
+  const showIntro =
+    !alreadyPresenting && !completed && (started || !data || eligible);
+
+  useEffect(() => {
+    if (!alreadyPresenting && eligible) setStarted(true);
+  }, [alreadyPresenting, eligible]);
+
   const completeIntro = useCallback(() => {
     rememberDuelIntro(gameId);
-    setShowIntro(false);
+    setCompleted(true);
   }, [gameId]);
   return { showIntro, completeIntro };
+}
+
+export function useDuelIntroAssets(
+  presentationId: string | number | undefined,
+  playerHeroId?: HeroId,
+  enemyHeroId?: HeroId,
+) {
+  const [loaded, setLoaded] = useState<string | null>(null);
+  const ownPortrait = heroPortrait(playerHeroId);
+  const enemyPortrait = heroPortrait(enemyHeroId, true);
+  const assetKey = presentationId === undefined
+    ? null
+    : JSON.stringify([presentationId, ownPortrait, enemyPortrait]);
+
+  useEffect(() => {
+    if (assetKey === null) return;
+    let mounted = true;
+    const images = [
+      "/art/duel-arena-overhead.webp",
+      ownPortrait,
+      enemyPortrait,
+    ].map((src) => {
+      const image = new Image();
+      const promise = new Promise<void>((resolve) => {
+        image.onload = image.onerror = () => resolve();
+        image.src = src;
+        if (image.complete) resolve();
+      });
+      return { image, promise };
+    });
+    if (images.every(({ image }) => image.complete)) {
+      setLoaded(assetKey);
+    } else {
+      void Promise.all(images.map(({ promise }) => promise)).then(() => {
+        if (mounted) setLoaded(assetKey);
+      });
+    }
+    return () => {
+      mounted = false;
+      images.forEach(({ image }) => {
+        image.onload = image.onerror = null;
+      });
+    };
+  }, [assetKey, ownPortrait, enemyPortrait]);
+
+  return assetKey !== null && loaded === assetKey;
 }
 
 const MODE_LABELS = {
   solo: "Duel solo",
   public: "Duel classé",
   private: "Duel amical",
+  practice: "Entraînement libre",
+  loading: "Préparation du duel",
 };
 
 export function DuelIntro({
@@ -71,7 +126,7 @@ export function DuelIntro({
 }: {
   data?: DuelIntroData;
   player?: IntroPlayer;
-  mode?: NonNullable<DuelData["mode"]>;
+  mode?: keyof typeof MODE_LABELS;
   ready?: boolean;
   message?: string;
   onCancel?: () => Promise<unknown>;
@@ -81,7 +136,9 @@ export function DuelIntro({
   const enemy: IntroPlayer = data
     ? data.players[1 - data.me]!
     : {
-        name: mode === "solo" ? "Gardien mécanique" : "Adversaire en approche",
+        name: mode === "solo" || mode === "practice"
+          ? "Gardien mécanique"
+          : "Adversaire en approche",
       };
   const [presented, setPresented] = useState(false);
   const started = useRef(Date.now());

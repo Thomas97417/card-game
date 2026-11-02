@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PracticeGame } from "@/components/game/practice-game";
-import { GameLoading } from "@/components/game/shared";
 import { useQuery } from "convex/react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import { useGameAuth } from "@/hooks/use-game-auth";
@@ -23,10 +22,10 @@ function PracticePage() {
   const { deck } = Route.useSearch();
   const { isAuthenticated, isLoading } = useGameAuth();
   const hero = useQuery(api.collection.hero, isAuthenticated ? {} : "skip");
-  if (isLoading || (isAuthenticated && !hero)) return <GameLoading />;
   return (
     <PracticeGame
       key={deck ?? "starter"}
+      pending={isLoading || (isAuthenticated && !hero)}
       deck={deck}
       heroId={hero?.heroId}
       heroLevel={hero?.level}

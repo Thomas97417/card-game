@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_DECK,
   endTurn,
@@ -21,7 +21,7 @@ import {
   createPracticeGame,
 } from "@sylve/game/practice";
 import { DuelScreen } from "./duel-screen";
-import { GameLoading } from "./shared";
+import { DuelIntro, useDuelIntroAssets } from "./duel-intro";
 import { COMBAT_TIMING } from "./combat-timing";
 
 /** The session is local; no account, multiplayer lock or server mutation is needed. */
@@ -29,13 +29,16 @@ export function PracticeGame({
   deck,
   heroId,
   heroLevel,
+  pending = false,
 }: {
   deck?: string;
   heroId?: HeroId;
   heroLevel?: number;
+  pending?: boolean;
 }) {
-  const [initial, setInitial] = useState<GameState | null>(null);
-  const [sessionId, setSessionId] = useState(0);
+  const [round, setRound] = useState<{ initial: GameState; id: number } | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
+  const [boardReady, setBoardReady] = useState(false);
   const deckIds = useMemo(() => {
     try {
       return validateDeck(deck?.split(",") ?? DEFAULT_DECK).map(
@@ -45,36 +48,76 @@ export function PracticeGame({
       return [...DEFAULT_DECK];
     }
   }, [deck]);
-  function restart() {
-    setInitial(
-      createPracticeGame(deckIds, Date.now(), Math.random, {
-        heroId,
-        heroLevel,
-      }),
-    );
-    setSessionId((id) => id + 1);
-  }
-  useEffect(() => {
-    setInitial(
-      createPracticeGame(deckIds, Date.now(), Math.random, {
-        heroId,
-        heroLevel,
-      }),
-    );
-    setSessionId((id) => id + 1);
+  const restart = useCallback(() => {
+    const initial = createPracticeGame(deckIds, Date.now(), Math.random, {
+      heroId,
+      heroLevel,
+    });
+    setRound((current) => ({ initial, id: current ? current.id + 1 : 0 }));
+    setBoardReady(false);
+    setShowIntro(true);
   }, [deckIds, heroId, heroLevel]);
-  if (!initial) return <GameLoading />;
+  useEffect(() => {
+    if (!pending) restart();
+  }, [pending, restart]);
+  const data = useMemo(
+    () => round ? playerView(round.initial, PRACTICE_PLAYER_ID) : undefined,
+    [round],
+  );
+  const presenting = pending || !round || showIntro;
+  const onReady = useCallback(() => setBoardReady(true), []);
+  const completeIntro = useCallback(() => setShowIntro(false), []);
+  const assetsReady = useDuelIntroAssets(
+    presenting ? round?.id ?? 0 : undefined,
+    data?.players[data.me]?.heroId ?? heroId,
+    data?.players[1 - data.me]?.heroId,
+  );
+  const ready = !pending && !!round && boardReady && assetsReady;
+
   return (
-    <PracticeMatch key={sessionId} initial={initial} onRestart={restart} />
+    <div className="duel-entry">
+      <div
+        className="duel-entry-board"
+        inert={presenting}
+        aria-hidden={presenting || undefined}
+      >
+        {!pending && round && (
+          <PracticeMatch
+            key={round.id}
+            initial={round.initial}
+            onRestart={restart}
+            presenting={presenting}
+            onReady={onReady}
+          />
+        )}
+      </div>
+      {presenting && (
+        <DuelIntro
+          key={round?.id ?? 0}
+          data={data}
+          player={{ name: "Toi", heroId, heroLevel }}
+          mode="practice"
+          ready={ready}
+          message={ready
+            ? "Que l’entraînement commence"
+            : "Préparation de l’entraînement…"}
+          onComplete={completeIntro}
+        />
+      )}
+    </div>
   );
 }
 
 function PracticeMatch({
   initial,
   onRestart,
+  presenting,
+  onReady,
 }: {
   initial: GameState;
   onRestart: () => void;
+  presenting: boolean;
+  onReady: () => void;
 }) {
   const [session, setSession] = useState({
     state: initial,
@@ -83,6 +126,9 @@ function PracticeMatch({
   });
   const current = useRef(session);
   const [settledSequence, setSettledSequence] = useState(-1);
+  useEffect(() => {
+    if (settledSequence === session.state.sequence) onReady();
+  }, [settledSequence, session.state.sequence, onReady]);
   const data = useMemo(
     () => ({
       ...playerView(session.state, PRACTICE_PLAYER_ID),
@@ -114,6 +160,7 @@ function PracticeMatch({
   }
   useEffect(() => {
     if (
+      presenting ||
       session.state.status !== "active" ||
       session.state.activePlayer !== 1 ||
       settledSequence !== session.state.sequence
@@ -166,7 +213,7 @@ function PracticeMatch({
       );
     }, COMBAT_TIMING.computerThink);
     return () => window.clearTimeout(timer);
-  }, [session, settledSequence]);
+  }, [session, settledSequence, presenting]);
   return (
     <DuelScreen
       data={data}
