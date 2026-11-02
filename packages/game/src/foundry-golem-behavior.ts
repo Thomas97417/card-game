@@ -1,8 +1,10 @@
 import { FOUNDRY, RELICS, type FoundryRound, type FoundryRelic, type FoundryInput, type FoundryFrame } from './foundry';
 import { FOUNDRY_GOLEMS as G, FOUNDRY_GOLEM_RULES as R } from './foundry-golems';
+import { moveBankPigs } from './foundry-pig-motion';
 
 export interface GolemHit {target:FoundryRelic;damage:number;critical:false}
 export function moveFoundryGolems(state:FoundryRound,input:FoundryInput) {
+  if (state.version >= 15) { moveBankPigs(state, input); return; }
   for(const target of state.targets) {
     if(!target.golem)continue;
     const spec=G[target.golem], time=state.tick*FOUNDRY.stepMs/1000;

@@ -35,12 +35,12 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 const disabled = (element: HTMLElement) => (element as HTMLButtonElement).disabled;
 async function ready() { await waitFor(() => expect(disabled(screen.getByRole("button", { name: "Commencer une manche" }))).toBe(false)); }
-describe("la fonderie à l’écran", () => {
+describe("la banque à l’écran", () => {
   it("shows all seven source hammers, their source prices and the new deposit rewards", async () => {
     board = { ...board, progress: { ...board.progress!, mastery: 500, cycle: { ...newFoundryCycle(), shards: 10000 } } };
     render(<FoundryPage />); await ready();
-    fireEvent.click(screen.getByRole("button", { name: "Guide de la fonderie" }));
-    expect(screen.getByText(/La manche commence avec 4 golems/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Guide de la banque" }));
+    expect(screen.getByText(/La manche commence avec 4 cochons/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Fermer la fenêtre" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
@@ -109,7 +109,7 @@ describe("la fonderie à l’écran", () => {
     fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(screen.getByRole("button", { name: "Maillet de cuivre équipé" })).toBeTruthy();
     expect(disabled(screen.getByRole("button", { name: "Acheter Brise-roche — 80 éclats" }))).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
+    fireEvent.click(screen.getByRole("button", { name: "Prêt pour le comptoir" }));
     const state = createFoundryRound(11, legacyCycle(2), "mallet");
     board = { ...board, round: { _id: "active" as Id<"foundryRounds">, _creationTime: 1000, ownerId: "alice", cycleNumber: 2, requestId: "active", startedAt: 1000, finished: false, batches: [], state } }; view.rerender(<FoundryPage />);
     expect(screen.queryByRole("button", { name: "Choisir le marteau" })).toBeNull();
@@ -160,12 +160,12 @@ describe("la fonderie à l’écran", () => {
     expect(disabled(screen.getByRole("button", { name: /Marteau de résonance/ }))).toBe(true);
     expect(screen.queryByRole("button", { name: /La Dryade|La Féline|Le Forgeron/ })).toBeNull();
     expect(screen.queryByText("Un compagnon à tes côtés")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Prêt pour la forge" }));
+    fireEvent.click(screen.getByRole("button", { name: "Prêt pour le comptoir" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
   it("never starts a round when WebGL is unavailable", async () => {
     vi.mocked(createFoundryScene).mockImplementation(() => { throw new Error("WebGL 2"); });
-    render(<FoundryPage />); await screen.findByText("L’établi 3D est indisponible");
+    render(<FoundryPage />); await screen.findByText("Le comptoir 3D est indisponible");
     expect(screen.queryByRole("button", { name: "Commencer une manche" })).toBeNull();
     expect(mutations.get("foundry:startRound")).not.toHaveBeenCalled();
   });
@@ -251,16 +251,16 @@ function legacyCycle(number = 1, seed?: number): ReturnType<typeof newFoundryCyc
 describe('la poursuite de la forge',()=>{
   it('offers freeplay after the fifth delivery and dispatches the authoritative continuation',async()=>{
     board={...board,progress:{...board.progress!,cycle:{...newFoundryCycle(),status:'completed',orderIndex:5,shards:50000000}}};
-    render(<FoundryPage/>);await waitFor(()=>expect(screen.getByRole('button',{name:'Poursuivre en forge libre'})).toBeTruthy());
-    await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'Poursuivre en forge libre'}));});
+    render(<FoundryPage/>);await waitFor(()=>expect(screen.getByRole('button',{name:'Poursuivre au comptoir libre'})).toBeTruthy());
+    await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'Poursuivre au comptoir libre'}));});
     expect(mutations.get('foundry:continueChantier')).toHaveBeenCalledWith({expectedOwnerId:'alice',revision:0,cycleNumber:1});
   });
   it('allows another round in freeplay, hides invoices and keeps the complete tree available',async()=>{
     board={...board,progress:{...board.progress!,cycle:{...newFoundryCycle(),orderIndex:5,freeplay:true,freeplayRounds:3,coinBank:1200,coinCount:6}}};
-    render(<FoundryPage/>);await ready();expect(screen.getAllByRole('heading',{name:'La forge libre'}).length).toBeGreaterThan(0);expect(screen.queryByRole('button',{name:/Livrer la commande/})).toBeNull();
+    render(<FoundryPage/>);await ready();expect(screen.getAllByRole('heading',{name:'Le comptoir libre'}).length).toBeGreaterThan(0);expect(screen.queryByRole('button',{name:/Livrer la commande/})).toBeNull();
     expect(screen.getByTitle(/1.200 éclats en réserve/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button',{name:'Guide de la fonderie'}));
-    expect(screen.getByText(/La manche commence avec 4 golems/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button',{name:'Guide de la banque'}));
+    expect(screen.getByText(/La manche commence avec 4 cochons/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:'Fermer la fenêtre'}));
     await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
     fireEvent.click(screen.getByRole('button',{name:'Ouvrir l’arbre de compétences'}));expect(screen.getByRole('button',{name:/Arbre de compétences 0 \/ 211/})).toBeTruthy();

@@ -2,9 +2,9 @@ import * as THREE from "three";
 import { FOUNDRY, RELICS, FOUNDRY_GOLEMS, LEGACY_GOLEM, type FoundryEffect, type FoundryFrame, type FoundryInput, type FoundryRelic, type FoundryRound } from "@sylve/game/foundry";
 
 import { createFoundryArt } from "./foundry-art";
-import type { FoundryGolemArt } from './foundry-golem-art';
+import type { FoundryPigArt } from './foundry-pig-art';
 import { FOUNDRY_IMPACT_DELAY_MS, poseFoundryHammer } from "./foundry-hammer";
-import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim, pickFoundryGolem } from "./foundry-projection";
+import { aimAtFoundry, fitFoundryCamera, foundryViewport, nudgeFoundryAim } from "./foundry-projection";
 import { createFoundryTechniqueArt } from "./foundry-technique-art";
 import { createFoundryCombatText, mergeFoundryImpacts } from "./foundry-combat-text";
 
@@ -70,10 +70,9 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xffdf76, transparent: true, opacity: 0.7, depthWrite: false });
   const extraMaterial = new THREE.MeshBasicMaterial({ color: 0x93ddd4, transparent: true, opacity: 0.65, depthWrite: false });
   materials.add(iceMaterial); materials.add(burnMaterial); materials.add(glowMaterial); materials.add(extraMaterial);
-  const relics = new Map<number, { group: THREE.Group; model: FoundryGolemArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
+  const relics = new Map<number, { group: THREE.Group; model: FoundryPigArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
   function makeRelic(t: FoundryRelic) {
-    const group = new THREE.Group(); const model = art.golem(t.golem??LEGACY_GOLEM[t.kind]);
-    model.root.userData.foundryTargetId=t.id;
+    const group = new THREE.Group(); const model = art.pig(t.golem??LEGACY_GOLEM[t.kind]);
     const ice = new THREE.Mesh(ringGeo, iceMaterial); const burn = new THREE.Mesh(ringGeo, burnMaterial);
     ice.rotation.x = burn.rotation.x = -Math.PI / 2; ice.position.y = 0.04; burn.position.y = 0.07;
     ice.scale.setScalar(RELICS[t.kind].radius + 0.04); burn.scale.setScalar(RELICS[t.kind].radius * 0.8);
@@ -135,7 +134,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
     wave.mat.color.setHex(event.kind === "freeze" ? 0x9bd9e2 : 0xdfc18b); wave.ring.visible = true;
   }
   const queued: { frame: FoundryFrame; at: number }[] = [];
-  let strikeAt = -1000; let strikeAim: FoundryInput | null = null; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0; let wasFrozen = false; let freezeVisualTime = 0;
+  let strikeAt = -1000; let shakeAt = -1000; let destroyed = false; let lastTime = 0; let visualSeconds = 0; let wasFrozen = false; let freezeVisualTime = 0;
   const textPoint = new THREE.Vector3();
   const resize = () => {
     canvasWidth = Math.max(1, host.clientWidth); canvasHeight = Math.max(1, host.clientHeight);
@@ -184,10 +183,10 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         // Independent visual easing would let two separated discs overlap.
         item.group.position.set(t.x, 0, t.z); item.group.scale.setScalar(round.version >= 11 ? FOUNDRY.fullRelicScale : 1);
         item.model.root.position.y = kick;
-        const heading = Math.atan2(t.vx,t.vz);
+        const heading = t.vx || t.vz ? Math.atan2(t.vx,t.vz) : t.motion ? Math.PI / 2 - t.motion.heading : item.model.root.rotation.y;
         item.model.root.rotation.set(0,heading,kick);
         item.model.damage.visible = t.hp < t.maxHp * 0.75;
-        item.model.animate(motion.matches ? 0 : modelTime,{speed:motion.matches?0:Math.hypot(t.vx,t.vz),phase:t.phase,raging:(t.rageUntil??0)>round.tick,stolen:t.stolen??0});
+        item.model.animate(motion.matches ? 0 : modelTime,{speed:motion.matches?0:Math.hypot(t.vx,t.vz),phase:t.phase,raging:(t.rageUntil??0)>round.tick,stolen:t.stolen??0,distance:t.motion?.distance});
         item.ice.visible = frozen; item.burn.visible = burning.has(t.id); item.glow.visible = !!t.glowing || !!t.bonusLoot; item.glow.material = t.glowing ? glowMaterial : extraMaterial;
       }
       bombCores.forEach((core,index)=>{const bomb=round.golems?.bombs[index];core.visible=!!bomb;if(bomb){core.position.set(bomb.x,0,bomb.z);const remaining=Math.max(0,bomb.at-round.tick)/40;const pulse=motion.matches?1:1+Math.sin(visualSeconds*(10+(1-remaining)*20))*.12;core.scale.setScalar(pulse);}});
@@ -196,7 +195,7 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       hammer.root.visible = round.version >= 5 || aim.active || !active;
       hammer.tool(round.tool);
       const elapsed = time - strikeAt;
-      poseFoundryHammer(hammer, strikeAim && elapsed <= FOUNDRY_IMPACT_DELAY_MS + 50 ? strikeAim : aim, elapsed);
+      poseFoundryHammer(hammer, aim, elapsed);
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]!;
         if (p.life > 0) {
@@ -242,18 +241,12 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   }
   return {
     aim(clientX, clientY) {
-      const bounds=host.getBoundingClientRect();
-      const current=options.state();
-      const roots=current.targets.flatMap(t=>{const item=relics.get(t.id);return item?[item.model.root]:[];});
-      const picked=pickFoundryGolem(clientX,clientY,bounds,viewport,camera,roots);
-      const target=picked&&current.targets.find(t=>t.id===picked.userData.foundryTargetId);
-      if(target)return {x:target.x,z:target.z,active:true};
-      return aimAtFoundry(clientX, clientY, bounds, viewport, camera);
+      return aimAtFoundry(clientX, clientY, host.getBoundingClientRect(), viewport, camera);
     },
     nudge(input, dx, dz) { return nudgeFoundryAim(input, dx, dz, viewport.portrait); },
     impact(frame) {
       if (!frame.strike && !frame.impacts.length && !frame.effects?.length) return;
-      const now = performance.now(); if (frame.strike) { strikeAt = now; strikeAim = frame.strikePosition ? { ...frame.strikePosition, active: true } : null; }
+      const now = performance.now(); if (frame.strike) strikeAt = now;
       queued.push({ frame, at: now + (frame.strike || options.state().version >= 11 ? FOUNDRY_IMPACT_DELAY_MS : 0) }); queued.sort((a, b) => a.at - b.at);
     },
     destroy() {

@@ -24,7 +24,7 @@ export const foundryCycle = v.object({
 });
 export const foundrySummary = v.object({ shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), seconds: v.number() });
 export const foundryRound = v.object({
-  version: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4), v.literal(5), v.literal(6), v.literal(7), v.literal(8), v.literal(9), v.literal(10), v.literal(11), v.literal(12), v.literal(13), v.literal(14)), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
+  version: v.union(v.literal(1), v.literal(2), v.literal(3), v.literal(4), v.literal(5), v.literal(6), v.literal(7), v.literal(8), v.literal(9), v.literal(10), v.literal(11), v.literal(12), v.literal(13), v.literal(14), v.literal(15)), rng: v.number(), nextId: v.number(), tick: v.number(), concentration: v.number(),
   stats: v.object({ damage: v.number(), interval: v.number(), radius: v.number(), critical: v.number(), loot: v.number(), concentration: v.number(), stamina: v.optional(v.number()) }),
   tool: foundryTool, assistant: v.optional(foundryAssistant), nextStrike: v.number(), shards: v.number(), broken: v.number(), hits: v.number(), criticals: v.number(), ended: v.boolean(),
   brokenByKind: v.optional(v.object({ urn: v.optional(v.number()), runner: v.optional(v.number()), geode: v.optional(v.number()), chaos: v.optional(v.number()), spring: v.optional(v.number()) })),
@@ -35,5 +35,6 @@ export const foundryRound = v.object({
     burns: v.array(v.object({ id: v.number(), until: v.number(), next: v.number() })) })),
   targets: v.array(v.object({ id: v.number(), kind: v.union(v.literal("urn"), v.literal("geode"), v.literal("runner"), v.literal("spring"), v.literal("chaos")),
     x: v.number(), z: v.number(), hp: v.number(), maxHp: v.number(), vx: v.number(), vz: v.number(), phase: v.number(), glowing: v.optional(v.boolean()), bonusLoot: v.optional(v.number()),
-    golem:v.optional(golemId),rageUntil:v.optional(v.number()),nextAbility:v.optional(v.number()),stolen:v.optional(v.number()),escapeAt:v.optional(v.number()) })),
+    golem:v.optional(golemId),rageUntil:v.optional(v.number()),nextAbility:v.optional(v.number()),stolen:v.optional(v.number()),escapeAt:v.optional(v.number()),
+    motion: v.optional(v.object({ mode: v.union(v.literal('walk'), v.literal('zigzag'), v.literal('idle'), v.literal('patrol')), until: v.number(), rng: v.number(), heading: v.number(), speed: v.number(), amplitude: v.number(), frequency: v.number(), distance: v.number() })) })),
 });

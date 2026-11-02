@@ -1,7 +1,9 @@
 import { stepFoundryComplete, completeStrikeCost } from './foundry-complete';
 import { FOUNDRY_POPULATION, FOUNDRY_PACING, FOUNDRY_RELIC_PROFILES } from './foundry-population';
 import { FOUNDRY_GOLEMS, foundryGolemPool, type FoundryGolemId } from './foundry-golems';
+import { reflectBankPig, type BankPigMotion } from './foundry-pig-motion';
 export * from './foundry-golems';
+export * from './foundry-pig-motion';
 export * from './foundry-population';
 import { TOOLS, foundryTools, foundryToolDefinition, legacyFoundryTool, type FoundryTool } from "./foundry-tools";
 export * from "./foundry-tools";
@@ -12,7 +14,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 14, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 15, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, fullMaxTargets: 32, fullRelicScale: 0.8, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -51,10 +53,10 @@ export interface FoundryCycle {
 }
 export interface FoundryStats { damage: number; interval: number; radius: number; critical: number; loot: number; concentration: number; stamina?: number }
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean; bonusLoot?: number;
-  golem?: FoundryGolemId; rageUntil?:number; nextAbility?:number; stolen?:number; escapeAt?:number }
+  golem?: FoundryGolemId; rageUntil?:number; nextAbility?:number; stolen?:number; escapeAt?:number; motion?: BankPigMotion }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; nextStrike: number;
   /** Older saved rounds keep their original stats and companion metadata. */
   assistant?: "smith" | "dryad" | "feline";
@@ -172,7 +174,7 @@ function spawn(state: FoundryRound, forcedGolem?:FoundryGolemId): FoundryRelic {
   const angle = random(state) * Math.PI * 2;
   // Persist velocities so pauses, retries and server replays use the same path.
   // Saved rounds finish with their original movement and collision rules.
-  const speed = golem?FOUNDRY_GOLEMS[golem].speed:state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
+  const speed = state.version >= 15 ? 0 : golem?FOUNDRY_GOLEMS[golem].speed:state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
   const hp = golem?FOUNDRY_GOLEMS[golem].hp:state.version >= 13 && kind !== "spring" ? FOUNDRY_PACING.hp[kind] : state.version >= 12 && kind !== "spring" ? FOUNDRY_RELIC_PROFILES[kind].hp : state.version >= 4 ? Math.round(RELICS[kind].hp * (state.rogue?.pressure ?? 1)) : RELICS[kind].hp;
   const relic: FoundryRelic = { id: state.nextId++, kind, x, z, hp, maxHp: hp,
     ...(golem?{golem}:{}),
@@ -190,10 +192,10 @@ function spawn(state: FoundryRound, forcedGolem?:FoundryGolemId): FoundryRelic {
 function confineRelic(t: FoundryRelic, scale = 1) {
   const radius = RELICS[t.kind].radius * scale;
   const limitX = FOUNDRY.width / 2 - radius, limitZ = FOUNDRY.depth / 2 - radius;
-  if (t.x < -limitX) { t.x = -limitX; if (t.vx < 0) t.vx = -t.vx; }
-  if (t.x > limitX) { t.x = limitX; if (t.vx > 0) t.vx = -t.vx; }
-  if (t.z < -limitZ) { t.z = -limitZ; if (t.vz < 0) t.vz = -t.vz; }
-  if (t.z > limitZ) { t.z = limitZ; if (t.vz > 0) t.vz = -t.vz; }
+  if (t.x < -limitX) { t.x = -limitX; if (t.vx < 0) t.vx = -t.vx; reflectBankPig(t); }
+  if (t.x > limitX) { t.x = limitX; if (t.vx > 0) t.vx = -t.vx; reflectBankPig(t); }
+  if (t.z < -limitZ) { t.z = -limitZ; if (t.vz < 0) t.vz = -t.vz; reflectBankPig(t); }
+  if (t.z > limitZ) { t.z = limitZ; if (t.vz > 0) t.vz = -t.vz; reflectBankPig(t); }
 }
 /** Elastic disc contacts, in stable target order, with no extra random draws. */
 function resolveRelicContacts(targets: FoundryRelic[], bounce = true, scale = 1) {
@@ -236,7 +238,7 @@ export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: Foun
   const stats = foundryStats(cycle, tool, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
-  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 14 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 15 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
     ...((cycle.economy ?? 0) >= 6 ? { brokenByKind: {} } : {}),
     ...((cycle.economy ?? 0) >= 6 ? { golems:{broken:{},bombs:[],reinforcements:0,escaped:0,lost:0,recovered:0} } : {}),

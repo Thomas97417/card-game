@@ -1,0 +1,587 @@
+{
+  "source": {
+    "url": "https://billsmustbepaid.rikegames.com/",
+    "version": "0.2.7.5.2",
+    "checkedOn": "2026-11-02",
+    "asset": "Build/0dbfd54c24ae081a00bffe3dc0bd9e21.data.br",
+    "sha256": "700121867c86e11d78b1a8199e300d4c4d704021c972dc76fc250aacee5c4248",
+    "method": "Serialized numeric fields read with UnityPy, field order from the public IL2CPP metadata (version 39). No original code, meshes, textures or icons imported."
+  },
+  "engineVersion": 15,
+  "global": {
+    "pathId": 1609,
+    "file": "sharedassets1.assets",
+    "fields": {
+      "walkSpeedMin": {
+        "offset": 44,
+        "value": 1.0
+      },
+      "walkSpeedMax": {
+        "offset": 48,
+        "value": 10.0
+      },
+      "zigzagSpeedMin": {
+        "offset": 52,
+        "value": 1.0
+      },
+      "zigzagSpeedMax": {
+        "offset": 56,
+        "value": 10.0
+      },
+      "zigzagAmplitudeMin": {
+        "offset": 60,
+        "value": 1.0
+      },
+      "zigzagAmplitudeMax": {
+        "offset": 64,
+        "value": 7.0
+      },
+      "zigzagFrequencyMin": {
+        "offset": 68,
+        "value": 1.5
+      },
+      "zigzagFrequencyMax": {
+        "offset": 72,
+        "value": 4.0
+      },
+      "idleDurationMin": {
+        "offset": 76,
+        "value": 0.5
+      },
+      "idleDurationMax": {
+        "offset": 80,
+        "value": 3.0
+      },
+      "behaviorSwitchMinTime": {
+        "offset": 84,
+        "value": 1.0
+      },
+      "behaviorSwitchMaxTime": {
+        "offset": 88,
+        "value": 5.0
+      },
+      "fleeDetectionRadius": {
+        "offset": 92,
+        "value": 5.0
+      },
+      "fleeSpeed": {
+        "offset": 96,
+        "value": 10.0
+      },
+      "fleeAcceleration": {
+        "offset": 100,
+        "value": 10.0
+      },
+      "fleeDecay": {
+        "offset": 104,
+        "value": 5.0
+      },
+      "movementAcceleration": {
+        "offset": 108,
+        "value": 8.0
+      },
+      "piggyAvoidanceRadius": {
+        "offset": 112,
+        "value": 4.0
+      },
+      "separationRadius": {
+        "offset": 116,
+        "value": 2.25
+      },
+      "separationStrength": {
+        "offset": 120,
+        "value": 5.0
+      },
+      "separationSwirlStrength": {
+        "offset": 124,
+        "value": 7.0
+      },
+      "anticipationTime": {
+        "offset": 128,
+        "value": 2.0
+      },
+      "anticipationStrength": {
+        "offset": 132,
+        "value": 5.0
+      },
+      "anticipationRadius": {
+        "offset": 136,
+        "value": 3.5
+      },
+      "crowdThreshold": {
+        "offset": 140,
+        "value": 2
+      },
+      "crowdAvoidanceStrength": {
+        "offset": 144,
+        "value": 6.0
+      },
+      "crowdDetectionRadius": {
+        "offset": 148,
+        "value": 3.0
+      },
+      "overlapSolverIterations": {
+        "offset": 152,
+        "value": 4
+      },
+      "overlapSolverStrength": {
+        "offset": 156,
+        "value": 0.75
+      },
+      "roamRetargetTimeMin": {
+        "offset": 160,
+        "value": 3.0
+      },
+      "roamRetargetTimeMax": {
+        "offset": 164,
+        "value": 6.0
+      },
+      "roamTargetReachedDistance": {
+        "offset": 168,
+        "value": 2.0
+      },
+      "hopHeight": {
+        "offset": 172,
+        "value": 0.5
+      },
+      "hopTiltAngle": {
+        "offset": 176,
+        "value": 3.0
+      },
+      "hopVelocityThreshold": {
+        "offset": 180,
+        "value": 0.10000000149011612
+      },
+      "hopStride": {
+        "offset": 184,
+        "value": 0.10000000149011612
+      },
+      "maxActivePiggies": {
+        "offset": 188,
+        "value": 4
+      },
+      "prewarmCount": {
+        "offset": 192,
+        "value": 15
+      },
+      "boundsMargin": {
+        "offset": 196,
+        "value": 0.5
+      },
+      "baseHitRadius": {
+        "offset": 200,
+        "value": 0.75
+      }
+    }
+  },
+  "bounds": {
+    "file": "level1",
+    "colliderPathId": 3143,
+    "gameObjectName": "SpawnArea",
+    "localSize": [
+      1,
+      1,
+      1
+    ],
+    "localScale": [
+      41.900001525878906,
+      1,
+      22.020000457763672
+    ],
+    "parentScale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "profiles": {
+    "normalito": {
+      "objectName": "PiggyType_Normalito",
+      "pathId": 1617,
+      "file": "sharedassets1.assets",
+      "fields": {
+        "primaryBehavior": {
+          "offset": 244,
+          "value": 0
+        },
+        "walkSpeedMultiplier": {
+          "offset": 248,
+          "value": 0.5
+        },
+        "zigzagSpeedMultiplier": {
+          "offset": 252,
+          "value": 1.0
+        },
+        "zigzagAmplitudeMultiplier": {
+          "offset": 256,
+          "value": 1.0
+        },
+        "zigzagFrequencyMultiplier": {
+          "offset": 260,
+          "value": 1.0
+        },
+        "walkWeight": {
+          "offset": 264,
+          "value": 1.5
+        },
+        "zigzagWeight": {
+          "offset": 268,
+          "value": 0.5
+        },
+        "idleWeight": {
+          "offset": 272,
+          "value": 0.5
+        },
+        "idleDurationMinOverride": {
+          "offset": 276,
+          "value": 0.0
+        },
+        "idleDurationMaxOverride": {
+          "offset": 280,
+          "value": 0.0
+        },
+        "behaviorSwitchMinTimeOverride": {
+          "offset": 284,
+          "value": 0.0
+        },
+        "behaviorSwitchMaxTimeOverride": {
+          "offset": 288,
+          "value": 0.0
+        },
+        "canFlee": {
+          "offset": 292,
+          "value": false
+        },
+        "fleeSpeedMultiplier": {
+          "offset": 296,
+          "value": 1.0
+        },
+        "fleeDetectionMultiplier": {
+          "offset": 300,
+          "value": 1.0
+        },
+        "fleeAccelerationMultiplier": {
+          "offset": 304,
+          "value": 1.0
+        },
+        "patrolSpeedMultiplier": {
+          "offset": 364,
+          "value": 1.0
+        }
+      }
+    },
+    "the-tourist": {
+      "objectName": "PiggyType_ElGringo",
+      "pathId": 1613,
+      "file": "sharedassets1.assets",
+      "fields": {
+        "primaryBehavior": {
+          "offset": 240,
+          "value": 2
+        },
+        "walkSpeedMultiplier": {
+          "offset": 244,
+          "value": 0.30000001192092896
+        },
+        "zigzagSpeedMultiplier": {
+          "offset": 248,
+          "value": 0.30000001192092896
+        },
+        "zigzagAmplitudeMultiplier": {
+          "offset": 252,
+          "value": 0.6000000238418579
+        },
+        "zigzagFrequencyMultiplier": {
+          "offset": 256,
+          "value": 0.5
+        },
+        "walkWeight": {
+          "offset": 260,
+          "value": 1.5
+        },
+        "zigzagWeight": {
+          "offset": 264,
+          "value": 0.5
+        },
+        "idleWeight": {
+          "offset": 268,
+          "value": 1.0
+        },
+        "idleDurationMinOverride": {
+          "offset": 272,
+          "value": 1.5
+        },
+        "idleDurationMaxOverride": {
+          "offset": 276,
+          "value": 6.0
+        },
+        "behaviorSwitchMinTimeOverride": {
+          "offset": 280,
+          "value": 1.0
+        },
+        "behaviorSwitchMaxTimeOverride": {
+          "offset": 284,
+          "value": 4.0
+        },
+        "canFlee": {
+          "offset": 288,
+          "value": false
+        },
+        "fleeSpeedMultiplier": {
+          "offset": 292,
+          "value": 0.4000000059604645
+        },
+        "fleeDetectionMultiplier": {
+          "offset": 296,
+          "value": 0.800000011920929
+        },
+        "fleeAccelerationMultiplier": {
+          "offset": 300,
+          "value": 0.699999988079071
+        },
+        "patrolSpeedMultiplier": {
+          "offset": 360,
+          "value": 1.0
+        }
+      }
+    },
+    "woody": {
+      "objectName": "PiggyType_Woody",
+      "pathId": 1621,
+      "file": "sharedassets1.assets",
+      "fields": {
+        "primaryBehavior": {
+          "offset": 240,
+          "value": 0
+        },
+        "walkSpeedMultiplier": {
+          "offset": 244,
+          "value": 0.30000001192092896
+        },
+        "zigzagSpeedMultiplier": {
+          "offset": 248,
+          "value": 0.30000001192092896
+        },
+        "zigzagAmplitudeMultiplier": {
+          "offset": 252,
+          "value": 0.5
+        },
+        "zigzagFrequencyMultiplier": {
+          "offset": 256,
+          "value": 0.5
+        },
+        "walkWeight": {
+          "offset": 260,
+          "value": 2.5
+        },
+        "zigzagWeight": {
+          "offset": 264,
+          "value": 0.30000001192092896
+        },
+        "idleWeight": {
+          "offset": 268,
+          "value": 0.10000000149011612
+        },
+        "idleDurationMinOverride": {
+          "offset": 272,
+          "value": 0.0
+        },
+        "idleDurationMaxOverride": {
+          "offset": 276,
+          "value": 0.0
+        },
+        "behaviorSwitchMinTimeOverride": {
+          "offset": 280,
+          "value": 0.0
+        },
+        "behaviorSwitchMaxTimeOverride": {
+          "offset": 284,
+          "value": 0.0
+        },
+        "canFlee": {
+          "offset": 288,
+          "value": false
+        },
+        "fleeSpeedMultiplier": {
+          "offset": 292,
+          "value": 0.5
+        },
+        "fleeDetectionMultiplier": {
+          "offset": 296,
+          "value": 0.5
+        },
+        "fleeAccelerationMultiplier": {
+          "offset": 300,
+          "value": 0.5
+        },
+        "patrolSpeedMultiplier": {
+          "offset": 360,
+          "value": 1.0
+        }
+      }
+    },
+    "pinata": {
+      "objectName": "PiggyType_Pinata",
+      "pathId": 1618,
+      "file": "sharedassets1.assets",
+      "fields": {
+        "primaryBehavior": {
+          "offset": 256,
+          "value": 0
+        },
+        "walkSpeedMultiplier": {
+          "offset": 260,
+          "value": 1.0
+        },
+        "zigzagSpeedMultiplier": {
+          "offset": 264,
+          "value": 1.0
+        },
+        "zigzagAmplitudeMultiplier": {
+          "offset": 268,
+          "value": 1.0
+        },
+        "zigzagFrequencyMultiplier": {
+          "offset": 272,
+          "value": 1.0
+        },
+        "walkWeight": {
+          "offset": 276,
+          "value": 1.0
+        },
+        "zigzagWeight": {
+          "offset": 280,
+          "value": 0.5
+        },
+        "idleWeight": {
+          "offset": 284,
+          "value": 0.5
+        },
+        "idleDurationMinOverride": {
+          "offset": 288,
+          "value": 0.0
+        },
+        "idleDurationMaxOverride": {
+          "offset": 292,
+          "value": 0.0
+        },
+        "behaviorSwitchMinTimeOverride": {
+          "offset": 296,
+          "value": 0.0
+        },
+        "behaviorSwitchMaxTimeOverride": {
+          "offset": 300,
+          "value": 0.0
+        },
+        "canFlee": {
+          "offset": 304,
+          "value": true
+        },
+        "fleeSpeedMultiplier": {
+          "offset": 308,
+          "value": 0.8999999761581421
+        },
+        "fleeDetectionMultiplier": {
+          "offset": 312,
+          "value": 1.0
+        },
+        "fleeAccelerationMultiplier": {
+          "offset": 316,
+          "value": 1.0
+        },
+        "patrolSpeedMultiplier": {
+          "offset": 376,
+          "value": 1.0
+        }
+      }
+    },
+    "sgt-oink": {
+      "objectName": "PiggyType_Sergeant",
+      "pathId": 1620,
+      "file": "sharedassets1.assets",
+      "fields": {
+        "primaryBehavior": {
+          "offset": 280,
+          "value": 5
+        },
+        "walkSpeedMultiplier": {
+          "offset": 284,
+          "value": 1.7000000476837158
+        },
+        "zigzagSpeedMultiplier": {
+          "offset": 288,
+          "value": 2.0
+        },
+        "zigzagAmplitudeMultiplier": {
+          "offset": 292,
+          "value": 1.0
+        },
+        "zigzagFrequencyMultiplier": {
+          "offset": 296,
+          "value": 1.0
+        },
+        "walkWeight": {
+          "offset": 300,
+          "value": 1.0
+        },
+        "zigzagWeight": {
+          "offset": 304,
+          "value": 0.0
+        },
+        "idleWeight": {
+          "offset": 308,
+          "value": 0.0
+        },
+        "idleDurationMinOverride": {
+          "offset": 312,
+          "value": 0.0
+        },
+        "idleDurationMaxOverride": {
+          "offset": 316,
+          "value": 0.0
+        },
+        "behaviorSwitchMinTimeOverride": {
+          "offset": 320,
+          "value": 0.0
+        },
+        "behaviorSwitchMaxTimeOverride": {
+          "offset": 324,
+          "value": 0.0
+        },
+        "canFlee": {
+          "offset": 328,
+          "value": true
+        },
+        "fleeSpeedMultiplier": {
+          "offset": 332,
+          "value": 1.7999999523162842
+        },
+        "fleeDetectionMultiplier": {
+          "offset": 336,
+          "value": 0.5
+        },
+        "fleeAccelerationMultiplier": {
+          "offset": 340,
+          "value": 1.0
+        },
+        "patrolSpeedMultiplier": {
+          "offset": 400,
+          "value": 2.0
+        }
+      }
+    }
+  },
+  "conversion": "Source world units/second × (11.2 / 41.900001525878906) × 0.05 = Sylve world units/step. Preserves traversal time across the board width. Source acceleration uses the same scale and another 0.05 factor.",
+  "limitations": [
+    "Normalito, The Tourist, Woody, Piñata and Sgt. Oink have verified numeric browser configuration.",
+    "Angry Piggy, Bomb Piggy, Spiky, Goblig and Brotalito are absent from that browser build: their motion profiles are explicitly estimated. Abilities retain the previous build-24759944 reference.",
+    "A separately written deterministic controller applies those settings; exact original trajectories, undocumented state selection, collision steering and hop frequency are not claimed.",
+    "Sylve retains its own HP, loot families, progression, board aspect ratio, collision rules and caps. Existing V14 checkpoints replay the original golem movement."
+  ],
+  "simulation": {
+    "seeds": 24,
+    "firstProjectFinanced": 24,
+    "allFiveProjectsFinanced": 23,
+    "scope": "Automated aiming and affordable purchases with reserved delivery funds, not human completion times."
+  }
+}

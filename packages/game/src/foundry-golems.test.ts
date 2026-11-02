@@ -30,7 +30,7 @@ describe('les dix golems de forge et les huit capacités des cochons',()=>{
   it('rages for five seconds when hit and rams neighbours for 70% of base damage',()=>{
     const r=arena(['ember','copper']);r.stats.damage=10;r.targets.forEach(t=>{t.hp=t.maxHp=100;});r.targets[1]!.x=.99;
     strike(r);expect(r.targets[0]!.rageUntil!-r.tick).toBe(100);
-    r.nextStrike=1e6;const hp=r.targets[1]!.hp;stepFoundry(r,miss);
+    r.nextStrike=1e6;const hp=r.targets[1]!.hp;for(let i=0;i<40&&r.targets[1]!.hp===hp;i++)stepFoundry(r,miss);
     expect(hp-r.targets[1]!.hp).toBeCloseTo(7);
   });
   it('emits four shrapnel pieces with flat damage and bounded range',()=>{
@@ -71,9 +71,9 @@ describe('les dix golems de forge et les huit capacités des cochons',()=>{
     expect(foundryGolemPool(4,[{golem:'ember'},{golem:'ember'}])).not.toContain('ember');
     expect(foundryGolemPool(4,[])).not.toContain('reinforcement');
   });
-  it('moves heavy golems more slowly than copper, with distinct evasive and wandering paths',()=>{
+  it('preserves the original movement when replaying a saved V14 round',()=>{
     const paths=new Map<string,string>(),speeds=new Map<string,number>();
-    for(const id of ['copper','sap','stone','amber','thief'] as FoundryGolemId[]){const r=arena([id]);r.targets[0]!.vx=.02;r.targets[0]!.vz=0;r.nextStrike=1e6;
+    for(const id of ['copper','sap','stone','amber','thief'] as FoundryGolemId[]){const r=arena([id]);r.version=14;r.targets[0]!.vx=.02;r.targets[0]!.vz=0;r.nextStrike=1e6;
       for(let i=0;i<30;i++)stepFoundry(r,miss);const t=r.targets[0]!;paths.set(id,`${t.x.toFixed(5)}:${t.z.toFixed(5)}`);speeds.set(id,Math.hypot(t.vx,t.vz));}
     expect(new Set(paths.values()).size).toBe(5);expect(speeds.get('stone')!).toBeLessThan(speeds.get('copper')!);expect(speeds.get('sap')!).toBeGreaterThan(speeds.get('copper')!);
   });

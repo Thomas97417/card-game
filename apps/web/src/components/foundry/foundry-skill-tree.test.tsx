@@ -69,14 +69,14 @@ describe('l’arbre de référence', () => {
     fireEvent.click(screen.getByRole('button',{name:'Apprendre Poigne de cuivre'}));expect(onSkill).toHaveBeenCalledWith('smash-damage-1');
     view.rerender(<FoundrySkillTree {...props} cycle={{...fresh,shards:99,skills:['smash-damage-1']}} />);
     for(const name of ['Marteau élargi','Main d’ambre','Souffle des fougères','Danse des braises']) expect(screen.getByRole('button',{name:`${name}, 12 éclats`})).toBeTruthy();
-    expect(screen.queryByRole('button',{name:/Appel des golems,/})).toBeNull();expect(screen.queryByRole('button',{name:/Arc de cuivre,/})).toBeNull();
+    expect(screen.queryByRole('button',{name:/Appel des cochons,/})).toBeNull();expect(screen.queryByRole('button',{name:/Arc de cuivre,/})).toBeNull();
   });
   it('reveals the OR entrance and retains zoom and map navigation for the denser tree', () => {
     render(<FoundrySkillTree {...props} cycle={{...newFoundryCycle(),shards:100,skills:['smash-damage-1','frenzy-speed-1']}} />);
-    fireEvent.click(screen.getByRole('button',{name:'Appel des golems, 30 éclats'}));
+    fireEvent.click(screen.getByRole('button',{name:'Appel des cochons, 30 éclats'}));
     expect(screen.getByText('Un de ces savoirs suffit')).toBeTruthy();
-    expect((screen.getByRole('button',{name:'Apprendre Appel des golems'}) as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(screen.getByRole('button',{name:'Apprendre Appel des golems'}));expect(onSkill).toHaveBeenCalledWith('piggy-spawn-amount');
+    expect((screen.getByRole('button',{name:'Apprendre Appel des cochons'}) as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(screen.getByRole('button',{name:'Apprendre Appel des cochons'}));expect(onSkill).toHaveBeenCalledWith('piggy-spawn-amount');
     const region=screen.getByRole('region',{name:'Grand arbre de compétences'}),initial=Number(region.dataset.zoom);
     fireEvent.click(screen.getByRole('button',{name:'Zoomer dans l’arbre'}));expect(Number(region.dataset.zoom)).toBeGreaterThan(initial);
   });

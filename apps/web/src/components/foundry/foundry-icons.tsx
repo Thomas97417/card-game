@@ -1,8 +1,8 @@
 import type { FoundryTool, FoundryGolemId } from "@sylve/game/foundry";
 
 type IconProps = { size?: number; className?: string };
-export function FoundryGolemIcon({ golem, size=48, className='' }:IconProps & {golem:FoundryGolemId}) {
-  return <img className={`foundry-item-icon foundry-golem-icon ${className}`} src={`/art/foundry/golems/${golem}-v1.webp`} width={size} height={size} style={{width:size,height:size}} alt="" aria-hidden="true" draggable={false} />;
+export function FoundryPigIcon({ pig, size=48, className='' }:IconProps & {pig:FoundryGolemId}) {
+  return <img className={`foundry-item-icon foundry-pig-icon ${className}`} src={`/art/bank/piggies/${pig}-v1.webp`} width={size} height={size} style={{width:size,height:size}} alt="" aria-hidden="true" draggable={false} />;
 }
 
 export function FoundryShardIcon({ size = 20, className = "" }: IconProps) {

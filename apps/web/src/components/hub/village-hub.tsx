@@ -30,8 +30,8 @@ type Place = {
 const PLACES: readonly Place[] = [
   {
     id: "foundry",
-    name: "Fonderie des Échos",
-    purpose: "Façonner les reliques du refuge",
+    name: "Banque des Échos",
+    purpose: "Briser les tirelires et financer le refuge",
     to: "/foundry",
     icon: "goldMine",
   },

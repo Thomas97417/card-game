@@ -10,7 +10,7 @@ import { BLESSINGS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, foundryToolDefin
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
-import { FoundryShardIcon, FoundryToolIcon, FoundryGolemIcon } from "./foundry-icons";
+import { FoundryShardIcon, FoundryToolIcon, FoundryPigIcon } from "./foundry-icons";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 import { FoundrySkillTree } from "./foundry-skill-tree";
 import { FoundryEquipment } from "./foundry-equipment";
@@ -213,22 +213,22 @@ export function FoundryPage() {
   }
   return (
     <main className="foundry-page" data-phase={phase} data-in-round={inRound}>
-      <img className="foundry-background" src="/art/foundry-interior-v1.webp" alt="" aria-hidden="true" draggable={false} />
+      <img className="foundry-background" src="/art/bank-interior-v1.webp" alt="" aria-hidden="true" draggable={false} />
       <div className="foundry-background-shade" aria-hidden="true" />
       {!inRound && <><GameHeader />
-      <div className="foundry-heading"><h1>La Fonderie des Échos</h1></div></>}
+      <div className="foundry-heading"><h1>La Banque des Échos</h1></div></>}
 
       <div className="foundry-layout">
-        <section className="foundry-play-column" aria-label="Établi de la fonderie">
-          <div className="foundry-viewport" ref={stage} tabIndex={0} role="application" aria-label="Établi en trois dimensions. Déplace la souris ou les flèches pour frapper. Échap pour mettre en pause."
+        <section className="foundry-play-column" aria-label="Comptoir de la banque">
+          <div className="foundry-viewport" ref={stage} tabIndex={0} role="application" aria-label="Comptoir en trois dimensions. Déplace la souris ou les flèches pour frapper. Échap pour mettre en pause."
             onKeyDown={keys} onPointerMove={move} onPointerDown={(e) => { if (e.target !== host.current && !(e.target instanceof HTMLCanvasElement)) return; e.currentTarget.setPointerCapture(e.pointerId); move(e); }}
             onPointerUp={(e) => { if (e.pointerType !== "mouse") aim.current.active = false; }} onPointerCancel={() => { aim.current.active = false; }} onLostPointerCapture={() => { aim.current.active = false; }} onPointerLeave={(e) => { if (e.pointerType === "mouse") aim.current.active = false; }}>
             <div className="foundry-canvas" ref={host} />
             <button type="button" className="foundry-sound-button" disabled={!!result} aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
             {live && !result && <div className="foundry-run-hud"><FoundryStamina key={attachedId.current} value={live.concentration} maximum={live.stats.concentration} cost={live.version >= 6 ? foundryStrikeCost(live) : undefined} /><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
-            {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} golems embrasés</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}{(live.rogue.reference?.combo ?? 0) > 1 && <span>Combo ×{live.rogue.reference!.combo}</span>}{live.rogue.complete && <>{live.rogue.complete.rageUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.complete.rageUntil-live.tick)/20).toFixed(1)} s</span>}{live.rogue.complete.windUntil > live.tick && <span>❋ Second souffle</span>}{live.rogue.complete.tantrumUntil > live.tick && <span>◆ Colère</span>}{live.rogue.complete.rocks.length > 0 && <span>Pluie de roches</span>}{live.rogue.complete.modifiers.coinRain > 0 && <span>◇ Réserve {amount(live.rogue.complete.coinBank)} · {live.rogue.complete.coinCount}/20</span>}</>}</div>}
-            {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Les braises s’éveillent…</p></div>}
-            {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>L’établi 3D est indisponible</h2><p>La fonderie a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
+            {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} cochons embrasés</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}{(live.rogue.reference?.combo ?? 0) > 1 && <span>Combo ×{live.rogue.reference!.combo}</span>}{live.rogue.complete && <>{live.rogue.complete.rageUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.complete.rageUntil-live.tick)/20).toFixed(1)} s</span>}{live.rogue.complete.windUntil > live.tick && <span>❋ Second souffle</span>}{live.rogue.complete.tantrumUntil > live.tick && <span>◆ Colère</span>}{live.rogue.complete.rocks.length > 0 && <span>Pluie de roches</span>}{live.rogue.complete.modifiers.coinRain > 0 && <span>◇ Réserve {amount(live.rogue.complete.coinBank)} · {live.rogue.complete.coinCount}/20</span>}</>}</div>}
+            {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Le comptoir ouvre ses portes…</p></div>}
+            {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>Le comptoir 3D est indisponible</h2><p>La banque a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
             {phase === "countdown" && <div className="foundry-countdown" aria-live="assertive"><strong key={countdown}>{countdown}</strong><span>Prépare ton marteau</span></div>}
             {phase === "paused" && !result && ready && <div className="foundry-curtain foundry-pause"><Pause size={26} /><h2>Un souffle entre deux frappes</h2><p>{runtime?.saving ? "Sauvegarde de la manche en cours…" : notice || "La stamina et les échéances sont en pause."}</p><button type="button" className="foundry-primary" onClick={begin} disabled={!!runtime?.saving}><Play size={16} />Reprendre la manche</button>{notice && board?.round && <button type="button" className="foundry-quiet" onClick={() => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); }}>Reprendre la sauvegarde du serveur</button>}</div>}
             {phase === "running" && !result && <button type="button" className="foundry-pause-button" onClick={pause}><Pause size={16} /> Pause</button>}
@@ -238,7 +238,7 @@ export function FoundryPage() {
               onRestore={board?.round ? () => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); } : undefined}
               onContinue={() => { finalRound.current = null; setRoundResult(null); setPhase("idle"); requestAnimationFrame(() => stage.current?.focus()); }} />}
           </div>
-          {inRound && !result && <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : "Manche sauvegardée au fil des frappes"}</span>{live && <span>{live.broken} golems · {live.criticals} critiques</span>}</div>}
+          {inRound && !result && <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : "Manche sauvegardée au fil des frappes"}</span>{live && <span>{live.broken} cochons · {live.criticals} critiques</span>}</div>}
 
           {!inRound && <button type="button" className="foundry-mobile-orders" aria-label="Commandes et améliorations" onClick={() => { pause(); sidebar.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }}><ArrowUpRight size={18} /></button>}
         </section>
@@ -247,20 +247,20 @@ export function FoundryPage() {
             {ready && phase === "idle" && <button type="button" className="foundry-primary" disabled={locked || !cycle?.roundsLeft} onClick={start}><Play size={16} />{busy ? "Préparation…" : "Commencer une manche"}</button>}
             <div className="foundry-round-toolbar">
               <div className="foundry-preparation"><button type="button" aria-label="Choisir le marteau" disabled={busy} onClick={() => setEquipment(true)}><FoundryToolIcon tool={tool} size={38} /><span><strong>{foundryToolDefinition(cycle ?? newFoundryCycle(), tool).name}</strong></span><ArrowUpRight size={14} /></button></div>
-              <button type="button" className="foundry-guide-button" aria-label="Guide de la fonderie" title="Guide de la fonderie" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={17} /></button>
+              <button type="button" className="foundry-guide-button" aria-label="Guide de la banque" title="Guide de la banque" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={17} /></button>
             </div>
           </section>
           <section className="foundry-order">
             <div className="foundry-section-title"><span>Chantier {cycle?.number ?? 1}</span><span aria-label={`${Math.min(5, cycle?.orderIndex ?? 0)} commandes livrées sur 5`}>{Math.min(5, cycle?.orderIndex ?? 0)} / 5</span></div>
             <div className="foundry-shard-total"><FoundryShardIcon size={21} /><strong title={`${number.format(cycle?.shards ?? 0)} éclats`}>{amount(cycle?.shards ?? 0)}</strong><span>éclats</span></div>
             <div className="foundry-order-divider" />
-            <h2>{cycle?.freeplay ? "La forge libre" : endState ? cycle?.status === "completed" ? "Chantier terminé" : "Chantier clos" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
+            <h2>{cycle?.freeplay ? "Le comptoir libre" : endState ? cycle?.status === "completed" ? "Chantier terminé" : "Chantier clos" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
             {orderCost !== undefined && <>
               <div className="foundry-order-price"><span>À livrer</span><b>{number.format(orderCost)}<FoundryShardIcon size={15} /></b></div>
               <div className="foundry-order-track" role="progressbar" aria-label="Éclats pour la commande" aria-valuemin={0} aria-valuemax={orderCost} aria-valuenow={Math.min(orderCost, cycle?.shards ?? 0)}><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div>
               <div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Commande à livrer" : `${cycle?.roundsLeft ?? 2} manches restantes`}</div>
             </>}
-            {cycle && (cycle.economy ?? 0) >= 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre en forge libre <ArrowUpRight size={16} /></button>}
+            {cycle && (cycle.economy ?? 0) >= 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre au comptoir libre <ArrowUpRight size={16} /></button>}
             {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : !cycle?.freeplay && <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
           </section>
           {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<FoundryShardIcon size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
@@ -277,15 +277,15 @@ export function FoundryPage() {
       {!inRound && tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={locked} busy={busy} inRound={inRound} onSkill={(skill) => action((b) => purchaseSkill({ ...revision(b), skill }))} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}
       <Dialog open={closing && !inRound} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs et bénédictions de ce chantier seront perdus. Les marteaux achetés devront être rachetés au prochain essai. Tu conserves ta maîtrise et tes talismans.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
       <Dialog open={help && !inRound} onOpenChange={setHelp}>
-        <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les gestes de l’artisan</DialogTitle>
-          <section className="foundry-guide" aria-label="Guide de la fonderie">
+        <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les tirelires du comptoir</DialogTitle>
+          <section className="foundry-guide" aria-label="Guide de la banque">
             <p><strong>Le marteau frappe à sa cadence, même dans le vide.</strong> Déplace la souris ou glisse le doigt pour viser. Les flèches déplacent aussi la visée. Chaque coup consomme de la stamina, même dans le vide. Elle ne diminue pas entre les frappes. La manche continue tant qu’il en reste : les améliorations de récupération peuvent la prolonger. Le maillet commence à 1 dégât hors critique ; les améliorations renforcent ensuite ses frappes. Échap met en pause.</p>
             {cycle && (cycle.economy ?? 0) >= 3 && (cycle.economy ?? 0) < 6 && !endState && <p>Filon {Math.min(5, cycle.orderIndex + 1)} · butin ×{number.format(foundryLootMultiplier(cycle))} · résistance ×{number.format(FOUNDRY.resistances[Math.min(4, cycle.orderIndex)]!)}</p>}
-            {(cycle?.economy ?? 0) >= 6 && <p>La manche commence avec 4 golems, plus ceux appris dans l’arbre. Un golem revient après 0,5 seconde si l’établi est vide. Éveil régulier ajoute une apparition toutes les 7 secondes, puis 5 secondes avec Éveil accéléré. Les retours à la destruction dépendent de tes savoirs. Chaque famille a ses propres paliers de butin et jackpots.</p>}
+            {(cycle?.economy ?? 0) >= 6 && <p>La manche commence avec 4 cochons, plus ceux appris dans l’arbre. Un cochon revient après 0,5 seconde si le comptoir est vide. Éveil régulier ajoute une apparition toutes les 7 secondes, puis 5 secondes avec Éveil accéléré. Les retours à la destruction dépendent de tes savoirs. Chaque famille a ses propres paliers de butin et jackpots.</p>}
             {(cycle?.economy ?? 0) >= 3 && (cycle?.economy ?? 0) < 6 && <p>Chaque commande ouvre un filon plus riche et plus résistant. Les récupérations aléatoires remboursent au maximum 50 % de la stamina dépensée ; les bonus de première destruction restent fixes.</p>}
-            <p>Chaque commande te donne trois manches. Entre deux manches, dépense tes éclats dans les marteaux du chantier ou les cinq voies de l’arbre, ou garde-les pour la livraison. Les marteaux achetés sont conservés jusqu’à la clôture du chantier ; seul le maillet de cuivre est gratuit au début de chaque chantier. Tous les autres marteaux doivent être rachetés avec des éclats. Chaque livraison propose trois bénédictions, dont une technique. Après la cinquième commande, la forge libre permet de poursuivre les achats du chantier et ses 211 savoirs. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise et les talismans restent acquis.</p>
+            <p>Chaque commande te donne trois manches. Entre deux manches, dépense tes éclats dans les marteaux du chantier ou les cinq voies de l’arbre, ou garde-les pour la livraison. Les marteaux achetés sont conservés jusqu’à la clôture du chantier ; seul le maillet de cuivre est gratuit au début de chaque chantier. Tous les autres marteaux doivent être rachetés avec des éclats. Chaque livraison propose trois bénédictions, dont une technique. Après la cinquième commande, le comptoir libre permet de poursuivre les achats du chantier et ses 211 savoirs. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise et les talismans restent acquis.</p>
             <p>Trois commandes livrées dans la journée donnent un coffre quotidien. Le compteur est réinitialisé à minuit, heure de Paris.</p>
-            <div className="foundry-golem-guide">{FOUNDRY_GOLEM_IDS.map(id=><article key={id}><FoundryGolemIcon golem={id} size={68}/><div><h3>{FOUNDRY_GOLEMS[id].name}</h3><span>{FOUNDRY_GOLEMS[id].hp} PV</span><p>{FOUNDRY_GOLEMS[id].detail}</p></div></article>)}</div>
+            <div className="foundry-pig-guide">{FOUNDRY_GOLEM_IDS.map(id=><article key={id}><FoundryPigIcon pig={id} size={68}/><div><h3>{FOUNDRY_GOLEMS[id].name}</h3><span>{FOUNDRY_GOLEMS[id].hp} PV</span><p>{FOUNDRY_GOLEMS[id].detail}</p></div></article>)}</div>
           </section>
         </DialogContent>
       </Dialog>
@@ -293,7 +293,7 @@ export function FoundryPage() {
         <DialogContent className="foundry-preparation-dialog foundry-equipment-dialog" initialFocus={equipmentTitle}><DialogTitle ref={equipmentTitle} tabIndex={-1}>Préparer la manche</DialogTitle><p className="foundry-dialog-intro">Choisis le marteau de ta prochaine manche.</p>
           {cycle && <FoundryEquipment cycle={cycle} charms={progress?.charms ?? []} tool={tool} locked={locked || !cycle.roundsLeft}
             onTool={(id, purchase) => action(async (b) => { await (purchase ? purchaseTool : equipTool)({ ...revision(b), tool: id }); setTool(id); })} />}
-          <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour la forge <Check size={16} /></button>
+          <button type="button" className="foundry-primary" onClick={() => setEquipment(false)}>Prêt pour le comptoir <Check size={16} /></button>
         </DialogContent>
       </Dialog>
       {notice && !result && phase !== "paused" && <p className="foundry-notice" role="status">{notice}</p>}

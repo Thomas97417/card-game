@@ -7,6 +7,6 @@ import revealCss from "@/card-reveal.css?url";
 
 export const Route = createFileRoute("/foundry")({
   beforeLoad: ({ context, location }) => requireGameAuth(context.isAuthenticated, location.href),
-  head: () => ({ meta: [{ title: "Fonderie des Échos — Sylve" }, { name: "description", content: "Brise les reliques, honore les commandes du refuge et façonne tes propres outils." }], links: [stylesheet(foundryCss), stylesheet(revealCss), { rel: "preload", as: "image", href: "/art/foundry-interior-v1.webp" }] }),
+  head: () => ({ meta: [{ title: "Banque des Échos — Sylve" }, { name: "description", content: "Brise les tirelires, récolte des éclats et finance les projets du refuge." }], links: [stylesheet(foundryCss), stylesheet(revealCss), { rel: "preload", as: "image", href: "/art/bank-interior-v1.webp" }] }),
   component: FoundryPage,
 });

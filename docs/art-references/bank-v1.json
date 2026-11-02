@@ -1,0 +1,38 @@
+{
+  "generatedWith": "image_gen (built-in)",
+  "date": "2026-11-02",
+  "assets": [
+    {
+      "id": "bank-exterior",
+      "prompt": "Use case: precise-object-edit. Asset type: transparent isometric fantasy village game building sprite. Edit target: the supplied foundry building. Transform it into a charming BANK, matching the same hand-painted high-quality fantasy game art, isometric camera, warm upper-left light, off-white stone, verdigris teal roof, copper and brass details, ivy and tiny white flowers, isolated on genuine transparent background. Retain comparable compact footprint and overall size. Replace the furnace, chimney, anvil, crane, tools and ingots with a beautiful stone bank entrance: a round brass vault door with central wheel inside the main arch, a teller window behind a decorative brass grille on one side, a few tidy gold coin stacks behind the window, carved columns and a hanging emblem showing a piggy bank silhouette. Make the silhouette clearly a respectable small banking establishment: elegant stepped facade, secure arched windows, ornate teal dome, modest gilt coin finial. No flames, no chimney, no smithing objects, no people, no text, no UI. Entire building and short front steps visible, closely framed with small transparent margin; no background, no ground plane beyond its base.",
+      "path": "apps/web/public/art/hub/bank-building-v1.webp",
+      "size": [
+        1318,
+        1193
+      ],
+      "transparentBackground": true,
+      "generatedSource": "exec-46610fd6-fbe0-49eb-bd3a-07889b45a208.png"
+    },
+    {
+      "id": "bank-interior",
+      "prompt": "Use case: precise-object-edit. Asset type: 16:9 full-screen background for a 3D piggy-bank smashing game in a fantasy bank. Edit target: supplied fantasy forge interior. Transform the background room into a warm fantasy BANK while strictly preserving the camera and the huge completely empty wooden counter occupying the lower 60% of the image. The countertop must remain broad, flat, unbroken, undecorated and empty from left edge to right edge, with the far edge at exactly 40% of the image height; live 3D pigs are overlaid here. Keep the central arched opening and sunny view of the forest valley, waterfall and distant castle. Replace the furnace and anvils on the left with a large ornate brass circular vault door set in carved stone, a few coin trays and leather ledgers on a shelf behind the counter. Replace smithing pipes and tools with elegant wooden bank cabinets and a brass teller grille on the right, secure little vault compartments, an accountant's balance and a small warm lantern, all strictly behind the counter's rear edge. Keep the same painterly polished fantasy game style, ivy, flowers, light stone arches, oak beams, brass trims, restrained turquoise accents and soft warm daylight. No fire or furnace, no anvils, no forge tools, no characters, no pigs, no writing, no numbers, no watermark. The foreground 60% must be empty natural wood with subtle grain, no objects.",
+      "path": "apps/web/public/art/bank-interior-v1.webp",
+      "size": [
+        1672,
+        941
+      ],
+      "transparentBackground": false,
+      "generatedSource": "exec-fef2d014-17df-46d7-bb95-c104fca591d5.png"
+    }
+  ],
+  "pigIcons": {
+    "method": "Rendered from original Three.js game models in foundry-pig-art.ts, not image generation or copied reference artwork.",
+    "directory": "apps/web/public/art/bank/piggies",
+    "size": [
+      384,
+      384
+    ],
+    "transparentBackground": true,
+    "geometry": "Single smooth surface for the belly and four flared feet, generated once and shared by the ten models. Refreshed 2026-11-02 after the foot-attachment correction."
+  }
+}

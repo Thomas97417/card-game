@@ -28,7 +28,7 @@ export function FoundrySkillTree({ open, onOpenChange, cycle, mastery, masterySp
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="foundry-tree-dialog" data-tree-tab={tab}>
       <header className="foundry-tree-heading"><span className="foundry-eyebrow">Un chantier, mille façons de résonner</span><DialogTitle>Les voies de l’Écho</DialogTitle><p>Les savoirs se dévoilent au fil de tes apprentissages. Explore les cinq voies depuis le premier écho.</p></header>
-      <div className="foundry-tree-tools"><div className="foundry-tree-tabs" aria-label="Progression de la fonderie">
+      <div className="foundry-tree-tools"><div className="foundry-tree-tabs" aria-label="Progression de la banque">
         <button type="button" aria-pressed={tab === "tree"} onClick={() => setTab("tree")}><Radio size={16} /> Arbre de compétences <small>{owned.length} / {ids.length}</small></button>
         <button type="button" aria-pressed={tab === "charms"} onClick={() => setTab("charms")}><Sparkles size={16} /> Talismans permanents <small>{charms.length} / {FOUNDRY_CHARM_IDS.length}</small></button>
       </div>

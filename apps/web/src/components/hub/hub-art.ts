@@ -46,9 +46,9 @@ export const HUB_BUILDING_ART = {
     "height": 868
   },
   "foundry": {
-    "src": "/art/hub/foundry-building-v4.webp",
-    "width": 1295,
-    "height": 1173
+    "src": "/art/hub/bank-building-v1.webp",
+    "width": 1318,
+    "height": 1193
   },
   "teleporter": {
     "src": "/art/hub/teleporter-building-v4.webp",
