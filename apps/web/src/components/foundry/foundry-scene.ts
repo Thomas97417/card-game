@@ -70,15 +70,18 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
   const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xffdf76, transparent: true, opacity: 0.7, depthWrite: false });
   const extraMaterial = new THREE.MeshBasicMaterial({ color: 0x93ddd4, transparent: true, opacity: 0.65, depthWrite: false });
   materials.add(iceMaterial); materials.add(burnMaterial); materials.add(glowMaterial); materials.add(extraMaterial);
-  const relics = new Map<number, { group: THREE.Group; model: FoundryPigArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
+  const relics = new Map<number, { kind: FoundryRelic['kind']; pig: NonNullable<FoundryRelic['golem']>; group: THREE.Group; model: FoundryPigArt; ice: THREE.Mesh; burn: THREE.Mesh; glow: THREE.Mesh; kick: number }>();
   function makeRelic(t: FoundryRelic) {
-    const group = new THREE.Group(); const model = art.pig(t.golem??LEGACY_GOLEM[t.kind]);
+    // IDs restart at 1 in previews and new rounds; their previous models may be another species.
+    const previous = relics.get(t.id); if (previous) scene.remove(previous.group);
+    const pig = t.golem ?? LEGACY_GOLEM[t.kind];
+    const group = new THREE.Group(); const model = art.pig(pig);
     const ice = new THREE.Mesh(ringGeo, iceMaterial); const burn = new THREE.Mesh(ringGeo, burnMaterial);
     ice.rotation.x = burn.rotation.x = -Math.PI / 2; ice.position.y = 0.04; burn.position.y = 0.07;
     ice.scale.setScalar(RELICS[t.kind].radius + 0.04); burn.scale.setScalar(RELICS[t.kind].radius * 0.8);
     const glow = new THREE.Mesh(ringGeo, glowMaterial); glow.rotation.x = -Math.PI / 2; glow.position.y = 0.055; glow.scale.setScalar(RELICS[t.kind].radius + 0.12); glow.visible = !!t.glowing;
     group.position.set(t.x, 0, t.z); group.add(art.shadow(), ice, burn, glow, model.root);
-    scene.add(group); const item = { group, model, ice, burn, glow, kick: -1000 }; relics.set(t.id, item); return item;
+    scene.add(group); const item = { kind: t.kind, pig, group, model, ice, burn, glow, kick: -1000 }; relics.set(t.id, item); return item;
   }
   const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xf9d78b, transparent: true, opacity: 0.65, depthWrite: false }); materials.add(cursorMaterial);
   const cursor = new THREE.Mesh(ringGeo, cursorMaterial); cursor.rotation.x = -Math.PI / 2; scene.add(cursor);
@@ -178,7 +181,9 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
         scene.remove(item.group); relics.delete(id);
       }
       for (const t of round.targets) {
-        const item = relics.get(t.id) ?? makeRelic(t); const elapsed = (time - item.kick) / 1000;
+        const cached = relics.get(t.id);
+        const item = cached?.kind === t.kind && cached.pig === (t.golem ?? LEGACY_GOLEM[t.kind]) ? cached : makeRelic(t);
+        const elapsed = (time - item.kick) / 1000;
         const kick = elapsed < 0.25 ? Math.sin(elapsed * 30) * Math.exp(-elapsed * 13) * 0.13 : 0;
         // Independent visual easing would let two separated discs overlap.
         item.group.position.set(t.x, 0, t.z); item.group.scale.setScalar(round.version >= 11 ? FOUNDRY.fullRelicScale : 1);

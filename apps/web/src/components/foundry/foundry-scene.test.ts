@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createFoundryRound, newFoundryCycle, type FoundryInput } from '@sylve/game/foundry';
+import { createFoundryRound, newFoundryCycle, FOUNDRY_GOLEMS, type FoundryInput, type FoundryRound } from '@sylve/game/foundry';
 import { createFoundryScene } from './foundry-scene';
 import { aimAtFoundry, foundryViewport } from './foundry-projection';
 
@@ -20,20 +20,42 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup?.(); cleanup = undefined; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-function scene(playing = true) {
+function scene(playing = true, initial?: FoundryRound) {
   const host = document.createElement('div'); document.body.append(host);
   Object.defineProperties(host, { clientWidth: { value: 1280 }, clientHeight: { value: 720 } });
   host.getBoundingClientRect = () => new DOMRect(13, 17, 1280, 720);
-  const round = createFoundryRound(91, newFoundryCycle(), 'mallet');
-  round.targets = [{ ...round.targets[0]!, x: 0, z: 0, vx: 0, vz: 0 }];
+  let round = initial ?? createFoundryRound(91, newFoundryCycle(), 'mallet');
+  if (!initial) round.targets = [{ ...round.targets[0]!, x: 0, z: 0, vx: 0, vz: 0 }];
   let input: FoundryInput = { x: 0, z: 0, active: true };
   const view = createFoundryScene(host, { state: () => round, input: () => input, active: () => playing, frame() {}, sound() {}, contextLost() {} });
   cleanup = () => { view.destroy(); host.remove(); };
   rendered.loop!(1000);
-  return { view, aim(next: FoundryInput) { input = next; }, active(next: boolean) { playing = next; } };
+  return { view, aim(next: FoundryInput) { input = next; }, active(next: boolean) { playing = next; }, state(next: FoundryRound) { round = next; } };
 }
 
 describe('la visée libre du marteau', () => {
+  it('shows only Normalito after a new chantier reuses the previous pigs’ identifiers', () => {
+    const previous = createFoundryRound(91, newFoundryCycle(), 'mallet');
+    previous.targets = (['sap','stone','furnace','thief'] as const).map((golem, index) => ({ ...previous.targets[index]!, golem, kind: FOUNDRY_GOLEMS[golem].kind }));
+    const { state } = scene(false, previous);
+    const models = () => {
+      const names: string[] = [];
+      rendered.world!.traverse(object => { if (object.name.startsWith('bank-pig-')) names.push(object.name); });
+      return names;
+    };
+    expect(models()).toEqual(['bank-pig-the-tourist','bank-pig-woody','bank-pig-bomb-piggy','bank-pig-goblig']);
+    const fresh = createFoundryRound(91, newFoundryCycle(2), 'mallet');
+    expect(fresh.targets.map(pig => pig.id)).toEqual(previous.targets.map(pig => pig.id));
+    expect(fresh.targets.every(pig => pig.golem === 'copper')).toBe(true);
+    state(fresh); rendered.loop!(1010);
+    expect(models()).toEqual(Array(4).fill('bank-pig-normalito'));
+    // The same live scene also follows legitimate unlocks and the next round's reused IDs.
+    const unlocked = structuredClone(fresh); unlocked.targets[0]!.golem='sap'; unlocked.targets[0]!.kind='runner';
+    state(unlocked); rendered.loop!(1020);
+    expect(models().filter(name => name === 'bank-pig-the-tourist')).toHaveLength(1);
+    state(fresh); rendered.loop!(1030);
+    expect(models()).toEqual(Array(4).fill('bank-pig-normalito'));
+  });
   it('hides the hammer and freezes its pose outside active play, then restores aiming on resume', () => {
     const { aim, active } = scene(false);
     const head = rendered.world!.getObjectByName('foundry-hammer-head')!;

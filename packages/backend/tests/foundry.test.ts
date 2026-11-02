@@ -2,7 +2,7 @@ import { convexTest } from "convex-test";
 import betterAuthTest from "@convex-dev/better-auth/test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { chestRules } from "@sylve/game/progression";
-import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_V4_SKILL_IDS as FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_CHARM_IDS, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
+import { FOUNDRY, LEGACY_TOOLS as TOOLS, TOOL_IDS, foundryToolDefinition, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY_SKILL_IDS, FOUNDRY_V4_SKILL_IDS as FOUNDRY_REFERENCE_SKILL_IDS, FOUNDRY_CHARM_IDS, FOUNDRY_GOLEM_IDS, gainFoundryPigXP, createFoundryRound, foundryStats, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { api, components } from "../convex/_generated/api";
 import schema from "../convex/schema";
 
@@ -35,6 +35,22 @@ beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("la fonderie connectée", () => {
+  it("restarts with only Normalito after a chantier with every species unlocked", async () => {
+    const t=setup(),p=await player(t,"reset-pigs","full"),board=await p.client.query(api.foundry.board,{});
+    const previous=newFoundryCycle();
+    for (const pig of FOUNDRY_GOLEM_IDS) gainFoundryPigXP(previous.pigs!,pig,10000);
+    expect(previous.pigs!.unlocked).toHaveLength(10);
+    expect(previous.pigs!.pending.length).toBeGreaterThan(0);
+    await t.run(ctx=>ctx.db.patch(board.progress!._id,{cycle:previous}));
+    await p.client.mutation(api.foundry.abandonChantier,{expectedOwnerId:p.ownerId,revision:0});
+    await p.client.mutation(api.foundry.newChantier,{expectedOwnerId:p.ownerId,revision:1});
+    const fresh=await p.client.query(api.foundry.board,{});
+    expect(fresh.progress!.cycle.pigs).toEqual({xp:{},unlocked:['copper'],pending:[]});
+    const round=await begin(p,"fresh-normalito-only");
+    expect(round.state.targets).toHaveLength(4);
+    expect(round.state.targets.every(pig=>pig.golem==='copper'&&pig.kind==='urn')).toBe(true);
+    expect(round.state.pigs).toEqual({xp:{},unlocked:['copper'],pending:[]});
+  });
   it("saves pig XP and unlocks once across input retries, final-save retries and the next round", async () => {
     const t=setup(),p=await player(t,"pig-levels","full");
     const initial=await p.client.query(api.foundry.board,{});
