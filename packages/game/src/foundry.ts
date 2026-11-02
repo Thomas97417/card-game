@@ -1,5 +1,7 @@
 import { stepFoundryComplete, completeStrikeCost } from './foundry-complete';
 import { FOUNDRY_POPULATION, FOUNDRY_PACING, FOUNDRY_RELIC_PROFILES } from './foundry-population';
+import { FOUNDRY_GOLEMS, foundryGolemPool, type FoundryGolemId } from './foundry-golems';
+export * from './foundry-golems';
 export * from './foundry-population';
 import { TOOLS, foundryTools, foundryToolDefinition, legacyFoundryTool, type FoundryTool } from "./foundry-tools";
 export * from "./foundry-tools";
@@ -10,7 +12,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 13, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 14, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, fullMaxTargets: 32, fullRelicScale: 0.8, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -48,15 +50,17 @@ export interface FoundryCycle {
   purchasedTools?: FoundryTool[]; selectedTool?: FoundryTool;
 }
 export interface FoundryStats { damage: number; interval: number; radius: number; critical: number; loot: number; concentration: number; stamina?: number }
-export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean; bonusLoot?: number }
+export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean; bonusLoot?: number;
+  golem?: FoundryGolemId; rageUntil?:number; nextAbility?:number; stolen?:number; escapeAt?:number }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; nextStrike: number;
   /** Older saved rounds keep their original stats and companion metadata. */
   assistant?: "smith" | "dryad" | "feline";
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   brokenByKind?: Partial<Record<RelicKind, number>>;
+  golems?: { broken:Partial<Record<FoundryGolemId,number>>; bombs:{at:number;x:number;z:number}[]; reinforcements:number; escaped:number; lost:number; recovered?:number };
   targets: FoundryRelic[];
   rogue?: { modifiers: FoundryModifiers; capacity: number; pressure: number; frenzyUntil: number; frozenUntil: number; nextFreeze: number; strikes: number; jackpots: number; wealth?: number; relicStage?: number; recoveryReserve?: number;
     complete?: { modifiers: FoundryCompleteModifiers; baseCadence: number; hits: number; misses: number; guardUsed: boolean; windUsed: boolean; lastStandUsed: boolean; windUntil: number; tantrumUntil: number; rageUntil: number; nextRay: number; nextSpawn: number; pendingSpawns: number; nextEmptySpawn?: number; nextStorm: number; stormUntil: number; coinBank: number; coinCount: number; superJackpots: number; rocks: { at: number; x: number; z: number; announced: boolean }[] };
@@ -64,8 +68,8 @@ export interface FoundryRound {
     burns: { id: number; until: number; next: number }[] };
 
 }
-export interface FoundryImpact { x: number; z: number; targetId: number; kind: RelicKind; damage: number; critical: boolean; broken: boolean; loot: number }
-export interface FoundryEffect { kind: "freeze" | "lightning" | "burn" | "frenzy" | "shockwave" | "jackpot" | "phantom" | "ray" | "rockfall" | "rock" | "coinrain" | "wind" | "lastStand" | "tantrum"; x: number; z: number; toX?: number; toZ?: number; radius?: number; duration?: number }
+export interface FoundryImpact { x: number; z: number; targetId: number; kind: RelicKind; damage: number; critical: boolean; broken: boolean; loot: number; golem?:FoundryGolemId }
+export interface FoundryEffect { kind: "freeze" | "lightning" | "burn" | "frenzy" | "shockwave" | "jackpot" | "phantom" | "ray" | "rockfall" | "rock" | "coinrain" | "wind" | "lastStand" | "tantrum" | "golemShard"; x: number; z: number; toX?: number; toZ?: number; radius?: number; duration?: number }
 export interface FoundryFrame { strike: boolean; impacts: FoundryImpact[]; effects?: FoundryEffect[]; strikePosition?: { x: number; z: number } }
 export interface FoundrySummary { shards: number; broken: number; hits: number; criticals: number; seconds: number }
 
@@ -123,11 +127,14 @@ export function foundryStats(cycle: FoundryCycle, tool: FoundryTool, charms: rea
     ...(modern ? { stamina: Math.max(0.25, strikeCost + reference.flatDrain) } : {}),
   };
 }
-function spawn(state: FoundryRound): FoundryRelic {
+function spawn(state: FoundryRound, forcedGolem?:FoundryGolemId): FoundryRelic {
   const scale = state.version >= 11 ? FOUNDRY.fullRelicScale : 1;
   const kinds = state.version >= 12 ? ACTIVE_RELIC_KINDS.filter((kind) => FOUNDRY_RELIC_PROFILES[kind].unlockOrder <= (state.rogue?.relicStage ?? 0)) : state.version >= 7 ? ACTIVE_RELIC_KINDS : RELIC_KINDS;
-  let roll = random(state) * kinds.reduce((total, id) => total + RELICS[id].weight, 0);
-  const kind = kinds.find((id) => (roll -= RELICS[id].weight) < 0) ?? "urn";
+  const pool=state.version>=14?foundryGolemPool(state.rogue?.relicStage??0,state.targets,state.golems?.bombs.length):[];
+  let ticket=state.version>=14?random(state)*pool.reduce((sum,id)=>sum+FOUNDRY_GOLEMS[id].weight,0):0;
+  const golem=state.version>=14?(forcedGolem??pool.find(id=>(ticket-=FOUNDRY_GOLEMS[id].weight)<0)??'copper'):undefined;
+  let roll = golem?0:random(state) * kinds.reduce((total, id) => total + RELICS[id].weight, 0);
+  const kind = golem?FOUNDRY_GOLEMS[golem].kind:kinds.find((id) => (roll -= RELICS[id].weight) < 0) ?? "urn";
   let x = 0; let z = 0;
   if (state.version >= 3) {
     const radius = RELICS[kind].radius * scale;
@@ -165,9 +172,10 @@ function spawn(state: FoundryRound): FoundryRelic {
   const angle = random(state) * Math.PI * 2;
   // Persist velocities so pauses, retries and server replays use the same path.
   // Saved rounds finish with their original movement and collision rules.
-  const speed = state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
-  const hp = state.version >= 13 && kind !== "spring" ? FOUNDRY_PACING.hp[kind] : state.version >= 12 && kind !== "spring" ? FOUNDRY_RELIC_PROFILES[kind].hp : state.version >= 4 ? Math.round(RELICS[kind].hp * (state.rogue?.pressure ?? 1)) : RELICS[kind].hp;
+  const speed = golem?FOUNDRY_GOLEMS[golem].speed:state.version >= 2 ? RELICS[kind].speed : kind === "runner" ? 0.033 : 0;
+  const hp = golem?FOUNDRY_GOLEMS[golem].hp:state.version >= 13 && kind !== "spring" ? FOUNDRY_PACING.hp[kind] : state.version >= 12 && kind !== "spring" ? FOUNDRY_RELIC_PROFILES[kind].hp : state.version >= 4 ? Math.round(RELICS[kind].hp * (state.rogue?.pressure ?? 1)) : RELICS[kind].hp;
   const relic: FoundryRelic = { id: state.nextId++, kind, x, z, hp, maxHp: hp,
+    ...(golem?{golem}:{}),
     vx: Math.cos(angle) * speed,
     vz: state.version === 1 ? kind === "runner" ? Math.sin(angle) * 0.027 : 0 : Math.sin(angle) * speed * (0.027 / 0.033),
     phase: random(state) * Math.PI * 2,
@@ -228,9 +236,10 @@ export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: Foun
   const stats = foundryStats(cycle, tool, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
-  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 13 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 14 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
     ...((cycle.economy ?? 0) >= 6 ? { brokenByKind: {} } : {}),
+    ...((cycle.economy ?? 0) >= 6 ? { golems:{broken:{},bombs:[],reinforcements:0,escaped:0,lost:0,recovered:0} } : {}),
     rogue: { modifiers, capacity: Math.min((cycle.economy ?? 0) >= 5 ? FOUNDRY.fullMaxTargets : FOUNDRY.maxTargets, ((cycle.economy ?? 0) >= 6 ? FOUNDRY_POPULATION.baseTargets : FOUNDRY.baseTargets) + modifiers.capacity), pressure: (cycle.economy ?? 0) >= 6 ? 1 : (cycle.economy ?? 0) >= 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
       ...((cycle.economy ?? 0) >= 6 ? { relicStage: stage } : {}),
       ...(cycle.economy && cycle.economy >= 3 ? { wealth: foundryLootMultiplier(cycle), recoveryReserve: 0 } : {}),

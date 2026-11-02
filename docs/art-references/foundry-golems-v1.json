@@ -1,0 +1,107 @@
+{
+  "generatedWith": "image_gen (built-in)",
+  "date": "2026-11-01",
+  "transparentBackground": true,
+  "assets": [
+    {
+      "id": "copper",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. COPPER GOLEM: rounded riveted burnished copper body and helmet-like small head, dark oak joints, brass bands, turquoise crystal chest core and turquoise eyes. Two copper mitten hands and short copper boots. A small leaf-shaped brass brow ornament. Plain dependable starting golem.",
+      "path": "apps/web/public/art/foundry/golems/copper-v1.webp",
+      "generatedSource": "exec-bb862afb-7f95-4500-a7b4-3a1316a12eff.png",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "sap",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. SAP GOLEM: nimble walnut-wood and patinated green copper body, luminous emerald chest crystal and green eyes, two little leaf-shaped shoulder plates and small leafy sprouts on its head. Short articulated wood legs, jade copper boots and long slim little arms. Restorative forest magic.",
+      "path": "apps/web/public/art/foundry/golems/sap-v1.webp",
+      "generatedSource": "exec-529b6945-6110-49be-9b4b-bafc47e58ed6.png",
+      "size": [
+        512,
+        468
+      ]
+    },
+    {
+      "id": "stone",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. STONE GOLEM: broad heavy grey basalt body built of chunky irregular stone plates, dark iron joint bands and copper rivets, a luminous turquoise chest crystal and eyes. Massive blocky shoulders, squat stone legs and very wide flat stone feet. Small solid head sitting low between shoulders. No moss covering the face.",
+      "path": "apps/web/public/art/foundry/golems/stone-v1.webp",
+      "generatedSource": "exec-c21e19ff-1ace-42c2-8011-27389357bef4.png",
+      "size": [
+        512,
+        468
+      ]
+    },
+    {
+      "id": "amber",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. AMBER GOLEM: compact body of faceted translucent honey amber plates around a luminous golden chest core, fine copper frame and joints, golden eyes, small angular amber head, short copper feet. Several thin bright cracks through the amber shell suggest brittleness. Distinct warm honey amber silhouette, no flame.",
+      "path": "apps/web/public/art/foundry/golems/amber-v1.webp",
+      "generatedSource": "exec-5004e163-ed11-4d7e-bb10-26b00fd0f38e.png",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "ember",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. EMBER GOLEM: compact muscular blackened iron and basalt body, blazing orange chest core, narrow orange eyes, red glowing cracks across dark broad shoulder plates. Two short forward copper horns and heavy iron fists and boots. Angry charging posture with one foot stepping forward, no weapon and no smoke cloud.",
+      "path": "apps/web/public/art/foundry/golems/ember-v1.webp",
+      "generatedSource": "exec-4234968b-8c99-45ac-9b6b-d13127babb78.png",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "shrapnel",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. SHRAPNEL GOLEM: squat riveted blue-grey steel body, a turquoise chest crystal and turquoise eyes, copper joint bands, FOUR clearly visible large angular silver crystal studs around its shoulders and back. Small steel helmet head with a single copper ridge, short broad boots. A disciplined sturdy marching golem.",
+      "path": "apps/web/public/art/foundry/golems/shrapnel-v1.webp",
+      "generatedSource": "exec-41a05f3b-2e9b-4ea3-aaa3-7bde86fcaf10.png",
+      "size": [
+        512,
+        506
+      ]
+    },
+    {
+      "id": "furnace",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. FURNACE GOLEM: round chunky blackened iron torso made of layered plates and brass bands around an intensely glowing orange furnace chest core. Small iron head with orange eyes, TWO stout iron legs and broad feet, short iron arms, and two small copper exhaust pipes on its back. Warm glow visible between chest plates. A living little furnace, absolutely not a pot or a grenade, no smoke cloud.",
+      "path": "apps/web/public/art/foundry/golems/furnace-v1.webp",
+      "generatedSource": "exec-607d709d-3f20-4c7c-8781-16eeede9ab62.png",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "thorn",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. THORN GOLEM: broad dark moss-grey basalt body with a luminous jade-green chest core and green eyes, copper joints, TWO squat stone legs, a small flat stone head. Eight short thick triangular copper thorns project from its shoulders and upper back, with tiny dark-green root ornaments between them. A clearly spiky, heavy defensive walking golem.",
+      "path": "apps/web/public/art/foundry/golems/thorn-v1.webp",
+      "generatedSource": "exec-15a96a88-8f61-49ab-a210-c77865604d63.png",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "thief",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. THIEF GOLEM: small lean patinated dark-copper body, golden chest core and gold eyes, a pointed folded copper hood plate over its small head, long skinny little mechanical arms and bent knees with small broad copper feet. A small closed dark-leather satchel attached to one hip, brass buckles, sly crouching running pose. No weapon, no loose coins, no scenery.",
+      "path": "apps/web/public/art/foundry/golems/thief-v1.webp",
+      "generatedSource": "exec-d856eb26-7030-4a21-81e0-18d828a79af5.png",
+      "size": [
+        512,
+        466
+      ]
+    },
+    {
+      "id": "reinforcement",
+      "prompt": "Use case: stylized-concept. Asset type: production game inventory icon for Sylve, a warm painterly fantasy forge. Exactly ONE small full-body living forge golem, isolated on a genuinely transparent background. High quality hand-painted stylized 3D game illustration, chunky sculpted silhouette, soft bevels, visible brushed materials, warm upper-left lighting with restrained teal fill. Three-quarter front view, full character centered with 10% empty padding. Rounded compact torso, separate short articulated arms, TWO short legs with clearly visible broad feet, small head with two luminous eyes and a luminous crystal core in its chest. Charming and sturdy, no weapons. Must read at 48 pixels. No pig features, no urn, no pot, no insect, no humanoid person, no writing, numbers, labels, UI frame, scenery, platform or opaque background. REINFORCEMENT GOLEM: a larger sturdy copper golem with layered copper armor plates, bright brass bands, turquoise chest core and eyes, two strong short articulated legs and wide copper boots. THREE upright blunt copper plates form a small crest on its head, big copper forearms and a reinforced breastplate. A dependable stocky marching forge construct, not a knight or human.",
+      "path": "apps/web/public/art/foundry/golems/reinforcement-v1.webp",
+      "generatedSource": "exec-e10708e5-df73-476c-a845-6cd4b6c4fa89.png",
+      "size": [
+        512,
+        512
+      ]
+    }
+  ]
+}

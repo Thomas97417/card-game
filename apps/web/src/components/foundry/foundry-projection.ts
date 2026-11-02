@@ -25,8 +25,9 @@ export function foundryViewport(width: number, height: number): FoundryViewport 
 export function fitFoundryCamera(camera: THREE.PerspectiveCamera, viewport: FoundryViewport) {
   camera.aspect = viewport.width / viewport.height;
   camera.updateProjectionMatrix();
-  const direction = new THREE.Vector3(...(viewport.portrait ? [8, 18, 0] as const : [0, 16, 7] as const)).normalize();
-  const corners = [-1, 1].flatMap((x) => [-1, 1].map((z) => new THREE.Vector3(x * FOUNDRY.width / 2, 0, z * FOUNDRY.depth / 2)));
+  // A lower view exposes the golems' faces, articulated legs and chest cores.
+  const direction = new THREE.Vector3(...(viewport.portrait ? [10, 12, 0] as const : [0, 10, 11] as const)).normalize();
+  const corners = [0,1.3].flatMap(y=>[-1, 1].flatMap((x) => [-1, 1].map((z) => new THREE.Vector3(x * FOUNDRY.width / 2, y, z * FOUNDRY.depth / 2))));
   let near = 6;
   let far = 60;
   for (let i = 0; i < 24; i++) {
@@ -45,6 +46,17 @@ export function fitFoundryCamera(camera: THREE.PerspectiveCamera, viewport: Foun
   camera.lookAt(0, 0, 0);
   camera.updateMatrixWorld();
   return camera.position.clone();
+}
+
+/** Pick the visible articulated body before falling back to the worktop plane. */
+export function pickFoundryGolem(clientX:number,clientY:number,bounds:{left:number;top:number},viewport:FoundryViewport,camera:THREE.PerspectiveCamera,roots:THREE.Object3D[]) {
+  const x=(clientX-bounds.left-viewport.left)/viewport.width,y=(clientY-bounds.top-viewport.top)/viewport.height;
+  if(x<0||x>1||y<0||y>1)return undefined;
+  const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(x*2-1,1-y*2),camera);
+  const hit=ray.intersectObjects(roots,true)[0];if(!hit)return undefined;
+  let object:THREE.Object3D|null=hit.object;
+  while(object){if(roots.includes(object))return object;object=object.parent;}
+  return undefined;
 }
 
 export function aimAtFoundry(

@@ -11,7 +11,7 @@ function destroy(r: FoundryRound) {
 
 describe("population et butin de référence", () => {
   it("starts with four fragile 3-HP relics and uses the source starting-population increments", () => {
-    const r = round(); expect(r.version).toBe(13); expect(r.targets).toHaveLength(4);
+    const r = round(); expect(r.version).toBe(14); expect(r.targets).toHaveLength(4);
     expect(r.targets.every((target) => target.kind === "urn" && target.maxHp === 3)).toBe(true);
     const skills = FOUNDRY_REFERENCE_SKILL_IDS.filter((id) => FOUNDRY_REFERENCE_SKILLS[id].branch === "echo");
     expect(createFoundryRound(19, { ...newFoundryCycle(), skills }, "mallet").targets).toHaveLength(22);
@@ -26,6 +26,7 @@ describe("population et butin de référence", () => {
   });
   it("uses the revised family HP while preserving source HP in saved V12 replacements", () => {
     const current = createFoundryRound(41, { ...newFoundryCycle(), orderIndex: 3 }, "mallet");
+    current.version=13;delete current.golems;
     const saved = structuredClone(current); saved.version = 12; delete saved.brokenByKind;
     const kinds = new Set<string>();
     for (let index = 0; index < 80; index++) {

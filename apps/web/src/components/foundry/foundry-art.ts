@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import type { FoundryTool, RelicKind } from "@sylve/game/foundry";
+import { createFoundryGolemArt } from './foundry-golem-art';
 
 type Surface = "ceramic" | "metal" | "stone" | "wood" | "leaf";
 export interface FoundryRelicArt {
@@ -11,6 +12,7 @@ export interface FoundryRelicArt {
 
 /** Shared sculpted meshes and brush-grain materials, owned by one WebGL scene. */
 export function createFoundryArt(mobile: boolean) {
+  const golems=createFoundryGolemArt(mobile);
   const geometries = new Map<string, THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const textures = new Set<THREE.Texture>();
@@ -322,5 +324,5 @@ export function createFoundryArt(mobile: boolean) {
     return root;
   }
   function fallingRock() { return new THREE.Mesh(rockGeo, stone); }
-  return { relic, hammer, shadow, phantomHand, fallingRock, dispose() { geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); textures.forEach((t) => t.dispose()); } };
+  return { relic, golem:golems.create, bomb:golems.bomb, shard:golems.shard, hammer, shadow, phantomHand, fallingRock, dispose() { golems.dispose();geometries.forEach((g) => g.dispose()); materials.forEach((m) => m.dispose()); textures.forEach((t) => t.dispose()); } };
 }

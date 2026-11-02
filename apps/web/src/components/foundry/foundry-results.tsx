@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Amphora, Gem, Footprints, Sparkles, Hammer, RotateCcw } from "lucide-react";
-import { ACTIVE_RELIC_KINDS, FOUNDRY, RELICS, type FoundryRound } from "@sylve/game/foundry";
-import { FoundryShardIcon } from "./foundry-icons";
+import { Hammer, RotateCcw } from "lucide-react";
+import { ACTIVE_RELIC_KINDS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, LEGACY_GOLEM, type FoundryRound } from "@sylve/game/foundry";
+import { FoundryShardIcon, FoundryGolemIcon } from "./foundry-icons";
 
 const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
-const icons = { urn: Amphora, geode: Gem, runner: Footprints, chaos: Sparkles };
 
 export function FoundryResults({ round, saved, notice, command, onContinue, onRetry, onRestore }: {
   round: FoundryRound; saved: boolean; notice: string;
@@ -42,14 +41,11 @@ export function FoundryResults({ round, saved, notice, command, onContinue, onRe
           </dl>
         </section>
         <div className="foundry-results-right">
-          <section className="foundry-results-relics" aria-label="Reliques brisées">
-            <h3>Reliques brisées <strong>{round.broken}</strong></h3>
-            {round.brokenByKind && <div className="foundry-results-kinds">{ACTIVE_RELIC_KINDS.map((kind) => {
-              const Icon = icons[kind]; const count = round.brokenByKind?.[kind] ?? 0;
-              return <div key={kind} className={count ? "" : "is-empty"} title={RELICS[kind].name} aria-label={`${RELICS[kind].name} : ${count}`}>
-                <Icon size={30} aria-hidden="true" /><strong>{count}</strong><span>{RELICS[kind].name}</span>
-              </div>;
-            })}</div>}
+          <section className="foundry-results-relics" aria-label="Golems démontés">
+            <h3>Golems démontés <strong>{round.broken}</strong></h3>
+            {round.golems ? <div className="foundry-results-kinds">{FOUNDRY_GOLEM_IDS.filter(id=>(round.golems!.broken[id]??0)>0).map(id=><div key={id} aria-label={`${FOUNDRY_GOLEMS[id].name} : ${round.golems!.broken[id]}`}><FoundryGolemIcon golem={id} size={54}/><strong>{round.golems!.broken[id]}</strong><span>{FOUNDRY_GOLEMS[id].name}</span></div>)}</div>
+              : round.brokenByKind && <div className="foundry-results-kinds">{ACTIVE_RELIC_KINDS.map(kind=><div key={kind}><FoundryGolemIcon golem={LEGACY_GOLEM[kind]} size={48}/><strong>{round.brokenByKind?.[kind]??0}</strong><span>{FOUNDRY_GOLEMS[LEGACY_GOLEM[kind]].name}</span></div>)}</div>}
+            {!!round.golems?.escaped&&<p className="foundry-results-escaped">{round.golems.escaped} chapardeur{round.golems.escaped>1?'s':''} échappé{round.golems.escaped>1?'s':''} · {number.format(round.golems.lost)} éclats perdus</p>}
           </section>
           {command && <section className="foundry-results-command" aria-label="Progression de la commande">
             <h3>{command.name}</h3>
