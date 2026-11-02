@@ -68,7 +68,7 @@ export function FoundryPage() {
   const [, tick] = useState(0);
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const sidebar = useRef<HTMLElement>(null);
+  const preparationTitle = useRef<HTMLHeadingElement>(null);
   const equipmentTitle = useRef<HTMLHeadingElement>(null);
   const scene = useRef<FoundryScene | null>(null);
   const audio = useRef<Audio | null>(null);
@@ -197,6 +197,7 @@ export function FoundryPage() {
   const dailyProgress = Math.min(3, board?.daily.delivered ?? 0);
   const availableMastery = Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0));
   const endState = cycle?.status === "failed" || cycle?.status === "abandoned" || (cycle?.status === "completed" && !cycle.choices.length);
+  useEffect(() => { if (!inRound) preparationTitle.current?.focus(); }, [inRound]);
   function revision(current: Board) { return { expectedOwnerId: current.ownerId, revision: current.progress!.revision }; }
   function move(event: React.PointerEvent<HTMLDivElement>) {
     if (event.target !== host.current && !(event.target instanceof HTMLCanvasElement) && !event.currentTarget.hasPointerCapture?.(event.pointerId)) { aim.current.active = false; return; }
@@ -215,8 +216,7 @@ export function FoundryPage() {
     <main className="foundry-page" data-phase={phase} data-in-round={inRound}>
       <img className="foundry-background" src="/art/bank-interior-v1.webp" alt="" aria-hidden="true" draggable={false} />
       <div className="foundry-background-shade" aria-hidden="true" />
-      {!inRound && <><GameHeader />
-      <div className="foundry-heading"><h1>La Banque des Échos</h1></div></>}
+      {!inRound && <GameHeader />}
 
       <div className="foundry-layout">
         <section className="foundry-play-column" aria-label="Comptoir de la banque">
@@ -236,42 +236,51 @@ export function FoundryPage() {
               command={resultCommand.current ? { ...resultCommand.current, shards: resultCommand.current.shards + result.shards } : undefined}
               onRetry={() => { setNotice(""); void runtime?.flush(); }}
               onRestore={board?.round ? () => { session.current?.destroy(); session.current = null; attachedId.current = null; attach(board.round!, board.ownerId, true); setNotice(""); } : undefined}
-              onContinue={() => { finalRound.current = null; setRoundResult(null); setPhase("idle"); requestAnimationFrame(() => stage.current?.focus()); }} />}
+              onContinue={() => { finalRound.current = null; setRoundResult(null); setPhase("idle"); }} />}
           </div>
           {inRound && !result && <div className="foundry-under-stage"><span><Wifi size={13} />{runtime?.saving ? "Sauvegarde…" : "Manche sauvegardée au fil des frappes"}</span>{live && <span>{live.broken} cochons · {live.criticals} critiques</span>}</div>}
-
-          {!inRound && <button type="button" className="foundry-mobile-orders" aria-label="Commandes et améliorations" onClick={() => { pause(); sidebar.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" }); }}><ArrowUpRight size={18} /></button>}
         </section>
-        {!inRound && <aside className="foundry-sidebar" ref={sidebar} aria-label="Commandes et améliorations">
-          <section className="foundry-round-menu" aria-label="Préparer une manche">
-            {ready && phase === "idle" && <button type="button" className="foundry-primary" disabled={locked || !cycle?.roundsLeft} onClick={start}><Play size={16} />{busy ? "Préparation…" : "Commencer une manche"}</button>}
-            <div className="foundry-round-toolbar">
-              <div className="foundry-preparation"><button type="button" aria-label="Choisir le marteau" disabled={busy} onClick={() => setEquipment(true)}><FoundryToolIcon tool={tool} size={38} /><span><strong>{foundryToolDefinition(cycle ?? newFoundryCycle(), tool).name}</strong></span><ArrowUpRight size={14} /></button></div>
-              <button type="button" className="foundry-guide-button" aria-label="Guide de la banque" title="Guide de la banque" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={17} /></button>
+        {!inRound && !graphicsError && <aside className="foundry-preparation-overlay" aria-label="Commandes et améliorations">
+          <div className="foundry-preparation-content">
+            <header className="foundry-preparation-heading"><span className="foundry-eyebrow">{progress?.lastSummary ? "Entre deux manches" : "Préparer la manche"}</span><h1 ref={preparationTitle} tabIndex={-1}>La Banque des Échos</h1></header>
+            <div className="foundry-preparation-grid">
+              <div className="foundry-preparation-column">
+                <section className="foundry-order">
+                  <div className="foundry-section-title"><span>Chantier {cycle?.number ?? 1}</span><span aria-label={`${Math.min(5, cycle?.orderIndex ?? 0)} commandes livrées sur 5`}>{Math.min(5, cycle?.orderIndex ?? 0)} / 5</span></div>
+                  <div className="foundry-shard-total"><FoundryShardIcon size={21} /><strong title={`${number.format(cycle?.shards ?? 0)} éclats`}>{amount(cycle?.shards ?? 0)}</strong><span>éclats</span></div>
+                  <div className="foundry-order-divider" />
+                  <h2>{cycle?.freeplay ? "Le comptoir libre" : endState ? cycle?.status === "completed" ? "Chantier terminé" : "Chantier clos" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
+                  {orderCost !== undefined && <>
+                    <div className="foundry-order-price"><span>À livrer</span><b>{number.format(orderCost)}<FoundryShardIcon size={15} /></b></div>
+                    <div className="foundry-order-track" role="progressbar" aria-label="Éclats pour la commande" aria-valuemin={0} aria-valuemax={orderCost} aria-valuenow={Math.min(orderCost, cycle?.shards ?? 0)}><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div>
+                    <div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Commande à livrer" : `${cycle?.roundsLeft ?? 2} ${cycle?.roundsLeft === 1 ? "manche restante" : "manches restantes"}`}</div>
+                  </>}
+                  {cycle && (cycle.economy ?? 0) >= 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre au comptoir libre <ArrowUpRight size={16} /></button>}
+                  {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : !cycle?.freeplay && <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
+                </section>
+                {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<FoundryShardIcon size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
+                {progress?.lastSummary && <div className="foundry-summary" role="status"><span>Dernière récolte</span><strong>+{amount(progress.lastSummary.shards)}<FoundryShardIcon size={14} /></strong></div>}
+              </div>
+              <div className="foundry-preparation-column">
+                <section className="foundry-round-menu" aria-label="Préparer une manche">
+                  <div className="foundry-round-toolbar">
+                    <div className="foundry-preparation"><button type="button" aria-label="Choisir le marteau" disabled={busy} onClick={() => setEquipment(true)}><FoundryToolIcon tool={tool} size={38} /><span><strong>{foundryToolDefinition(cycle ?? newFoundryCycle(), tool).name}</strong></span><ArrowUpRight size={14} /></button></div>
+                    <button type="button" className="foundry-guide-button" aria-label="Guide de la banque" title="Guide de la banque" onClick={() => { pause(); setHelp(true); }} aria-expanded={help}><BookOpen size={17} /></button>
+                  </div>
+                </section>
+                <section className="foundry-build-panel" aria-label="Améliorations">
+                  <button type="button" className="foundry-menu-action" aria-label="Ouvrir l’arbre de compétences" disabled={!cycle} onClick={() => { pause(); setTree("tree"); }}><Hammer size={17} /><span>Compétences</span><b>{cycle?.skills?.length ?? 0} / {foundrySkills(cycle ?? {}).length}</b><ArrowUpRight size={14} /></button>
+                  <button type="button" className="foundry-menu-action" aria-label={`Talismans permanents, ${availableMastery} points disponibles`} title={`${progress?.charms?.length ?? 0} talismans acquis`} disabled={!cycle} onClick={() => { pause(); setTree("charms"); }}><Sparkles size={17} /><span>Talismans</span><b>{availableMastery}</b><ArrowUpRight size={14} /></button>
+                </section>
+                <section className="foundry-daily"><img src="/art/chests/common.webp" onError={(e) => { e.currentTarget.src = "/art/ui/rewards-gift.webp"; }} alt="" /><h2>Coffre quotidien</h2>{board?.daily.claimed ? <span className="foundry-daily-claimed"><Check size={14} /> Reçu</span> : <span className="foundry-daily-progress" role="progressbar" aria-label="Commandes du coffre quotidien" aria-valuemin={0} aria-valuemax={3} aria-valuenow={dailyProgress} aria-valuetext={`${dailyProgress} / 3 commandes livrées aujourd’hui`}>{dailyProgress} / 3</span>}</section>
+                {!!cycle?.blessings.length && <section className="foundry-blessings" aria-label="Bénédictions actives"><div role="list">{cycle.blessings.map((id, i) => <span key={`${id}-${i}`} role="listitem" aria-label={BLESSINGS[id].name} title={`${BLESSINGS[id].name} · ${BLESSINGS[id].detail}`}>{BLESSINGS[id].symbol}</span>)}</div></section>}
+              </div>
             </div>
-          </section>
-          <section className="foundry-order">
-            <div className="foundry-section-title"><span>Chantier {cycle?.number ?? 1}</span><span aria-label={`${Math.min(5, cycle?.orderIndex ?? 0)} commandes livrées sur 5`}>{Math.min(5, cycle?.orderIndex ?? 0)} / 5</span></div>
-            <div className="foundry-shard-total"><FoundryShardIcon size={21} /><strong title={`${number.format(cycle?.shards ?? 0)} éclats`}>{amount(cycle?.shards ?? 0)}</strong><span>éclats</span></div>
-            <div className="foundry-order-divider" />
-            <h2>{cycle?.freeplay ? "Le comptoir libre" : endState ? cycle?.status === "completed" ? "Chantier terminé" : "Chantier clos" : FOUNDRY.orders[cycle?.orderIndex ?? 0] ?? "Dernière bénédiction"}</h2>
-            {orderCost !== undefined && <>
-              <div className="foundry-order-price"><span>À livrer</span><b>{number.format(orderCost)}<FoundryShardIcon size={15} /></b></div>
-              <div className="foundry-order-track" role="progressbar" aria-label="Éclats pour la commande" aria-valuemin={0} aria-valuemax={orderCost} aria-valuenow={Math.min(orderCost, cycle?.shards ?? 0)}><i style={{ width: `${Math.min(100, (cycle?.shards ?? 0) / orderCost * 100)}%` }} /></div>
-              <div className={`foundry-deadline ${cycle?.roundsLeft === 0 ? "is-urgent" : ""}`}>{cycle?.roundsLeft === 0 ? "Commande à livrer" : `${cycle?.roundsLeft ?? 2} manches restantes`}</div>
-            </>}
-            {cycle && (cycle.economy ?? 0) >= 5 && cycle.status === "completed" && <button type="button" className="foundry-primary" disabled={busy || !!cycle.choices.length} onClick={() => action((b) => continueChantier({ ...revision(b), cycleNumber: b.progress!.cycle.number }))}>Poursuivre au comptoir libre <ArrowUpRight size={16} /></button>}
-            {endState ? <button type="button" className="foundry-primary" disabled={busy} onClick={() => action((b) => restart(revision(b)))}><RotateCcw size={15} /> Nouveau chantier</button> : !cycle?.freeplay && <button type="button" className="foundry-primary" disabled={locked || orderCost === undefined || (cycle?.shards ?? 0) < orderCost} onClick={() => action((b) => pay({ ...revision(b), cycleNumber: b.progress!.cycle.number, orderIndex: b.progress!.cycle.orderIndex }))}>Livrer la commande <ArrowUpRight size={16} /></button>}
-          </section>
-          {!!cycle?.coinBank && <div className="foundry-coin-bank"><span>Pluie d’éclats</span><strong title={`${number.format(cycle.coinBank)} éclats en réserve`}>{amount(cycle.coinBank)}<FoundryShardIcon size={14} /></strong><span title="Destructions avant la prochaine pluie">{cycle.coinCount ?? 0} / 20</span></div>}
-          {progress?.lastSummary && <div className="foundry-summary" role="status"><span>Dernière récolte</span><strong>+{amount(progress.lastSummary.shards)}<FoundryShardIcon size={14} /></strong></div>}
-          <section className="foundry-build-panel" aria-label="Améliorations">
-            <button type="button" className="foundry-menu-action" aria-label="Ouvrir l’arbre de compétences" disabled={!cycle} onClick={() => { pause(); setTree("tree"); }}><Hammer size={17} /><span>Compétences</span><b>{cycle?.skills?.length ?? 0} / {foundrySkills(cycle ?? {}).length}</b><ArrowUpRight size={14} /></button>
-            <button type="button" className="foundry-menu-action" aria-label={`Talismans permanents, ${availableMastery} points disponibles`} title={`${progress?.charms?.length ?? 0} talismans acquis`} disabled={!cycle} onClick={() => { pause(); setTree("charms"); }}><Sparkles size={17} /><span>Talismans</span><b>{availableMastery}</b><ArrowUpRight size={14} /></button>
-          </section>
-          <section className="foundry-daily"><img src="/art/chests/common.webp" onError={(e) => { e.currentTarget.src = "/art/ui/rewards-gift.webp"; }} alt="" /><h2>Coffre quotidien</h2>{board?.daily.claimed ? <span className="foundry-daily-claimed"><Check size={14} /> Reçu</span> : <span className="foundry-daily-progress" role="progressbar" aria-label="Commandes du coffre quotidien" aria-valuemin={0} aria-valuemax={3} aria-valuenow={dailyProgress} aria-valuetext={`${dailyProgress} / 3 commandes livrées aujourd’hui`}>{dailyProgress} / 3</span>}</section>
-          {!!cycle?.blessings.length && <section className="foundry-blessings" aria-label="Bénédictions actives"><div role="list">{cycle.blessings.map((id, i) => <span key={`${id}-${i}`} role="listitem" aria-label={BLESSINGS[id].name} title={`${BLESSINGS[id].name} · ${BLESSINGS[id].detail}`}>{BLESSINGS[id].symbol}</span>)}</div></section>}
-          {cycle?.status === "active" && <button type="button" className="foundry-close-cycle" aria-label="Clore ce chantier et préparer le suivant" disabled={busy || !!cycle.choices.length} onClick={() => setClosing(true)}>Clore le chantier</button>}
+            <footer className="foundry-preparation-actions">
+              {ready && phase === "idle" && <button type="button" className="foundry-primary" disabled={locked || !cycle?.roundsLeft} onClick={start}><Play size={18} />{busy ? "Préparation…" : "Commencer une manche"}</button>}
+              {cycle?.status === "active" && <button type="button" className="foundry-close-cycle" aria-label="Clore ce chantier et préparer le suivant" disabled={busy || !!cycle.choices.length} onClick={() => setClosing(true)}>Clore le chantier</button>}
+            </footer>
+          </div>
         </aside>}
       </div>
       {!inRound && tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={locked} busy={busy} inRound={inRound} onSkill={(skill) => action((b) => purchaseSkill({ ...revision(b), skill }))} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}

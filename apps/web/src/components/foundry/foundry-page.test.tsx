@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMutation, useQuery } from "convex/react";
 import { getFunctionName, type FunctionReturnType } from "convex/server";
@@ -115,8 +115,12 @@ describe("la banque à l’écran", () => {
     expect(screen.queryByRole("button", { name: "Choisir le marteau" })).toBeNull();
     expect(screen.queryByRole("button", { name: /Acheter Brise-roche/ })).toBeNull();
   });
-  it("keeps the final board and results visible after saving until the player opens improvements", async () => {
+  it("returns from results to preparation without recreating the game table", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
+    const table = screen.getByRole("application");
+    const preparation = screen.getByRole("complementary", { name: "Commandes et améliorations" });
+    expect(within(preparation).getByRole("button", { name: "Commencer une manche" })).toBeTruthy();
+    expect(within(preparation).getByRole("button", { name: "Choisir le marteau" })).toBeTruthy();
     const state = createFoundryRound(1, legacyCycle(), "mallet"); state.concentration = 0.1; state.targets = [];
     mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "last-strike", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "last-strike", startedAt: 0, finished: false, batches: [], state });
     mutations.get("foundry:submitInputs")!.mockImplementation(async ({ inputs }) => { inputs.forEach((input: Parameters<typeof stepFoundry>[1]) => stepFoundry(state, input)); return structuredClone(state); });
@@ -127,11 +131,16 @@ describe("la banque à l’écran", () => {
     expect(mutations.get("foundry:finishRound")).toHaveBeenCalledOnce();
     expect(screen.getByRole("dialog", { name: "Main fatiguée" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Éclats récoltés" })).toBeTruthy();
+    expect(screen.queryByRole("complementary", { name: "Commandes et améliorations" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeNull();
     expect(sceneOptions.state().ended).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "Améliorations" }));
     expect(screen.queryByRole("dialog", { name: "Main fatiguée" })).toBeNull();
     expect(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" })).toBeTruthy(); expect(screen.getByRole("link", { name: "Retour au refuge" })).toBeTruthy();
+    expect(within(screen.getByRole("complementary", { name: "Commandes et améliorations" })).getByRole("button", { name: "Commencer une manche" })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "La Banque des Échos" }));
+    expect(screen.getByRole("application")).toBe(table);
+    expect(createFoundryScene).toHaveBeenCalledOnce();
   });
   it("shows the recap while saving and lets a failed final save be retried before leaving", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();
