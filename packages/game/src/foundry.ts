@@ -2,9 +2,11 @@ import { stepFoundryComplete, completeStrikeCost } from './foundry-complete';
 import { FOUNDRY_POPULATION, FOUNDRY_PACING, FOUNDRY_RELIC_PROFILES } from './foundry-population';
 import { FOUNDRY_GOLEMS, foundryGolemPool, type FoundryGolemId } from './foundry-golems';
 import { reflectBankPig, type BankPigMotion } from './foundry-pig-motion';
+import { newFoundryPigProgress, foundryPigProgress, gainFoundryPigXP, selectFoundryPig, type FoundryPigProgress, type FoundryPigCounts } from './foundry-pig-progression';
 export * from './foundry-golems';
 export * from './foundry-pig-motion';
 export * from './foundry-population';
+export * from './foundry-pig-progression';
 import { TOOLS, foundryTools, foundryToolDefinition, legacyFoundryTool, type FoundryTool } from "./foundry-tools";
 export * from "./foundry-tools";
 import { BLESSINGS, BLESSING_IDS, FOUNDRY_SKILLS, FOUNDRY_CHARMS, FOUNDRY_RARITY, foundryModifiers,
@@ -14,7 +16,7 @@ export * from "./foundry-catalog";
 
 /** Deterministic foundry rules. World coordinates are shared with the 3D renderer. */
 export const FOUNDRY = {
-  version: 15, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
+  version: 16, stepMs: 50, legacyMaxTicks: 1500, batchTicks: 40, maxBatchTicks: 100, maxDraftInputs: 2400,
   maxTargets: 16, fullMaxTargets: 32, fullRelicScale: 0.8, width: 11.2, depth: 6.8, concentration: 100, drainPerTick: 0.1, staminaPerStrike: 1,
   roundsPerOrder: 3, baseTargets: 12, freezeEveryTicks: 60, freezeTicks: 50, berserkTicks: 60, burnTicks: 60, burnEveryTicks: 10,
   collisionPasses: 24, collisionGap: 0.001, spawnAttempts: 48,
@@ -50,19 +52,22 @@ export interface FoundryCycle {
   upgrades: Record<FoundryUpgrade, number>; blessings: FoundryBlessing[];
   choices: FoundryBlessing[]; skills?: FoundrySkillId[]; seed?: number; economy?: 2 | 3 | 4 | 5 | 6; freeplay?: boolean; freeplayRounds?: number; coinBank?: number; coinCount?: number; status: "active" | "failed" | "completed" | "abandoned";
   purchasedTools?: FoundryTool[]; selectedTool?: FoundryTool;
+  pigs?: FoundryPigProgress;
 }
 export interface FoundryStats { damage: number; interval: number; radius: number; critical: number; loot: number; concentration: number; stamina?: number }
 export interface FoundryRelic { id: number; kind: RelicKind; x: number; z: number; hp: number; maxHp: number; vx: number; vz: number; phase: number; glowing?: boolean; bonusLoot?: number;
   golem?: FoundryGolemId; rageUntil?:number; nextAbility?:number; stolen?:number; escapeAt?:number; motion?: BankPigMotion }
 export interface FoundryInput { x: number; z: number; active: boolean }
 export interface FoundryRound {
-  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15; rng: number; nextId: number; tick: number; concentration: number;
+  version: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16; rng: number; nextId: number; tick: number; concentration: number;
   stats: FoundryStats; tool: FoundryTool; nextStrike: number;
   /** Older saved rounds keep their original stats and companion metadata. */
   assistant?: "smith" | "dryad" | "feline";
   shards: number; broken: number; hits: number; criticals: number; ended: boolean;
   brokenByKind?: Partial<Record<RelicKind, number>>;
-  golems?: { broken:Partial<Record<FoundryGolemId,number>>; bombs:{at:number;x:number;z:number}[]; reinforcements:number; escaped:number; lost:number; recovered?:number };
+  pigs?: FoundryPigProgress;
+  golems?: { broken:Partial<Record<FoundryGolemId,number>>; bombs:{at:number;x:number;z:number}[]; reinforcements:number; escaped:number; lost:number; recovered?:number;
+    pity?: FoundryPigCounts; xpGained?: FoundryPigCounts; lastBroken?: FoundryGolemId; unlocked?: FoundryGolemId[]; lastProgress?: {at:number;pig:FoundryGolemId;level:number;unlocked:FoundryGolemId[]} };
   targets: FoundryRelic[];
   rogue?: { modifiers: FoundryModifiers; capacity: number; pressure: number; frenzyUntil: number; frozenUntil: number; nextFreeze: number; strikes: number; jackpots: number; wealth?: number; relicStage?: number; recoveryReserve?: number;
     complete?: { modifiers: FoundryCompleteModifiers; baseCadence: number; hits: number; misses: number; guardUsed: boolean; windUsed: boolean; lastStandUsed: boolean; windUntil: number; tantrumUntil: number; rageUntil: number; nextRay: number; nextSpawn: number; pendingSpawns: number; nextEmptySpawn?: number; nextStorm: number; stormUntil: number; coinBank: number; coinCount: number; superJackpots: number; rocks: { at: number; x: number; z: number; announced: boolean }[] };
@@ -86,7 +91,7 @@ export function foundryStrikeCost(round: FoundryRound): number {
 }
 
 export function newFoundryCycle(number = 1, seed = Math.imul(number, 2654435761) >>> 0): FoundryCycle {
-  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], purchasedTools: [], selectedTool: "mallet", seed, economy: 6, status: "active" };
+  return { number, shards: 0, orderIndex: 0, roundsLeft: FOUNDRY.roundsPerOrder, upgrades: { power: 0, focus: 0, fortune: 0 }, blessings: [], choices: [], skills: [], purchasedTools: [], selectedTool: "mallet", seed, economy: 6, status: "active", pigs: newFoundryPigProgress() };
 }
 export function ownsFoundryTool(cycle: FoundryCycle, tool: FoundryTool): boolean {
   return tool === "mallet" || !!cycle.purchasedTools?.includes(tool);
@@ -133,8 +138,9 @@ function spawn(state: FoundryRound, forcedGolem?:FoundryGolemId): FoundryRelic {
   const scale = state.version >= 11 ? FOUNDRY.fullRelicScale : 1;
   const kinds = state.version >= 12 ? ACTIVE_RELIC_KINDS.filter((kind) => FOUNDRY_RELIC_PROFILES[kind].unlockOrder <= (state.rogue?.relicStage ?? 0)) : state.version >= 7 ? ACTIVE_RELIC_KINDS : RELIC_KINDS;
   const pool=state.version>=14?foundryGolemPool(state.rogue?.relicStage??0,state.targets,state.golems?.bombs.length):[];
-  let ticket=state.version>=14?random(state)*pool.reduce((sum,id)=>sum+FOUNDRY_GOLEMS[id].weight,0):0;
-  const golem=state.version>=14?(forcedGolem??pool.find(id=>(ticket-=FOUNDRY_GOLEMS[id].weight)<0)??'copper'):undefined;
+  let ticket=state.version>=14&&state.version<16?random(state)*pool.reduce((sum,id)=>sum+FOUNDRY_GOLEMS[id].weight,0):0;
+  const golem=state.version>=16?forcedGolem??selectFoundryPig(state.pigs!,state.targets,state.golems!.bombs.length,state.golems!.pity??={},()=>random(state))
+    :state.version>=14?(forcedGolem??pool.find(id=>(ticket-=FOUNDRY_GOLEMS[id].weight)<0)??'copper'):undefined;
   let roll = golem?0:random(state) * kinds.reduce((total, id) => total + RELICS[id].weight, 0);
   const kind = golem?FOUNDRY_GOLEMS[golem].kind:kinds.find((id) => (roll -= RELICS[id].weight) < 0) ?? "urn";
   let x = 0; let z = 0;
@@ -238,10 +244,11 @@ export function createFoundryRound(seed: number, cycle: FoundryCycle, tool: Foun
   const stats = foundryStats(cycle, tool, charms);
   const modifiers = foundryModifiers(cycle, charms);
   modifiers.criticalDamage += foundryToolDefinition(cycle, tool).criticalDamage;
-  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 15 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
+  const state: FoundryRound = { version: (cycle.economy ?? 0) >= 6 ? 16 : cycle.economy === 5 ? 11 : cycle.economy === 4 ? 10 : cycle.economy === 3 ? 9 : 8, rng: (seed >>> 0) || 1, nextId: 1, tick: 0, concentration: stats.concentration,
     stats, tool, nextStrike: 0, shards: 0, broken: 0, hits: 0, criticals: 0, ended: false, targets: [],
     ...((cycle.economy ?? 0) >= 6 ? { brokenByKind: {} } : {}),
     ...((cycle.economy ?? 0) >= 6 ? { golems:{broken:{},bombs:[],reinforcements:0,escaped:0,lost:0,recovered:0} } : {}),
+    ...((cycle.economy ?? 0) >= 6 ? { pigs: foundryPigProgress(cycle) } : {}),
     rogue: { modifiers, capacity: Math.min((cycle.economy ?? 0) >= 5 ? FOUNDRY.fullMaxTargets : FOUNDRY.maxTargets, ((cycle.economy ?? 0) >= 6 ? FOUNDRY_POPULATION.baseTargets : FOUNDRY.baseTargets) + modifiers.capacity), pressure: (cycle.economy ?? 0) >= 6 ? 1 : (cycle.economy ?? 0) >= 3 ? FOUNDRY.resistances[stage]! : 1 + cycle.orderIndex * 0.2,
       ...((cycle.economy ?? 0) >= 6 ? { relicStage: stage } : {}),
       ...(cycle.economy && cycle.economy >= 3 ? { wealth: foundryLootMultiplier(cycle), recoveryReserve: 0 } : {}),
@@ -467,6 +474,11 @@ export function settleFoundryRound(cycle: FoundryCycle, round: FoundryRound): Fo
   const next = { ...cycle, shards: cycle.shards + round.shards, roundsLeft: cycle.freeplay ? FOUNDRY.roundsPerOrder : cycle.roundsLeft - 1,
     ...((cycle.economy ?? 0) >= 5 ? { coinBank: round.rogue?.complete?.coinBank ?? 0, coinCount: round.rogue?.complete?.coinCount ?? 0 } : {}),
     ...(cycle.freeplay ? { freeplayRounds: (cycle.freeplayRounds ?? 0) + 1 } : {}) };
+  if ((cycle.economy ?? 0) >= 6) {
+    next.pigs = round.pigs ? foundryPigProgress({ pigs: round.pigs, orderIndex: cycle.orderIndex }) : foundryPigProgress(cycle);
+    // A saved V14/V15 round finishes with its original rules, then contributes its actual kills.
+    if (!round.pigs) for (const [pig, count] of Object.entries(round.golems?.broken ?? {})) gainFoundryPigXP(next.pigs, pig as FoundryGolemId, count);
+  }
   if (!next.roundsLeft && next.shards < foundryOrderCost(next)!) next.status = "failed";
   return next;
 }

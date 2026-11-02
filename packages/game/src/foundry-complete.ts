@@ -3,6 +3,7 @@ import { FOUNDRY, RELICS, ACTIVE_RELIC_KINDS, foundryRandom, spawnFoundryRelic, 
 import { FOUNDRY_TECHNIQUES as T } from './foundry-complete-rules';
 import { FOUNDRY_POPULATION, foundryReferenceDrop } from './foundry-population';
 import { FOUNDRY_GOLEMS, FOUNDRY_GOLEM_RULES as G, FOUNDRY_GOLEM_BALANCE } from './foundry-golems';
+import { foundryPigLootMultiplier, gainFoundryPigXP } from './foundry-pig-progression';
 import { moveFoundryGolems, tickFoundryGolemAbilities, collectFoundryGolemLoot } from './foundry-golem-behavior';
 
 export function completeCadence(state: FoundryRound): number {
@@ -116,11 +117,20 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
     target.hp=Math.max(0,target.hp-damage);if(hit.critical&&mods.execute>0&&target.hp/target.maxHp<=mods.execute)target.hp=0;
     const broken=target.hp===0;let loot=0;state.hits++;if(hit.critical)state.criticals++;
     if(target.golem==='ember'&&!broken)target.rageUntil=state.tick+G.rageTicks;
-    if(hit.shake){loot=target.golem==='thief'?0:Math.max(1,Math.round(lootRoll(target)*state.stats.loot*(rogue.wealth??1)*m.luckySeven));if(state.golems)loot=collectFoundryGolemLoot(state,target,loot,destroyed);state.shards+=loot;frame.effects!.push({kind:'coinrain',x:target.x,z:target.z});}
+    const levelLoot=state.version>=16&&state.pigs&&target.golem?foundryPigLootMultiplier(state.pigs,target.golem):1;
+    if(hit.shake){loot=target.golem==='thief'?0:Math.max(1,Math.round(lootRoll(target)*state.stats.loot*(rogue.wealth??1)*m.luckySeven*levelLoot));if(state.golems)loot=collectFoundryGolemLoot(state,target,loot,destroyed);state.shards+=loot;frame.effects!.push({kind:'coinrain',x:target.x,z:target.z});}
     if(broken){
       destroyed.add(target.id);state.broken++;
       if(state.brokenByKind)state.brokenByKind[target.kind]=(state.brokenByKind[target.kind]??0)+1;
       if(state.golems&&target.golem)state.golems.broken[target.golem]=(state.golems.broken[target.golem]??0)+1;
+      if(state.version>=16&&state.pigs&&state.golems&&target.golem){
+        const previousXP=state.pigs.xp[target.golem]??0;
+        const advancement=gainFoundryPigXP(state.pigs,target.golem);
+        (state.golems.xpGained??={})[target.golem]=(state.golems.xpGained?.[target.golem]??0)+(state.pigs.xp[target.golem]??0)-previousXP;
+        state.golems.lastBroken=target.golem;
+        if(advancement.unlocked.length)(state.golems.unlocked??=[]).push(...advancement.unlocked);
+        if(advancement.level>advancement.before||advancement.unlocked.length)state.golems.lastProgress={at:state.tick,pig:target.golem,level:advancement.level,unlocked:advancement.unlocked};
+      }
       const bonus=1+(hit.critical?mods.criticalLoot:0)+(target.kind==='geode'?mods.geodeLoot:0)+extra.lootPerType*ACTIVE_RELIC_KINDS.length
         +(intact&&hit.direct?mods.oneShotLoot:0)+Math.min(0.25,(state.broken-1)*mods.lootGrowth)+(low()?m.lowStaminaLoot:0)+(target.bonusLoot??0);
       const superJackpot=roll(m.superJackpotChance),jackpot=superJackpot||roll(Math.max(mods.jackpotChance,hit.critical?m.luckyStrike:0));
@@ -129,7 +139,7 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
         : undefined;
       const amount=sourced?.amount ?? (superJackpot?RELICS[target.kind].loot[1]:lootRoll(target));
       const luminous=target.glowing&&roll(extra.glowingBonusChance)?1+extra.glowingBonus:1;
-      let payment=Math.max(1,Math.round(amount*state.stats.loot*(rogue.wealth??1)*bonus*(jackpot?2:1)*luminous));
+      let payment=Math.max(1,Math.round(amount*state.stats.loot*(rogue.wealth??1)*bonus*(jackpot?2:1)*luminous*levelLoot));
       if(target.golem==='thief')payment=Math.round((target.stolen??0)*G.payback);
       if(state.golems)payment=collectFoundryGolemLoot(state,target,payment,destroyed);
       if(m.coinRain&&payment>0){full.coinBank+=Math.max(1,Math.round(payment*m.coinGrowth));full.coinCount++;if(full.coinCount>=T.coins.burst){payment+=full.coinBank;full.coinBank=0;full.coinCount=0;frame.effects!.push({kind:'coinrain',x:target.x,z:target.z});}}
@@ -139,7 +149,8 @@ export function stepFoundryComplete(state: FoundryRound,input:FoundryInput):Foun
       if(target.glowing&&roll(m.glowingSpreadChance))for(const neighbour of state.targets)if(!destroyed.has(neighbour.id)&&Math.hypot(neighbour.x-target.x,neighbour.z-target.z)<=m.glowingSpreadRange)neighbour.glowing=true;
       if(state.broken===1)restore(mods.firstKillRecovery);
       if(target.golem==='sap'){const actual=refund(Math.min(G.restore,state.stats.concentration-state.concentration));rogue.recoveryReserve=Math.max(0,(rogue.recoveryReserve??0)-actual);}
-      if(target.golem==='copper'&&(rogue.relicStage??0)>=FOUNDRY_GOLEMS.reinforcement.unlock&&roll(G.reinforcementChance))state.golems!.reinforcements++;
+      const reinforcementUnlocked=state.version>=16?state.pigs?.unlocked.includes('reinforcement'):(rogue.relicStage??0)>=FOUNDRY_GOLEMS.reinforcement.unlock;
+      if(target.golem==='copper'&&reinforcementUnlocked&&roll(G.reinforcementChance))state.golems!.reinforcements++;
       if(target.golem==='furnace')state.golems!.bombs.push({at:state.tick+G.fuseTicks,x:target.x,z:target.z});
       if(target.golem==='shrapnel') {
         const neighbours=state.targets.filter(t=>!destroyed.has(t.id)&&Math.hypot(t.x-target.x,t.z-target.z)<=G.shrapnelRange)

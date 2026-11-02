@@ -64,7 +64,7 @@ describe('les dix golems de forge et les huit capacités des cochons',()=>{
     stepFoundry(r,miss);expect(r.targets).toHaveLength(0);expect(r.golems).toMatchObject({escaped:1,lost:10});expect(r.broken).toBe(0);
   });
   it('calls the stronger reinforcement after an unlocked copper death without exceeding learned population',()=>{
-    const r=arena(['copper']);r.rogue!.relicStage=1;r.targets[0]!.hp=1;r.targets[0]!.glowing=true;r.rng=1;
+    const r=arena(['copper']);r.pigs!.xp.copper=54;r.targets[0]!.hp=1;r.targets[0]!.glowing=true;r.rng=1;
     strike(r);expect(r.targets.map(t=>t.golem)).toEqual(['reinforcement']);
     expect(foundryGolemPool(4,[],1)).not.toContain('furnace');
     expect(foundryGolemPool(4,[{golem:'thief'},{golem:'ember'},{golem:'ember'}])).not.toContain('thief');

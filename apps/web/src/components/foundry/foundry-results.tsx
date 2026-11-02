@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Hammer, RotateCcw } from "lucide-react";
-import { ACTIVE_RELIC_KINDS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, LEGACY_GOLEM, type FoundryRound } from "@sylve/game/foundry";
+import { ACTIVE_RELIC_KINDS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, foundryPigLevel, LEGACY_GOLEM, type FoundryRound } from "@sylve/game/foundry";
 import { FoundryShardIcon, FoundryPigIcon } from "./foundry-icons";
 
 const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
@@ -43,9 +43,10 @@ export function FoundryResults({ round, saved, notice, command, onContinue, onRe
         <div className="foundry-results-right">
           <section className="foundry-results-relics" aria-label="Cochons brisés">
             <h3>Cochons brisés <strong>{round.broken}</strong></h3>
-            {round.golems ? <div className="foundry-results-kinds">{FOUNDRY_GOLEM_IDS.filter(id=>(round.golems!.broken[id]??0)>0).map(id=><div key={id} aria-label={`${FOUNDRY_GOLEMS[id].name} : ${round.golems!.broken[id]}`}><FoundryPigIcon pig={id} size={54}/><strong>{round.golems!.broken[id]}</strong><span>{FOUNDRY_GOLEMS[id].name}</span></div>)}</div>
+            {round.golems ? <div className="foundry-results-kinds">{FOUNDRY_GOLEM_IDS.filter(id=>(round.golems!.broken[id]??0)>0).map(id=><div key={id} aria-label={`${FOUNDRY_GOLEMS[id].name} : ${round.golems!.broken[id]}`}><FoundryPigIcon pig={id} size={54}/><strong>{round.golems!.broken[id]}</strong><span>{FOUNDRY_GOLEMS[id].name}</span>{round.pigs && <small>Niv. {foundryPigLevel(round.pigs,id)} · +{round.golems!.xpGained?.[id] ?? 0} XP</small>}</div>)}</div>
               : round.brokenByKind && <div className="foundry-results-kinds">{ACTIVE_RELIC_KINDS.map(kind=><div key={kind}><FoundryPigIcon pig={LEGACY_GOLEM[kind]} size={48}/><strong>{round.brokenByKind?.[kind]??0}</strong><span>{FOUNDRY_GOLEMS[LEGACY_GOLEM[kind]].name}</span></div>)}</div>}
             {!!round.golems?.escaped&&<p className="foundry-results-escaped">{round.golems.escaped} chapardeur{round.golems.escaped>1?'s':''} échappé{round.golems.escaped>1?'s':''} · {number.format(round.golems.lost)} éclats perdus</p>}
+            {!!round.golems?.unlocked?.length && <div className="foundry-results-unlocks"><h4>Nouveaux cochons débloqués</h4>{round.golems.unlocked.map(id => <span key={id}><FoundryPigIcon pig={id} size={32} />{FOUNDRY_GOLEMS[id].name}</span>)}</div>}
           </section>
           {command && <section className="foundry-results-command" aria-label="Progression de la commande">
             <h3>{command.name}</h3>

@@ -6,7 +6,7 @@ import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, R
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { BLESSINGS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, foundryToolDefinition, foundrySkills, foundryLootMultiplier, FOUNDRY_RARITY,
-  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, type FoundryInput, type FoundryTool, type FoundryRound } from "@sylve/game/foundry";
+  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, foundryPigProgress, type FoundryInput, type FoundryTool, type FoundryRound } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
@@ -16,6 +16,7 @@ import { FoundrySkillTree } from "./foundry-skill-tree";
 import { FoundryEquipment } from "./foundry-equipment";
 import { FoundryStamina } from "./foundry-stamina";
 import { FoundryResults } from "./foundry-results";
+import { FoundryPigCollection, FoundryPigLiveProgress, FoundryPigNextUnlock } from "./foundry-pig-progression";
 import type { FoundryScene } from "./foundry-scene";
 
 const number = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
@@ -60,6 +61,7 @@ export function FoundryPage() {
   const [sound, setSound] = useState(true);
   const [help, setHelp] = useState(false);
   const [equipment, setEquipment] = useState(false);
+  const [pigCollection, setPigCollection] = useState(false);
   const [tree, setTree] = useState<"tree" | "charms" | null>(null);
   const [closing, setClosing] = useState(false);
   const [roundResult, setRoundResult] = useState<FoundryRound | null>(null);
@@ -189,6 +191,8 @@ export function FoundryPage() {
     });
   }
   const progress = board?.progress; const cycle = progress?.cycle;
+  const hasPigProgression = (cycle?.economy ?? 0) >= 6;
+  const pigs = foundryPigProgress(cycle ?? newFoundryCycle());
   const runtime = session.current; const live = runtime?.state;
   const result = roundResult ?? (live?.ended ? live : null);
   const inRound = !!board?.round || !!runtime || !!result;
@@ -226,6 +230,7 @@ export function FoundryPage() {
             <div className="foundry-canvas" ref={host} />
             <button type="button" className="foundry-sound-button" disabled={!!result} aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
             {live && !result && <div className="foundry-run-hud"><FoundryStamina key={attachedId.current} value={live.concentration} maximum={live.stats.concentration} cost={live.version >= 6 ? foundryStrikeCost(live) : undefined} /><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
+            {live && !result && <FoundryPigLiveProgress round={live} />}
             {live?.rogue && <div className="foundry-active-effects" aria-live="polite">{live.rogue.frenzyUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.frenzyUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.frozenUntil > live.tick && <span className="is-frozen">❄ Gel · {((live.rogue.frozenUntil - live.tick) / 20).toFixed(1)} s</span>}{live.rogue.burns.length > 0 && <span>♨ {live.rogue.burns.length} cochons embrasés</span>}{live.rogue.jackpots > 0 && <span>✦ {live.rogue.jackpots} jackpots</span>}{(live.rogue.reference?.combo ?? 0) > 1 && <span>Combo ×{live.rogue.reference!.combo}</span>}{live.rogue.complete && <>{live.rogue.complete.rageUntil > live.tick && <span className="is-fury">ϟ Fureur · {((live.rogue.complete.rageUntil-live.tick)/20).toFixed(1)} s</span>}{live.rogue.complete.windUntil > live.tick && <span>❋ Second souffle</span>}{live.rogue.complete.tantrumUntil > live.tick && <span>◆ Colère</span>}{live.rogue.complete.rocks.length > 0 && <span>Pluie de roches</span>}{live.rogue.complete.modifiers.coinRain > 0 && <span>◇ Réserve {amount(live.rogue.complete.coinBank)} · {live.rogue.complete.coinCount}/20</span>}</>}</div>}
             {!ready && !graphicsError && <div className="foundry-curtain"><span className="foundry-loading-orb" /><p>Le comptoir ouvre ses portes…</p></div>}
             {graphicsError && <div className="foundry-curtain"><Hammer size={34} /><h2>Le comptoir 3D est indisponible</h2><p>La banque a besoin de WebGL 2. Essaie un navigateur récent avec l’accélération graphique activée.</p><Link to="/hub" className="foundry-primary">Retour au refuge</Link></div>}
@@ -269,9 +274,11 @@ export function FoundryPage() {
                   </div>
                 </section>
                 <section className="foundry-build-panel" aria-label="Améliorations">
+                  {hasPigProgression && <button type="button" className="foundry-menu-action" aria-label="Progression des cochons" disabled={!cycle} onClick={() => setPigCollection(true)}><FoundryPigIcon pig="copper" size={24} /><span>Cochons</span><b>{pigs.unlocked.length} / {FOUNDRY_GOLEM_IDS.length}</b><ArrowUpRight size={14} /></button>}
                   <button type="button" className="foundry-menu-action" aria-label="Ouvrir l’arbre de compétences" disabled={!cycle} onClick={() => { pause(); setTree("tree"); }}><Hammer size={17} /><span>Compétences</span><b>{cycle?.skills?.length ?? 0} / {foundrySkills(cycle ?? {}).length}</b><ArrowUpRight size={14} /></button>
                   <button type="button" className="foundry-menu-action" aria-label={`Talismans permanents, ${availableMastery} points disponibles`} title={`${progress?.charms?.length ?? 0} talismans acquis`} disabled={!cycle} onClick={() => { pause(); setTree("charms"); }}><Sparkles size={17} /><span>Talismans</span><b>{availableMastery}</b><ArrowUpRight size={14} /></button>
                 </section>
+                {hasPigProgression && <FoundryPigNextUnlock progress={pigs} onOpen={() => setPigCollection(true)} />}
                 <section className="foundry-daily"><img src="/art/chests/common.webp" onError={(e) => { e.currentTarget.src = "/art/ui/rewards-gift.webp"; }} alt="" /><h2>Coffre quotidien</h2>{board?.daily.claimed ? <span className="foundry-daily-claimed"><Check size={14} /> Reçu</span> : <span className="foundry-daily-progress" role="progressbar" aria-label="Commandes du coffre quotidien" aria-valuemin={0} aria-valuemax={3} aria-valuenow={dailyProgress} aria-valuetext={`${dailyProgress} / 3 commandes livrées aujourd’hui`}>{dailyProgress} / 3</span>}</section>
                 {!!cycle?.blessings.length && <section className="foundry-blessings" aria-label="Bénédictions actives"><div role="list">{cycle.blessings.map((id, i) => <span key={`${id}-${i}`} role="listitem" aria-label={BLESSINGS[id].name} title={`${BLESSINGS[id].name} · ${BLESSINGS[id].detail}`}>{BLESSINGS[id].symbol}</span>)}</div></section>}
               </div>
@@ -284,13 +291,15 @@ export function FoundryPage() {
         </aside>}
       </div>
       {!inRound && tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={locked} busy={busy} inRound={inRound} onSkill={(skill) => action((b) => purchaseSkill({ ...revision(b), skill }))} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}
-      <Dialog open={closing && !inRound} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs et bénédictions de ce chantier seront perdus. Les marteaux achetés devront être rachetés au prochain essai. Tu conserves ta maîtrise et tes talismans.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
+      <Dialog open={pigCollection && !inRound && hasPigProgression} onOpenChange={setPigCollection}><DialogContent className="foundry-preparation-dialog foundry-pig-dialog"><DialogTitle>Les cochons du comptoir</DialogTitle><FoundryPigCollection progress={pigs} /></DialogContent></Dialog>
+      <Dialog open={closing && !inRound} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs, bénédictions et niveaux des cochons de ce chantier seront perdus. Les marteaux achetés devront être rachetés au prochain essai. Tu conserves ta maîtrise et tes talismans.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
       <Dialog open={help && !inRound} onOpenChange={setHelp}>
         <DialogContent className="foundry-preparation-dialog"><DialogTitle>Les tirelires du comptoir</DialogTitle>
           <section className="foundry-guide" aria-label="Guide de la banque">
             <p><strong>Le marteau frappe à sa cadence, même dans le vide.</strong> Déplace la souris ou glisse le doigt pour viser. Les flèches déplacent aussi la visée. Chaque coup consomme de la stamina, même dans le vide. Elle ne diminue pas entre les frappes. La manche continue tant qu’il en reste : les améliorations de récupération peuvent la prolonger. Le maillet commence à 1 dégât hors critique ; les améliorations renforcent ensuite ses frappes. Échap met en pause.</p>
             {cycle && (cycle.economy ?? 0) >= 3 && (cycle.economy ?? 0) < 6 && !endState && <p>Filon {Math.min(5, cycle.orderIndex + 1)} · butin ×{number.format(foundryLootMultiplier(cycle))} · résistance ×{number.format(FOUNDRY.resistances[Math.min(4, cycle.orderIndex)]!)}</p>}
             {(cycle?.economy ?? 0) >= 6 && <p>La manche commence avec 4 cochons, plus ceux appris dans l’arbre. Un cochon revient après 0,5 seconde si le comptoir est vide. Éveil régulier ajoute une apparition toutes les 7 secondes, puis 5 secondes avec Éveil accéléré. Les retours à la destruction dépendent de tes savoirs. Chaque famille a ses propres paliers de butin et jackpots.</p>}
+            {(cycle?.economy ?? 0) >= 6 && <p>Chaque cochon cassé donne de l’XP à son espèce : 1 XP, ou 2 pour The Tourist. Les niveaux vont de 0 à 10 et augmentent le butin de 10 % par niveau. Le niveau 1 ouvre l’espèce suivante ; Normalito niveau 2 débloque aussi Brotalito. Les espèces moins avancées sont favorisées dans les apparitions. Un nouveau cochon est garanti au prochain tirage disponible, et les espèces rares ont un rattrapage. Consulte Cochons pour les niveaux, conditions et taux actuels. Ta progression reste acquise entre les manches et les commandes du chantier.</p>}
             {(cycle?.economy ?? 0) >= 3 && (cycle?.economy ?? 0) < 6 && <p>Chaque commande ouvre un filon plus riche et plus résistant. Les récupérations aléatoires remboursent au maximum 50 % de la stamina dépensée ; les bonus de première destruction restent fixes.</p>}
             <p>Chaque commande te donne trois manches. Entre deux manches, dépense tes éclats dans les marteaux du chantier ou les cinq voies de l’arbre, ou garde-les pour la livraison. Les marteaux achetés sont conservés jusqu’à la clôture du chantier ; seul le maillet de cuivre est gratuit au début de chaque chantier. Tous les autres marteaux doivent être rachetés avec des éclats. Chaque livraison propose trois bénédictions, dont une technique. Après la cinquième commande, le comptoir libre permet de poursuivre les achats du chantier et ses 211 savoirs. Certains pactes donnent un bonus en échange d’un malus. Les savoirs et bénédictions durent ce chantier ; la maîtrise et les talismans restent acquis.</p>
             <p>Trois commandes livrées dans la journée donnent un coffre quotidien. Le compteur est réinitialisé à minuit, heure de Paris.</p>

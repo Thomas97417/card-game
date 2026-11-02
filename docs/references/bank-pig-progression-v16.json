@@ -1,0 +1,32 @@
+{
+  "source": {
+    "url": "https://billsmustbepaid.rikegames.com/",
+    "version": "0.2.7.5.2",
+    "checkedOn": "2026-11-02",
+    "asset": "Build/0dbfd54c24ae081a00bffe3dc0bd9e21.data.br",
+    "sha256": "700121867c86e11d78b1a8199e300d4c4d704021c972dc76fc250aacee5c4248",
+    "method": "UnityPy reads of PiggyLevelConfig (path 1611) and PiggyTypeConfig in sharedassets1.assets; field names from public IL2CPP metadata v39. No original executable code or assets imported."
+  },
+  "levels": {
+    "maximum": 10,
+    "experiencePerLevel": [20, 35, 60, 100, 160, 250, 400, 600, 900, 1500],
+    "lootBonusPerLevel": 0.1,
+    "xpPerBreak": { "normalito": 1, "the-tourist": 2, "woody": 1, "pinata": 1, "sgt-oink": 1 }
+  },
+  "sourceSpawns": {
+    "normalito": { "weight": 3, "pity": 0 },
+    "the-tourist": { "weight": 2.5, "pity": 8 },
+    "woody": { "weight": 1, "pity": 18 },
+    "pinata": { "weight": 0.8, "pity": 22 },
+    "sgt-oink": { "weight": 0.6, "pity": 30 }
+  },
+  "adaptations": [
+    "Levels run from 0 to 10; XP requirements are added between levels. HP and movement stay as in Sylve V15.",
+    "The ten existing species form a chain: reaching level 1 unlocks the next regular species; Normalito level 2 unlocks Brotalito. These prerequisites are Sylve rules, not the original browser's fill thresholds or the full Steam game's shop unlock prices.",
+    "The source browser's unlock fill thresholds (120, 3000, 8500, 9561, 13500, 22500, 25485, 63000) concern a different roster. They are not used as kill requirements.",
+    "Weight = base weight × max(0.25, 1 - 0.075 × level) × (2 at level 0, otherwise 1). This level-dependent formula is a Sylve adaptation; the original executable's exact selection formula has not been verified.",
+    "Weights and pity of species absent from the browser build are explicit Sylve choices; Brotalito keeps its separate 70% roll after Normalito is destroyed.",
+    "A newly unlocked regular species is guaranteed at the next eligible spawn. Pity counters advance only on eligible normal draws; population limits and delayed bombs remain respected.",
+    "Progress survives rounds and deliveries in the same chantier. Closing a chantier resets it. Existing species unlocked by V15 order progression are retained without fabricating XP; saved V1–V15 simulations keep their prior rules."
+  ]
+}

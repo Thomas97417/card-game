@@ -11,7 +11,7 @@ interface GolemDefinition {
 const golem = (spec: Omit<GolemDefinition,'maxOnDesk'> & {maxOnDesk?:number}): GolemDefinition => ({maxOnDesk:0,...spec});
 /** Ten piggy banks; internal IDs and legacy speeds remain stable for saved V14 rounds. V15 movement is in foundry-pig-motion. */
 export const FOUNDRY_GOLEMS = {
-  copper:golem({name:'Normalito',kind:'urn',source:'normalito',ability:'none',detail:'Tirelire rose aux grands yeux. Alterne marche, zigzags et pauses. Sa destruction peut appeler Brotalito dès la deuxième commande.',hp:3,speed:.014,weight:48,unlock:0,color:0xf1a198,gait:'trot'}),
+  copper:golem({name:'Normalito',kind:'urn',source:'normalito',ability:'none',detail:'Tirelire rose aux grands yeux. Alterne marche, zigzags et pauses. Sa destruction peut appeler Brotalito une fois celui-ci débloqué.',hp:3,speed:.014,weight:48,unlock:0,color:0xf1a198,gait:'trot'}),
   sap:golem({name:'The Tourist',kind:'runner',source:'the-tourist',ability:'restore',detail:'Cochon au chapeau fleuri, paresseux : longues pauses, petits déplacements, aucune fuite devant le marteau. Rend jusqu’à 5 stamina à sa destruction.',hp:8,speed:.025,weight:13,unlock:1,color:0xda8079,gait:'hop'}),
   stone:golem({name:'Woody',kind:'geode',source:'woody',ability:'none',detail:'Tirelire en bois. Se déplace très lentement et résiste aux frappes.',hp:18,speed:.006,weight:20,unlock:2,color:0xa87849,gait:'stomp'}),
   amber:golem({name:'Piñata',kind:'chaos',source:'pinata',ability:'fragile',detail:'Tirelire à pois et chapeau de fête. Marche, zigzague et fuit le marteau. Chaque impact a 10 % de chance de la briser instantanément.',hp:28,speed:.013,weight:7,unlock:3,color:0xf5dcad,gait:'skitter'}),
@@ -20,7 +20,7 @@ export const FOUNDRY_GOLEMS = {
   furnace:golem({name:'Bomb Piggy',kind:'chaos',source:'bomb-piggy',ability:'bomb',detail:'Tirelire noire à mèche. Explose 2 s après sa destruction : rayon 5, 200 % des dégâts de base.',hp:28,speed:.007,weight:5,unlock:4,maxOnDesk:1,color:0x202332,gait:'waddle'}),
   thorn:golem({name:'Spiky',kind:'geode',source:'spiky',ability:'thorns',detail:'Cochon violet hérissé de pointes. Ses épines infligent 5 % des dégâts de base aux voisins au contact, toutes les 0,25 s.',hp:18,speed:.008,weight:6,unlock:3,color:0x423b54,gait:'stomp'}),
   thief:golem({name:'Goblig',kind:'runner',source:'goblig',ability:'steal',detail:'Cochon vert au chapeau noir. Vole les éclats libérés à moins de 5, puis fuit vers le bord. Le briser rapporte 1,5 fois son butin volé.',hp:8,speed:.027,weight:4,unlock:1,maxOnDesk:1,color:0x637e37,gait:'prowl'}),
-  reinforcement:golem({name:'Brotalito',kind:'runner',source:'brotalito',ability:'reinforcement',detail:'Cochon rose au bandeau noir. A 70 % de chance d’apparaître après la destruction de Normalito dès la deuxième commande.',hp:8,speed:.018,weight:0,unlock:1,color:0xf1a198,gait:'march'}),
+  reinforcement:golem({name:'Brotalito',kind:'runner',source:'brotalito',ability:'reinforcement',detail:'Cochon rose au bandeau noir. Une fois débloqué, a 70 % de chance d’apparaître après la destruction de Normalito.',hp:8,speed:.018,weight:0,unlock:1,color:0xf1a198,gait:'march'}),
 } as const;
 export const FOUNDRY_GOLEM_RULES = {
   restore:5, fragileChance:.1, rageTicks:100, ramDamage:.7, ramCooldownTicks:10,

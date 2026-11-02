@@ -35,6 +35,35 @@ beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-29T22:
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe("la fonderie connectée", () => {
+  it("saves pig XP and unlocks once across input retries, final-save retries and the next round", async () => {
+    const t=setup(),p=await player(t,"pig-levels","full");
+    const initial=await p.client.query(api.foundry.board,{});
+    await t.run(ctx=>ctx.db.patch(initial.progress!._id,{cycle:{...initial.progress!.cycle,pigs:{xp:{copper:19},unlocked:['copper'],pending:[]}}}));
+    const round=await begin(p,"pig-level-up"),expected=structuredClone(round.state);
+    while(!expected.ended){
+      const startTick=expected.tick,inputs=[];
+      for(let n=0;n<40&&!expected.ended;n++){
+        const target=expected.broken===0?expected.targets[0]:undefined;
+        const corners=[-5.6,5.6].flatMap(x=>[-3.4,3.4].map(z=>({x,z,active:false})));
+        const clearance=(point:{x:number;z:number})=>Math.min(...expected.targets.map(t=>Math.hypot(t.x-point.x,t.z-point.z)));
+        const input=target?{x:target.x,z:target.z,active:true}:corners.sort((a,b)=>clearance(b)-clearance(a))[0]!;
+        inputs.push(input);stepFoundry(expected,input);
+      }
+      vi.setSystemTime(round.startedAt+expected.tick*FOUNDRY.stepMs);
+      const args={expectedOwnerId:p.ownerId,roundId:round._id,startTick,inputs};
+      expect(await p.client.mutation(api.foundry.submitInputs,args)).toEqual(expected);
+      expect(await p.client.mutation(api.foundry.submitInputs,args)).toEqual(expected);
+    }
+    expect(expected.pigs!.xp.copper).toBe(20);
+    expect(expected.golems!.unlocked).toEqual(['sap']);
+    const finish={expectedOwnerId:p.ownerId,roundId:round._id};
+    await p.client.mutation(api.foundry.finishRound,finish);await p.client.mutation(api.foundry.finishRound,finish);
+    const saved=await p.client.query(api.foundry.board,{});
+    expect(saved.progress!.cycle.pigs).toEqual(expected.pigs);
+    const next=await begin(p,"pig-next-round");
+    expect(next.state.pigs!.xp.copper).toBe(20);
+    expect(next.state.targets.some(pig=>pig.golem==='sap')).toBe(true);
+  });
   it("migrates an idle V11 chantier once without losing purchases, skills or currency", async () => {
     const t = setup(); const p = await player(t, "population", "full");
     let b = await p.client.query(api.foundry.board, {});
@@ -44,7 +73,7 @@ describe("la fonderie connectée", () => {
     b = await p.client.query(api.foundry.board, {});
     expect(b.progress).toMatchObject({ revision: 1, cycle: { ...cycle, economy: 6 } });
     const r = await p.client.mutation(api.foundry.startRound, { expectedOwnerId: p.ownerId, revision: 1, requestId: "population-v12", tool: "swift" });
-    expect(r.state.version).toBe(15); expect(r.state.targets).toHaveLength(4);
+    expect(r.state.version).toBe(16); expect(r.state.targets).toHaveLength(4);
     expect(r.state.stats).toMatchObject({ concentration: 100, stamina: 7 });
   });
   it("keeps a running V11 round on its saved population and migrates only after it is settled", async () => {
