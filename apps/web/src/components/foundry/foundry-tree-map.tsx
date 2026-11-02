@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { Tooltip } from '@base-ui/react/tooltip';
-import { Anvil, Hand, Sun, CloudRain, Shield, AudioLines, Axe, Check, Clover, CloudLightning, Coins, Crown, Crosshair, Droplets, Flame, FlameKindling, Gem, Hammer, Heart, Layers, Leaf, Link2, Maximize, Minus, Mountain, Move, Network, Orbit, Pickaxe, Plus, Radio, Shapes, Sparkles, Sprout, Swords, Target, Timer, Waves, Wind, Zap, type LucideIcon } from "lucide-react";
+import { Anvil, Hand, Sun, CloudRain, Shield, AudioLines, Axe, Check, Clover, CloudLightning, Coins, Crown, Crosshair, Droplets, Flame, FlameKindling, Gem, Hammer, Heart, Layers, Leaf, Link2, Maximize, Minus, Mountain, Network, Orbit, Pickaxe, Plus, Radio, Shapes, Sparkles, Sprout, Swords, Target, Timer, Waves, Wind, Zap, type LucideIcon } from "lucide-react";
 import { FOUNDRY_BRANCHES, foundrySkill, foundrySkillReady, foundrySkills, type FoundrySkillId } from "@sylve/game/foundry";
 import { FOUNDRY_TREE, FOUNDRY_TREE_POINTS, boundTreeView, centerTreeView, fitTreeView, treeConnection, zoomTreeView, type TreePoint, type TreeSize, type TreeView } from "./foundry-tree-model";
 import { FoundrySkillTooltip, type FoundrySkillAvailability } from './foundry-skill-tooltip';
@@ -27,7 +27,7 @@ export function FoundryTreeMap({ visible, owned, selected, onPurchase, shards, p
   const pointers = useRef(new Map<number, TreePoint>()), gesture = useRef<Gesture | null>(null), ignoreClick = useRef(false);
   const [dragging, setDragging] = useState(false);
   const [tooltipHandle] = useState(() => Tooltip.createHandle<FoundrySkillId>());
-  const hintId = useId(), tooltipId = useId();
+  const tooltipId = useId();
   const visibleRef = useRef(visible); visibleRef.current = visible;
   const commit = useCallback((next: TreeView) => { const bounded = boundTreeView(next, size.current); viewRef.current = bounded; setView(bounded); }, []);
   const fit = useCallback(() => commit(fitTreeView(visibleRef.current, size.current)), [commit]);
@@ -140,7 +140,7 @@ export function FoundryTreeMap({ visible, owned, selected, onPurchase, shards, p
   }, [visible, owned, selected, economy, costs, shards, purchaseBlocked, parentsWithChildren, onPurchase, tooltipHandle, tooltipId]);
   return <Tooltip.Provider delay={120} closeDelay={80}><Tooltip.Root handle={tooltipHandle} disabled={dragging}>{({ payload }) => <>
     <div className="foundry-map-shell">
-    <div className="foundry-map-viewport" ref={viewport} tabIndex={0} role="region" aria-label="Grand arbre de compétences" aria-describedby={hintId} data-dragging={dragging} data-zoom={Math.round(view.scale * 100)}
+    <div className="foundry-map-viewport" ref={viewport} tabIndex={0} role="region" aria-label="Grand arbre de compétences" data-dragging={dragging} data-zoom={Math.round(view.scale * 100)}
       onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={(event) => { if (event.target === event.currentTarget) pointerEnd(event); }}
       onScroll={(event) => { event.currentTarget.scrollLeft = 0; event.currentTarget.scrollTop = 0; }}
       onClickCapture={(event) => { if (ignoreClick.current && event.detail > 0 && !(event.target as HTMLElement).closest(".foundry-map-controls")) { event.preventDefault(); event.stopPropagation(); } }}
@@ -158,9 +158,7 @@ export function FoundryTreeMap({ visible, owned, selected, onPurchase, shards, p
       <div className="foundry-map-controls" role="group" aria-label="Navigation dans l’arbre">
         <button type="button" onClick={() => zoom(1 / 1.2)} disabled={view.scale <= FOUNDRY_TREE.minScale} aria-label="Dézoomer l’arbre"><Minus size={16} /></button><output aria-label="Niveau de zoom">{Math.round(view.scale * 100)} %</output><button type="button" onClick={() => zoom(1.2)} disabled={view.scale >= FOUNDRY_TREE.maxScale} aria-label="Zoomer dans l’arbre"><Plus size={16} /></button><span /><button type="button" onClick={fit} aria-label="Recentrer sur les savoirs révélés" title="Vue d’ensemble · touche 0"><Maximize size={16} /></button>
       </div>
-      <div className="foundry-map-discovery" role="status"><Sparkles size={13} />{visible.length} savoirs révélés <span>· {owned.length} acquis</span></div>
     </div>
-    <p className="foundry-map-hint" id={hintId}><Move size={13} /><span>Glisse pour explorer · molette ou pincement pour zoomer · flèches et + / − au clavier</span></p>
     </div>
     <Tooltip.Portal><Tooltip.Positioner className="foundry-skill-tooltip-positioner" side="top" sideOffset={12} collisionPadding={12} positionMethod="fixed">
       <FoundrySkillTooltip popupId={tooltipId} id={payload} economy={economy} cost={payload ? costs[payload] ?? foundrySkill(payload, { economy }).cost : 0} shards={shards} availability={payload ? purchaseState(payload) : 'unavailable'} />
