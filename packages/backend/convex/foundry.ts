@@ -1,7 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { ASSISTANTS, ASSISTANT_IDS, FOUNDRY, buyFoundryTool, equipFoundryTool, ownsFoundryTool, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
-  deliverFoundryOrder, continueFoundryCycle, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput,
-  type FoundryAssistant } from "@sylve/game/foundry";
+import { FOUNDRY, buyFoundryTool, equipFoundryTool, ownsFoundryTool, buyFoundryUpgrade, buyFoundrySkill, buyFoundryCharm, chooseFoundryBlessing, createFoundryRound,
+  deliverFoundryOrder, continueFoundryCycle, foundryInputDigest, foundrySummary, newFoundryCycle, settleFoundryRound, stepFoundry, validFoundryInput } from "@sylve/game/foundry";
 import { chestGold, chestLoot } from "@sylve/game/progression";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -32,22 +31,17 @@ function idle(saved: Doc<"foundryProgress">) {
 function rules<T>(fn: () => T): T {
   try { return fn(); } catch (error) { throw new ConvexError(error instanceof Error ? error.message : "Cette action est indisponible."); }
 }
-async function assistants(ctx: QueryCtx | MutationCtx, userId: string): Promise<FoundryAssistant[]> {
-  const cards = await ctx.db.query("collection").withIndex("by_owner_variant", (q) => q.eq("ownerId", userId)).collect();
-  return ASSISTANT_IDS.filter((id) => id === "smith" || cards.some((card) => card.variantId.split(":")[0] === ASSISTANTS[id].family));
-}
 export const board = query({
   args: { refreshKey: v.optional(v.number()) },
   handler: async (ctx) => {
     const { userId } = await requirePlayer(ctx); const saved = await progressFor(ctx, userId);
     const day = socialDay();
-    const [round, daily, pendingReward, availableAssistants] = await Promise.all([
+    const [round, daily, pendingReward] = await Promise.all([
       saved?.activeRoundId ? ctx.db.get(saved.activeRoundId) : null,
       ctx.db.query("foundryDaily").withIndex("by_owner_day", (q) => q.eq("ownerId", userId).eq("day", day)).unique(),
       ctx.db.query("foundryDaily").withIndex("by_owner_seen", (q) => q.eq("ownerId", userId).eq("seen", false)).first(),
-      assistants(ctx, userId),
     ]);
-    return { ownerId: userId, progress: saved, round, daily: { day, delivered: daily?.delivered ?? 0, claimed: !!daily?.receipt }, pendingReward, availableAssistants, serverNow: Date.now() };
+    return { ownerId: userId, progress: saved, round, daily: { day, delivered: daily?.delivered ?? 0, claimed: !!daily?.receipt }, pendingReward, serverNow: Date.now() };
   },
 });
 export const ensure = mutation({
@@ -55,12 +49,16 @@ export const ensure = mutation({
   handler: async (ctx, args) => {
     const userId = await owner(ctx, args.expectedOwnerId); await ensureStarterDeck(ctx, userId);
     const saved = await progressFor(ctx, userId);
-    if (saved) return saved._id;
+    if (saved) {
+      if (saved.cycle.economy === 5 && !saved.activeRoundId) await ctx.db.patch(saved._id, { cycle: { ...saved.cycle, economy: 6 }, revision: saved.revision + 1 });
+      return saved._id;
+    }
     return ctx.db.insert("foundryProgress", { ownerId: userId, revision: 0, mastery: 0, masterySpent: 0, charms: [], cycle: newFoundryCycle(1, Math.floor(Math.random() * 4294967295) + 1) });
   },
 });
 export const startRound = mutation({
-  args: { ...revisionArgs, requestId: v.string(), tool: foundryTool, assistant: foundryAssistant },
+  // Accept and ignore the old parameter until already-open clients have refreshed.
+  args: { ...revisionArgs, requestId: v.string(), tool: foundryTool, assistant: v.optional(foundryAssistant) },
   handler: async (ctx, args) => {
     const userId = await owner(ctx, args.expectedOwnerId);
     if (!/^[a-zA-Z0-9_-]{1,128}$/.test(args.requestId)) throw new ConvexError("Identifiant de manche invalide.");
@@ -69,10 +67,10 @@ export const startRound = mutation({
     const saved = await progress(ctx, userId, args.revision); idle(saved);
     if (saved.cycle.status !== "active" || saved.cycle.choices.length || saved.cycle.roundsLeft <= 0) throw new ConvexError("Livre ta commande et choisis ta bénédiction avant de jouer.");
     if (!ownsFoundryTool(saved.cycle, args.tool)) throw new ConvexError("Cet outil doit être acheté pour ce chantier avant de jouer.");
-    if (!(await assistants(ctx, userId)).includes(args.assistant)) throw new ConvexError("Découvre ce compagnon dans ta collection pour l’inviter.");
-    const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, saved.cycle, args.tool, args.assistant, saved.charms ?? []);
+    const cycle = saved.cycle.economy === 5 ? { ...saved.cycle, economy: 6 as const } : saved.cycle;
+    const state = createFoundryRound(Math.floor(Math.random() * 4294967295) + 1, cycle, args.tool, saved.charms ?? []);
     const id = await ctx.db.insert("foundryRounds", { ownerId: userId, cycleNumber: saved.cycle.number, requestId: args.requestId, startedAt: Date.now(), finished: false, state, batches: [] });
-    await ctx.db.patch(saved._id, { cycle: { ...saved.cycle, selectedTool: args.tool }, activeRoundId: id, revision: saved.revision + 1 });
+    await ctx.db.patch(saved._id, { cycle: { ...cycle, selectedTool: args.tool }, activeRoundId: id, revision: saved.revision + 1 });
     return (await ctx.db.get(id))!;
   },
 });

@@ -5,6 +5,23 @@ import { createFoundryArt } from "./foundry-art";
 import { FOUNDRY_IMPACT_DELAY_MS, poseFoundryHammer } from "./foundry-hammer";
 
 describe("la face de frappe du marteau", () => {
+  it("changes the visible silhouette when a different hammer is equipped", () => {
+    const art = createFoundryArt(true);
+    try {
+      const hammer = art.hammer();
+      const sizes = new Map<string, THREE.Vector3>();
+      for (const tool of TOOL_IDS) {
+        hammer.tool(tool); hammer.root.updateMatrixWorld(true);
+        const bounds = new THREE.Box3();
+        hammer.root.traverseVisible((object) => { if (object instanceof THREE.Mesh) bounds.expandByObject(object); });
+        sizes.set(tool, bounds.getSize(new THREE.Vector3()));
+      }
+      expect(new Set([...sizes.values()].map((size) => size.toArray().map((value) => value.toFixed(3)).join(","))).size).toBe(TOOL_IDS.length);
+      expect(sizes.get("heavy")!.z).toBeGreaterThan(sizes.get("mallet")!.z * 1.4);
+      expect(sizes.get("swift")!.z).toBeLessThan(sizes.get("mallet")!.z * 0.8);
+      expect(sizes.get("spiked")!.x).toBeGreaterThan(sizes.get("mallet")!.x * 1.5);
+    } finally { art.dispose(); }
+  });
   for (const tool of TOOL_IDS) it(`${tool} lands its metal end on the aim at the sound/fragment frame`, () => {
     const art = createFoundryArt(true);
     try {

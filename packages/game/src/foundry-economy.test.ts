@@ -20,9 +20,9 @@ describe("les marteaux de référence et la nouvelle économie", () => {
     }
   });
   it("keeps the base hit at one and accurately accumulates fractional attack-speed bonuses", () => {
-    expect(foundryStats(newFoundryCycle(), "mallet", "smith").damage).toBe(1);
+    expect(foundryStats(newFoundryCycle(), "mallet").damage).toBe(1);
     for (const id of ["swift", "precision", "resonance"] as const) {
-      const round = createFoundryRound(12, newFoundryCycle(), id, "smith"); round.targets = [];
+      const round = createFoundryRound(12, newFoundryCycle(), id); round.targets = [];
       expect(round.stats.interval).toBeCloseTo(11 / (1 + TOOLS[id].cadence));
       const ticks: number[] = [];
       while (ticks.length < 30) if (stepFoundry(round, { x: 5.6, z: 3.4, active: false }).strike) ticks.push(round.tick);
@@ -35,9 +35,9 @@ describe("les marteaux de référence et la nouvelle économie", () => {
     expect(foundryTools(cycle)).toHaveLength(6); expect(foundryToolDefinition(cycle, "gilded").loot).toBe(0.25);
     expect(foundryOrderCost(cycle)).toBe(100); expect(foundrySkillCost(cycle, "forge-grip")).toBe(30);
     expect(buyFoundryTool(cycle, "heavy").shards).toBe(920); expect(() => buyFoundryTool(cycle, "spiked")).toThrow("nouvel équilibrage");
-    const legacy = createFoundryRound(12, cycle, "heavy", "smith"); expect(legacy.version).toBe(8);
+    const legacy = createFoundryRound(12, cycle, "heavy"); expect(legacy.version).toBe(8);
     expect(legacy.stats.damage).toBe(3); expect(foundryStrikeCost(legacy)).toBe(1.4);
-    const modern = createFoundryRound(12, newFoundryCycle(), "heavy", "smith"); expect(modern.stats.damage).toBe(45);
+    const modern = createFoundryRound(12, newFoundryCycle(), "heavy"); expect(modern.stats.damage).toBe(45);
     expect(foundryStrikeCost(modern)).toBe(1.6); modern.stats.stamina = 1.25; expect(foundryStrikeCost(modern)).toBe(1.25);
     expect(LEGACY_TOOLS.gilded.stamina).toBe(1.2);
   });
@@ -45,17 +45,17 @@ describe("les marteaux de référence et la nouvelle économie", () => {
     const cycle = newFoundryCycle(); expect(cycle.economy).toBe(3);
     expect(FOUNDRY_SKILL_IDS.reduce((sum, id) => sum + foundrySkillCost(cycle, id), 0)).toBe(10841500);
     expect(buyFoundrySkill({ ...cycle, shards: 300 }, "forge-grip").shards).toBe(0);
-    const first = createFoundryRound(17, cycle, "mallet", "smith");
+    const first = createFoundryRound(17, cycle, "mallet");
     while (!first.ended) { const t = first.targets.reduce((a, b) => a.hp < b.hp ? a : b); stepFoundry(first, { x: t.x, z: t.z, active: true }); }
     expect(first.shards).toBeGreaterThanOrEqual(1000); expect(first.shards * FOUNDRY.roundsPerOrder).toBeGreaterThanOrEqual(foundryOrderCost(cycle)!);
     for (let orderIndex = 0; orderIndex < 5; orderIndex++) {
-      const round = createFoundryRound(17, { ...cycle, orderIndex }, "mallet", "smith");
+      const round = createFoundryRound(17, { ...cycle, orderIndex }, "mallet");
       expect(round.rogue!.wealth).toBe(FOUNDRY.lootMultipliers[orderIndex]); expect(round.rogue!.pressure).toBe(FOUNDRY.resistances[orderIndex]);
     }
   });
   it("exhausts stamina even with an endgame recovery build, without a time limit", () => {
     const cycle = { ...newFoundryCycle(), orderIndex: 4, skills: [...FOUNDRY_SKILL_IDS], blessings: ["recovery", "efficient", "berserk", "power"] as const };
-    const round = createFoundryRound(91, { ...cycle, blessings: [...cycle.blessings] }, "gilded", "smith");
+    const round = createFoundryRound(91, { ...cycle, blessings: [...cycle.blessings] }, "gilded");
     while (!round.ended && round.tick < 10000) { const t = round.targets.reduce((a, b) => a.hp < b.hp ? a : b); stepFoundry(round, { x: t.x, z: t.z, active: true }); }
     expect(round.ended).toBe(true); expect(round.concentration).toBe(0); expect(round.tick * FOUNDRY.stepMs).toBeGreaterThan(75000);
     expect(round.rogue!.strikes).toBeGreaterThan(round.stats.concentration);

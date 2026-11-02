@@ -3,7 +3,7 @@ import { createFoundryRound, newFoundryCycle, stepFoundry, type FoundryInput } f
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 
 function setup() {
-  const server = createFoundryRound(7, newFoundryCycle(), "mallet", "smith");
+  const server = createFoundryRound(7, newFoundryCycle(), "mallet");
   const storage = new Map<string, string>();
   const submit = vi.fn(async (startTick: number, inputs: FoundryInput[]) => {
     expect(startTick).toBe(server.tick); inputs.forEach((input) => stepFoundry(server, input)); return structuredClone(server);
@@ -14,14 +14,14 @@ function setup() {
 }
 describe("la reprise d’une manche de fonderie", () => {
   it("restores and confirms a long round beyond the former total input limit", async () => {
-    const { options, storage, server } = setup(); server.concentration = server.stats.concentration = 400; server.targets = [];
+    const { options, storage, server } = setup(); server.concentration = server.stats.concentration = 10000; server.targets = [];
     const inputs = Array.from({ length: 2000 }, () => ({ x: 5.6, z: 3.4, active: false }));
     storage.set(foundryDraftKey("alice", "round-1"), JSON.stringify({ version: 1, baseTick: 0, inputs }));
     const session = new FoundrySession(options); expect(session.state.tick).toBe(2000); expect(session.state.ended).toBe(false);
     await session.flush(); expect(session.state).toEqual(server); expect(server.tick).toBe(2000); expect(options.finish).not.toHaveBeenCalled();
   });
   it("pauses a stalled connection without ending the round or losing unconfirmed input", async () => {
-    const { options, server } = setup(); server.concentration = server.stats.concentration = 1000; server.targets = [];
+    const { options, server } = setup(); server.concentration = server.stats.concentration = 10000; server.targets = [];
     let release!: () => void, first = true;
     const session = new FoundrySession({ ...options, submit: async (start, inputs) => { if (first) { first = false; await new Promise<void>((resolve) => { release = resolve; }); } return options.submit(start, inputs); } });
     session.resume(0); for (let tick = 1; tick <= 2500; tick++) session.advance(tick * 50, { x: 5.6, z: 3.4, active: false });
@@ -44,7 +44,7 @@ describe("la reprise d’une manche de fonderie", () => {
     expect(session.state.tick).toBe(12); expect(session.running).toBe(false);
     inputs.forEach((input) => stepFoundry(original, input)); expect(session.state).toEqual(original);
     await session.flush(); expect(session.state).toEqual(server); expect(storage.size).toBe(0);
-    const bob = new FoundrySession({ ...options, ownerId: "bob", state: createFoundryRound(7, newFoundryCycle(), "mallet", "smith") });
+    const bob = new FoundrySession({ ...options, ownerId: "bob", state: createFoundryRound(7, newFoundryCycle(), "mallet") });
     expect(bob.state.tick).toBe(0);
   });
   it("keeps the draft and stops gameplay when a competing tab rejects a batch", async () => {

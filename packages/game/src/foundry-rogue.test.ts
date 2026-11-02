@@ -3,7 +3,7 @@ import { BLESSINGS, FOUNDRY, FOUNDRY_SKILLS, LEGACY_FOUNDRY_SKILL_IDS as FOUNDRY
   createFoundryRound, newFoundryCycle, deliverFoundryOrder, chooseFoundryBlessing, foundryOrderCost, foundryStats, settleFoundryRound, stepFoundry } from "./foundry";
 const idle = { x: 5.6, z: 3.4, active: false };
 function isolated() {
-  const round = createFoundryRound(123, legacyCycle(), "mallet", "smith");
+  const round = createFoundryRound(123, legacyCycle(), "mallet");
   round.targets = round.targets.slice(0, 3).map((t, i) => ({ ...t, kind: "urn" as const, x: i * 1.3, z: 0, hp: 100, maxHp: 100, vx: 0, vz: 0 }));
   return round;
 }
@@ -36,19 +36,19 @@ describe("les builds de la fonderie", () => {
     expect(paid.choices).not.toContain("power"); expect(() => chooseFoundryBlessing({ ...paid, choices: ["power"] }, "power")).toThrow("maximum");
   });
   it("applies pact tradeoffs and keeps permanent spending separate from lifetime mastery", () => {
-    const cycle = legacyCycle(), base = foundryStats(cycle, "mallet", "smith");
-    const pact = foundryStats({ ...cycle, blessings: ["brute", "greed"] }, "mallet", "smith");
+    const cycle = legacyCycle(), base = foundryStats(cycle, "mallet");
+    const pact = foundryStats({ ...cycle, blessings: ["brute", "greed"] }, "mallet");
     expect(pact.damage).toBeGreaterThan(base.damage); expect(pact.loot).toBeGreaterThan(base.loot);
     expect(pact.concentration).toBeLessThan(base.concentration); expect(pact.critical).toBeLessThan(base.critical);
     const permanent = buyFoundryCharm(3, 0, [], "ember"); expect(permanent).toEqual({ masterySpent: 1, charms: ["ember"] });
     expect(() => buyFoundryCharm(3, 1, permanent.charms, "ember")).toThrow("déjà"); expect(() => buyFoundryCharm(3, 1, permanent.charms, "echo")).toThrow("maîtrise");
-    expect(foundryStats(legacyCycle(2), "mallet", "smith", permanent.charms).damage).toBeGreaterThan(base.damage); expect(FOUNDRY_CHARM_IDS).toHaveLength(6);
+    expect(foundryStats(legacyCycle(2), "mallet", permanent.charms).damage).toBeGreaterThan(base.damage); expect(FOUNDRY_CHARM_IDS).toHaveLength(6);
   });
   it("replaces the source skill with a stamina reserve without depending on removed relics", () => {
     let cycle = buyFoundrySkill({ ...legacyCycle(), shards: 100 }, "sap-breath");
-    expect(foundryStats(cycle, "mallet", "smith").concentration).toBe(115);
+    expect(foundryStats(cycle, "mallet").concentration).toBe(115);
     cycle = buyFoundrySkill(cycle, "sap-spring");
-    expect(foundryStats(cycle, "mallet", "smith").concentration).toBe(125);
+    expect(foundryStats(cycle, "mallet").concentration).toBe(125);
     expect(FOUNDRY_SKILLS["sap-spring"].detail).not.toContain("sources");
   });
   it("freezes movement for 2.5 seconds, then restores the unchanged velocity", () => {
@@ -86,14 +86,14 @@ describe("les builds de la fonderie", () => {
   });
   it("combines first-kill recovery with a permanent first shockwave", () => {
     const cycle = { ...legacyCycle(), skills: ["fortune-purity", "sap-second"] as ("fortune-purity" | "sap-second")[] };
-    const round = createFoundryRound(42, cycle, "mallet", "smith", ["echo"]); round.concentration = 50; round.targets = round.targets.slice(0, 1);
+    const round = createFoundryRound(42, cycle, "mallet", ["echo"]); round.concentration = 50; round.targets = round.targets.slice(0, 1);
     const target = round.targets[0]!; target.hp = target.maxHp = 1;
     const result = stepFoundry(round, { x: target.x, z: target.z, active: true });
     expect(round.concentration).toBe(59); expect(result.effects?.some((effect) => effect.kind === "shockwave")).toBe(true); expect(round.rogue!.strikes).toBe(1);
   });
   it("preserves old bill amounts and makes the first new bill affordable after investing", () => {
     const old = { ...legacyCycle(), economy: undefined, orderIndex: 4 }; expect(foundryOrderCost(old)).toBe(850); expect(foundryOrderCost({ ...old, economy: 2 })).toBe(1500);
-    let cycle = legacyCycle(); const round = createFoundryRound(25, cycle, "mallet", "smith");
+    let cycle = legacyCycle(); const round = createFoundryRound(25, cycle, "mallet");
     while (!round.ended) { const target = round.targets.reduce((a, b) => a.hp < b.hp ? a : b); stepFoundry(round, { x: target.x, z: target.z, active: true }); }
     cycle = settleFoundryRound(cycle, round); expect(cycle.shards).toBeGreaterThanOrEqual(130); cycle = buyFoundrySkill(cycle, "forge-grip");
     expect(cycle.shards).toBeGreaterThanOrEqual(100); expect(deliverFoundryOrder(cycle).orderIndex).toBe(1); expect(legacyCycle(2).skills).toEqual([]);
