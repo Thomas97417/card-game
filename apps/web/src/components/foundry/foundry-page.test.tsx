@@ -186,14 +186,26 @@ describe("la banque à l’écran", () => {
     fireEvent.click(screen.getByRole("button", { name: "Choisir le marteau" }));
     expect(disabled(screen.getByRole("button", { name: "Acheter Marteau de résonance — 260 éclats" }))).toBe(true);
   });
-  it("aims by mouse hover and requires a held finger for touch input", async () => {
+  it("blocks aiming behind menus and only enables mouse and touch controls during active play", async () => {
     vi.stubGlobal("PointerEvent", class extends MouseEvent {
       pointerType: string; pointerId: number;
       constructor(type: string, init: MouseEventInit & { pointerType?: string; pointerId?: number }) { super(type, init); this.pointerType = init.pointerType ?? "mouse"; this.pointerId = init.pointerId ?? 1; }
     });
-    render(<FoundryPage />); await ready();
+    render(<FoundryPage />); await ready(); vi.useFakeTimers();
     const stage = screen.getByRole("application"); stage.setPointerCapture = vi.fn();
     const canvas = document.createElement("canvas"); stage.querySelector(".foundry-canvas")!.append(canvas);
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    fireEvent.pointerDown(canvas, { pointerType: "touch", buttons: 1, pointerId: 1 });
+    fireEvent.keyDown(stage, { key: "ArrowRight" });
+    expect(sceneOptions.input()).toEqual({ x: 0, z: 0, active: false });
+    expect(stage.setPointerCapture).not.toHaveBeenCalled();
+    mutations.get("foundry:startRound")!.mockResolvedValue({ _id: "aiming-round", _creationTime: 1000, ownerId: "alice", cycleNumber: 1, requestId: "aiming-round", startedAt: 0, finished: false, batches: [], state: createFoundryRound(1, legacyCycle(), "mallet") });
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Commencer une manche" })); });
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    fireEvent.pointerDown(canvas, { pointerType: "touch", buttons: 1, pointerId: 1 });
+    expect(sceneOptions.input()).toEqual({ x: 0, z: 0, active: false });
+    expect(stage.setPointerCapture).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(3000));
     fireEvent.pointerMove(canvas, { pointerType: "touch", buttons: 0 }); expect(sceneOptions.input().active).toBe(false);
     fireEvent.pointerDown(canvas, { pointerType: "touch", buttons: 1, pointerId: 1 }); expect(sceneOptions.input().active).toBe(true);
     fireEvent.pointerUp(canvas, { pointerType: "touch", buttons: 0 }); expect(sceneOptions.input().active).toBe(false);
@@ -201,6 +213,22 @@ describe("la banque à l’écran", () => {
     fireEvent.pointerMove(screen.getByRole("button", { name: "Couper le son" }), { pointerType: "mouse", buttons: 0 }); expect(sceneOptions.input().active).toBe(false);
     fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
     fireEvent.pointerLeave(stage, { pointerType: "mouse" }); expect(sceneOptions.input().active).toBe(false);
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    await act(async () => { fireEvent.keyDown(stage, { key: "Escape" }); });
+    const pausedAim = { ...sceneOptions.input() };
+    vi.mocked(stage.setPointerCapture).mockClear();
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    fireEvent.pointerDown(canvas, { pointerType: "touch", buttons: 1, pointerId: 1 });
+    fireEvent.keyDown(stage, { key: "ArrowRight" });
+    expect(sceneOptions.input()).toEqual(pausedAim);
+    expect(sceneOptions.input().active).toBe(false);
+    expect(stage.setPointerCapture).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Reprendre la manche" }));
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    expect(sceneOptions.input()).toEqual(pausedAim);
+    act(() => vi.advanceTimersByTime(3000));
+    fireEvent.pointerMove(canvas, { pointerType: "mouse", buttons: 0 });
+    expect(sceneOptions.input().active).toBe(true);
   });
   it("starts after a countdown, aims with the keyboard, and pauses with Escape and page visibility", async () => {
     render(<FoundryPage />); await ready(); vi.useFakeTimers();

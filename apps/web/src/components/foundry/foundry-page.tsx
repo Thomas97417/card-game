@@ -202,8 +202,11 @@ export function FoundryPage() {
   const availableMastery = Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0));
   const endState = cycle?.status === "failed" || cycle?.status === "abandoned" || (cycle?.status === "completed" && !cycle.choices.length);
   useEffect(() => { if (!inRound) preparationTitle.current?.focus(); }, [inRound]);
+  useEffect(() => { if (phase !== "running") aim.current.active = false; }, [phase]);
   function revision(current: Board) { return { expectedOwnerId: current.ownerId, revision: current.progress!.revision }; }
+  function canAim() { return phase === "running" && !!session.current?.running && !session.current.state.ended; }
   function move(event: React.PointerEvent<HTMLDivElement>) {
+    if (!canAim()) { aim.current.active = false; return; }
     if (event.target !== host.current && !(event.target instanceof HTMLCanvasElement) && !event.currentTarget.hasPointerCapture?.(event.pointerId)) { aim.current.active = false; return; }
     if (event.pointerType !== "mouse" && !event.buttons) return;
     const next = scene.current?.aim(event.clientX, event.clientY);
@@ -213,7 +216,7 @@ export function FoundryPage() {
     if (result) return;
     if (event.key === "Escape") { event.preventDefault(); pause(); return; }
     const directions: Record<string, [number, number]> = { ArrowLeft: [-0.28, 0], ArrowRight: [0.28, 0], ArrowUp: [0, -0.28], ArrowDown: [0, 0.28] };
-    const direction = directions[event.key]; if (!direction || !runtime?.running) return;
+    const direction = directions[event.key]; if (!direction || !canAim()) return;
     event.preventDefault(); aim.current = scene.current?.nudge(aim.current, direction[0], direction[1]) ?? aim.current;
   }
   return (
@@ -224,10 +227,10 @@ export function FoundryPage() {
 
       <div className="foundry-layout">
         <section className="foundry-play-column" aria-label="Comptoir de la banque">
-          <div className="foundry-viewport" ref={stage} tabIndex={0} role="application" aria-label="Comptoir en trois dimensions. Déplace la souris ou les flèches pour frapper. Échap pour mettre en pause."
-            onKeyDown={keys} onPointerMove={move} onPointerDown={(e) => { if (e.target !== host.current && !(e.target instanceof HTMLCanvasElement)) return; e.currentTarget.setPointerCapture(e.pointerId); move(e); }}
+          <div className="foundry-viewport" ref={stage} tabIndex={phase === "running" ? 0 : -1} role="application" aria-label="Comptoir en trois dimensions. Déplace la souris ou les flèches pour frapper. Échap pour mettre en pause."
+            onKeyDown={keys} onPointerMove={move} onPointerDown={(e) => { if (!canAim() || (e.target !== host.current && !(e.target instanceof HTMLCanvasElement))) return; e.currentTarget.setPointerCapture(e.pointerId); move(e); }}
             onPointerUp={(e) => { if (e.pointerType !== "mouse") aim.current.active = false; }} onPointerCancel={() => { aim.current.active = false; }} onLostPointerCapture={() => { aim.current.active = false; }} onPointerLeave={(e) => { if (e.pointerType === "mouse") aim.current.active = false; }}>
-            <div className="foundry-canvas" ref={host} />
+            <div className="foundry-canvas" ref={host} inert={phase !== "running"} />
             <button type="button" className="foundry-sound-button" disabled={!!result} aria-label={sound ? "Couper le son" : "Activer le son"} onClick={() => { const next = !sound; setSound(next); audio.current?.setEnabled(next); audio.current?.unlock(); try { localStorage.setItem("sylve.foundry.sound", next ? "on" : "off"); } catch { /* Optional preference. */ } }}>{sound ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>
             {live && !result && <div className="foundry-run-hud"><FoundryStamina key={attachedId.current} value={live.concentration} maximum={live.stats.concentration} cost={live.version >= 6 ? foundryStrikeCost(live) : undefined} /><div className="foundry-run-shards"><FoundryShardIcon size={18} /><strong title={`${number.format(live.shards)} éclats`} aria-label={`${number.format(live.shards)} éclats`}>{amount(live.shards)}</strong><span>éclats</span></div></div>}
             {live && !result && <FoundryPigLiveProgress round={live} />}

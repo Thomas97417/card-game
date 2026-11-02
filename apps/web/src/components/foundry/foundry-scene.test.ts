@@ -20,20 +20,36 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup?.(); cleanup = undefined; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-function scene() {
+function scene(playing = true) {
   const host = document.createElement('div'); document.body.append(host);
   Object.defineProperties(host, { clientWidth: { value: 1280 }, clientHeight: { value: 720 } });
   host.getBoundingClientRect = () => new DOMRect(13, 17, 1280, 720);
   const round = createFoundryRound(91, newFoundryCycle(), 'mallet');
   round.targets = [{ ...round.targets[0]!, x: 0, z: 0, vx: 0, vz: 0 }];
   let input: FoundryInput = { x: 0, z: 0, active: true };
-  const view = createFoundryScene(host, { state: () => round, input: () => input, active: () => true, frame() {}, sound() {}, contextLost() {} });
+  const view = createFoundryScene(host, { state: () => round, input: () => input, active: () => playing, frame() {}, sound() {}, contextLost() {} });
   cleanup = () => { view.destroy(); host.remove(); };
   rendered.loop!(1000);
-  return { view, aim(next: FoundryInput) { input = next; } };
+  return { view, aim(next: FoundryInput) { input = next; }, active(next: boolean) { playing = next; } };
 }
 
 describe('la visée libre du marteau', () => {
+  it('hides the hammer and freezes its pose outside active play, then restores aiming on resume', () => {
+    const { aim, active } = scene(false);
+    const head = rendered.world!.getObjectByName('foundry-hammer-head')!;
+    const hammer = head.parent!, face = head.children.find(child => child.type === 'Object3D')!;
+    expect(hammer.visible).toBe(false);
+    active(true); rendered.loop!(1010);
+    expect(hammer.visible).toBe(true);
+    const position = hammer.position.clone(), rotation = hammer.quaternion.clone();
+    active(false); aim({ x: 3, z: -2, active: true }); rendered.loop!(1100);
+    expect(hammer.visible).toBe(false);
+    expect(hammer.position.toArray()).toEqual(position.toArray()); expect(hammer.quaternion.toArray()).toEqual(rotation.toArray());
+    active(true); rendered.loop!(1200);
+    expect(hammer.visible).toBe(true);
+    const contact = face.getWorldPosition(new THREE.Vector3());
+    expect(contact.x).toBeCloseTo(3, 8); expect(contact.z).toBeCloseTo(-2, 8);
+  });
   it('projects onto the counter even when the pointer crosses the visible pig', () => {
     const { view } = scene(), viewport = foundryViewport(1280, 720), camera = rendered.camera!;
     const screen = new THREE.Vector3(0, .58, 0).project(camera);

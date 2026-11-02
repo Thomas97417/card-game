@@ -192,10 +192,10 @@ export function createFoundryScene(host: HTMLElement, options: SceneOptions): Fo
       bombCores.forEach((core,index)=>{const bomb=round.golems?.bombs[index];core.visible=!!bomb;if(bomb){core.position.set(bomb.x,0,bomb.z);const remaining=Math.max(0,bomb.at-round.tick)/40;const pulse=motion.matches?1:1+Math.sin(visualSeconds*(10+(1-remaining)*20))*.12;core.scale.setScalar(pulse);}});
       cursor.visible = (round.version >= 5 || aim.active) && active;
       cursor.position.set(aim.x, 0.026, aim.z); cursor.scale.setScalar(round.stats.radius);
-      hammer.root.visible = round.version >= 5 || aim.active || !active;
+      hammer.root.visible = active && (round.version >= 5 || aim.active);
       hammer.tool(round.tool);
       const elapsed = time - strikeAt;
-      poseFoundryHammer(hammer, aim, elapsed);
+      if (active) poseFoundryHammer(hammer, aim, elapsed);
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i]!;
         if (p.life > 0) {
