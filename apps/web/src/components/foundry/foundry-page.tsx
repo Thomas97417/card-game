@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -6,10 +6,11 @@ import { Hammer, Sparkles, Pause, Play, Volume2, VolumeX, ArrowUpRight, Check, R
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Doc } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { BLESSINGS, FOUNDRY, FOUNDRY_GOLEM_IDS, FOUNDRY_GOLEMS, foundryToolDefinition, foundrySkills, foundryLootMultiplier, FOUNDRY_RARITY,
-  createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, foundryPigProgress, type FoundryInput, type FoundryTool, type FoundryRound } from "@sylve/game/foundry";
+  buyFoundrySkill, createFoundryRound, newFoundryCycle, foundryOrderCost, foundryStrikeCost, ownsFoundryTool, foundryPigProgress, type FoundryCycle, type FoundrySkillId, type FoundryInput, type FoundryTool, type FoundryRound } from "@sylve/game/foundry";
 import { GameHeader } from "@/components/game-header";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { showGameError } from "@/components/game/shared";
+import { optimisticallyPurchaseFoundrySkill } from '@/lib/optimistic-foundry';
 import { FoundryShardIcon, FoundryToolIcon, FoundryPigIcon } from "./foundry-icons";
 import { FoundrySession, foundryDraftKey } from "./foundry-session";
 import { FoundrySkillTree } from "./foundry-skill-tree";
@@ -39,7 +40,7 @@ export function FoundryPage() {
   const startRound = useMutation(api.foundry.startRound);
   const submit = useMutation(api.foundry.submitInputs);
   const finish = useMutation(api.foundry.finishRound);
-  const purchaseSkill = useMutation(api.foundry.purchaseSkill);
+  const purchaseSkill = useMutation(api.foundry.purchaseSkill).withOptimisticUpdate(optimisticallyPurchaseFoundrySkill);
   const purchaseCharm = useMutation(api.foundry.purchaseCharm);
   const purchaseTool = useMutation(api.foundry.purchaseTool);
   const equipTool = useMutation(api.foundry.equipTool);
@@ -54,7 +55,9 @@ export function FoundryPage() {
   const [tool, setTool] = useState<FoundryTool>("mallet");
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdown, setCountdown] = useState(3);
-  const [busy, setBusy] = useState(false);
+  const [actionBusy, setBusy] = useState(false);
+  const [pendingSkillCount, setPendingSkillCount] = useState(0);
+  const busy = actionBusy || pendingSkillCount > 0;
   const [ready, setReady] = useState(false);
   const [graphicsError, setGraphicsError] = useState(false);
   const [notice, setNotice] = useState("");
@@ -83,6 +86,9 @@ export function FoundryPage() {
   const latest = useRef({ board, tool }); latest.current = { board, tool };
   const alive = useRef(true);
   const actionLock = useRef(false);
+  const skillPurchases = useRef<{
+    ownerId: string; progressId: string; cycle: FoundryCycle; revision: number; pending: Set<symbol>; failed: boolean;
+  } | null>(null);
   const localOwner = useRef<string | null>(null);
 
   function stopCountdown() { if (countdownTimer.current) clearInterval(countdownTimer.current); countdownTimer.current = null; }
@@ -175,11 +181,38 @@ export function FoundryPage() {
   }, []);
   async function action(fn: (board: Board) => Promise<unknown>) {
     const current = latest.current.board;
-    if (!current || actionLock.current) return;
+    if (!current || actionLock.current || skillPurchases.current?.pending.size) return;
     actionLock.current = true; setBusy(true); setNotice("");
     try { await fn(current); } catch (error) { if (localOwner.current === current.ownerId) showGameError(error); }
     finally { actionLock.current = false; if (alive.current) setBusy(false); }
   }
+  const learnSkill = useCallback((skill: FoundrySkillId) => {
+    const current = latest.current.board, saved = current?.progress;
+    if (!current || !saved || current.round || actionLock.current || session.current || finalRound.current || saved.cycle.economy === 5) return;
+    const previous = skillPurchases.current;
+    const batch = previous?.pending.size && previous.ownerId === current.ownerId && previous.progressId === saved._id && previous.cycle.number === saved.cycle.number
+      ? previous : { ownerId: current.ownerId, progressId: saved._id, cycle: saved.cycle, revision: saved.revision, pending: new Set<symbol>(), failed: false };
+    if (batch.failed) return;
+    // A second click can arrive before React has rendered the optimistic query.
+    // Reserve its cost and revision synchronously so rapid clicks cannot overspend.
+    const source = batch.revision >= saved.revision ? batch : saved;
+    let next: FoundryCycle;
+    try { next = buyFoundrySkill(source.cycle, skill); }
+    catch { return; }
+    const revision = source.revision, request = Symbol(skill);
+    batch.cycle = next; batch.revision = revision + 1; batch.pending.add(request);
+    skillPurchases.current = batch; setPendingSkillCount(batch.pending.size); setNotice('');
+    void purchaseSkill({ expectedOwnerId: current.ownerId, revision, skill }).catch((error) => {
+      if (!batch.failed && alive.current && localOwner.current === current.ownerId) showGameError(error);
+      batch.failed = true;
+    }).finally(() => {
+      batch.pending.delete(request);
+      if (alive.current && skillPurchases.current === batch) {
+        setPendingSkillCount(batch.pending.size);
+        if (!batch.pending.size) skillPurchases.current = null;
+      }
+    });
+  }, [purchaseSkill]);
   async function start() {
     audio.current?.unlock();
     await action(async (current) => {
@@ -196,7 +229,8 @@ export function FoundryPage() {
   const runtime = session.current; const live = runtime?.state;
   const result = roundResult ?? (live?.ended ? live : null);
   const inRound = !!board?.round || !!runtime || !!result;
-  const locked = busy || inRound || cycle?.economy === 5 || !!cycle?.choices.length || cycle?.status !== "active";
+  const learningLocked = actionBusy || inRound || cycle?.economy === 5 || !!cycle?.choices.length || cycle?.status !== "active";
+  const locked = busy || learningLocked;
   const orderCost = cycle ? foundryOrderCost(cycle) : undefined;
   const dailyProgress = Math.min(3, board?.daily.delivered ?? 0);
   const availableMastery = Math.max(0, (progress?.mastery ?? 0) - (progress?.masterySpent ?? 0));
@@ -293,7 +327,7 @@ export function FoundryPage() {
           </div>
         </aside>}
       </div>
-      {!inRound && tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={locked} busy={busy} inRound={inRound} onSkill={(skill) => action((b) => purchaseSkill({ ...revision(b), skill }))} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}
+      {!inRound && tree && cycle && <FoundrySkillTree key={tree} open onOpenChange={(open) => { if (!open) setTree(null); }} initialTab={tree} cycle={cycle} mastery={progress?.mastery ?? 0} masterySpent={progress?.masterySpent ?? 0} charms={progress?.charms ?? []} locked={learningLocked} busy={busy} skillBusy={actionBusy} inRound={inRound} onSkill={learnSkill} onCharm={(charm) => action((b) => purchaseCharm({ ...revision(b), charm }))} />}
       <Dialog open={pigCollection && !inRound && hasPigProgression} onOpenChange={setPigCollection}><DialogContent className="foundry-preparation-dialog foundry-pig-dialog"><DialogTitle>Les cochons du comptoir</DialogTitle><FoundryPigCollection progress={pigs} /></DialogContent></Dialog>
       <Dialog open={closing && !inRound} onOpenChange={setClosing}><DialogContent className="foundry-preparation-dialog"><DialogTitle>Transmettre ce savoir</DialogTitle><p className="foundry-dialog-intro">Les éclats, savoirs, bénédictions et niveaux des cochons de ce chantier seront perdus. Les marteaux achetés devront être rachetés au prochain essai. Tu conserves ta maîtrise et tes talismans.</p><button type="button" className="foundry-primary" disabled={busy} onClick={() => action(async (b) => { await abandon(revision(b)); setClosing(false); })}>Clore le chantier</button><button type="button" className="foundry-quiet" onClick={() => setClosing(false)}>Continuer ce chantier</button></DialogContent></Dialog>
       <Dialog open={help && !inRound} onOpenChange={setHelp}>

@@ -1,12 +1,15 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useMutation, useQuery } from "convex/react";
-import { getFunctionName, type FunctionReturnType } from "convex/server";
+import { getFunctionName, type FunctionArgs, type FunctionReturnType } from "convex/server";
+import type { OptimisticLocalStore } from "convex/browser";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
 import type { Id } from "@my-better-t-app/backend/convex/_generated/dataModel";
 import { buyFoundryTool, createFoundryRound, newFoundryCycle, stepFoundry } from "@sylve/game/foundry";
 import { createFoundryScene } from "./foundry-scene";
 import { FoundryPage } from "./foundry-page";
+import { optimisticallyPurchaseFoundrySkill } from '@/lib/optimistic-foundry';
+import { showGameError } from '@/components/game/shared';
 
 vi.mock("convex/react", () => ({ useMutation: vi.fn(), useQuery: vi.fn() }));
 vi.mock("@tanstack/react-router", () => ({ Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => <a href={to} {...props}>{children}</a> }));
@@ -26,7 +29,20 @@ beforeEach(() => {
   vi.mocked(useMutation).mockImplementation((mutation) => {
     const name = getFunctionName(mutation);
     if (!mutations.has(name)) mutations.set(name, vi.fn(async () => undefined));
-    return mutations.get(name)! as unknown as ReturnType<typeof useMutation>;
+    const mutate = mutations.get(name)!;
+    return Object.assign(mutate, { withOptimisticUpdate(update: typeof optimisticallyPurchaseFoundrySkill) {
+      return async (args: FunctionArgs<typeof api.foundry.purchaseSkill>) => {
+        const previous = board;
+        const store: OptimisticLocalStore = {
+          getQuery: vi.fn().mockReturnValue({ _id: board.ownerId }),
+          getAllQueries: vi.fn().mockReturnValue([{ args: { refreshKey: 1 }, value: board }]),
+          setQuery: vi.fn().mockImplementation((_query, _args, value: Board) => { board = value; }),
+        };
+        update(store, args);
+        try { return await mutate(args); }
+        catch (error) { board = previous; throw error; }
+      };
+    } }) as unknown as ReturnType<typeof useMutation>;
   });
   vi.mocked(createFoundryScene).mockImplementation((_host, options) => {
     sceneOptions = options; return { aim: () => ({ x: 1, z: 1, active: true }), nudge: (input, dx, dz) => ({ x: input.x + dx, z: input.z + dz, active: true }), impact: vi.fn(), destroy: vi.fn() };
@@ -55,12 +71,14 @@ describe("la banque à l’écran", () => {
     board = { ...board, progress: { ...board.progress!, cycle: { ...newFoundryCycle(), economy: 3, shards: 100 } } };
     const view = render(<FoundryPage />); await ready();
     fireEvent.click(screen.getByRole("button", { name: "Ouvrir l’arbre de compétences" }));
-    expect(disabled(screen.getByRole("button", { name: "Apprendre Poigne de cuivre" }))).toBe(true);
-    expect(screen.getByRole("button", { name: "Poigne de cuivre, 300 éclats" })).toBeTruthy();
+    const root = screen.getByRole("button", { name: "Poigne de cuivre, 300 éclats" });
+    expect(root.dataset.purchaseState).toBe('unaffordable');
+    fireEvent.click(root); expect(mutations.get('foundry:purchaseSkill')).not.toHaveBeenCalled();
     board = { ...board, progress: { ...board.progress!, cycle: { ...board.progress!.cycle, shards: 5000, skills: ["forge-grip"] } } }; view.rerender(<FoundryPage />);
-    fireEvent.click(screen.getByRole("button", { name: /^Premier éclat,/ }));
-    expect(disabled(screen.getByRole("button", { name: "Apprendre Premier éclat" }))).toBe(false);
-    expect(screen.getByRole("button", { name: /Premier éclat, 4.000 éclats/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Premier éclat, 4.000 éclats/ }).dataset.purchaseState).toBe('available');
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: /^Premier éclat,/ })); });
+    expect(mutations.get('foundry:purchaseSkill')).toHaveBeenCalledWith({ expectedOwnerId: 'alice', revision: 0, skill: 'forge-first' });
+    expect(board.progress!.cycle.shards).toBe(1000);
   });
   it("offers all five hammers for shards at high mastery and falls back from an unpaid legacy selection", async () => {
     board = { ...board, progress: { ...board.progress!, mastery: 500, cycle: { ...legacyCycle(), shards: 500, purchasedTools: undefined, selectedTool: "resonance" } } };
@@ -256,7 +274,6 @@ describe("la banque à l’écran", () => {
     expect(screen.getByRole("region", { name: "Grand arbre de compétences" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Cœur du forgeron,/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Poigne de cuivre, 30 éclats/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Apprendre Poigne de cuivre" }));
     await waitFor(() => expect(mutations.get("foundry:purchaseSkill")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 8, skill: "forge-grip" }));
   });
   it("shows available mastery separately and buys a permanent charm", async () => {
@@ -265,6 +282,63 @@ describe("la banque à l’écran", () => {
     fireEvent.click(screen.getByRole("button", { name: /Talismans permanents/ }));
     fireEvent.click(screen.getByRole("button", { name: /Acquérir Anneau de braise/ }));
     await waitFor(() => expect(mutations.get("foundry:purchaseCharm")).toHaveBeenCalledWith({ expectedOwnerId: "alice", revision: 4, charm: "ember" }));
+  });
+  it('shows an optimistic purchase immediately, reveals its frontier and prevents duplicate or unaffordable clicks', async () => {
+    board.progress = { ...board.progress!, revision: 8, cycle: { ...newFoundryCycle(), shards: 13, skills: ['smash-damage-1'] } };
+    render(<FoundryPage />); await ready();
+    let confirm!: () => void;
+    mutations.get('foundry:purchaseSkill')!.mockImplementation(() => new Promise<void>(resolve => { confirm = resolve; }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’arbre de compétences' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' }));
+    expect(screen.getByRole('button', { name: 'Main d’ambre, acquis' }).dataset.purchaseState).toBe('owned');
+    expect(board.progress!.cycle.shards).toBe(1);
+    expect(screen.getByRole('button', { name: 'Bonne étoile, 35 éclats' }).dataset.purchaseState).toBe('unaffordable');
+    expect(screen.getByRole('button', { name: 'Marteau élargi, 12 éclats' }).dataset.purchaseState).toBe('unaffordable');
+    fireEvent.click(screen.getByRole('button', { name: 'Main d’ambre, acquis' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Marteau élargi, 12 éclats' }));
+    expect(mutations.get('foundry:purchaseSkill')).toHaveBeenCalledExactlyOnceWith({ expectedOwnerId: 'alice', revision: 8, skill: 'fortune-loot-1' });
+    await act(async () => { confirm(); });
+    expect(board.progress!.cycle.shards).toBe(1);
+  });
+  it('accepts successive purchases before the first reply with consecutive revisions and the remaining budget', async () => {
+    board.progress = { ...board.progress!, revision: 8, cycle: { ...newFoundryCycle(), shards: 100 } };
+    render(<FoundryPage />); await ready();
+    const confirmations: (() => void)[] = [];
+    mutations.get('foundry:purchaseSkill')!.mockImplementation(() => new Promise<void>(resolve => { confirmations.push(resolve); }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’arbre de compétences' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Poigne de cuivre, 1 éclat' }));
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Danse des braises, 12 éclats' }));
+    });
+    expect(mutations.get('foundry:purchaseSkill')!.mock.calls.map(([args]) => args)).toEqual([
+      { expectedOwnerId: 'alice', revision: 8, skill: 'smash-damage-1' },
+      { expectedOwnerId: 'alice', revision: 9, skill: 'fortune-loot-1' },
+      { expectedOwnerId: 'alice', revision: 10, skill: 'frenzy-speed-1' },
+    ]);
+    expect(board.progress!.cycle.shards).toBe(75);
+    expect(screen.getByRole('button', { name: 'Danse des braises, acquis' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Marteau élargi, 12 éclats' }).dataset.purchaseState).toBe('available');
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer la fenêtre' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(disabled(screen.getByRole('button', { name: 'Préparation…' }))).toBe(true);
+    await act(async () => { confirmations.forEach(confirm => confirm()); });
+    expect(disabled(screen.getByRole('button', { name: 'Commencer une manche' }))).toBe(false);
+  });
+  it('restores the server balance and removes optimistic unlocks when a purchase is rejected', async () => {
+    board.progress = { ...board.progress!, revision: 8, cycle: { ...newFoundryCycle(), shards: 13, skills: ['smash-damage-1'] } };
+    render(<FoundryPage />); await ready();
+    let reject!: (error: Error) => void;
+    mutations.get('foundry:purchaseSkill')!.mockImplementation(() => new Promise<void>((_resolve, fail) => { reject = fail; }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’arbre de compétences' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' }));
+    expect(screen.getByRole('button', { name: 'Bonne étoile, 35 éclats' })).toBeTruthy();
+    const error = new Error('Le chantier a changé dans un autre onglet.');
+    await act(async () => { reject(error); });
+    expect(board.progress!.cycle.shards).toBe(13);
+    expect(screen.queryByRole('button', { name: 'Bonne étoile, 35 éclats' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Main d’ambre, 12 éclats' }).dataset.purchaseState).toBe('available');
+    expect(showGameError).toHaveBeenCalledExactlyOnceWith(error);
   });
   it("explains the loss of the temporary build before closing a chantier", async () => {
     render(<FoundryPage />); await ready(); fireEvent.click(screen.getByRole("button", { name: "Clore ce chantier et préparer le suivant" }));
