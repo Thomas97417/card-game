@@ -132,14 +132,13 @@ export function cemeteryWeaponBonus(
 }
 export const CEMETERY_REWARD_TIERS: readonly {
   rarity: ChestType;
-  label: string;
   at: number;
 }[] = [
-  { rarity: "common", label: "Dès la première run", at: 0 },
-  { rarity: "rare", label: "5 minutes", at: 300 },
-  { rarity: "bigRare", label: "10 minutes", at: 600 },
-  { rarity: "epic", label: "15 minutes", at: 900 },
-  { rarity: "legendary", label: "20 minutes", at: 1200 },
+  { rarity: "common", at: 0 },
+  { rarity: "rare", at: 300 },
+  { rarity: "bigRare", at: 600 },
+  { rarity: "epic", at: 900 },
+  { rarity: "legendary", at: 1200 },
 ];
 export interface CemeteryLobbyProps {
   initialTab?: "play" | "upgrades";
@@ -172,54 +171,55 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
   const hero = heroDefinition(props.heroId),
     selectedWeapon = CEMETERY_WEAPONS.find((w) => w.id === selected)!;
   const root = useRef<HTMLDivElement>(null);
+  const weaponDetails = useRef<HTMLElement>(null);
   useCemeteryDialog(root, confirmAbandon);
+  function changeTab(next: typeof tab) {
+    setTab(next);
+    root.current?.closest(".cemetery-page")?.scrollTo({ top: 0, behavior: "instant" });
+  }
   return (
     <div className="cemetery-lobby" ref={root}>
       <div className="cemetery-topline">
-        <span className="cemetery-eyebrow">
-          <span /> SOUS LE REFUGE
-        </span>
-        <span className="cemetery-record">
-          <Trophy size={15} /> Record{" "}
-          <strong>{cemeteryTime(props.bestSeconds)}</strong>
-        </span>
-      </div>
       <nav className="cemetery-tabs" aria-label="Menu du cimetière">
         {(
           [
             { id: "play", label: "Jouer", Icon: Play },
             { id: "upgrades", label: "Améliorations", Icon: Sparkles },
-            { id: "arsenal", label: "Armes et objets", Icon: BookOpen },
+            { id: "arsenal", label: "Arsenal", Icon: BookOpen },
           ] as const
         ).map(({ id, label, Icon }) => (
           <button
             key={id}
             type="button"
             aria-current={tab === id ? "page" : undefined}
-            onClick={() => setTab(id)}
+            onClick={() => changeTab(id)}
           >
             <Icon size={17} />
             {label}
           </button>
         ))}
       </nav>
+        {tab === "upgrades" ? (
+          <div className="cemetery-wallet" aria-label="Monnaies disponibles">
+            <span aria-label={`${props.gold} or`}><Coins size={16} />{props.gold.toLocaleString("fr-FR")}</span>
+            <span aria-label={`${props.emeralds} émeraudes`}><Gem size={15} />{props.emeralds.toLocaleString("fr-FR")}</span>
+          </div>
+        ) : tab === "play" && (
+          <span className="cemetery-record">
+            <Trophy size={15} /> Record{" "}
+            <strong>{cemeteryTime(props.bestSeconds)}</strong>
+          </span>
+        )}
+      </div>
       {tab === "play" ? (
         <>
           <div className="cemetery-hero-layout">
             <section className="cemetery-intro">
-              <div className="cemetery-overline">
-                <span /> LE CIMETIÈRE DES VEILLEURS
-              </div>
               <h1>
                 Le Puits
                 <br />
-                <em>oublié.</em>
+                <em>oublié</em>
               </h1>
-              <p>
-                Au fond du puits, la nuit ne finit jamais.
-                <br />
-                Tiens face aux ombres. Reviens avec leurs trésors.
-              </p>
               <div className="cemetery-run-traits">
                 <span>
                   <Sword size={15} /> Attaques automatiques
@@ -233,6 +233,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   <button
                     type="button"
                     className="cemetery-primary"
+                    aria-label="Reprendre la partie"
                     onClick={props.onResume}
                     disabled={props.busy}
                   >
@@ -241,20 +242,20 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     ) : (
                       <Play size={20} fill="currentColor" />
                     )}
-                    Reprendre la partie
+                    Reprendre
                     <ArrowRight size={20} />
                   </button>
                   <p className="cemetery-save-note">
-                    Sauvegarde · {cemeteryTime(props.activeRun.seconds)} ·
-                    Niveau {props.activeRun.level}
+                    {cemeteryTime(props.activeRun.seconds)} · Niveau {props.activeRun.level}
                   </p>
                   <button
                     type="button"
                     className="cemetery-text-button"
+                    aria-label="Abandonner cette partie"
                     onClick={() => setConfirmAbandon(true)}
                     disabled={props.busy}
                   >
-                    Abandonner cette partie
+                    Abandonner
                   </button>
                 </div>
               ) : (
@@ -262,6 +263,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   <button
                     type="button"
                     className="cemetery-primary"
+                    aria-label="Lancer une partie"
                     onClick={props.onStart}
                     disabled={props.busy || !props.initialized}
                   >
@@ -270,12 +272,9 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     ) : (
                       <Play size={19} fill="currentColor" />
                     )}
-                    Lancer une partie
+                    Jouer
                     <ArrowRight size={20} />
                   </button>
-                  <span className="cemetery-save-note">
-                    Entrée gratuite · Chaque tentative compte
-                  </span>
                 </div>
               )}
             </section>
@@ -290,9 +289,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 className="cemetery-guardian-art"
               />
               <div className="cemetery-guardian-caption">
-                <span>TON GARDIEN</span>
                 <h2>{hero.name}</h2>
-                <p>Un même départ. Tes propres choix.</p>
                 <div>
                   <span>
                     <Heart size={15} />{" "}
@@ -309,7 +306,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
             <section className="cemetery-pending" aria-label="Coffres à ouvrir">
               <div>
                 <Gem size={20} />
-                <span>Les ombres ont laissé un trésor.</span>
+                <span>Coffres à ouvrir</span>
               </div>
               <div>
                 {props.pendingRewards.map((r) => (
@@ -329,8 +326,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           )}
           <section className="cemetery-rewards">
             <div className="cemetery-section-heading">
-              <span>PLUS TU TIENS, PLUS TU GAGNES</span>
-              <p>Un coffre de cartes et d’or à la fin de chaque survie.</p>
+              <h2>Récompenses</h2>
+              <span>Un coffre à la mort</span>
             </div>
             <div className="cemetery-chest-track">
               {CEMETERY_REWARD_TIERS.map((tier, i) => (
@@ -350,7 +347,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                       ]
                     }
                   </strong>
-                  <span>{tier.label}</span>
+                  <span>{cemeteryTime(tier.at)}</span>
                 </div>
               ))}
             </div>
@@ -358,28 +355,27 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           <footer className="cemetery-lobby-footer">
             <span>
               <span className="cemetery-key">ZQSD</span>
-              <span className="cemetery-key">WASD</span> ou flèches pour se
-              déplacer
+              <span className="cemetery-key">WASD</span>
+              <span className="cemetery-key">↑ ↓ ← →</span>
+              Déplacement
             </span>
-            <span>Joystick sur mobile · Échap pour la pause</span>
+            <span><span className="cemetery-key">Échap</span> Pause</span>
+            <span className="cemetery-touch-hint">Joystick pour se déplacer</span>
           </footer>
         </>
       ) : tab === "upgrades" ? (
         <section className="cemetery-panel-content">
           <div className="cemetery-section-title">
-            <span className="cemetery-eyebrow">
-              CHAQUE RETOUR TE REND PLUS FORT
-            </span>
-            <h1>Prépare la prochaine nuit.</h1>
-            <p>
-              Des améliorations permanentes pour tous tes gardiens. Choisis ta
-              monnaie pour chaque rang.
-            </p>
+            <h1>Améliorations</h1>
+            <p>Permanentes · Tous les gardiens</p>
           </div>
           {props.activeRun && (
             <p className="cemetery-notice">
-              <Shield size={17} /> Termine ou abandonne la partie en cours pour
-              acheter des améliorations.
+              <Shield size={17} />
+              <span>Achats disponibles après la partie.</span>
+              <button type="button" disabled={props.busy} onClick={props.onResume}>
+                Reprendre <ArrowRight size={15} />
+              </button>
             </p>
           )}
           <div className="cemetery-upgrade-grid">
@@ -401,57 +397,47 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     <div>
                       <h2>{u.name}</h2>
                       <span>
-                        {rank} / {u.max} rangs
+                        Rang {rank} / {u.max}
                       </span>
                     </div>
                     {maxed && <Check size={18} />}
                   </div>
                   <p>{u.description}</p>
                   <div className="cemetery-upgrade-bonus">
-                    <span>{upgradeBonus(u.id, rank)}</span>
+                    <span aria-label={`Bonus actuel : ${upgradeBonus(u.id, rank)}`}>{upgradeBonus(u.id, rank)}</span>
                     {!maxed && (
                       <>
                         <ArrowRight size={14} />
-                        <strong>{upgradeBonus(u.id, rank + 1)}</strong>
+                        <strong aria-label={`Prochain rang : ${upgradeBonus(u.id, rank + 1)}`}>{upgradeBonus(u.id, rank + 1)}</strong>
                       </>
                     )}
-                  </div>
-                  <div
-                    className="cemetery-rank-dots"
-                    aria-label={`${rank} rangs sur ${u.max}`}
-                  >
-                    {Array.from({ length: u.max }, (_, i) => (
-                      <span key={i} className={i < rank ? "is-owned" : ""} />
-                    ))}
                   </div>
                   {cost ? (
                     <div className="cemetery-purchase-buttons">
                       <button
                         type="button"
                         aria-label={`Acheter ${u.name} en or, ${cost.gold} pièces`}
+                        title={props.activeRun ? "Achats disponibles après la partie" : props.gold < cost.gold ? "Or insuffisant" : "Acheter en or"}
                         disabled={disabled || props.gold < cost.gold}
                         onClick={() => props.onBuy(u.id, rank, "gold")}
                       >
                         <Coins size={16} />
                         {cost.gold.toLocaleString("fr-FR")}
-                        <span>or</span>
                       </button>
                       <button
                         type="button"
                         aria-label={`Acheter ${u.name} en émeraudes, ${cost.emeralds} ${cost.emeralds === 1 ? "émeraude" : "émeraudes"}`}
+                        title={props.activeRun ? "Achats disponibles après la partie" : props.emeralds < cost.emeralds ? "Émeraudes insuffisantes" : "Acheter en émeraudes"}
                         disabled={disabled || props.emeralds < cost.emeralds}
                         onClick={() => props.onBuy(u.id, rank, "emeralds")}
                       >
                         <Gem size={15} />
                         {cost.emeralds}
-                        <span>
-                          {cost.emeralds === 1 ? "émeraude" : "émeraudes"}
-                        </span>
                       </button>
                     </div>
                   ) : (
                     <div className="cemetery-maxed-label">
-                      <Check size={15} /> Maîtrise complète
+                      <Check size={15} /> Maximum
                     </div>
                   )}
                 </article>
@@ -462,12 +448,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
       ) : (
         <section className="cemetery-panel-content">
           <div className="cemetery-section-title">
-            <span className="cemetery-eyebrow">COMPOSE TON ARSENAL</span>
-            <h1>La lumière contre les ombres.</h1>
-            <p>
-              Six armes et six objets par partie. Chaque niveau te permet
-              d’affiner ton build.
-            </p>
+            <h1>Arsenal</h1>
+            <p>6 armes · 6 objets maximum</p>
           </div>
           <div className="cemetery-arsenal-switch">
             <button
@@ -475,14 +457,14 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
               onClick={() => setArsenalTab("weapons")}
               aria-pressed={arsenalTab === "weapons"}
             >
-              12 armes · 12 évolutions
+              Armes <span>12</span>
             </button>
             <button
               type="button"
               onClick={() => setArsenalTab("passives")}
               aria-pressed={arsenalTab === "passives"}
             >
-              16 objets passifs
+              Objets <span>16</span>
             </button>
           </div>
           {arsenalTab === "weapons" ? (
@@ -493,7 +475,16 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     type="button"
                     key={w.id}
                     aria-pressed={selected === w.id}
-                    onClick={() => setSelected(w.id)}
+                    aria-controls="cemetery-weapon-details"
+                    onClick={() => {
+                      setSelected(w.id);
+                      if (window.matchMedia?.("(max-width: 850px)").matches) {
+                        weaponDetails.current?.scrollIntoView({
+                          block: "start",
+                          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+                        });
+                      }
+                    }}
                     style={
                       {
                         "--item-color": `#${w.color.toString(16).padStart(6, "0")}`,
@@ -505,16 +496,12 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     </span>
                     <span>
                       {w.name}
-                      <small>8 niveaux</small>
                     </span>
                     <ChevronRight size={15} />
                   </button>
                 ))}
               </div>
-              <article className="cemetery-evolution-card">
-                <span className="cemetery-eyebrow">
-                  L’ARME ET SON ÉVOLUTION
-                </span>
+              <article className="cemetery-evolution-card" id="cemetery-weapon-details" ref={weaponDetails}>
                 <div className="cemetery-evolution-icon">
                   <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id)} size={96} />
                 </div>
@@ -541,8 +528,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 </div>
                 <p>{selectedWeapon.evolvedDescription}</p>
                 <small>
-                  Ouvre un reliquaire de boss apparu à partir de 10 minutes avec
-                  cette combinaison.
+                  Reliquaire de boss · À partir de 10:00
                 </small>
               </article>
             </div>
@@ -581,11 +567,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
               <X size={20} />
             </button>
             <Skull size={32} />
-            <h2 id="cemetery-abandon-title">Quitter cette nuit ?</h2>
-            <p>
-              Cette tentative sera abandonnée sans or ni coffre. Tes
-              améliorations permanentes sont conservées.
-            </p>
+            <h2 id="cemetery-abandon-title">Abandonner la partie ?</h2>
+            <p>Aucun or ni coffre ne sera gagné.</p>
             <button
               type="button"
               className="cemetery-primary"
@@ -601,7 +584,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
               className="cemetery-text-button"
               onClick={() => setConfirmAbandon(false)}
             >
-              Garder ma sauvegarde
+              Annuler
             </button>
           </section>
         </div>

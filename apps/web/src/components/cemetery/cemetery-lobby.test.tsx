@@ -99,7 +99,7 @@ describe("le menu du puits", () => {
   });
   it("shows the complete arsenal and each weapon’s evolution requirement", () => {
     render(<CemeteryLobby {...props()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Armes et objets" }));
+    fireEvent.click(screen.getByRole("button", { name: "Arsenal" }));
     expect(
       screen.getByRole("button", { name: /Sceau d’exorcisme/ }),
     ).toBeTruthy();
@@ -108,7 +108,7 @@ describe("le menu du puits", () => {
     fireEvent.click(screen.getByRole("button", { name: /Sceau d’exorcisme/ }));
     expect(screen.getByText("Astre purificateur")).toBeTruthy();
     expect(screen.getByText("Couronne ancienne")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "16 objets passifs" }));
+    fireEvent.click(screen.getByRole("button", { name: "Objets 16" }));
     expect(screen.getAllByRole("article")).toHaveLength(16);
   });
   it("keeps earned chests accessible from the menu", () => {

@@ -106,7 +106,7 @@ describe("le retour au menu du cimetière", () => {
     fireEvent.click(screen.getByRole("button", { name: "Retour au menu" }));
     expect(screen.getByRole("heading", { name: /Le Puits/ })).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByText(/Sauvegarde · 00:01/)).toBeTruthy();
+    expect(screen.getByText(/00:01 · Niveau/)).toBeTruthy();
     expect((screen.getByRole("button", { name: "Reprendre la partie" }) as HTMLButtonElement).disabled).toBe(false);
     expect(destroy).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(5000));
@@ -171,7 +171,7 @@ describe("le retour au menu du cimetière", () => {
     record.state.enemies = [{ id: 99, kind: "revenant", x: 0, y: 0, hp: 1000, maxHp: 1000,
       damage: 7, speed: 1, radius: 17, born: 0, knockback: 0 }];
     await enter(); act(() => vi.advanceTimersByTime(200)); await ready();
-    expect(screen.getByRole("heading", { name: "Les ombres se souviendront." })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Partie terminée" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retour au menu" }));
     expect(screen.getByRole("heading", { name: /Le Puits/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reprendre la partie" })).toBeNull();

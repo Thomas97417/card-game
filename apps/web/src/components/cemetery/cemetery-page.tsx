@@ -53,6 +53,7 @@ import {
 } from "./cemetery-session";
 import { useCemeteryDialog } from "./use-cemetery-dialog";
 import { cemeteryWeaponArt, cemeteryPassiveArt, cemeteryPickupArt } from "./cemetery-art";
+import { CemeteryXpBar } from "./cemetery-xp-bar";
 
 export function CemeteryPage() {
   const board = useQuery(api.cemetery.board, {}),
@@ -258,7 +259,7 @@ export function CemeteryPage() {
       {!board ? (
         <div className="cemetery-loading" role="status">
           <LoaderCircle size={28} className="animate-spin" />
-          Le puits s’éveille…
+          Chargement…
         </div>
       ) : showGame && session ? (
         <CemeteryGame
@@ -431,7 +432,7 @@ export function CemeteryGame({
         if (alive) {
           setFailed(true);
           onError(
-            "Le rendu du cimetière n’a pas pu démarrer. Vérifie que l’accélération graphique est disponible, puis réessaie.",
+            "Le rendu du cimetière est indisponible. Réessaie le chargement.",
           );
         }
       });
@@ -464,9 +465,15 @@ export function CemeteryGame({
     const down = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (key === "escape") {
+        if (e.repeat) return;
         if (session.running) {
+          e.preventDefault();
           reset();
           void session.pause();
+        } else if (ready && !failed && !session.state.ended && !session.state.choices.length) {
+          e.preventDefault();
+          onError(null);
+          void session.resume(performance.now());
         }
         return;
       }
@@ -515,7 +522,7 @@ export function CemeteryGame({
       window.removeEventListener("blur", blur);
       document.removeEventListener("visibilitychange", hide);
     };
-  }, [session]);
+  }, [session, ready, failed]);
   const s = session.state,
     stats = cemeteryStats(s),
     seconds = s.tick / 20,
@@ -552,11 +559,10 @@ export function CemeteryGame({
         >
           <Pause size={20} />
         </button>
-        <div className="cemetery-live-time">
-          <span>SURVIE</span>
+        <div className="cemetery-live-time" aria-label={`Temps de survie : ${cemeteryTime(seconds)}`}>
           <strong>{cemeteryTime(seconds)}</strong>
         </div>
-        <span className="cemetery-kills">
+        <span className="cemetery-kills" aria-label={`${s.kills} ennemis vaincus`}>
           <Skull size={16} />
           {s.kills}
         </span>
@@ -601,10 +607,7 @@ export function CemeteryGame({
           </div>
         )}
       </div>
-      <div className="cemetery-xp">
-        <span style={{ width: `${Math.min(100, (s.xp / s.nextXp) * 100)}%` }} />
-        <strong>Niv. {s.level}</strong>
-      </div>
+      <CemeteryXpBar xp={s.xp} nextXp={s.nextXp} level={s.level} />
       <div className="cemetery-run-inventory">
         <div aria-label="Armes équipées">
           {s.weapons.map((w) => {
@@ -640,11 +643,7 @@ export function CemeteryGame({
         />
         <div>
           <strong>{chestName(summary.rarity)}</strong>
-          <span>
-            {next
-              ? `${chestName(next.rarity)} à ${cemeteryTime(next.at)}`
-              : "Le meilleur coffre est atteint"}
-          </span>
+          {next && <span><ArrowRight size={11} /> {chestName(next.rarity)} · {cemeteryTime(next.at)}</span>}
         </div>
         <span className="cemetery-run-gold">
           <Coins size={15} />
@@ -672,7 +671,7 @@ export function CemeteryGame({
         <div className="cemetery-modal-shade">
           <div className="cemetery-loading" role="status">
             <LoaderCircle size={28} className="animate-spin" />
-            Les ombres prennent forme…
+            Chargement…
           </div>
         </div>
       )}
@@ -684,9 +683,8 @@ export function CemeteryGame({
             aria-modal="true"
             aria-labelledby="cemetery-result-title"
           >
-            <span className="cemetery-eyebrow">LA NUIT A EU RAISON DE TOI</span>
-            <h2 id="cemetery-result-title">Les ombres se souviendront.</h2>
-            <strong className="cemetery-result-time">
+            <h2 id="cemetery-result-title">Partie terminée</h2>
+            <strong className="cemetery-result-time" aria-label="Temps de survie">
               {cemeteryTime(summary.seconds)}
             </strong>
             <div className="cemetery-result-stats">
@@ -712,8 +710,7 @@ export function CemeteryGame({
               {chestName(summary.rarity)}
               <br />
               <small>
-                Cartes pour ta collection · Or du coffre + {summary.gold} or
-                ramassé
+                + {summary.gold} or ramassé
               </small>
             </p>
             <button
@@ -725,13 +722,13 @@ export function CemeteryGame({
               {!session.settled ? (
                 <>
                   <LoaderCircle className="animate-spin" size={18} />
-                  Sauvegarde du bilan…
+                  Validation…
                 </>
               ) : rewardOpened ? (
                 "Coffre ouvert"
               ) : (
                 <>
-                  Ouvrir mon coffre
+                  Ouvrir le coffre
                   <ArrowRight size={18} />
                 </>
               )}
@@ -814,13 +811,13 @@ export function CemeteryGame({
                     <span className="cemetery-choice-type">
                       {weapon
                         ? held
-                          ? "AMÉLIORATION D’ARME"
-                          : "NOUVELLE ARME"
+                          ? "Arme"
+                          : "Nouvelle arme"
                         : passive
                           ? held
-                            ? "OBJET AMÉLIORÉ"
-                            : "NOUVEL OBJET"
-                          : "RÉCUPÉRATION"}
+                            ? "Objet"
+                            : "Nouvel objet"
+                          : "Bonus"}
                     </span>
                     <span className="cemetery-choice-icon">
                       <CemeteryGlyph
@@ -844,12 +841,12 @@ export function CemeteryGame({
                         : weapon?.description) ??
                         passive?.description ??
                         (id === "gold"
-                          ? "Gagne 25 pièces d’or, avec tes bonus de cupidité."
-                          : "Récupère 30 PV, avec tes bonus de récupération.")}
+                          ? "+25 or · Bonus de cupidité appliqué"
+                          : "+30 PV · Bonus de récupération appliqué")}
                     </p>
                     <span className="cemetery-choice-level">
                       {weapon || passive
-                        ? `Niveau ${held ? held.level + 1 : 1}`
+                        ? held ? `Niv. ${held.level} → ${held.level + 1}` : "Niv. 1"
                         : "Choisir"}
                       <ArrowRight size={16} />
                     </span>
@@ -868,9 +865,8 @@ export function CemeteryGame({
               aria-modal="true"
               aria-labelledby="cemetery-pause-title"
             >
-              <span className="cemetery-eyebrow">LE TEMPS EST SUSPENDU</span>
-              <h2 id="cemetery-pause-title">Un instant de répit.</h2>
-              <p>La nuit t’attend. Reprends quand tu es prêt.</p>
+              <h2 id="cemetery-pause-title">Pause</h2>
+              <p>{cemeteryTime(seconds)} · Niveau {s.level}</p>
               <button
                 type="button"
                 className="cemetery-primary"
@@ -914,7 +910,7 @@ export function CemeteryGame({
               onReload();
             }}
           >
-            Reprendre la sauvegarde du serveur
+            Recharger la partie
           </button>
         </div>
       )}

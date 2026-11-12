@@ -6,7 +6,9 @@ Le puits, au milieu de la place entre la maison des gardiens et l’atelier, ouv
 
 Le gardien sélectionné conserve son illustration. Son niveau, ses pouvoirs de duel et son deck ne modifient pas cette activité. Chaque partie commence au niveau 1 avec 100 PV avant améliorations, la Baguette sylvestre et les achats permanents figés au lancement. Les onze gardiens utilisent les mêmes règles.
 
-ZQSD, WASD et les flèches déplacent le héros ; un joystick est affiché sur mobile. Les armes attaquent automatiquement. Les choix de niveau, la pause, le changement d’onglet et la perte de focus suspendent la simulation. Les touches maintenues sont relâchées lors d’une interruption. La reprise est explicite.
+ZQSD, WASD et les flèches déplacent le héros ; un joystick est affiché sur mobile. Les armes attaquent automatiquement. Les choix de niveau, la pause, le changement d’onglet et la perte de focus suspendent la simulation. Les touches maintenues sont relâchées lors d’une interruption. Échap permet de mettre en pause et de reprendre, sauf pendant un choix ou après la mort.
+
+L’interface conserve les actions, statistiques et règles utiles, avec une navigation fixe et les soldes visibles dans les achats. La barre d’expérience en bas du combat contient dix segments de 10 %, partiellement remplis si nécessaire, et le niveau actuel en son centre. Sa valeur et la progression vers le prochain niveau sont aussi accessibles aux lecteurs d’écran.
 
 La collecte d’expérience propose trois objets distincts, ou quatre selon la chance. Le joueur peut porter six armes et six passifs. Le catalogue contient douze armes, leurs douze évolutions et seize objets passifs. Les objets sont disponibles dès le départ dans le tirage des niveaux, sans importer les succès de déblocage du jeu de référence. Les armes montent jusqu’au niveau 8 ; une arme complète et son passif associé permettent une évolution grâce à un reliquaire de boss apparu à partir de dix minutes. Les reliquaires antérieurs améliorent les objets déjà possédés. Quand le build est complet, les niveaux proposent de l’or ou des soins. Le Talisman de retour ne peut être obtenu à nouveau après épuisement.
 

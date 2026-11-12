@@ -94,6 +94,21 @@ async function ready() {
   });
 }
 describe("les commandes de la survie", () => {
+  it("toggles pause and immediate resume with Escape without choosing an upgrade", async () => {
+    const f = setup();
+    render(<f.Harness />);
+    await ready();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByRole("dialog", { name: "Pause" })).toBeTruthy();
+    const tick = f.session.state.tick;
+    fireEvent.keyDown(window, { key: "Escape", repeat: true });
+    expect(f.session.running).toBe(false);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(f.session.running).toBe(true);
+    act(() => vi.advanceTimersByTime(100));
+    expect(f.session.state.tick).toBeGreaterThan(tick);
+  });
   it("keeps Resume enabled during saving and closes the pause dialog before network confirmation",async()=>{
     const f=setup();render(<f.Harness/>);await ready();
     act(()=>vi.advanceTimersByTime(200));
