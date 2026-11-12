@@ -28,7 +28,7 @@ type Place = {
 // Each area positions the sprite, its label and its link together. Coordinates
 // are percentages of the terrain, which keeps its 3:1 ratio at every viewport.
 const PLACES: readonly Place[] = [
-  { id: "well", name: "Le Puits oublié", purpose: "Survivre au cimetière", to: "/cemetery", icon: "cemetery" },
+  { id: "well", name: "La Veillée des ombres", purpose: "Survivre au cimetière", to: "/cemetery", icon: "cemetery" },
   {
     id: "foundry",
     name: "Fonderie des Échos",

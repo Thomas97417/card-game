@@ -104,7 +104,7 @@ describe("le retour au menu du cimetière", () => {
     expect(predicted.tick).toBeGreaterThanOrEqual(20);
     expect(record.state.tick).toBe(0);
     fireEvent.click(screen.getByRole("button", { name: "Retour au menu" }));
-    expect(screen.getByRole("heading", { name: /Le Puits/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /La Veillée/ })).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText(/00:01 · Niveau/)).toBeTruthy();
     expect((screen.getByRole("button", { name: "Reprendre la partie" }) as HTMLButtonElement).disabled).toBe(false);
@@ -173,7 +173,7 @@ describe("le retour au menu du cimetière", () => {
     await enter(); act(() => vi.advanceTimersByTime(200)); await ready();
     expect(screen.getByRole("heading", { name: "Partie terminée" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Retour au menu" }));
-    expect(screen.getByRole("heading", { name: /Le Puits/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /La Veillée/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Reprendre la partie" })).toBeNull();
     expect((screen.getByRole("button", { name: "Lancer une partie" }) as HTMLButtonElement).disabled).toBe(true);
     gate.resolve(); await ready();

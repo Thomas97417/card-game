@@ -9,7 +9,7 @@ export const Route = createFileRoute("/cemetery")({
     requireGameAuth(context.isAuthenticated, location.href),
   head: () => ({
     meta: [
-      { title: "Le Puits oublié — Sylve" },
+      { title: "La Veillée des ombres — Sylve" },
       {
         name: "description",
         content:

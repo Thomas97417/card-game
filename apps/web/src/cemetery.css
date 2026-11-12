@@ -141,6 +141,12 @@
   border-color: #e0c394;
   color: #f0dbb7;
 }
+.cemetery-menu-actions img {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
 .cemetery-primary {
   display: flex;
   gap: 13px;
@@ -187,48 +193,25 @@
 }
 .cemetery-guardian-card {
   position: relative;
-  isolation: isolate;
   align-self: stretch;
   min-height: 350px;
   display: flex;
-  justify-content: center;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
   overflow: hidden;
 }
-.cemetery-guardian-halo {
-  position: absolute;
-  z-index: -1;
-  inset: 5% -10% 18%;
-  background: radial-gradient(ellipse at 50% 50%, #a6c1b225, transparent 65%);
-}
-.cemetery-guardian-rune {
-  position: absolute;
-  top: 5px;
-  right: 50%;
-  transform: translateX(50%);
-  font:
-    340px/1 Georgia,
-    serif;
-  color: #acc4c30a;
-  pointer-events: none;
-}
 .cemetery-guardian-art {
-  position: absolute;
-  top: 16px;
-  height: 87%;
+  height: clamp(210px, 30vh, 290px);
+  width: 100%;
   max-width: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 10px 20px #03111ed9);
-  mask-image: linear-gradient(#000 76%, transparent 99%);
 }
 .cemetery-guardian-caption {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  padding: 25px 6px 22px;
+  padding: 0 6px 16px;
   text-align: center;
-  background: linear-gradient(transparent, #111e2d9c 35%, #111e2d5c);
-  text-shadow: 0 2px 12px #071320;
 }
 .cemetery-guardian-caption h2 {
   font:
@@ -266,10 +249,6 @@
   gap: 16px;
   justify-content: space-between;
   align-items: center;
-}
-.cemetery-section-heading > span {
-  font-size: 11px;
-  color: #a9b8c7;
 }
 .cemetery-section-heading h2 {
   font-size: 14px;
@@ -606,14 +585,14 @@
 .cemetery-arsenal-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  align-items: start;
+  align-items: stretch;
   gap: 18px;
 }
 .cemetery-weapon-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  align-content: start;
+  grid-auto-rows: 1fr;
 }
 .cemetery-weapon-list button {
   display: flex;
@@ -643,6 +622,8 @@
 }
 .cemetery-evolution-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   padding: 18px;
   border: 1px solid #ccb68842;
@@ -653,6 +634,7 @@
   text-align: center;
 }
 .cemetery-evolution-stages {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
@@ -1473,7 +1455,7 @@
     padding-top: 20px;
   }
   .cemetery-intro h1 {
-    font-size: 52px;
+    font-size: clamp(30px, 10.3vw, 44px);
     margin: 17px 0;
   }
   .cemetery-primary {
@@ -1495,22 +1477,17 @@
   .cemetery-guardian-card {
     min-height: 310px;
     margin-left: -22px;
-    margin-right: -18px;
+    margin-right: 0;
     overflow: visible;
     pointer-events: none;
   }
   .cemetery-guardian-art {
-    top: 12px;
-    height: 87%;
-    max-width: 200%;
-    width: 220px;
-    opacity: 0.85;
-    mask-image: linear-gradient(#000 60%, transparent 93%);
+    height: clamp(210px, 34vh, 280px);
+    max-width: 100%;
+    width: 190px;
   }
   .cemetery-guardian-caption {
-    padding: 15px 4px;
-    position: absolute;
-    bottom: 5px;
+    padding: 0 4px 14px;
     max-width: 170px;
   }
   .cemetery-guardian-caption h2 {
@@ -1519,19 +1496,12 @@
   .cemetery-guardian-caption > div {
     display: none;
   }
-  .cemetery-guardian-rune {
-    font-size: 220px;
-    top: 20px;
-  }
   .cemetery-rewards {
     padding: 18px 8px 12px;
     margin-top: 10px;
   }
   .cemetery-section-heading {
     padding: 0 8px;
-  }
-  .cemetery-section-heading > span {
-    font-size: 10px;
   }
   .cemetery-chest-tier img {
     width: 58px;

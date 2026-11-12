@@ -186,9 +186,9 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           <div className="cemetery-hero-layout">
             <section className="cemetery-intro">
               <h1>
-                Le Puits
+                La Veillée
                 <br />
-                <em>oublié</em>
+                <em>des ombres</em>
               </h1>
               <span className="cemetery-record">
                 <Trophy size={15} /> Record
@@ -217,10 +217,12 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 )}
                 <nav className="cemetery-menu-actions" aria-label="Menu du cimetière">
                   <button type="button" onClick={() => changeTab("upgrades")}>
-                    <Sparkles size={16} /> Améliorations
+                    <img src="/art/ui/card-level-up.webp" alt="" width={28} height={28} draggable={false} />
+                    Améliorations
                   </button>
                   <button type="button" onClick={() => changeTab("arsenal")}>
-                    <BookOpen size={16} /> Arsenal
+                    <img src="/art/ui/arena-swords.webp" alt="" width={28} height={28} draggable={false} />
+                    Arsenal
                   </button>
                 </nav>
                 {props.activeRun && (
@@ -237,10 +239,6 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
               </div>
             </section>
             <aside className="cemetery-guardian-card">
-              <div className="cemetery-guardian-halo" />
-              <div className="cemetery-guardian-rune" aria-hidden="true">
-                ✧
-              </div>
               <img
                 src={hero.portrait}
                 alt={hero.name}
@@ -285,7 +283,6 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           <section className="cemetery-rewards">
             <div className="cemetery-section-heading">
               <h2>Récompenses</h2>
-              <span>Un coffre à la mort</span>
             </div>
             <div className="cemetery-chest-track">
               {CEMETERY_REWARD_TIERS.map((tier, i) => (

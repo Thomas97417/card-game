@@ -1,4 +1,4 @@
-# Le Puits oublié
+# La Veillée des ombres
 
 Le puits, au milieu de la place entre la maison des gardiens et l’atelier, ouvre `/cemetery`. Cette route demande la même session que le refuge. Le mode est solo, en 2D avec PixiJS, sans limite de durée, sans entrée payante et sans quota quotidien de récompenses.
 
