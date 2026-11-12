@@ -31,6 +31,7 @@ export async function createCemeteryScene(
     preference: "webgl",
   });
   const world = new Container({ sortableChildren: true }),
+    actors = new Container({ sortableChildren: true }),
     geometry = new Graphics(),
     shadows = new Graphics();
   const textures = new Map<string, Texture>();
@@ -75,7 +76,9 @@ export async function createCemeteryScene(
   world.addChild(tint);
   shadows.zIndex = -1;
   geometry.zIndex = 4000;
-  world.addChild(shadows, geometry);
+  // Sort characters by their feet inside one layer: negative world Y must
+  // never move a character behind the scenery or its shadow.
+  world.addChild(shadows, actors, geometry);
   const sprites = new Map<number, Sprite>(),
     books = new Map<number, Sprite>(),
     numbers: { text: Text; born: number; y: number }[] = [];
@@ -83,7 +86,7 @@ export async function createCemeteryScene(
   hero.anchor.set(0.5, 0.94);
   hero.height = 100;
   hero.scale.x = hero.scale.y;
-  world.addChild(hero);
+  actors.addChild(hero);
   let destroyed = false,
     lastX = 0,
     lastY = 0;
@@ -131,7 +134,7 @@ export async function createCemeteryScene(
       if (!sprite) {
         sprite = new Sprite(textures.get(e.kind as CemeteryEnemyKind));
         sprite.anchor.set(0.5, 0.88);
-        world.addChild(sprite);
+        actors.addChild(sprite);
         sprites.set(e.id, sprite);
       }
       const h =
@@ -232,8 +235,14 @@ export async function createCemeteryScene(
                 ? 0xe1c18a
                 : 0xaff4ea;
       const r =
-        p.kind === "relic" ? 13 : p.kind === "xp" ? (p.value >= 10 ? 7 : 4) : 7;
-      geometry.circle(p.x, p.y, r * 1.8).fill({ color, alpha: 0.08 });
+        p.kind === "relic"
+          ? 13
+          : p.kind === "xp"
+            ? (p.value >= 10 ? 12 : 8) / Math.min(1, scale)
+            : 7;
+      geometry
+        .circle(p.x, p.y, r * 1.8)
+        .fill({ color, alpha: p.kind === "xp" ? 0.14 : 0.08 });
       if (p.kind === "xp")
         geometry
           .poly([
@@ -247,7 +256,7 @@ export async function createCemeteryScene(
             p.y,
           ])
           .fill(color)
-          .stroke({ color: 0xe5f6f4, alpha: 0.5, width: 0.8 });
+          .stroke({ color: 0xe5f6f4, alpha: 0.85, width: 1.2 });
       else if (p.kind === "relic") {
         geometry
           .roundRect(p.x - 11, p.y - 8, 22, 17, 3)
