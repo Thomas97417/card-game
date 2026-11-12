@@ -22,6 +22,7 @@ const ICON_ARTWORK = {
   guild: "guild-banner",
   missions: "missions-scroll",
   rewards: "rewards-gift",
+  cemetery: "cemetery-well",
   rewardLock: "rewards-lock",
   rewardClock: "rewards-clock",
   chat: "world-chat-globe",
@@ -45,7 +46,7 @@ export function GameIcon({
   return (
     <img
       className={`game-icon ${className}`}
-      src={`/art/ui/${ICON_ARTWORK[kind]}.webp`}
+      src={kind === "cemetery" ? "/art/cemetery/well-v1.webp" : `/art/ui/${ICON_ARTWORK[kind]}.webp`}
       alt=""
       aria-hidden="true"
       width={size}

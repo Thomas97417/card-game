@@ -1,0 +1,993 @@
+{
+  "consulted": "2026-11-12",
+  "reference": "Vampire Survivors Wiki, classic base-game subset",
+  "units": {
+    "cooldown": "seconds",
+    "duration": "seconds",
+    "interval": "seconds",
+    "hitDelay": "seconds",
+    "area": "multiplier",
+    "speed": "multiplier",
+    "pierce": "-1 denotes unbounded"
+  },
+  "adaptations": [
+    "Names and artwork are original Sylve adaptations.",
+    "Unused source parameters receive engine defaults; duration for non-duration weapons is a projectile cleanup lifetime, not a claimed source statistic.",
+    "Absolute movement/projectile speed, collision radii, field geometry, horde balance and gold drops are Sylve tuning.",
+    "PowerUp price = reference initial cost * next rank; emeralds = ceil(gold / 200); no global fees.",
+    "Shield is an original 5-rank Sylve upgrade, not a Vampire Survivors PowerUp."
+  ],
+  "weapons": [
+    {
+      "id": "whip",
+      "source": "Whip",
+      "url": "https://vampire.survivors.wiki/w/Whip",
+      "maxLevel": 8,
+      "weight": 100,
+      "base": {
+        "damage": 10,
+        "cooldown": 1.35,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 3,
+        "interval": 0.1,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 30
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "damage": 5
+        },
+        {
+          "area": 0.1,
+          "damage": 5
+        },
+        {
+          "damage": 5
+        },
+        {
+          "area": 0.1,
+          "damage": 5
+        },
+        {
+          "damage": 5
+        },
+        {
+          "damage": 5
+        }
+      ],
+      "evolution": {
+        "source": "Bloody Tear",
+        "url": "https://vampire.survivors.wiki/w/Bloody_Tear",
+        "passive": "Hollow Heart",
+        "overrides": {
+          "area": 1.3,
+          "chance": 0.1
+        }
+      }
+    },
+    {
+      "id": "wand",
+      "source": "Magic Wand",
+      "url": "https://vampire.survivors.wiki/w/Magic_Wand",
+      "maxLevel": 8,
+      "weight": 100,
+      "base": {
+        "damage": 10,
+        "cooldown": 1.2,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": 1,
+        "duration": 3,
+        "interval": 0.1,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 60
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "cooldown": -0.2
+        },
+        {
+          "amount": 1
+        },
+        {
+          "damage": 10
+        },
+        {
+          "amount": 1
+        },
+        {
+          "pierce": 1
+        },
+        {
+          "damage": 10
+        }
+      ],
+      "evolution": {
+        "source": "Holy Wand",
+        "url": "https://vampire.survivors.wiki/w/Holy_Wand",
+        "passive": "Empty Tome",
+        "overrides": {
+          "cooldown": 0.5,
+          "speed": 2
+        }
+      }
+    },
+    {
+      "id": "knife",
+      "source": "Knife",
+      "url": "https://vampire.survivors.wiki/w/Knife",
+      "maxLevel": 8,
+      "weight": 100,
+      "base": {
+        "damage": 6.5,
+        "cooldown": 1,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": 1,
+        "duration": 3,
+        "interval": 0.1,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 60
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "amount": 1,
+          "damage": 5
+        },
+        {
+          "amount": 1,
+          "interval": -0.02
+        },
+        {
+          "pierce": 1
+        },
+        {
+          "amount": 1,
+          "interval": -0.02
+        },
+        {
+          "amount": 1,
+          "damage": 5
+        },
+        {
+          "pierce": 1,
+          "interval": -0.02
+        }
+      ],
+      "evolution": {
+        "source": "Thousand Edge",
+        "url": "https://vampire.survivors.wiki/w/Thousand_Edge",
+        "passive": "Bracer",
+        "overrides": {
+          "cooldown": 0.35,
+          "speed": 1.5,
+          "pool": 100
+        }
+      }
+    },
+    {
+      "id": "axe",
+      "source": "Axe",
+      "url": "https://vampire.survivors.wiki/w/Axe",
+      "maxLevel": 8,
+      "weight": 100,
+      "base": {
+        "damage": 20,
+        "cooldown": 4,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": 3,
+        "duration": 3,
+        "interval": 0.2,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 70
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "damage": 20
+        },
+        {
+          "pierce": 2
+        },
+        {
+          "amount": 1
+        },
+        {
+          "damage": 20
+        },
+        {
+          "pierce": 2
+        },
+        {
+          "damage": 20
+        }
+      ],
+      "evolution": {
+        "source": "Death Spiral",
+        "url": "https://vampire.survivors.wiki/w/Death_Spiral",
+        "passive": "Candelabrador",
+        "overrides": {
+          "damage": 60,
+          "area": 1.2,
+          "speed": 0.8,
+          "amount": 9,
+          "pierce": 1000,
+          "interval": 0.05,
+          "pool": 50
+        }
+      }
+    },
+    {
+      "id": "cross",
+      "source": "Cross",
+      "url": "https://vampire.survivors.wiki/w/Cross",
+      "maxLevel": 8,
+      "weight": 80,
+      "base": {
+        "damage": 5,
+        "cooldown": 2,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 3,
+        "interval": 0.1,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 100
+      },
+      "levelIncrements": [
+        {
+          "damage": 10
+        },
+        {
+          "area": 0.1,
+          "speed": 0.25
+        },
+        {
+          "amount": 1
+        },
+        {
+          "damage": 10
+        },
+        {
+          "area": 0.1,
+          "speed": 0.25
+        },
+        {
+          "amount": 1
+        },
+        {
+          "damage": 10
+        }
+      ],
+      "evolution": {
+        "source": "Heaven Sword",
+        "url": "https://vampire.survivors.wiki/w/Heaven_Sword",
+        "passive": "Clover",
+        "overrides": {
+          "damage": 77,
+          "area": 1.2,
+          "speed": 2,
+          "amount": 1,
+          "cooldown": 3.3,
+          "interval": 0.5,
+          "knockback": 6,
+          "pool": 20,
+          "chance": 0.1
+        }
+      }
+    },
+    {
+      "id": "bible",
+      "source": "King Bible",
+      "url": "https://vampire.survivors.wiki/w/King_Bible",
+      "maxLevel": 8,
+      "weight": 80,
+      "base": {
+        "damage": 10,
+        "cooldown": 3,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 3,
+        "interval": 0,
+        "hitDelay": 1.7,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 50
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "area": 0.25,
+          "speed": 0.3
+        },
+        {
+          "duration": 0.5,
+          "damage": 10
+        },
+        {
+          "amount": 1
+        },
+        {
+          "area": 0.25,
+          "speed": 0.3
+        },
+        {
+          "duration": 0.5,
+          "damage": 10
+        },
+        {
+          "amount": 1
+        }
+      ],
+      "evolution": {
+        "source": "Unholy Vespers",
+        "url": "https://vampire.survivors.wiki/w/Unholy_Vespers",
+        "passive": "Spellbinder",
+        "overrides": {
+          "damage": 30,
+          "area": 1.75,
+          "speed": 1.5,
+          "amount": 4,
+          "cooldown": 3,
+          "duration": 3,
+          "knockback": 4
+        }
+      }
+    },
+    {
+      "id": "fire",
+      "source": "Fire Wand",
+      "url": "https://vampire.survivors.wiki/w/Fire_Wand",
+      "maxLevel": 8,
+      "weight": 80,
+      "base": {
+        "damage": 20,
+        "cooldown": 3,
+        "area": 1,
+        "speed": 0.75,
+        "amount": 3,
+        "pierce": 1,
+        "duration": 3,
+        "interval": 0.02,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 30
+      },
+      "levelIncrements": [
+        {
+          "damage": 10
+        },
+        {
+          "damage": 10,
+          "speed": 0.2
+        },
+        {
+          "damage": 10
+        },
+        {
+          "damage": 10,
+          "speed": 0.2
+        },
+        {
+          "damage": 10
+        },
+        {
+          "damage": 10,
+          "speed": 0.2
+        },
+        {
+          "damage": 10
+        }
+      ],
+      "evolution": {
+        "source": "Hellfire",
+        "url": "https://vampire.survivors.wiki/w/Hellfire",
+        "passive": "Spinach",
+        "overrides": {
+          "damage": 100,
+          "area": 1,
+          "speed": 1,
+          "amount": 2,
+          "interval": 0.2,
+          "pool": 20,
+          "pierce": -1
+        }
+      }
+    },
+    {
+      "id": "garlic",
+      "source": "Garlic",
+      "url": "https://vampire.survivors.wiki/w/Garlic",
+      "maxLevel": 8,
+      "weight": 70,
+      "base": {
+        "damage": 5,
+        "cooldown": 1.3,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 3,
+        "interval": 0,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 0,
+        "pool": 50
+      },
+      "levelIncrements": [
+        {
+          "area": 0.4,
+          "damage": 2
+        },
+        {
+          "cooldown": -0.1,
+          "damage": 1
+        },
+        {
+          "area": 0.2,
+          "damage": 1
+        },
+        {
+          "cooldown": -0.1,
+          "damage": 2
+        },
+        {
+          "area": 0.2,
+          "damage": 1
+        },
+        {
+          "cooldown": -0.1,
+          "damage": 1
+        },
+        {
+          "area": 0.2,
+          "damage": 2
+        }
+      ],
+      "evolution": {
+        "source": "Soul Eater",
+        "url": "https://vampire.survivors.wiki/w/Soul_Eater",
+        "passive": "Pummarola",
+        "overrides": {
+          "damage": 20,
+          "area": 3,
+          "cooldown": 1
+        }
+      }
+    },
+    {
+      "id": "water",
+      "source": "Santa Water",
+      "url": "https://vampire.survivors.wiki/w/Santa_Water",
+      "maxLevel": 8,
+      "weight": 100,
+      "base": {
+        "damage": 10,
+        "cooldown": 4.5,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 2,
+        "interval": 0.3,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 0,
+        "pool": 20
+      },
+      "levelIncrements": [
+        {
+          "amount": 1,
+          "area": 0.2
+        },
+        {
+          "duration": 0.5,
+          "damage": 10
+        },
+        {
+          "amount": 1,
+          "area": 0.2
+        },
+        {
+          "duration": 0.25,
+          "damage": 10
+        },
+        {
+          "amount": 1,
+          "area": 0.2
+        },
+        {
+          "duration": 0.25,
+          "damage": 5
+        },
+        {
+          "area": 0.2,
+          "damage": 5
+        }
+      ],
+      "evolution": {
+        "source": "La Borra",
+        "url": "https://vampire.survivors.wiki/w/La_Borra",
+        "passive": "Attractorb",
+        "overrides": {
+          "damage": 40,
+          "duration": 4,
+          "area": 2,
+          "amount": 4,
+          "cooldown": 4,
+          "pool": 30
+        }
+      }
+    },
+    {
+      "id": "rune",
+      "source": "Runetracer",
+      "url": "https://vampire.survivors.wiki/w/Runetracer",
+      "maxLevel": 8,
+      "weight": 80,
+      "base": {
+        "damage": 10,
+        "cooldown": 3,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 2.25,
+        "interval": 0.2,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 25
+      },
+      "levelIncrements": [
+        {
+          "damage": 5,
+          "speed": 0.2
+        },
+        {
+          "duration": 0.25,
+          "damage": 5
+        },
+        {
+          "amount": 1
+        },
+        {
+          "damage": 5,
+          "speed": 0.2
+        },
+        {
+          "duration": 0.25,
+          "damage": 5
+        },
+        {
+          "amount": 1
+        },
+        {
+          "duration": 0.5
+        }
+      ],
+      "evolution": {
+        "source": "NO FUTURE",
+        "url": "https://vampire.survivors.wiki/w/NO_FUTURE",
+        "passive": "Armor",
+        "overrides": {
+          "damage": 30,
+          "area": 1,
+          "speed": 2.8,
+          "duration": 3,
+          "amount": 1,
+          "cooldown": 1,
+          "interval": 0,
+          "pool": 40
+        }
+      }
+    },
+    {
+      "id": "lightning",
+      "source": "Lightning Ring",
+      "url": "https://vampire.survivors.wiki/w/Lightning_Ring",
+      "maxLevel": 8,
+      "weight": 80,
+      "base": {
+        "damage": 15,
+        "cooldown": 4.5,
+        "area": 1,
+        "speed": 1,
+        "amount": 2,
+        "pierce": -1,
+        "duration": 3,
+        "interval": 0.05,
+        "hitDelay": 0.5,
+        "chance": 0,
+        "knockback": 1,
+        "pool": 50
+      },
+      "levelIncrements": [
+        {
+          "amount": 1
+        },
+        {
+          "area": 1,
+          "damage": 10
+        },
+        {
+          "amount": 1
+        },
+        {
+          "area": 1,
+          "damage": 20
+        },
+        {
+          "amount": 1
+        },
+        {
+          "area": 1,
+          "damage": 20
+        },
+        {
+          "amount": 1
+        }
+      ],
+      "evolution": {
+        "source": "Thunder Loop",
+        "url": "https://vampire.survivors.wiki/w/Thunder_Loop",
+        "passive": "Duplicator",
+        "overrides": {
+          "damage": 65,
+          "area": 4,
+          "amount": 6,
+          "interval": 0,
+          "pool": 70
+        }
+      }
+    },
+    {
+      "id": "pentagram",
+      "source": "Pentagram",
+      "url": "https://vampire.survivors.wiki/w/Pentagram",
+      "maxLevel": 8,
+      "weight": 60,
+      "base": {
+        "damage": 0,
+        "cooldown": 90,
+        "area": 1,
+        "speed": 1,
+        "amount": 1,
+        "pierce": -1,
+        "duration": 1,
+        "interval": 0.1,
+        "hitDelay": 0.5,
+        "chance": 0.1,
+        "knockback": 0,
+        "pool": 10
+      },
+      "levelIncrements": [
+        {
+          "cooldown": -10
+        },
+        {
+          "chance": 0.15
+        },
+        {
+          "cooldown": -10
+        },
+        {
+          "chance": 0.2
+        },
+        {
+          "cooldown": -5
+        },
+        {
+          "chance": 0.2
+        },
+        {
+          "cooldown": -5
+        }
+      ],
+      "evolution": {
+        "source": "Gorgeous Moon",
+        "url": "https://vampire.survivors.wiki/w/Gorgeous_Moon",
+        "passive": "Crown",
+        "overrides": {
+          "cooldown": 60,
+          "chance": 1
+        }
+      }
+    }
+  ],
+  "passives": [
+    {
+      "id": "spinach",
+      "source": "Spinach",
+      "url": "https://vampire.survivors.wiki/w/Spinach",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "armor",
+      "source": "Armor",
+      "url": "https://vampire.survivors.wiki/w/Armor",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "heart",
+      "source": "Hollow Heart",
+      "url": "https://vampire.survivors.wiki/w/Hollow_Heart",
+      "maxLevel": 5,
+      "weight": 90
+    },
+    {
+      "id": "recovery",
+      "source": "Pummarola",
+      "url": "https://vampire.survivors.wiki/w/Pummarola",
+      "maxLevel": 5,
+      "weight": 90
+    },
+    {
+      "id": "tome",
+      "source": "Empty Tome",
+      "url": "https://vampire.survivors.wiki/w/Empty_Tome",
+      "maxLevel": 5,
+      "weight": 50
+    },
+    {
+      "id": "candle",
+      "source": "Candelabrador",
+      "url": "https://vampire.survivors.wiki/w/Candelabrador",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "bracer",
+      "source": "Bracer",
+      "url": "https://vampire.survivors.wiki/w/Bracer",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "binder",
+      "source": "Spellbinder",
+      "url": "https://vampire.survivors.wiki/w/Spellbinder",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "duplicator",
+      "source": "Duplicator",
+      "url": "https://vampire.survivors.wiki/w/Duplicator",
+      "maxLevel": 2,
+      "weight": 50
+    },
+    {
+      "id": "wings",
+      "source": "Wings",
+      "url": "https://vampire.survivors.wiki/w/Wings",
+      "maxLevel": 5,
+      "weight": 50
+    },
+    {
+      "id": "magnet",
+      "source": "Attractorb",
+      "url": "https://vampire.survivors.wiki/w/Attractorb",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "clover",
+      "source": "Clover",
+      "url": "https://vampire.survivors.wiki/w/Clover",
+      "maxLevel": 5,
+      "weight": 100
+    },
+    {
+      "id": "crown",
+      "source": "Crown",
+      "url": "https://vampire.survivors.wiki/w/Crown",
+      "maxLevel": 5,
+      "weight": 70
+    },
+    {
+      "id": "mask",
+      "source": "Stone Mask",
+      "url": "https://vampire.survivors.wiki/w/Stone_Mask",
+      "maxLevel": 5,
+      "weight": 70
+    },
+    {
+      "id": "skull",
+      "source": "Skull O’Maniac",
+      "url": "https://vampire.survivors.wiki/w/Skull_O'Maniac",
+      "maxLevel": 5,
+      "weight": 40
+    },
+    {
+      "id": "revival",
+      "source": "Tirajisú",
+      "url": "https://vampire.survivors.wiki/w/Tirajis%C3%BA",
+      "maxLevel": 2,
+      "weight": 40
+    }
+  ],
+  "powerUpsSource": "https://vampire.survivors.wiki/w/PowerUps",
+  "powerUps": [
+    {
+      "id": "might",
+      "maxRank": 5,
+      "initialGold": 200,
+      "bonusPerRank": 5,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "armor",
+      "maxRank": 3,
+      "initialGold": 600,
+      "bonusPerRank": 1,
+      "unit": "",
+      "stacking": "additive"
+    },
+    {
+      "id": "health",
+      "maxRank": 3,
+      "initialGold": 200,
+      "bonusPerRank": 10,
+      "unit": "%",
+      "stacking": "multiplicative 1.1^rank"
+    },
+    {
+      "id": "recovery",
+      "maxRank": 5,
+      "initialGold": 200,
+      "bonusPerRank": 0.1,
+      "unit": " PV/s",
+      "stacking": "additive"
+    },
+    {
+      "id": "cooldown",
+      "maxRank": 2,
+      "initialGold": 900,
+      "bonusPerRank": -2.5,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "area",
+      "maxRank": 2,
+      "initialGold": 300,
+      "bonusPerRank": 5,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "speed",
+      "maxRank": 2,
+      "initialGold": 300,
+      "bonusPerRank": 10,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "duration",
+      "maxRank": 2,
+      "initialGold": 300,
+      "bonusPerRank": 15,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "amount",
+      "maxRank": 1,
+      "initialGold": 5000,
+      "bonusPerRank": 1,
+      "unit": "",
+      "stacking": "additive"
+    },
+    {
+      "id": "moveSpeed",
+      "maxRank": 2,
+      "initialGold": 600,
+      "bonusPerRank": 5,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "magnet",
+      "maxRank": 2,
+      "initialGold": 300,
+      "bonusPerRank": 25,
+      "unit": "%",
+      "stacking": "multiplicative 1.25^rank"
+    },
+    {
+      "id": "luck",
+      "maxRank": 3,
+      "initialGold": 600,
+      "bonusPerRank": 10,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "growth",
+      "maxRank": 5,
+      "initialGold": 900,
+      "bonusPerRank": 3,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "greed",
+      "maxRank": 5,
+      "initialGold": 200,
+      "bonusPerRank": 10,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "curse",
+      "maxRank": 5,
+      "initialGold": 1666,
+      "bonusPerRank": 10,
+      "unit": "%",
+      "stacking": "additive"
+    },
+    {
+      "id": "revival",
+      "maxRank": 1,
+      "initialGold": 10000,
+      "bonusPerRank": 1,
+      "unit": "",
+      "stacking": "additive"
+    },
+    {
+      "id": "shield",
+      "maxRank": 5,
+      "initialGold": 600,
+      "bonusPerRank": 10,
+      "unit": " points",
+      "stacking": "additive"
+    }
+  ],
+  "magnetPassiveMultipliers": [
+    1,
+    1.5,
+    1.995,
+    2.49375,
+    2.9925,
+    3.980025
+  ]
+}

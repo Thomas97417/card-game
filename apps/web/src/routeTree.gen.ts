@@ -19,6 +19,7 @@ import { Route as GuardianRouteImport } from './routes/guardian'
 import { Route as FoundryRouteImport } from './routes/foundry'
 import { Route as DecksRouteImport } from './routes/decks'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CemeteryRouteImport } from './routes/cemetery'
 import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GameGameIdRouteImport } from './routes/game.$gameId'
@@ -81,6 +82,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CemeteryRoute = CemeteryRouteImport.update({
+  id: '/cemetery',
+  path: '/cemetery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArenaRoute = ArenaRouteImport.update({
   id: '/arena',
   path: '/arena',
@@ -140,6 +146,7 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/arena': typeof ArenaRoute
+  '/cemetery': typeof CemeteryRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/foundry': typeof FoundryRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/arena': typeof ArenaRoute
+  '/cemetery': typeof CemeteryRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/foundry': typeof FoundryRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/arena': typeof ArenaRoute
+  '/cemetery': typeof CemeteryRoute
   '/dashboard': typeof DashboardRoute
   '/decks': typeof DecksRoute
   '/foundry': typeof FoundryRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/arena'
+    | '/cemetery'
     | '/dashboard'
     | '/decks'
     | '/foundry'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/arena'
+    | '/cemetery'
     | '/dashboard'
     | '/decks'
     | '/foundry'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/arena'
+    | '/cemetery'
     | '/dashboard'
     | '/decks'
     | '/foundry'
@@ -282,6 +294,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArenaRoute: typeof ArenaRoute
+  CemeteryRoute: typeof CemeteryRoute
   DashboardRoute: typeof DashboardRoute
   DecksRoute: typeof DecksRoute
   FoundryRoute: typeof FoundryRoute
@@ -375,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cemetery': {
+      id: '/cemetery'
+      path: '/cemetery'
+      fullPath: '/cemetery'
+      preLoaderRoute: typeof CemeteryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/arena': {
       id: '/arena'
       path: '/arena'
@@ -458,6 +478,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArenaRoute: ArenaRoute,
+  CemeteryRoute: CemeteryRoute,
   DashboardRoute: DashboardRoute,
   DecksRoute: DecksRoute,
   FoundryRoute: FoundryRoute,

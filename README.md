@@ -8,6 +8,7 @@ Jeu de cartes tactique en français, avec combats solo et multijoueurs, collecti
 | --- | --- |
 | `/hub` | Refuge, cadeaux quotidiens, mines d’or et d’émeraudes, classement, amis, guildes, dons de cartes, chat et missions |
 | `/foundry` | Fonderie des Échos : mini-jeu 3D roguelite, arbre de compétences, bénédictions, talismans et coffre quotidien |
+| `/cemetery` | Le Puits oublié : survie 2D sans limite, armes évolutives, améliorations permanentes et coffres de collection |
 | `/arena` | Combats solo, matchmaking public, invitations amicales et coffres |
 | `/decks` | Deck, collection, améliorations, évolutions, liens d’âme et demande quotidienne de cartes |
 | `/guardian` | Onze héros, déblocage en émeraudes, sélection, progression et pouvoirs |
@@ -117,6 +118,7 @@ Les fichiers `routeTree.gen.ts` et `packages/backend/convex/_generated/` sont g�
 - [Invocations et tarifs du sanctuaire](docs/summoning.md)
 - [Mines du refuge](docs/mines.md)
 - [Fonderie des Échos](docs/foundry.md)
+- [Le Puits oublié et le cimetière](docs/cemetery.md)
 - [Rang du compte et récompenses](docs/ranks.md)
 - [Cadeaux quotidiens du refuge](docs/daily-rewards.md)
 - [Amis, messages et entraide](docs/social.md)

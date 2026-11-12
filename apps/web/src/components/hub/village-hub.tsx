@@ -16,18 +16,19 @@ import { GameIcon, type GameIconKind } from "@/components/game/game-icon";
 import type { HubLegendaryOffersProps } from "./legendary-offers";
 import { HUB_BUILDING_ART, HUB_BUILDING_AREAS, HUB_GROUND_PATCHES, HUB_LANDSCAPE } from "./hub-art";
 
-type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry";
+type PlaceId = "home" | "archives" | "sanctuary" | "workshop" | "arena" | "foundry" | "well";
 type Place = {
   id: PlaceId;
   name: string;
   purpose: string;
-  to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena" | "/foundry";
+  to: "/settings" | "/guardian" | "/sanctuary" | "/decks" | "/arena" | "/foundry" | "/cemetery";
   icon: GameIconKind;
 };
 
 // Each area positions the sprite, its label and its link together. Coordinates
 // are percentages of the terrain, which keeps its 3:1 ratio at every viewport.
 const PLACES: readonly Place[] = [
+  { id: "well", name: "Le Puits oublié", purpose: "Survivre au cimetière", to: "/cemetery", icon: "cemetery" },
   {
     id: "foundry",
     name: "Fonderie des Échos",
@@ -239,7 +240,7 @@ export function VillageHub({
                   key={place.id}
                   to={place.to}
                   aria-label={label}
-                  className={cn(hotspotStyle, place.id === "workshop" && "hub-building-workshop")}
+                  className={cn(hotspotStyle, place.id === "workshop" && "hub-building-workshop", place.id === "well" && "hub-building-well")}
                   style={area}
                 >
                   {content}

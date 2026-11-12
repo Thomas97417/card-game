@@ -46,6 +46,12 @@
 .hub-building-workshop .hub-building-caption {
   bottom: -36px;
 }
+.hub-building-well .hub-building-art {
+  object-fit: cover;
+}
+.hub-building-well .hub-building-caption {
+  bottom: -25px;
+}
 @media (max-height: 700px) {
   .hub-building-workshop .hub-building-caption {
     bottom: -12px;

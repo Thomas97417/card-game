@@ -25,6 +25,7 @@ export const HUB_LANDSCAPE: HubArtwork = {
 };
 
 export const HUB_BUILDING_ART = {
+  "well": { "src": "/art/cemetery/well-v1.webp", "width": 640, "height": 427 },
   "archives": {
     "src": "/art/hub/archives-building-v4.webp",
     "width": 839,
@@ -73,6 +74,7 @@ export const HUB_BUILDING_ART = {
 } satisfies Record<string, HubArtwork>;
 
 export const HUB_BUILDING_AREAS = {
+  "well": { "left": "48.0000%", "top": "46.0000%", "width": "6.0000%", "height": "18.0000%" },
   "archives": {
     "left": "29.1000%",
     "top": "1.5000%",

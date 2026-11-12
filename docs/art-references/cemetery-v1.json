@@ -1,0 +1,48 @@
+{
+  "generator": "Built-in image_gen",
+  "created": "2026-11-12",
+  "style": "Illustration fantasy peinte, Sylve",
+  "assets": [
+    {
+      "file": "apps/web/public/art/cemetery/well-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: a single isolated building sprite for the illustrated French fantasy village game Sylve. Create a modest old round stone wishing well with moss, a small dark wooden roof and winding rope, an enticing faint teal glow deep inside, and a few tiny ivy leaves. Three-quarter elevated village-map view, hand-painted richly detailed fantasy illustration matching the provided village reference. Compact squat silhouette, complete object centered with generous transparent margins, natural warm daylight from upper left, subtle contact shadow only. The reference is for painting style and perspective, do not reproduce the village or any other buildings. No text, no UI, no people, no landscape, no rectangular background. True transparent background.",
+      "reference": "docs/art-references/hub-village-v6.webp",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/interior-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background illustration for the French fantasy game Sylve, landscape 3:2 composition. An atmospheric ancient woodland cemetery at blue twilight, hand-painted storybook fantasy, mossy gravestones and small old crypts around the edges, gnarled trees, trailing ivy, soft teal ghost lights, violet mist, an old circular stone well in a distant clearing. Elegant carved stone, lush forest roots, subtly magical, mysterious and beautiful rather than graphic horror. The broad central two thirds should be open dark grass and worn stone paths, low contrast, with no large foreground obstacles so a game menu or game characters remain readable. Elevated top-down three-quarter view. Detailed painted textures, consistent perspective. No text, no UI, no people, no characters, no watermark.",
+      "transparent": false
+    },
+    {
+      "file": "apps/web/public/art/cemetery/revenant-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. A shambling ancient woodland revenant in a ragged moss-green tunic, pale grey face, tiny teal eyes, dangling vine-covered arms. Friendly fantasy-horror rather than gore. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/bat-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. A small sinister woodland bat with broad dark violet wings spread, teal eyes, expressive pointed ears and a compact silhouette. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/skeleton-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. An ancient skeleton warrior in a torn dark cloak with a rusty small sword and moss on its bones, teal eyes, complete legs. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/specter-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. A drifting hooded ghost in flowing pale blue spectral robes, teal light in its empty face, curling wisps and ragged lower edges. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/guard-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. A hulking forgotten graveyard guard in heavy tarnished bronze and mossy stone armour, glowing teal visor, large old shield, complete body and legs. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    },
+    {
+      "file": "apps/web/public/art/cemetery/boss-v1.webp",
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated enemy sprite for the 2D fantasy survival game Sylve. The ancient Warden of the Forgotten Well, a powerful tall undead knight with branching antlers, ornate dark bronze armour, teal runes and a large curved spectral blade, complete body. Elevated front three-quarter view suitable for a top-down illustrated game. Hand-painted detailed storybook fantasy, softly lit cool blue with subtle warm material highlights, readable compact silhouette at small size, centered complete subject with generous clear margins. No ground disc, no scenery, no text, no UI, no gore, no watermark, no other characters. True transparent background.",
+      "transparent": true
+    }
+  ]
+}

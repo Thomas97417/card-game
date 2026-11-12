@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as cemetery from "../cemetery.js";
 import type * as chests from "../chests.js";
 import type * as collection from "../collection.js";
 import type * as combatCleanup from "../combatCleanup.js";
@@ -25,6 +26,7 @@ import type * as http from "../http.js";
 import type * as lib_authEmail from "../lib/authEmail.js";
 import type * as lib_campaign from "../lib/campaign.js";
 import type * as lib_catalogue from "../lib/catalogue.js";
+import type * as lib_cemetery from "../lib/cemetery.js";
 import type * as lib_chat from "../lib/chat.js";
 import type * as lib_combat_retention from "../lib/combat_retention.js";
 import type * as lib_foundry from "../lib/foundry.js";
@@ -56,6 +58,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  cemetery: typeof cemetery;
   chests: typeof chests;
   collection: typeof collection;
   combatCleanup: typeof combatCleanup;
@@ -72,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "lib/authEmail": typeof lib_authEmail;
   "lib/campaign": typeof lib_campaign;
   "lib/catalogue": typeof lib_catalogue;
+  "lib/cemetery": typeof lib_cemetery;
   "lib/chat": typeof lib_chat;
   "lib/combat_retention": typeof lib_combat_retention;
   "lib/foundry": typeof lib_foundry;

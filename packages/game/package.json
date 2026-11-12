@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./cemetery": "./src/cemetery.ts",
     "./foundry": "./src/foundry.ts",
     ".": "./src/index.ts",
     "./practice": "./src/practice.ts",

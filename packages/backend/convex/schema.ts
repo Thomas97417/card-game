@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { missionStateFields } from "./lib/missions";
 import { foundryCycle, foundryRound, foundrySummary, foundryCharm } from "./lib/foundry";
+import { cemeteryState, cemeterySummary, cemeteryUpgrades } from "./lib/cemetery";
 
 const mineState = v.object({
   amount: v.number(),
@@ -25,6 +26,12 @@ import {
 } from "./lib/validators";
 
 export default defineSchema({
+  cemeteryProgress: defineTable({ ownerId: v.string(), revision: v.number(), upgrades: cemeteryUpgrades, bestSeconds: v.number(), runs: v.number(), activeRunId: v.optional(v.id("cemeteryRuns")), lastRunId: v.optional(v.id("cemeteryRuns")) }).index("by_owner", ["ownerId"]),
+  cemeteryRuns: defineTable({ ownerId: v.string(), requestId: v.string(), startedAt: v.number(), leaseAt: v.number(), leaseTick: v.number(), leaseId: v.string(), leasePaused: v.boolean(),
+    state: cemeteryState, status: v.union(v.literal("active"), v.literal("dead"), v.literal("abandoned")), leagueTrophies: v.number(), summary: v.optional(cemeterySummary),
+    rewardStatus: v.union(v.literal("none"), v.literal("unopened"), v.literal("opened")), reward: v.optional(v.object({ rarity: chestTypeValidator, contents: v.array(lootValidator), gold: v.number(), reveals: v.optional(v.array(revealValidator)) }))
+  }).index("by_owner_request", ["ownerId", "requestId"]).index("by_owner_reward", ["ownerId", "rewardStatus"]),
+  cemeteryInputReceipts: defineTable({ runId: v.id("cemeteryRuns"), kind: v.union(v.literal("inputs"), v.literal("choice"), v.literal("purchase")), cursor: v.number(), endTick: v.number(), payload: v.string() }).index("by_run_kind_cursor", ["runId", "kind", "cursor"]),
   campaignProgress: defineTable({
     ownerId: v.string(),
     completedStages: v.number(),
