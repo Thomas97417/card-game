@@ -236,6 +236,9 @@
 .cemetery-guardian-caption svg {
   color: #c7b58f;
 }
+.cemetery-guardian-caption .cemetery-art-image {
+  filter: none;
+}
 .cemetery-rewards {
   margin-top: 8px;
   padding: 23px 25px 15px;

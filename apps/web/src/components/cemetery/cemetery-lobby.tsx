@@ -252,7 +252,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     {Math.round(100 * 1.1 ** (props.upgrades.health ?? 0))} PV
                   </span>
                   <span>
-                    <WandSparkles size={15} /> Baguette sylvestre
+                    <CemeteryGlyph name="wand" art={cemeteryWeaponArt("wand")} size={28} />
+                    Baguette sylvestre
                   </span>
                 </div>
               </div>
