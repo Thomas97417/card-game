@@ -92,23 +92,6 @@
   letter-spacing: 0.05em;
   color: #e8dfd0;
 }
-.cemetery-wallet {
-  display: flex;
-  gap: 18px;
-  margin-left: auto;
-  padding-right: 4px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-.cemetery-wallet > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #e4c994;
-}
-.cemetery-wallet > span:last-child {
-  color: #a3ddc4;
-}
 .cemetery-hero-layout {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
@@ -423,12 +406,6 @@
 .cemetery-panel-back {
   margin-bottom: 10px;
 }
-.cemetery-panel-heading {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px 24px;
-}
 .cemetery-section-title h1 {
   font:
     36px/1.2 Georgia,
@@ -530,13 +507,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 8px;
   min-height: 44px;
   border: 1px solid #bcaa7b55;
   border-radius: 4px;
   color: #e4c994;
   background: #c7b0750b;
   font-size: 13px;
+}
+.cemetery-purchase-buttons .gold-icon,
+.cemetery-purchase-buttons .emerald-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px #0005);
 }
 .cemetery-purchase-buttons button:nth-child(2) {
   border-color: #91c3b140;

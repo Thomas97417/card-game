@@ -48,6 +48,8 @@ import {
 } from "@sylve/game/cemetery";
 import { heroDefinition, type HeroId } from "@sylve/game/hero-metadata";
 import { chestName, type ChestType } from "@sylve/game/chest-types";
+import { GoldIcon } from "@/components/gold-balance";
+import { EmeraldIcon } from "@/components/emerald-balance";
 import { cemeteryWeaponArt, cemeteryPassiveArt, cemeteryUpgradeArt } from "./cemetery-art";
 
 const GLYPHS: Record<string, LucideIcon> = {
@@ -324,15 +326,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           <button type="button" className="cemetery-text-button cemetery-panel-back" onClick={() => changeTab("play")}>
             <ArrowLeft size={16} /> Retour au menu
           </button>
-          <div className="cemetery-panel-heading">
-            <div className="cemetery-section-title">
-              <h1>Améliorations</h1>
-              <p>Permanentes · Tous les gardiens</p>
-            </div>
-            <div className="cemetery-wallet" aria-label="Monnaies disponibles">
-              <span aria-label={`${props.gold} or`}><Coins size={16} />{props.gold.toLocaleString("fr-FR")}</span>
-              <span aria-label={`${props.emeralds} émeraudes`}><Gem size={15} />{props.emeralds.toLocaleString("fr-FR")}</span>
-            </div>
+          <div className="cemetery-section-title">
+            <h1>Améliorations</h1>
           </div>
           {props.activeRun && (
             <p className="cemetery-notice">
@@ -386,7 +381,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                         disabled={disabled || props.gold < cost.gold}
                         onClick={() => props.onBuy(u.id, rank, "gold")}
                       >
-                        <Coins size={16} />
+                        <GoldIcon />
                         {cost.gold.toLocaleString("fr-FR")}
                       </button>
                       <button
@@ -396,7 +391,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                         disabled={disabled || props.emeralds < cost.emeralds}
                         onClick={() => props.onBuy(u.id, rank, "emeralds")}
                       >
-                        <Gem size={15} />
+                        <EmeraldIcon />
                         {cost.emeralds}
                       </button>
                     </div>
