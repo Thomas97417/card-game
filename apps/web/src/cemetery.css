@@ -57,27 +57,6 @@
   margin: auto;
   padding: 100px 44px 24px;
 }
-.cemetery-topline {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 10px 0;
-}
-.cemetery-topline::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0 -12px;
-  border: 1px solid #b5b5c31a;
-  border-radius: 10px;
-  background: #101d2bea;
-  backdrop-filter: blur(12px);
-}
 .cemetery-eyebrow {
   display: inline-flex;
   gap: 9px;
@@ -101,7 +80,7 @@
   align-items: center;
   font-size: 11px;
   color: #b8bdc4;
-  margin-left: auto;
+  margin: 0 0 22px;
   white-space: nowrap;
 }
 .cemetery-record svg {
@@ -130,35 +109,6 @@
 .cemetery-wallet > span:last-child {
   color: #a3ddc4;
 }
-.cemetery-tabs {
-  display: flex;
-  gap: 6px;
-  width: max-content;
-  max-width: 100%;
-  margin: 0;
-}
-.cemetery-tabs button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 44px;
-  padding: 10px 18px;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  color: #9faaba;
-  font-size: 12px;
-  white-space: nowrap;
-}
-.cemetery-tabs button[aria-current] {
-  border-color: #dbc29640;
-  background: linear-gradient(120deg, #ac8f5a26, #9d846116);
-  color: #ead4ac;
-}
-.cemetery-tabs button:hover:not([aria-current]) {
-  background: #cbd1e30a;
-  color: #f1ece3;
-}
 .cemetery-hero-layout {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
@@ -182,27 +132,31 @@
   color: #ddc39b;
   font-weight: 400;
 }
-.cemetery-run-traits {
-  display: flex;
-  gap: 21px;
-  flex-wrap: wrap;
-  margin: 22px 0 27px;
-  color: #c3c7c7;
-  font-size: 12px;
-}
-.cemetery-run-traits > span {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-}
-.cemetery-run-traits svg {
-  color: #a6c8c3;
-}
 .cemetery-start-actions {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 11px;
+}
+.cemetery-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 4px;
+}
+.cemetery-menu-actions button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 0;
+  border-bottom: 1px solid #c9b58c40;
+  color: #c9d1d9;
+  font-size: 12px;
+}
+.cemetery-menu-actions button:hover {
+  border-color: #e0c394;
+  color: #f0dbb7;
 }
 .cemetery-primary {
   display: flex;
@@ -464,7 +418,16 @@
   object-fit: contain;
 }
 .cemetery-panel-content {
-  padding: 30px 0;
+  padding: 0 0 30px;
+}
+.cemetery-panel-back {
+  margin-bottom: 10px;
+}
+.cemetery-panel-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 24px;
 }
 .cemetery-section-title h1 {
   font:
@@ -1358,10 +1321,6 @@
   .cemetery-intro h1 {
     font-size: 62px;
   }
-  .cemetery-run-traits {
-    gap: 13px;
-    font-size: 11px;
-  }
   .cemetery-guardian-card {
     min-height: 350px;
   }
@@ -1388,29 +1347,12 @@
   .cemetery-lobby {
     padding: 85px 18px 20px;
   }
-  .cemetery-topline {
-    gap: 6px;
-    padding: 6px 0;
-  }
   .cemetery-eyebrow {
     font-size: 8px;
   }
   .cemetery-record {
     font-size: 11px;
     gap: 5px;
-  }
-  .cemetery-tabs {
-    width: 100%;
-    gap: 2px;
-  }
-  .cemetery-tabs button {
-    flex: 1;
-    padding: 9px 8px;
-    gap: 6px;
-    font-size: 12px;
-  }
-  .cemetery-tabs svg {
-    width: 14px;
   }
   .cemetery-hero-layout {
     grid-template-columns: 1fr 0.62fr;
@@ -1425,12 +1367,6 @@
   .cemetery-intro h1 {
     font-size: 52px;
     margin: 17px 0;
-  }
-  .cemetery-run-traits {
-    flex-direction: column;
-    gap: 9px;
-    margin: 18px 0 23px;
-    font-size: 11px;
   }
   .cemetery-primary {
     min-height: 46px;
@@ -1754,9 +1690,6 @@
     font-size: 58px;
     margin: 12px 0;
   }
-  .cemetery-run-traits {
-    margin: 15px 0 20px;
-  }
   .cemetery-rewards {
     padding-top: 16px;
   }
@@ -1805,9 +1738,6 @@
   .cemetery-intro h1 {
     font-size: 60px;
     margin: 12px 0;
-  }
-  .cemetery-run-traits {
-    margin: 16px 0 20px;
   }
   .cemetery-rewards {
     padding: 16px 20px 12px;

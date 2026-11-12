@@ -1,6 +1,7 @@
 import { useRef, useState, type CSSProperties } from "react";
 import { useCemeteryDialog } from "./use-cemetery-dialog";
 import {
+  ArrowLeft,
   ArrowRight,
   Axe,
   BookOpen,
@@ -179,38 +180,6 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
   }
   return (
     <div className="cemetery-lobby" ref={root}>
-      <div className="cemetery-topline">
-      <nav className="cemetery-tabs" aria-label="Menu du cimetière">
-        {(
-          [
-            { id: "play", label: "Jouer", Icon: Play },
-            { id: "upgrades", label: "Améliorations", Icon: Sparkles },
-            { id: "arsenal", label: "Arsenal", Icon: BookOpen },
-          ] as const
-        ).map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            type="button"
-            aria-current={tab === id ? "page" : undefined}
-            onClick={() => changeTab(id)}
-          >
-            <Icon size={17} />
-            {label}
-          </button>
-        ))}
-      </nav>
-        {tab === "upgrades" ? (
-          <div className="cemetery-wallet" aria-label="Monnaies disponibles">
-            <span aria-label={`${props.gold} or`}><Coins size={16} />{props.gold.toLocaleString("fr-FR")}</span>
-            <span aria-label={`${props.emeralds} émeraudes`}><Gem size={15} />{props.emeralds.toLocaleString("fr-FR")}</span>
-          </div>
-        ) : tab === "play" && (
-          <span className="cemetery-record">
-            <Trophy size={15} /> Record{" "}
-            <strong>{cemeteryTime(props.bestSeconds)}</strong>
-          </span>
-        )}
-      </div>
       {tab === "play" ? (
         <>
           <div className="cemetery-hero-layout">
@@ -220,34 +189,40 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 <br />
                 <em>oublié</em>
               </h1>
-              <div className="cemetery-run-traits">
-                <span>
-                  <Sword size={15} /> Attaques automatiques
-                </span>
-                <span>
-                  <Timer size={15} /> Survie sans limite
-                </span>
-              </div>
-              {props.activeRun ? (
-                <div className="cemetery-start-actions">
-                  <button
-                    type="button"
-                    className="cemetery-primary"
-                    aria-label="Reprendre la partie"
-                    onClick={props.onResume}
-                    disabled={props.busy}
-                  >
-                    {props.busy ? (
-                      <LoaderCircle className="animate-spin" size={20} />
-                    ) : (
-                      <Play size={20} fill="currentColor" />
-                    )}
-                    Reprendre
-                    <ArrowRight size={20} />
-                  </button>
+              <span className="cemetery-record">
+                <Trophy size={15} /> Record
+                <strong>{cemeteryTime(props.bestSeconds)}</strong>
+              </span>
+              <div className="cemetery-start-actions">
+                <button
+                  type="button"
+                  className="cemetery-primary"
+                  aria-label={props.activeRun ? "Reprendre la partie" : "Lancer une partie"}
+                  onClick={props.activeRun ? props.onResume : props.onStart}
+                  disabled={props.busy || (!props.activeRun && !props.initialized)}
+                >
+                  {props.busy || (!props.activeRun && !props.initialized) ? (
+                    <LoaderCircle className="animate-spin" size={20} />
+                  ) : (
+                    <Play size={20} fill="currentColor" />
+                  )}
+                  {props.activeRun ? "Reprendre" : "Jouer"}
+                  <ArrowRight size={20} />
+                </button>
+                {props.activeRun && (
                   <p className="cemetery-save-note">
                     {cemeteryTime(props.activeRun.seconds)} · Niveau {props.activeRun.level}
                   </p>
+                )}
+                <nav className="cemetery-menu-actions" aria-label="Menu du cimetière">
+                  <button type="button" onClick={() => changeTab("upgrades")}>
+                    <Sparkles size={16} /> Améliorations
+                  </button>
+                  <button type="button" onClick={() => changeTab("arsenal")}>
+                    <BookOpen size={16} /> Arsenal
+                  </button>
+                </nav>
+                {props.activeRun && (
                   <button
                     type="button"
                     className="cemetery-text-button"
@@ -257,26 +232,8 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   >
                     Abandonner
                   </button>
-                </div>
-              ) : (
-                <div className="cemetery-start-actions">
-                  <button
-                    type="button"
-                    className="cemetery-primary"
-                    aria-label="Lancer une partie"
-                    onClick={props.onStart}
-                    disabled={props.busy || !props.initialized}
-                  >
-                    {props.busy || !props.initialized ? (
-                      <LoaderCircle className="animate-spin" size={20} />
-                    ) : (
-                      <Play size={19} fill="currentColor" />
-                    )}
-                    Jouer
-                    <ArrowRight size={20} />
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </section>
             <aside className="cemetery-guardian-card">
               <div className="cemetery-guardian-halo" />
@@ -365,9 +322,18 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
         </>
       ) : tab === "upgrades" ? (
         <section className="cemetery-panel-content">
-          <div className="cemetery-section-title">
-            <h1>Améliorations</h1>
-            <p>Permanentes · Tous les gardiens</p>
+          <button type="button" className="cemetery-text-button cemetery-panel-back" onClick={() => changeTab("play")}>
+            <ArrowLeft size={16} /> Retour au menu
+          </button>
+          <div className="cemetery-panel-heading">
+            <div className="cemetery-section-title">
+              <h1>Améliorations</h1>
+              <p>Permanentes · Tous les gardiens</p>
+            </div>
+            <div className="cemetery-wallet" aria-label="Monnaies disponibles">
+              <span aria-label={`${props.gold} or`}><Coins size={16} />{props.gold.toLocaleString("fr-FR")}</span>
+              <span aria-label={`${props.emeralds} émeraudes`}><Gem size={15} />{props.emeralds.toLocaleString("fr-FR")}</span>
+            </div>
           </div>
           {props.activeRun && (
             <p className="cemetery-notice">
@@ -447,6 +413,9 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
         </section>
       ) : (
         <section className="cemetery-panel-content">
+          <button type="button" className="cemetery-text-button cemetery-panel-back" onClick={() => changeTab("play")}>
+            <ArrowLeft size={16} /> Retour au menu
+          </button>
           <div className="cemetery-section-title">
             <h1>Arsenal</h1>
             <p>6 armes · 6 objets maximum</p>
