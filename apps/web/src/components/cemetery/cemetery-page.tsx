@@ -59,7 +59,8 @@ export function CemeteryPage() {
     ensure = useMutation(api.cemetery.ensure),
     [, redraw] = useReducer((n) => n + 1, 0);
   const [session, setSession] = useState<CemeterySession | null>(null),
-    [runId, setRunId] = useState<Id<"cemeteryRuns"> | null>(null);
+    [runId, setRunId] = useState<Id<"cemeteryRuns"> | null>(null),
+    [inGame, setInGame] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState<string | null>(null),
     [reward, setReward] = useState<ChestReveal | null>(null),
@@ -92,10 +93,22 @@ export function CemeteryPage() {
     ) {
       session.destroy();
       setSession(null);
+      setRunId(null);
+      setInGame(false);
       setError(null);
     }
   }, [board?.ownerId, session]);
   const ownerRef = useRef("");
+  const retained = session && runId && board?.ownerId === ownerRef.current &&
+    (!board.activeRun || board.activeRun.id === runId);
+  const activeRun = retained
+    ? session.state.ended ? null : {
+        id: runId,
+        seconds: session.state.tick / 20,
+        level: session.state.level,
+      }
+    : board?.activeRun ?? null;
+  const showGame = inGame && !!session;
   async function action(fn: () => Promise<void>) {
     if (lock.current) return;
     lock.current = true;
@@ -111,6 +124,11 @@ export function CemeteryPage() {
     }
   }
   async function enter(resumeId?: Id<"cemeteryRuns">, discardDraft = false) {
+    if (!lock.current && !discardDraft && resumeId === runId && retained && !session.state.ended) {
+      setError(null);
+      setInGame(true);
+      return;
+    }
     await action(async () => {
       const current = await convex.query(api.cemetery.board, {});
       if (!current.progress) return;
@@ -193,6 +211,7 @@ export function CemeteryPage() {
       });
       setRunId(id);
       setSession(next);
+      setInGame(true);
     });
   }
   async function open(id: string) {
@@ -221,9 +240,11 @@ export function CemeteryPage() {
         });
     });
   }
-  async function menu(tab: "play" | "upgrades" = "play") {
-    if (session) await session.pause();
-    setSession(null);
+  function menu(tab: "play" | "upgrades" = "play") {
+    // Keep the session alive while its ordered checkpoint queue drains.
+    // The lobby and an immediate return use the same predicted state.
+    if (session) void session.pause();
+    setInGame(false);
     setLobbyTab(tab);
     setError(null);
   }
@@ -231,14 +252,14 @@ export function CemeteryPage() {
     frameSink.current = sink;
   }, []);
   return (
-    <main className={`cemetery-page ${session ? "is-playing" : ""}`}>
-      {!session && <GameHeader className="cemetery-header" />}
+    <main className={`cemetery-page ${showGame ? "is-playing" : ""}`}>
+      {!showGame && <GameHeader className="cemetery-header" />}
       {!board ? (
         <div className="cemetery-loading" role="status">
           <LoaderCircle size={28} className="animate-spin" />
           Le puits s’éveille…
         </div>
-      ) : session ? (
+      ) : showGame && session ? (
         <CemeteryGame
           session={session}
           busy={busy}
@@ -261,28 +282,48 @@ export function CemeteryPage() {
           emeralds={board.emeralds}
           upgrades={board.progress?.upgrades ?? {}}
           bestSeconds={board.progress?.bestSeconds ?? 0}
-          activeRun={board.activeRun}
+          activeRun={activeRun}
           pendingRewards={board.pendingRewards}
           busy={busy}
-          initialized={!!board.progress}
+          initialized={!!board.progress && !(retained && session.state.ended && !session.settled)}
           onStart={() => void enter()}
-          onResume={() => board.activeRun && void enter(board.activeRun.id)}
+          onResume={() => activeRun && void enter(activeRun.id)}
           onAbandon={() =>
             void action(async () => {
-              if (board.activeRun)
+              if (activeRun) {
+                const current = retained && activeRun.id === runId ? session : null;
+                if (current) await current.pause();
                 await convex.mutation(api.cemetery.abandonRun, {
                   expectedOwnerId: board.ownerId,
-                  runId: board.activeRun.id,
+                  runId: activeRun.id,
                 });
+                if (current) {
+                  current.destroy();
+                  setSession(null);
+                  setRunId(null);
+                }
+              }
             })
           }
           onOpen={(id) => void open(id)}
           onBuy={(id, rank, currency) => void buy(id, rank, currency)}
         />
       )}
-      {error && !session && (
+      {error && !showGame && (
         <div role="alert" className="cemetery-error">
           {error}
+          {retained && (
+            <button
+              type="button"
+              disabled={session.saving}
+              onClick={() => {
+                setError(null);
+                void session.flush().catch(() => {});
+              }}
+            >
+              Réessayer la sauvegarde
+            </button>
+          )}
           <button
             type="button"
             aria-label="Fermer le message"
