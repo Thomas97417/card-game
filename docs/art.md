@@ -18,6 +18,7 @@ Les illustrations intégrées sont dans `apps/web/public/art/`. Le [manifeste](a
 | `keys/` | Trois clés de déblocage, dont la clé souveraine `chest-key-3-v2.webp` |
 | `treasures/` | Deux packs d’or et cinq packs d’émeraudes |
 | `ui/` | Navigation, monnaies, statistiques, raretés, missions, récompenses (cadeau, cadenas, horloge), chaînes, liens d’âme et poussière d’âme |
+| `cemetery/items/` | 47 objets transparents du Puits oublié : armes, évolutions, passifs, cristaux d’XP, butins et bouclier ; [prompts](art-references/cemetery-items-v1.json) |
 | `ui/teleporter-portal.webp` | Icône transparente du téléporteur : anneau de pierre et laiton, vortex cyan et violet, générée avec ImageGen intégré |
 | `hub/refuge-landscape-v2.webp` | Base du paysage du refuge, sans bâtiments, en panorama 3:1 |
 | `hub/*-ground-v4.webp` | Anciens terrains individuels, conservés comme références des compositions précédentes |

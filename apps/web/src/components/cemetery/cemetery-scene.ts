@@ -13,8 +13,10 @@ import {
   type CemeteryRun,
   type CemeteryFrame,
   type CemeteryEnemyKind,
+  type CemeteryProjectile,
 } from "@sylve/game/cemetery";
 import { heroDefinition } from "@sylve/game/hero-metadata";
+import { CEMETERY_SCENE_ITEM_ART, cemeteryPickupArt, cemeteryWeaponArt } from "./cemetery-art";
 
 export async function createCemeteryScene(
   host: HTMLElement,
@@ -32,6 +34,7 @@ export async function createCemeteryScene(
   });
   const world = new Container({ sortableChildren: true }),
     actors = new Container({ sortableChildren: true }),
+    pickupLayer = new Container(),
     geometry = new Graphics(),
     shadows = new Graphics();
   const textures = new Map<string, Texture>();
@@ -46,12 +49,15 @@ export async function createCemeteryScene(
       "boss",
     ].map((id) => [id, `/art/cemetery/${id}-v1.webp`] as const);
     sources.push(["hero", heroDefinition(heroId).portrait]);
-    sources.push(["book", "/art/ui/archives-book.webp"]);
     await Promise.all(
       sources.map(async ([id, src]) =>
         textures.set(id, await Assets.load<Texture>(src)),
       ),
     );
+    // Item art can fall back to the existing shapes without preventing a run.
+    await Promise.allSettled(CEMETERY_SCENE_ITEM_ART.map(async (src) => {
+      textures.set(src, await Assets.load<Texture>(src));
+    }));
   } catch (error) {
     app.destroy(true, { children: true });
     throw error;
@@ -75,12 +81,14 @@ export async function createCemeteryScene(
   tint.zIndex = -19;
   world.addChild(tint);
   shadows.zIndex = -1;
+  pickupLayer.zIndex = 1;
   geometry.zIndex = 4000;
   // Sort characters by their feet inside one layer: negative world Y must
   // never move a character behind the scenery or its shadow.
-  world.addChild(shadows, actors, geometry);
+  world.addChild(shadows, actors, pickupLayer, geometry);
   const sprites = new Map<number, Sprite>(),
-    books = new Map<number, Sprite>(),
+    pickupSprites = new Map<number, Sprite>(),
+    projectileSprites = new Map<number, Sprite>(),
     numbers: { text: Text; born: number; y: number }[] = [];
   const hero = new Sprite(textures.get("hero"));
   hero.anchor.set(0.5, 0.94);
@@ -221,7 +229,9 @@ export async function createCemeteryScene(
           width: 1.5,
         });
     }
+    const activePickups = new Set<number>();
     for (const p of state.pickups) {
+      activePickups.add(p.id);
       const color =
         p.kind === "xp"
           ? p.value >= 10
@@ -243,6 +253,24 @@ export async function createCemeteryScene(
       geometry
         .circle(p.x, p.y, r * 1.8)
         .fill({ color, alpha: p.kind === "xp" ? 0.14 : 0.08 });
+      const texture = textures.get(cemeteryPickupArt(p.kind, p.value));
+      if (texture) {
+        let sprite = pickupSprites.get(p.id);
+        if (!sprite) {
+          sprite = new Sprite(texture);
+          sprite.anchor.set(0.5);
+          pickupLayer.addChild(sprite);
+          pickupSprites.set(p.id, sprite);
+        }
+        sprite.texture = texture;
+        const size = p.kind === "xp"
+          ? (p.value >= 10 ? 36 : 26) / Math.min(1, scale)
+          : p.kind === "relic" ? 38 : p.kind === "gold" ? 24 : 32;
+        sprite.width = size;
+        sprite.height = size;
+        sprite.position.set(p.x, p.y);
+        continue;
+      }
       if (p.kind === "xp")
         geometry
           .poly([
@@ -272,7 +300,29 @@ export async function createCemeteryScene(
           .fill(color)
           .stroke({ color: 0xf5ead0, alpha: 0.5, width: 1 });
     }
-    const activeBooks = new Set<number>();
+    for (const [id, sprite] of pickupSprites)
+      if (!activePickups.has(id)) { sprite.destroy(); pickupSprites.delete(id); }
+    const activeProjectiles = new Set<number>();
+    function itemProjectile(p: CemeteryProjectile, size: number, rotation: number, fade: number) {
+      const texture = textures.get(cemeteryWeaponArt(p.weapon, p.weapon === "knife" ? false : p.evolved));
+      if (!texture) return false;
+      activeProjectiles.add(p.id);
+      let sprite = projectileSprites.get(p.id);
+      if (!sprite) {
+        sprite = new Sprite(texture);
+        sprite.anchor.set(0.5);
+        sprite.zIndex = 3999;
+        world.addChild(sprite);
+        projectileSprites.set(p.id, sprite);
+      }
+      sprite.texture = texture;
+      sprite.position.set(p.x, p.y);
+      sprite.width = size;
+      sprite.height = size;
+      sprite.rotation = rotation;
+      sprite.alpha = fade;
+      return true;
+    }
     for (const p of state.projectiles) {
       if (p.delay > 0) continue;
       const color = cemeteryWeapon(p.weapon).color,
@@ -304,20 +354,8 @@ export async function createCemeteryScene(
           .ellipse(p.x, p.y, r, r * 0.35)
           .stroke({ color, width: 5, alpha: fade * 0.8 });
       else if (p.mode === "orbit") {
-        activeBooks.add(p.id);
-        let book = books.get(p.id);
-        if (!book) {
-          book = new Sprite(textures.get("book"));
-          book.anchor.set(0.5);
-          book.zIndex = 3999;
-          world.addChild(book);
-          books.set(p.id, book);
-        }
-        book.position.set(p.x, p.y);
-        book.width = r * 2.3;
-        book.height = r * 2.3;
-        book.rotation = reduced ? 0 : Math.sin(p.age * 3) * 0.1;
-        book.alpha = fade;
+        if (!itemProjectile(p, r * 2.7, reduced ? 0 : Math.sin(p.age * 3) * 0.1, fade))
+          geometry.roundRect(p.x-r,p.y-r,r*2,r*2,3).fill(color);
         geometry.circle(p.x, p.y, r * 1.5).fill({ color, alpha: 0.06 });
       } else {
         const a = Math.atan2(p.vy, p.vx),
@@ -325,7 +363,13 @@ export async function createCemeteryScene(
         geometry
           .moveTo(p.x - Math.cos(a) * tail, p.y - Math.sin(a) * tail)
           .lineTo(p.x, p.y)
-          .stroke({ color, alpha: 0.5, width: Math.max(2, r) });
+          .stroke({ color, alpha: 0.35, width: Math.min(6, Math.max(2, r * 0.45)), cap: "round" });
+        if (["knife", "axe", "cross", "rune"].includes(p.weapon) || (p.weapon === "fire" && p.evolved)) {
+          const rotation = p.weapon === "axe" || p.weapon === "rune" || (p.weapon === "cross" && !p.evolved)
+            ? (reduced ? 0 : p.age * 7)
+            : p.weapon === "knife" ? a - Math.PI / 2 : a - 3 * Math.PI / 4;
+          if (itemProjectile(p, Math.max(p.weapon === "knife" ? 24 : 28, r * 2.4), rotation, fade)) continue;
+        }
         if (p.weapon === "knife" || (p.weapon === "cross" && p.evolved)) {
           const length = p.weapon === "knife" ? 14 : r * 1.5,
             dx = Math.cos(a),
@@ -397,10 +441,10 @@ export async function createCemeteryScene(
         }
       }
     }
-    for (const [id, book] of books)
-      if (!activeBooks.has(id)) {
-        book.destroy();
-        books.delete(id);
+    for (const [id, sprite] of projectileSprites)
+      if (!activeProjectiles.has(id)) {
+        sprite.destroy();
+        projectileSprites.delete(id);
       }
     for (let i = numbers.length - 1; i >= 0; i--) {
       const n = numbers[i]!,
@@ -425,6 +469,8 @@ export async function createCemeteryScene(
       destroyed = true;
       app.destroy(true, { children: true });
       sprites.clear();
+      pickupSprites.clear();
+      projectileSprites.clear();
     },
   };
 }

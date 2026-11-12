@@ -39,7 +39,9 @@ Les valeurs ont été consultées le **12 novembre 2026** sur le [wiki Vampire S
 - Le relevé numérique consultable est dans [la référence classique V1](references/vampire-survivors-classic-v1.json). Il identifie chaque fiche d’origine et sépare les valeurs relevées des choix d’intégration.
 - Les noms français, illustrations, géométrie et distances du champ, vitesse absolue des déplacements et projectiles, apparitions et statistiques ennemies, tarifs, bouclier et coffres du compte sont des adaptations de Sylve. Les Arcanas, DLC, unions, Limit Break et personnages de Vampire Survivors sont hors de cette version.
 
-Les illustrations ont été générées avec l’outil intégré imagegen, puis converties en WebP en préservant leur transparence. Les huit prompts et la référence de style du village sont conservés dans [le manifeste d’illustrations](art-references/cemetery-v1.json). Les portraits des gardiens et le grimoire animé réutilisent les assets de Sylve.
+Les illustrations ont été générées avec l’outil intégré imagegen, puis converties en WebP en préservant leur transparence. Les huit prompts et la référence de style du village sont conservés dans [le manifeste d’illustrations](art-references/cemetery-v1.json). Les portraits des gardiens réutilisent les assets de Sylve.
+
+Le [manifeste des objets](art-references/cemetery-items-v1.json) conserve les prompts ImageGen des 47 illustrations transparentes du cimetière : douze armes, douze évolutions, seize passifs, deux cristaux d’expérience, quatre autres ramassables et l’Égide du refuge. Ces WebP de 256 × 256 sont utilisés dans l’arsenal, les choix de niveau, les achats, l’inventaire, les ramassables au sol et les projectiles adaptés. Le bleu et le violet distinguent les valeurs d’XP ; leur taille conserve un minimum visible sur les petits écrans. Les sprites de combat sont réutilisés puis libérés à leur disparition. Les anciennes formes et icônes restent disponibles comme repli si une illustration ne peut pas être chargée.
 
 ## Sauvegardes et interfaces
 

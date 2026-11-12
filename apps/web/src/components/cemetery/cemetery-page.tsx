@@ -52,6 +52,7 @@ import {
   cemeteryError,
 } from "./cemetery-session";
 import { useCemeteryDialog } from "./use-cemetery-dialog";
+import { cemeteryWeaponArt, cemeteryPassiveArt, cemeteryPickupArt } from "./cemetery-art";
 
 export function CemeteryPage() {
   const board = useQuery(api.cemetery.board, {}),
@@ -614,7 +615,7 @@ export function CemeteryGame({
                 title={`${w.evolved ? spec.evolvedName : spec.name} · ${w.evolved ? "Évolution" : `Niveau ${w.level}`}`}
                 className={w.evolved ? "is-evolved" : ""}
               >
-                <CemeteryGlyph name={spec.glyph} size={19} />
+                <CemeteryGlyph name={spec.glyph} art={cemeteryWeaponArt(w.id, w.evolved)} label={w.evolved ? spec.evolvedName : spec.name} size={30} />
                 <small>{w.evolved ? "✧" : w.level}</small>
               </span>
             );
@@ -626,7 +627,7 @@ export function CemeteryGame({
               key={p.id}
               title={`${cemeteryPassive(p.id).name} · Niveau ${p.level}`}
             >
-              <CemeteryGlyph name={cemeteryPassive(p.id).glyph} size={16} />
+              <CemeteryGlyph name={cemeteryPassive(p.id).glyph} art={cemeteryPassiveArt(p.id)} label={cemeteryPassive(p.id).name} size={27} />
               <small>{p.level}</small>
             </span>
           ))}
@@ -823,12 +824,13 @@ export function CemeteryGame({
                     </span>
                     <span className="cemetery-choice-icon">
                       <CemeteryGlyph
+                        art={weapon ? cemeteryWeaponArt(weapon.id) : passive ? cemeteryPassiveArt(passive.id) : cemeteryPickupArt(id === "gold" ? "gold" : "heal")}
                         name={
                           weapon?.glyph ??
                           passive?.glyph ??
                           (id === "gold" ? "coins" : "heart")
                         }
-                        size={42}
+                        size={68}
                       />
                     </span>
                     <h3>

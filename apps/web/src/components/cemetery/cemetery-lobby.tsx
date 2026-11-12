@@ -47,6 +47,7 @@ import {
 } from "@sylve/game/cemetery";
 import { heroDefinition, type HeroId } from "@sylve/game/hero-metadata";
 import { chestName, type ChestType } from "@sylve/game/chest-types";
+import { cemeteryWeaponArt, cemeteryPassiveArt, cemeteryUpgradeArt } from "./cemetery-art";
 
 const GLYPHS: Record<string, LucideIcon> = {
   vine: Sprout,
@@ -81,12 +82,22 @@ const GLYPHS: Record<string, LucideIcon> = {
 export function CemeteryGlyph({
   name,
   size = 22,
+  art,
+  label = "",
 }: {
   name: string;
   size?: number;
+  art?: string;
+  label?: string;
 }) {
+  const [failed, setFailed] = useState<string | null>(null);
   const Icon = GLYPHS[name] ?? Sparkles;
-  return <Icon size={size} aria-hidden="true" strokeWidth={1.6} />;
+  if (art && failed !== art)
+    return <img className="cemetery-art-image" src={art} alt={label}
+      aria-hidden={label ? undefined : true} width={size} height={size}
+      loading="eager" decoding="async" onError={() => setFailed(art)} />;
+  return <Icon size={size} aria-hidden={label ? undefined : true}
+    role={label ? "img" : undefined} aria-label={label || undefined} strokeWidth={1.6} />;
 }
 export function cemeteryTime(seconds: number) {
   return `${Math.floor(seconds / 60)
@@ -385,7 +396,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 >
                   <div className="cemetery-upgrade-heading">
                     <span className="cemetery-item-icon">
-                      <CemeteryGlyph name={u.glyph} />
+                      <CemeteryGlyph name={u.glyph} art={cemeteryUpgradeArt(u.id)} size={36} />
                     </span>
                     <div>
                       <h2>{u.name}</h2>
@@ -490,7 +501,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     }
                   >
                     <span className="cemetery-item-icon">
-                      <CemeteryGlyph name={w.glyph} />
+                      <CemeteryGlyph name={w.glyph} art={cemeteryWeaponArt(w.id)} size={30} />
                     </span>
                     <span>
                       {w.name}
@@ -505,7 +516,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   L’ARME ET SON ÉVOLUTION
                 </span>
                 <div className="cemetery-evolution-icon">
-                  <CemeteryGlyph name={selectedWeapon.glyph} size={60} />
+                  <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id)} size={96} />
                 </div>
                 <h2>{selectedWeapon.name}</h2>
                 <p>{selectedWeapon.description}</p>
@@ -515,10 +526,14 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   <span>
                     <CemeteryGlyph
                       name={cemeteryPassive(selectedWeapon.passive).glyph}
-                      size={16}
+                      art={cemeteryPassiveArt(selectedWeapon.passive)}
+                      size={26}
                     />
                     {cemeteryPassive(selectedWeapon.passive).name}
                   </span>
+                </div>
+                <div className="cemetery-evolution-icon is-evolved">
+                  <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id, true)} size={88} />
                 </div>
                 <div className="cemetery-evolved-name">
                   <Sparkles size={20} />
@@ -536,7 +551,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
               {CEMETERY_PASSIVES.map((p) => (
                 <article key={p.id}>
                   <span className="cemetery-item-icon">
-                    <CemeteryGlyph name={p.glyph} />
+                    <CemeteryGlyph name={p.glyph} art={cemeteryPassiveArt(p.id)} size={36} />
                   </span>
                   <div>
                     <h2>{p.name}</h2>

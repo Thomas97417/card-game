@@ -1,0 +1,432 @@
+{
+  "generator": "Built-in image_gen",
+  "created": "2026-11-12",
+  "style": "Illustration fantasy peinte, objets sylvestres de Sylve",
+  "assets": [
+    {
+      "id": "weapon-whip",
+      "group": "weapons",
+      "name": "Ronce cinglante",
+      "file": "apps/web/public/art/cemetery/items/weapon-whip-v2.webp",
+      "generatedSource": "exec-00f1ff78-8672-46f2-b29b-c18fca809412.png",
+      "retouchPrompt": "Use case: background-extraction. Image 1 is the edit target: a finished painted Sylve thorn-vine whip inventory icon. Remove only the white/grey/checkerboard backdrop, haze and all background shadows. Keep the entire whip, leaves, brass fittings, texture, shape, colors, composition and dimensions unchanged. Produce a clean RGBA cutout with fully transparent empty pixels (alpha zero), also inside both vine loops and between leaves. No checkerboard pattern in the output, no white matte, no background haze, no ground shadow, no added objects. Keep fine leaf and thorn edges.",
+      "retouchSource": "exec-d18fc227-d4aa-4fe9-bd96-e8e184cd6490.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: A woodland thorn-vine whip curled into a compact graceful S, dark hazelwood grip with antique brass bands, rich green vines and a few broad emerald leaves, sturdy sharp thorns. One complete coiled whip."
+    },
+    {
+      "id": "weapon-wand",
+      "group": "weapons",
+      "name": "Baguette sylvestre",
+      "file": "apps/web/public/art/cemetery/items/weapon-wand-v1.webp",
+      "generatedSource": "exec-e1a395aa-3068-4d41-8610-a51cd613c9f0.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: a single Sylvan Wand. A short twisted hazelwood magic wand pointing diagonally upward, leaf-shaped antique brass fittings, a large luminous cyan crystal cradled at its tip, tiny emerald leaves growing along the handle. A handsome practical woodland mage's implement. No extra floating objects."
+    },
+    {
+      "id": "weapon-knife",
+      "group": "weapons",
+      "name": "Lames du veilleur",
+      "file": "apps/web/public/art/cemetery/items/weapon-knife-v1.webp",
+      "generatedSource": "exec-9e391da7-0250-4f76-8564-41154bc86214.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: A matched pair of short broad silver daggers crossing as one balanced weapon emblem, leaf-shaped steel blades, dark teal leather grips and simple antique brass guards. Entire blades and handles visible."
+    },
+    {
+      "id": "weapon-axe",
+      "group": "weapons",
+      "name": "Hache funéraire",
+      "file": "apps/web/public/art/cemetery/items/weapon-axe-v1.webp",
+      "generatedSource": "exec-448af4e4-f03b-454b-a9d0-c9d899fb97f7.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One sturdy ancient gravekeeper's axe, broad crescent steel blade with leaf engravings, antique bronze socket and short dark wooden handle bound in deep teal leather. Complete diagonally posed axe."
+    },
+    {
+      "id": "weapon-cross",
+      "group": "weapons",
+      "name": "Sceau du refuge",
+      "file": "apps/web/public/art/cemetery/items/weapon-cross-v1.webp",
+      "generatedSource": "exec-66fb27c2-d0ba-4eed-8360-a2e53f9d44f9.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One substantial four-armed forest guardian throwing seal, shaped from aged brass with silver edges and dark green leaf motifs, a brilliant emerald at the center. A real sculpted magical object, four bold symmetric arms, not a flat graphic."
+    },
+    {
+      "id": "weapon-bible",
+      "group": "weapons",
+      "name": "Grimoire des gardiens",
+      "file": "apps/web/public/art/cemetery/items/weapon-bible-v1.webp",
+      "generatedSource": "exec-d328a07b-3e07-4c60-b2f7-59ad5b86fa08.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One closed thick dark teal leather spellbook in three-quarter view, aged gold clasps and corner fittings, a raised oak-leaf medallion on its cover, warm ivory page edges. No writing or lettering."
+    },
+    {
+      "id": "weapon-fire",
+      "group": "weapons",
+      "name": "Bâton de braise",
+      "file": "apps/web/public/art/cemetery/items/weapon-fire-v1.webp",
+      "generatedSource": "exec-f7d2198d-e244-47a0-b458-2a024f95e399.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One short gnarled charred wood fire staff diagonally posed, copper leaf-shaped fittings enclosing a large glowing amber ember at the tip, a compact orange flame curling closely around it. Complete handle."
+    },
+    {
+      "id": "weapon-garlic",
+      "group": "weapons",
+      "name": "Cercle de sauge",
+      "file": "apps/web/public/art/cemetery/items/weapon-garlic-v1.webp",
+      "generatedSource": "exec-8d75da48-ee48-4162-a006-9590787f3cc2.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One compact circular bundle of broad silvery sage leaves, their stems bound by a warm copper vine ring, subtle pale green enchanted light in the center. Dense readable herb charm with tangible leaf textures."
+    },
+    {
+      "id": "weapon-water",
+      "group": "weapons",
+      "name": "Eau de lune",
+      "file": "apps/web/public/art/cemetery/items/weapon-water-v1.webp",
+      "generatedSource": "exec-338dc34b-b9b3-40fd-a9b1-ed8f30bcf919.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One round squat crystal-glass potion flask filled with luminous pale blue moonwater, silver crescent-shaped stopper and brass neck fitting, one tiny ivy leaf attached to the neck. Bright liquid and thick glass facets, no label."
+    },
+    {
+      "id": "weapon-rune",
+      "group": "weapons",
+      "name": "Éclat runique",
+      "file": "apps/web/public/art/cemetery/items/weapon-rune-v1.webp",
+      "generatedSource": "exec-c7d65e5c-22de-4dfe-98e9-47dde1bdc80f.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One large elongated emerald-green magical crystal with thick angular facets, held at its lower end by a small antique brass chevron clamp. A luminous mint core, darker forest-green edges. No lettering or readable runes."
+    },
+    {
+      "id": "weapon-lightning",
+      "group": "weapons",
+      "name": "Anneau d’orage",
+      "file": "apps/web/public/art/cemetery/items/weapon-lightning-v1.webp",
+      "generatedSource": "exec-e96c93f7-1f9b-40b2-b93d-f5ca15514725.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One thick antique gold ring in three-quarter view, set with a large violet-blue storm gemstone, a compact fork of icy blue lightning hugging the gemstone and band. Strong complete ring silhouette."
+    },
+    {
+      "id": "weapon-pentagram",
+      "group": "weapons",
+      "name": "Sceau d’exorcisme",
+      "file": "apps/web/public/art/cemetery/items/weapon-pentagram-v1.webp",
+      "generatedSource": "exec-a4bfdcc5-70ef-4b66-a7dd-e77ef4f23ba6.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One ancient palm-sized dark obsidian seal disk, raised five-pointed silver star, old brass outer rim and a luminous amethyst at its center. Sculpted dimensional enchanted amulet, no letters or words."
+    },
+    {
+      "id": "weapon-whip-evolved",
+      "group": "evolutions",
+      "name": "Ronce carmin",
+      "file": "apps/web/public/art/cemetery/items/weapon-whip-evolved-v1.webp",
+      "generatedSource": "exec-479faf47-516d-4f48-a38c-5d035211dcdc.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One powerful evolved thorn-vine whip coiled into a compact S, deep crimson thorned vines, ornate golden handle, large ruby-red dew-shaped heart gem at the grip, a few dark green leaves. Rich red magical highlights, no gore."
+    },
+    {
+      "id": "weapon-wand-evolved",
+      "group": "evolutions",
+      "name": "Sceptre des anciens",
+      "file": "apps/web/public/art/cemetery/items/weapon-wand-evolved-v1.webp",
+      "generatedSource": "exec-ae9d5d66-4c6d-4a99-ad81-ac8e0c0f9245.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One ornate ancient druid's scepter, stout dark oak shaft and branching silver-antler crown cradling a large radiant blue star crystal. Gold leaf inlays and bright icy cyan highlights. Complete diagonally posed scepter."
+    },
+    {
+      "id": "weapon-knife-evolved",
+      "group": "evolutions",
+      "name": "Pluie de lames",
+      "file": "apps/web/public/art/cemetery/items/weapon-knife-evolved-v1.webp",
+      "generatedSource": "exec-e34d8738-a87f-4d34-9f9e-665e362583ff.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One cohesive compact fan of five gleaming silver leaf-shaped throwing daggers, the central dagger slightly larger, antique golden grips, icy turquoise cutting-edge highlights. A single weapon emblem, all blades clearly separate but closely grouped."
+    },
+    {
+      "id": "weapon-axe-evolved",
+      "group": "evolutions",
+      "name": "Spirale funèbre",
+      "file": "apps/web/public/art/cemetery/items/weapon-axe-evolved-v1.webp",
+      "generatedSource": "exec-b0d6eaeb-bb75-45d7-bfa5-c3fd65970665.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One enchanted death-spiral weapon: three large curved silver scythe blades joined around a central green spectral crystal, dark antique bronze hub with leaf relief. A compact circular rotating-blade artifact, tangible sculpted form, no scene."
+    },
+    {
+      "id": "weapon-cross-evolved",
+      "group": "evolutions",
+      "name": "Épée des serments",
+      "file": "apps/web/public/art/cemetery/items/weapon-cross-evolved-v1.webp",
+      "generatedSource": "exec-d616531b-7c95-4d21-91ce-a59f94d2c697.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One magnificent oathkeeper's sword diagonally posed, broad silver blade with a luminous pale cyan edge, gold oak-leaf crossguard and a large emerald at the center, deep teal leather handle. Entire sword visible, clear bold silhouette."
+    },
+    {
+      "id": "weapon-bible-evolved",
+      "group": "evolutions",
+      "name": "Vêpres éternelles",
+      "file": "apps/web/public/art/cemetery/items/weapon-bible-evolved-v1.webp",
+      "generatedSource": "exec-f3edd633-076a-4c0e-b451-89a2129c651f.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One open midnight-violet enchanted grimoire with heavy antique brass corners, fanned ivory pages glowing lavender, a tight luminous violet arc hugging the book. Pages have purely abstract decorative marks, no readable letters."
+    },
+    {
+      "id": "weapon-fire-evolved",
+      "group": "evolutions",
+      "name": "Brasier des profondeurs",
+      "file": "apps/web/public/art/cemetery/items/weapon-fire-evolved-v1.webp",
+      "generatedSource": "exec-6cd9eeed-efb4-4c8c-91d0-67fc12ea8bf5.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One massive black obsidian meteor with glowing molten amber cracks and a compact curled orange-gold flame tail, rich smoky bronze core, bright blazing edges. A single cohesive fireball projectile icon, no detached rocks or scenery."
+    },
+    {
+      "id": "weapon-garlic-evolved",
+      "group": "evolutions",
+      "name": "Dévoreur d’âmes",
+      "file": "apps/web/public/art/cemetery/items/weapon-garlic-evolved-v1.webp",
+      "generatedSource": "exec-8f92aec4-9783-4793-b469-bb5034ba0de7.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One ancient forest soul-eating censer, a dark bronze vessel framed by curling black-green leaves, bright turquoise spectral light trapped in its central round crystal chamber, short wisps closely hugging its rim. Compact tangible magical relic."
+    },
+    {
+      "id": "weapon-water-evolved",
+      "group": "evolutions",
+      "name": "Marée lunaire",
+      "file": "apps/web/public/art/cemetery/items/weapon-water-evolved-v1.webp",
+      "generatedSource": "exec-2f9648b0-da72-4aa2-a1a2-94cd7378adc0.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One evolved crescent-stopper silver moonwater flask surrounded by a compact curling blue water wave that wraps tightly around the bottle, pale violet lunar reflections and bright cyan liquid. A single coherent magical object emblem."
+    },
+    {
+      "id": "weapon-rune-evolved",
+      "group": "evolutions",
+      "name": "Fracture runique",
+      "file": "apps/web/public/art/cemetery/items/weapon-rune-evolved-v1.webp",
+      "generatedSource": "exec-ab9c5257-b70b-4cd8-ae39-042372d40bcb.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One fractured violet obsidian crystal artifact, three tightly grouped interlocking jagged crystal sections connected by brilliant cyan energy veins, a broken antique brass clasp at the base. Compact angular readable silhouette, no letters."
+    },
+    {
+      "id": "weapon-lightning-evolved",
+      "group": "evolutions",
+      "name": "Foudre jumelle",
+      "file": "apps/web/public/art/cemetery/items/weapon-lightning-evolved-v1.webp",
+      "generatedSource": "exec-8b185792-251c-4eeb-9f64-971544ad605d.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One coherent paired-ring storm artifact: two interlocked thick golden rings, twin deep violet storm gems connected by a tight brilliant electric-blue lightning arc. Closely linked dimensional rings with strong readable silhouette."
+    },
+    {
+      "id": "weapon-pentagram-evolved",
+      "group": "evolutions",
+      "name": "Astre purificateur",
+      "file": "apps/web/public/art/cemetery/items/weapon-pentagram-evolved-v1.webp",
+      "generatedSource": "exec-c6453812-64c1-4867-b086-ece5a3f6795d.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One radiant lunar amulet, a pearl-white crescent moon cradling a luminous violet orb inside an ornate gold circle with small emerald star details. Soft ivory and lavender light hugging the metal, dimensional celestial relic, no writing."
+    },
+    {
+      "id": "passive-spinach",
+      "group": "passives",
+      "name": "Feuille de vigueur",
+      "file": "apps/web/public/art/cemetery/items/passive-spinach-v1.webp",
+      "generatedSource": "exec-6166e641-4c1a-4918-9953-60ea535dfc87.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One broad vibrant emerald-green leaf with thick sculpted veins, a curled stem and subtle warm gold light along its central vein. A lush substantial magical vigor leaf, complete clean silhouette."
+    },
+    {
+      "id": "passive-armor",
+      "group": "passives",
+      "name": "Cuirasse du veilleur",
+      "file": "apps/web/public/art/cemetery/items/passive-armor-v1.webp",
+      "generatedSource": "exec-e6982064-2cb6-4ddb-8862-e84ecf894a84.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: the Watcher's Breastplate, a single empty piece of ornate forest guardian chest armor. A sturdy rounded antique bronze breastplate with dark teal leather lining, ivy engravings and one small emerald clasp. Clear complete silhouette, no wearer or body, front three-quarter view."
+    },
+    {
+      "id": "passive-heart",
+      "group": "passives",
+      "name": "Cœur ancien",
+      "file": "apps/web/public/art/cemetery/items/passive-heart-v1.webp",
+      "generatedSource": "exec-51c73916-4cfa-4575-8703-d001cee8d7a3.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One substantial deep ruby-red heart-shaped gemstone held in an aged brass ivy frame, old carved stone facets, warm red inner light. A precious ancient heart relic, no anatomical or graphic details."
+    },
+    {
+      "id": "passive-recovery",
+      "group": "passives",
+      "name": "Graine vitale",
+      "file": "apps/web/public/art/cemetery/items/passive-recovery-v1.webp",
+      "generatedSource": "exec-66cdce89-3bbf-4b64-b5c4-ada66b3bf6c7.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One large luminous golden seed splitting open to reveal two fresh emerald leaves and a pale mint sprout, delicate antique copper root filaments embracing the seed. Compact wholesome life charm."
+    },
+    {
+      "id": "passive-tome",
+      "group": "passives",
+      "name": "Grimoire vierge",
+      "file": "apps/web/public/art/cemetery/items/passive-tome-v1.webp",
+      "generatedSource": "exec-1acdfb95-1f9f-40fd-b02e-b7fe80321d53.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One closed chunky ivory leather book, blank cream cover with a simple aged brass clasp and dark teal spine, warm cream page edges. Clearly different from a blue spellbook; no writing, titles or symbols resembling letters."
+    },
+    {
+      "id": "passive-candle",
+      "group": "passives",
+      "name": "Chandélabre",
+      "file": "apps/web/public/art/cemetery/items/passive-candle-v1.webp",
+      "generatedSource": "exec-ff522774-13be-46ed-abc5-33288168f144.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One small substantial three-branched antique brass candelabrum with oak-leaf base, three short ivory beeswax candles and compact golden flames. Symmetrical readable object silhouette."
+    },
+    {
+      "id": "passive-bracer",
+      "group": "passives",
+      "name": "Bracelets du veilleur",
+      "file": "apps/web/public/art/cemetery/items/passive-bracer-v1.webp",
+      "generatedSource": "exec-1666ece2-23ee-4615-94ad-0bf264256730.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One matched pair of sturdy engraved bronze wrist bracers grouped closely, dark teal leather lining, silver wing-shaped relief and tiny blue gemstones. Empty armor pieces, no arms or wearer."
+    },
+    {
+      "id": "passive-binder",
+      "group": "passives",
+      "name": "Liant runique",
+      "file": "apps/web/public/art/cemetery/items/passive-binder-v1.webp",
+      "generatedSource": "exec-858498e1-1449-44f6-a438-cb5eeebf3b5b.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One ornate compact antique bronze hourglass, luminous violet sand, thick glass bulbs, curling teal vine bindings around the frame. Large clean silhouette, no written runes or letters."
+    },
+    {
+      "id": "passive-duplicator",
+      "group": "passives",
+      "name": "Miroir des échos",
+      "file": "apps/web/public/art/cemetery/items/passive-duplicator-v1.webp",
+      "generatedSource": "exec-71b6bdfb-d6e6-4cb1-a68f-64a334252f5b.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One enchanted oval handheld mirror with a small handle, ornate antique brass ivy frame, icy blue glass showing two closely overlapping luminous reflected oval shapes. Empty magical reflection, no faces or scenery."
+    },
+    {
+      "id": "passive-wings",
+      "group": "passives",
+      "name": "Plumes errantes",
+      "file": "apps/web/public/art/cemetery/items/passive-wings-v1.webp",
+      "generatedSource": "exec-62a85ad3-6796-4dc1-8cbe-513484912418.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One elegant charm made from two broad ivory and turquoise feathers bound together by a small golden knot and emerald bead. Long softly painted feather barbs, complete feathers with strong readable silhouette."
+    },
+    {
+      "id": "passive-magnet",
+      "group": "passives",
+      "name": "Pierre d’attraction",
+      "file": "apps/web/public/art/cemetery/items/passive-magnet-v1.webp",
+      "generatedSource": "exec-e3c55814-5479-44fb-9389-4df260bf0a8d.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One polished deep green lodestone held in a crescent-shaped antique copper cradle, a tight luminous mint magnetic arc embracing the stone. A sturdy compact magical attraction charm."
+    },
+    {
+      "id": "passive-clover",
+      "group": "passives",
+      "name": "Trèfle des brumes",
+      "file": "apps/web/public/art/cemetery/items/passive-clover-v1.webp",
+      "generatedSource": "exec-a592fba3-e802-4c01-af10-c4a519d7fcf0.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One vivid emerald four-leaf clover with thick rounded heart-shaped leaves, a short curled stem and one bright golden dewdrop. Slight pale teal enchanted highlight, complete botanical charm."
+    },
+    {
+      "id": "passive-crown",
+      "group": "passives",
+      "name": "Couronne ancienne",
+      "file": "apps/web/public/art/cemetery/items/passive-crown-v1.webp",
+      "generatedSource": "exec-a4a112ee-475e-4bd1-83cf-45efed6bf640.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One substantial ancient bronze oak-leaf crown, three broad leaf-shaped points and inset luminous blue-green gemstones, worn gold rim. Empty crown in three-quarter view, no head or wearer."
+    },
+    {
+      "id": "passive-mask",
+      "group": "passives",
+      "name": "Masque doré",
+      "file": "apps/web/public/art/cemetery/items/passive-mask-v1.webp",
+      "generatedSource": "exec-576e5e85-0888-4463-8768-a033e199fc85.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One elegant solid antique gold ceremonial face mask, smooth broad forehead and strong cheek shapes, restrained emerald patina in its engraved ivy edges, dark eye openings. Empty mask, no wearer, no hood, no gore."
+    },
+    {
+      "id": "passive-skull",
+      "group": "passives",
+      "name": "Relique maudite",
+      "file": "apps/web/public/art/cemetery/items/passive-skull-v1.webp",
+      "generatedSource": "exec-4919fd72-0756-47e4-ae86-e91ccdef1413.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One small ancient ivory stone skull relic wrapped in dark violet thorn vines, subdued purple light in its eyes, antique brass fitting at its base. Stylized mysterious fantasy artifact, no gore or anatomical realism."
+    },
+    {
+      "id": "passive-revival",
+      "group": "passives",
+      "name": "Talisman de retour",
+      "file": "apps/web/public/art/cemetery/items/passive-revival-v1.webp",
+      "generatedSource": "exec-8ed84689-5f06-4e8f-b5d0-182794e0365e.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One antique golden phoenix-feather pendant with a large green jade tear-shaped stone at the center, warm amber inner glow and curling gold feather barbs. A single cohesive protective revival talisman."
+    },
+    {
+      "id": "pickup-xp-blue",
+      "group": "pickups",
+      "name": "Cristal d’expérience",
+      "file": "apps/web/public/art/cemetery/items/pickup-xp-blue-v1.webp",
+      "generatedSource": "exec-aaa116ba-6c7c-48f6-ab65-8817dc60b01c.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: ONE large brilliant icy cyan-blue experience crystal, a chunky vertically oriented pointed faceted gem. Thick distinct facets, very bright cyan center, deep cobalt side faces, sharp pale edge highlights, tiny restrained blue glow immediately around the crystal. Pure crystal with no metal mounting, no other gems, no motes scattered far away. Extremely legible as a small collectible on dark grass."
+    },
+    {
+      "id": "pickup-xp-purple",
+      "group": "pickups",
+      "name": "Grand cristal d’expérience",
+      "file": "apps/web/public/art/cemetery/items/pickup-xp-purple-v1.webp",
+      "generatedSource": "exec-4e979fc8-bf09-4e68-8565-eda3800b1bf1.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One chunky vertically oriented brilliant amethyst-purple experience crystal, with a small pair of attached lower facets forming a single large gem, vivid violet center and pale lavender edge highlights. Pure crystal without metal mounting, tiny restrained purple glow hugging its edges."
+    },
+    {
+      "id": "pickup-gold",
+      "group": "pickups",
+      "name": "Pièce d’or",
+      "file": "apps/web/public/art/cemetery/items/pickup-gold-v1.webp",
+      "generatedSource": "exec-4e56c973-2fc3-41cf-af72-94a8dd65a3bc.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One thick bright ancient gold coin in slight three-quarter view, raised oak-leaf emblem, beveled sculpted rim and warm golden highlights. A large readable coin with no letters, digits or inscription."
+    },
+    {
+      "id": "pickup-heal",
+      "group": "pickups",
+      "name": "Soin du refuge",
+      "file": "apps/web/public/art/cemetery/items/pickup-heal-v1.webp",
+      "generatedSource": "exec-f465fa36-97b4-427c-ab92-ed44c5163685.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One squat round crystal-glass healing potion filled with rich rose-red liquid, short oak cork and brass neck ring with a tiny green leaf charm. Bright pink highlights on thick glass, readable stout silhouette, no label."
+    },
+    {
+      "id": "pickup-vacuum",
+      "group": "pickups",
+      "name": "Appel des éclats",
+      "file": "apps/web/public/art/cemetery/items/pickup-vacuum-v1.webp",
+      "generatedSource": "exec-323668b0-8084-4321-8c0f-d6e40a7eb849.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One druidic bronze horseshoe-shaped magnet artifact holding a brilliant turquoise orb between its ends, a tight elegant mint-blue spiral of magical wind wrapping closely around it. Compact pickup icon for drawing experience crystals inward."
+    },
+    {
+      "id": "pickup-relic",
+      "group": "pickups",
+      "name": "Reliquaire des veilleurs",
+      "file": "apps/web/public/art/cemetery/items/pickup-relic-v1.webp",
+      "generatedSource": "exec-d16f405a-4319-42f7-9c15-d65f1628510c.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One small heavy ancient wooden reliquary chest in three-quarter view, aged brass oak-leaf clasp and corner fittings, its lid slightly ajar with a restrained violet-teal glow emerging. A complete compact boss relic chest, no floor or pedestal."
+    },
+    {
+      "id": "upgrade-shield",
+      "group": "upgrades",
+      "name": "Égide du refuge",
+      "file": "apps/web/public/art/cemetery/items/upgrade-shield-v1.webp",
+      "generatedSource": "exec-f976d8ce-ea5a-4f4f-8b4a-a7bdc0d22be6.png",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: one isolated collectible/inventory sprite for Sylve, a hand-painted woodland fantasy game. Style/medium: richly painted storybook fantasy with tangible materials, softly brushed highlights, warm aged brass, cool teal and forest jewel tones, elegant readable shapes. Composition: one complete centered subject occupying about 80% of a square canvas, generous transparent margin, slight three-quarter view, strong silhouette legible at 32 pixels. Lighting: soft upper-left light and restrained magical highlights. Constraints: genuinely transparent background with preserved alpha; no text, letters, numbers, logos, watermark, UI frame, border, icon tile, pedestal, ground plane, people, hands, landscape or surrounding scene. No contact shadow extending far outside the object. Not a flat outline icon, not pixel art. Subject: One broad elegant guardian shield with a pointed bottom, deep teal enamel face, thick antique gold and silver rim, a sculpted golden oak leaf around a pale blue gem at the center. Complete empty shield, no arms or wearer."
+    }
+  ]
+}
