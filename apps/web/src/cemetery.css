@@ -1196,20 +1196,7 @@
   padding: 20px 5px;
 }
 .cemetery-level-up > h2 {
-  font:
-    40px/1.2 Georgia,
-    serif;
-  color: #ead9bc;
-  margin: 12px 0;
-}
-.cemetery-level-up > p {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-  color: #a5b7c9;
-  font-size: 12px;
-  margin: 14px 0 25px;
+  margin: 0 0 24px;
 }
 .cemetery-choice-grid {
   display: flex;
@@ -1678,13 +1665,6 @@
   }
   .cemetery-result-chest {
     height: 85px;
-  }
-  .cemetery-level-up > h2 {
-    font-size: 30px;
-  }
-  .cemetery-level-up > p {
-    font-size: 10px;
-    margin-bottom: 18px;
   }
   .cemetery-choice-grid {
     display: grid;

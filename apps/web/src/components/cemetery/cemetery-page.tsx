@@ -154,19 +154,22 @@ export function CemeteryPage() {
           });
           return { ...r, state: r.state as CemeteryRun };
         },
-        resume: async (leaseId) =>
+        resume: async (leaseId, expectedLeaseId, expectedTick) =>
           (
             await convex.mutation(api.cemetery.resumeRun, {
               expectedOwnerId: ownerId,
               runId: id,
               leaseId,
+              expectedLeaseId,
+              expectedTick,
             })
           ).state as CemeteryRun,
-        pause: (leaseId) =>
+        pause: (leaseId, expectedTick) =>
           convex.mutation(api.cemetery.pauseRun, {
             expectedOwnerId: ownerId,
             runId: id,
             leaseId,
+            expectedTick,
           }),
         choose: async (leaseId, serial, choice) =>
           (
@@ -176,6 +179,7 @@ export function CemeteryPage() {
               leaseId,
               serial,
               choice,
+              resume: true,
             })
           ).state as CemeteryRun,
         finish: () =>
@@ -337,7 +341,12 @@ export function CemeteryGame({
       : (ready && !session.running) || failed
         ? "pause"
         : "";
-  useCemeteryDialog(root, dialogKey ? `${dialogKey}:${session.saving}` : "");
+  useCemeteryDialog(
+    root,
+    dialogKey
+      ? dialogKey === "results" ? `${dialogKey}:${session.saving}` : dialogKey
+      : "",
+  );
   useEffect(() => {
     let alive = true,
       raf = 0,
@@ -732,11 +741,10 @@ export function CemeteryGame({
             aria-modal="true"
             aria-labelledby="cemetery-choice-title"
           >
-            <span className="cemetery-eyebrow">NIVEAU {s.level}</span>
-            <h2 id="cemetery-choice-title">Un pouvoir s’éveille.</h2>
-            <p>Choisis ce qui t’aidera à traverser la nuit.</p>
+            <h2 id="cemetery-choice-title" className="cemetery-eyebrow">NIVEAU {s.level}</h2>
             <div className="cemetery-choice-grid">
               {s.choices.map((id) => {
+                const serial = s.choiceSerial;
                 const weapon = id.startsWith("weapon:")
                     ? cemeteryWeapon(
                         id.slice(7) as Parameters<typeof cemeteryWeapon>[0],
@@ -756,10 +764,9 @@ export function CemeteryGame({
                   <button
                     type="button"
                     key={`${s.choiceSerial}:${id}`}
-                    disabled={session.saving}
                     onClick={() => {
                       onError(null);
-                      void session.choose(id);
+                      void session.choose(id, serial);
                     }}
                   >
                     <span className="cemetery-choice-type">
@@ -807,12 +814,6 @@ export function CemeteryGame({
                 );
               })}
             </div>
-            {session.saving && (
-              <p role="status">
-                <LoaderCircle className="animate-spin" size={16} />
-                Sauvegarde de la progression…
-              </p>
-            )}
           </section>
         </div>
       ) : (
@@ -830,7 +831,7 @@ export function CemeteryGame({
               <button
                 type="button"
                 className="cemetery-primary"
-                disabled={session.saving || failed}
+                disabled={failed}
                 onClick={() => {
                   onError(null);
                   void session.resume(performance.now());

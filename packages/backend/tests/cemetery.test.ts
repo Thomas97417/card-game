@@ -284,6 +284,33 @@ describe("le cimetière connecté", () => {
       ).state.tick,
     ).toBe(20);
   });
+  it("resets the time budget for a guarded resume even when a rapid pause was coalesced",async()=>{
+    const t=setup(),p=await player(t),run=await start(p);
+    vi.advanceTimersByTime(10000);
+    const args={expectedOwnerId:p.ownerId,runId:run._id,leaseId:"lease-1",expectedLeaseId:"lease-1",expectedTick:0};
+    const resumed=await p.client.mutation(api.cemetery.resumeRun,args);
+    expect(resumed.leaseAt).toBe(Date.now());
+    expect(resumed.leasePaused).toBe(false);
+    const batch={expectedOwnerId:p.ownerId,runId:run._id,leaseId:"lease-1",startTick:0,inputs:Array.from({length:20},()=>({x:1000,y:0}))};
+    await expect(p.client.mutation(api.cemetery.submitInputs,batch)).rejects.toThrow("trop vite");
+    vi.advanceTimersByTime(1000);
+    await p.client.mutation(api.cemetery.submitInputs,batch);
+    await expect(p.client.mutation(api.cemetery.pauseRun,{expectedOwnerId:p.ownerId,runId:run._id,leaseId:"lease-1",expectedTick:0})).rejects.toThrow("changé");
+    await p.client.mutation(api.cemetery.pauseRun,{expectedOwnerId:p.ownerId,runId:run._id,leaseId:"lease-1",expectedTick:20});
+    const paused=await p.client.query(api.cemetery.run,{runId:run._id});
+    vi.advanceTimersByTime(3600000);
+    const next=await p.client.mutation(api.cemetery.resumeRun,{...args,expectedTick:20});
+    expect(next.state).toEqual(paused.state);
+    expect(next.leaseTick).toBe(20);
+    expect(next.leaseAt).toBe(Date.now());
+  });
+  it("rejects a stale guarded resume without taking control away from a newer tab",async()=>{
+    const t=setup(),p=await player(t),run=await start(p),owner={expectedOwnerId:p.ownerId,runId:run._id};
+    await p.client.mutation(api.cemetery.resumeRun,{...owner,leaseId:"lease-2"});
+    await expect(p.client.mutation(api.cemetery.resumeRun,{...owner,leaseId:"lease-1",expectedLeaseId:"lease-1",expectedTick:0})).rejects.toThrow("autre onglet");
+    await expect(p.client.mutation(api.cemetery.pauseRun,{...owner,leaseId:"lease-1",expectedTick:0})).rejects.toThrow("autre onglet");
+    expect((await p.client.query(api.cemetery.run,{runId:run._id})).leaseId).toBe("lease-2");
+  });
   it("saves level choices, accepts only offered options and deduplicates the chosen upgrade", async () => {
     const t = setup(),
       p = await player(t),
@@ -309,6 +336,7 @@ describe("le cimetière connecté", () => {
       choice: state.choices[0]!,
     });
     expect(first.state.choices).toEqual([]);
+    expect(first.leasePaused).toBe(true);
     expect(
       (
         await p.client.mutation(api.cemetery.chooseUpgrade, {
@@ -323,6 +351,38 @@ describe("le cimetière connecté", () => {
         choice: state.choices[1]!,
       }),
     ).rejects.toThrow("déjà");
+  });
+  it("atomically resumes a chosen level, excludes thinking time from the input budget and does not reset the clock on retry", async () => {
+    const t = setup(), p = await player(t), run = await start(p),
+      state = structuredClone(run.state) as CemeteryRun;
+    state.xp = 5;
+    offerCemeteryLevel(state);
+    await t.run((ctx) => ctx.db.patch(run._id, { state, leasePaused: true }));
+    vi.advanceTimersByTime(10000);
+    const args = {
+      expectedOwnerId: p.ownerId, runId: run._id, leaseId: "lease-1",
+      serial: state.choiceSerial, choice: state.choices[0]!, resume: true,
+    };
+    const chosen = await p.client.mutation(api.cemetery.chooseUpgrade, args);
+    expect(chosen.leasePaused).toBe(false);
+    expect(chosen.leaseAt).toBe(Date.now());
+    expect(chosen.leaseTick).toBe(0);
+    const batch = {
+      expectedOwnerId: p.ownerId, runId: run._id, leaseId: "lease-1",
+      startTick: 0, inputs: Array.from({ length: 20 }, () => ({ x: 1000, y: 0 })),
+    };
+    await expect(p.client.mutation(api.cemetery.submitInputs, batch)).rejects.toThrow("trop vite");
+    vi.advanceTimersByTime(1000);
+    expect((await p.client.mutation(api.cemetery.submitInputs, batch)).state.tick).toBe(20);
+    const retried = await p.client.mutation(api.cemetery.chooseUpgrade, args);
+    expect(retried.leaseAt).toBe(chosen.leaseAt);
+    expect(retried.state.tick).toBe(20);
+    expect(retried.state.weapons).toEqual(chosen.state.weapons);
+    await p.client.mutation(api.cemetery.resumeRun, {
+      expectedOwnerId: p.ownerId, runId: run._id, leaseId: "lease-2",
+    });
+    expect((await p.client.mutation(api.cemetery.chooseUpgrade, args)).leaseId).toBe("lease-2");
+    await expect(p.client.mutation(api.cemetery.submitInputs, { ...batch, startTick: 20 })).rejects.toThrow("changé");
   });
   it("awards each duration tier without a daily quota and opens each reward exactly once", async () => {
     const t = setup(),

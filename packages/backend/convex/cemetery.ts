@@ -198,13 +198,16 @@ export const startRun = mutation({
   },
 });
 export const resumeRun = mutation({
-  args: { ...runArgs, leaseId: v.string() },
+  args: { ...runArgs, leaseId: v.string(), expectedLeaseId: v.optional(v.string()), expectedTick: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const run = await ownedRun(ctx, args.expectedOwnerId, args.runId);
     identifier(args.leaseId);
     if (run.status !== "active")
       throw new ConvexError("Cette partie est déjà terminée.");
-    if (run.leaseId === args.leaseId && !run.leasePaused) return run;
+    if ((args.expectedLeaseId !== undefined && run.leaseId !== args.expectedLeaseId) ||
+        (args.expectedTick !== undefined && run.state.tick !== args.expectedTick))
+      throw new ConvexError("Cette partie est ouverte dans un autre onglet. Reprends sa sauvegarde.");
+    if (args.expectedLeaseId === undefined && run.leaseId === args.leaseId && !run.leasePaused) return run;
     await ctx.db.patch(run._id, {
       leaseAt: Date.now(),
       leaseTick: run.state.tick,
@@ -215,11 +218,13 @@ export const resumeRun = mutation({
   },
 });
 export const pauseRun = mutation({
-  args: { ...runArgs, leaseId: v.string() },
+  args: { ...runArgs, leaseId: v.string(), expectedTick: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const run = await ownedRun(ctx, args.expectedOwnerId, args.runId);
     if (run.leaseId !== args.leaseId)
       throw new ConvexError("Cette partie est ouverte dans un autre onglet.");
+    if (args.expectedTick !== undefined && run.state.tick !== args.expectedTick)
+      throw new ConvexError("La partie a changé. Reprends sa sauvegarde.");
     if (run.status === "active" && !run.leasePaused)
       await ctx.db.patch(run._id, { leasePaused: true });
   },
@@ -295,6 +300,7 @@ export const chooseUpgrade = mutation({
     leaseId: v.string(),
     serial: v.number(),
     choice: v.string(),
+    resume: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const run = await ownedRun(ctx, args.expectedOwnerId, args.runId);
@@ -330,7 +336,12 @@ export const chooseUpgrade = mutation({
       endTick: state.tick,
       payload: args.choice,
     });
-    await ctx.db.patch(run._id, { state, leasePaused: true });
+    const resume = args.resume && !state.ended && !state.choices.length;
+    await ctx.db.patch(run._id, {
+      state,
+      leasePaused: !resume,
+      ...(resume ? { leaseAt: Date.now(), leaseTick: state.tick } : {}),
+    });
     return (await ctx.db.get(run._id))!;
   },
 });

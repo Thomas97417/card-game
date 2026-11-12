@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createCemeteryRun,
   stepCemetery,
+  chooseCemeteryUpgrade,
   type CemeteryRun,
 } from "@sylve/game/cemetery";
 import { CemeteryGame } from "./cemetery-page";
@@ -27,13 +28,17 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
-function setup() {
-  let server = createCemeteryRun(17),
+function setup(initial = createCemeteryRun(17)) {
+  let server = structuredClone(initial),
     notify = () => {};
   const onError = vi.fn(),
     onFrame = vi.fn(),
-    resume = vi.fn(async () => structuredClone(server)),
-    pause = vi.fn(async () => {});
+    resume = vi.fn(async (_lease: string, _expectedLeaseId?: string, _expectedTick?: number) => structuredClone(server)),
+    pause = vi.fn(async () => {}),
+    submit = vi.fn(async (_lease: string, _start: number, inputs: {x:number; y:number}[]) => {
+      inputs.forEach((i) => stepCemetery(server, i));
+      return { state: structuredClone(server), acceptedTick: server.tick };
+    });
   const session = new CemeterySession({
     ownerId: "alice",
     runId: "run",
@@ -44,11 +49,11 @@ function setup() {
     frame: vi.fn(),
     resume,
     pause,
-    submit: async (_lease, _start, inputs) => {
-      inputs.forEach((i) => stepCemetery(server, i));
-      return { state: structuredClone(server), acceptedTick: server.tick };
+    submit,
+    choose: async (_lease, _serial, choice) => {
+      chooseCemeteryUpgrade(server, choice);
+      return structuredClone(server);
     },
-    choose: async () => structuredClone(server),
     finish: async () => {},
   });
   function Harness() {
@@ -74,6 +79,7 @@ function setup() {
     session,
     resume,
     pause,
+    submit,
     onError,
     Harness,
     server: () => server,
@@ -88,6 +94,59 @@ async function ready() {
   });
 }
 describe("les commandes de la survie", () => {
+  it("keeps Resume enabled during saving and closes the pause dialog before network confirmation",async()=>{
+    const f=setup();render(<f.Harness/>);await ready();
+    act(()=>vi.advanceTimersByTime(200));
+    let release!:()=>void;
+    f.pause.mockImplementationOnce(async()=>{await new Promise<void>(resolve=>{release=resolve;});});
+    fireEvent.click(screen.getByRole("button",{name:"Mettre en pause"}));
+    expect(f.session.running).toBe(false);
+    const resume=screen.getByRole("button",{name:"Reprendre"}) as HTMLButtonElement;
+    expect(resume.disabled).toBe(false);
+    expect(document.activeElement).toBe(resume);
+    await ready();
+    expect(f.pause).toHaveBeenCalledOnce();
+    fireEvent.click(resume);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(f.session.running).toBe(true);
+    const tick=f.session.state.tick;
+    act(()=>vi.advanceTimersByTime(100));
+    expect(f.session.state.tick).toBeGreaterThan(tick);
+    let paused!:Promise<void>;act(()=>{paused=f.session.pause();});
+    release();
+    await act(async()=>{await vi.advanceTimersByTimeAsync(1000);await paused;});
+    expect(f.session.state).toEqual(f.server());
+  });
+  it("shows only the level heading and accepts a choice while the checkpoint is still saving", async () => {
+    const initial = createCemeteryRun(17);
+    initial.pickups = [{id:1,kind:"xp",x:0,y:0,value:5,eligible:false}];
+    const f = setup(initial), submit = f.submit.getMockImplementation()!;
+    let release!: () => void;
+    f.submit.mockImplementationOnce(async (...args) => {
+      await new Promise<void>((resolve) => { release = resolve; });
+      return submit(...args);
+    });
+    render(<f.Harness />);
+    await ready();
+    act(() => vi.advanceTimersByTime(200));
+    const dialog = screen.getByRole("dialog", {name:"NIVEAU 2"});
+    expect(dialog.querySelector("h2")!.textContent).toBe("NIVEAU 2");
+    expect(dialog.textContent).not.toContain("Un pouvoir s’éveille");
+    expect(dialog.textContent).not.toContain("Choisis ce qui t’aidera");
+    expect(dialog.textContent).not.toContain("Sauvegarde");
+    const choice = dialog.querySelector("button")!;
+    expect(choice.disabled).toBe(false);
+    expect(document.activeElement).toBe(choice);
+    fireEvent.click(choice);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(f.session.running).toBe(true);
+    act(() => vi.advanceTimersByTime(200));
+    expect(f.session.state.tick).toBeGreaterThan(1);
+    const paused = f.session.pause();
+    release();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); await paused; });
+    expect(f.session.state).toEqual(f.server());
+  });
   it("moves with AZERTY keys, pauses on Escape and keeps keyboard focus in the pause dialog", async () => {
     const f = setup();
     render(<f.Harness />);
