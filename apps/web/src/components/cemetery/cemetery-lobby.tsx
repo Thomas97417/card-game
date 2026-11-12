@@ -172,7 +172,6 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
   const hero = heroDefinition(props.heroId),
     selectedWeapon = CEMETERY_WEAPONS.find((w) => w.id === selected)!;
   const root = useRef<HTMLDivElement>(null);
-  const weaponDetails = useRef<HTMLElement>(null);
   useCemeteryDialog(root, confirmAbandon);
   function changeTab(next: typeof tab) {
     setTab(next);
@@ -412,29 +411,31 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
           </div>
         </section>
       ) : (
-        <section className="cemetery-panel-content">
+        <section className="cemetery-panel-content cemetery-arsenal-panel">
           <button type="button" className="cemetery-text-button cemetery-panel-back" onClick={() => changeTab("play")}>
             <ArrowLeft size={16} /> Retour au menu
           </button>
-          <div className="cemetery-section-title">
-            <h1>Arsenal</h1>
-            <p>6 armes · 6 objets maximum</p>
-          </div>
-          <div className="cemetery-arsenal-switch">
-            <button
-              type="button"
-              onClick={() => setArsenalTab("weapons")}
-              aria-pressed={arsenalTab === "weapons"}
-            >
-              Armes <span>12</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setArsenalTab("passives")}
-              aria-pressed={arsenalTab === "passives"}
-            >
-              Objets <span>16</span>
-            </button>
+          <div className="cemetery-arsenal-header">
+            <div className="cemetery-section-title">
+              <h1>Arsenal</h1>
+              <p>6 armes · 6 objets maximum</p>
+            </div>
+            <div className="cemetery-arsenal-switch">
+              <button
+                type="button"
+                onClick={() => setArsenalTab("weapons")}
+                aria-pressed={arsenalTab === "weapons"}
+              >
+                Armes <span>12</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setArsenalTab("passives")}
+                aria-pressed={arsenalTab === "passives"}
+              >
+                Objets <span>16</span>
+              </button>
+            </div>
           </div>
           {arsenalTab === "weapons" ? (
             <div className="cemetery-arsenal-layout">
@@ -443,17 +444,11 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                   <button
                     type="button"
                     key={w.id}
+                    aria-label={w.name}
+                    title={w.name}
                     aria-pressed={selected === w.id}
                     aria-controls="cemetery-weapon-details"
-                    onClick={() => {
-                      setSelected(w.id);
-                      if (window.matchMedia?.("(max-width: 850px)").matches) {
-                        weaponDetails.current?.scrollIntoView({
-                          block: "start",
-                          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-                        });
-                      }
-                    }}
+                    onClick={() => setSelected(w.id)}
                     style={
                       {
                         "--item-color": `#${w.color.toString(16).padStart(6, "0")}`,
@@ -463,21 +458,33 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     <span className="cemetery-item-icon">
                       <CemeteryGlyph name={w.glyph} art={cemeteryWeaponArt(w.id)} size={30} />
                     </span>
-                    <span>
+                    <span className="cemetery-weapon-name">
                       {w.name}
                     </span>
-                    <ChevronRight size={15} />
                   </button>
                 ))}
               </div>
-              <article className="cemetery-evolution-card" id="cemetery-weapon-details" ref={weaponDetails}>
-                <div className="cemetery-evolution-icon">
-                  <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id)} size={96} />
+              <article className="cemetery-evolution-card" id="cemetery-weapon-details">
+                <div className="cemetery-evolution-stages">
+                  <section className="cemetery-weapon-stage">
+                    <span className="cemetery-stage-label">Arme</span>
+                    <div className="cemetery-evolution-icon">
+                      <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id)} size={88} />
+                    </div>
+                    <h2>{selectedWeapon.name}</h2>
+                    <p>{selectedWeapon.description}</p>
+                  </section>
+                  <section className="cemetery-weapon-stage is-evolved">
+                    <span className="cemetery-stage-label">Évolution</span>
+                    <div className="cemetery-evolution-icon">
+                      <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id, true)} size={88} />
+                    </div>
+                    <h3>{selectedWeapon.evolvedName}</h3>
+                    <p>{selectedWeapon.evolvedDescription}</p>
+                  </section>
                 </div>
-                <h2>{selectedWeapon.name}</h2>
-                <p>{selectedWeapon.description}</p>
                 <div className="cemetery-evolution-recipe">
-                  <span>Niveau 8</span>
+                  <span>Arme niv. 8</span>
                   <span>+</span>
                   <span>
                     <CemeteryGlyph
@@ -488,14 +495,6 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                     {cemeteryPassive(selectedWeapon.passive).name}
                   </span>
                 </div>
-                <div className="cemetery-evolution-icon is-evolved">
-                  <CemeteryGlyph name={selectedWeapon.glyph} art={cemeteryWeaponArt(selectedWeapon.id, true)} size={88} />
-                </div>
-                <div className="cemetery-evolved-name">
-                  <Sparkles size={20} />
-                  <h3>{selectedWeapon.evolvedName}</h3>
-                </div>
-                <p>{selectedWeapon.evolvedDescription}</p>
                 <small>
                   Reliquaire de boss · À partir de 10:00
                 </small>

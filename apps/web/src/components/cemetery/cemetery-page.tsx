@@ -17,8 +17,6 @@ import {
   Play,
   Shield,
   Skull,
-  Sparkles,
-  Trophy,
   X,
 } from "lucide-react";
 import { api } from "@my-better-t-app/backend/convex/_generated/api";
@@ -54,6 +52,7 @@ import {
 import { useCemeteryDialog } from "./use-cemetery-dialog";
 import { cemeteryWeaponArt, cemeteryPassiveArt, cemeteryPickupArt } from "./cemetery-art";
 import { CemeteryXpBar } from "./cemetery-xp-bar";
+import { CemeteryResults } from "./cemetery-results";
 
 export function CemeteryPage() {
   const board = useQuery(api.cemetery.board, {}),
@@ -677,100 +676,22 @@ export function CemeteryGame({
       )}
       {s.ended ? (
         <div className="cemetery-modal-shade">
-          <section
-            className="cemetery-modal cemetery-results"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="cemetery-result-title"
-          >
-            <h2 id="cemetery-result-title">Partie terminée</h2>
-            <strong className="cemetery-result-time" aria-label="Temps de survie">
-              {cemeteryTime(summary.seconds)}
-            </strong>
-            <div className="cemetery-result-stats">
-              <span>
-                <Skull size={17} />
-                <strong>{summary.kills}</strong>ennemis
-              </span>
-              <span>
-                <Sparkles size={17} />
-                <strong>{summary.level}</strong>niveau
-              </span>
-              <span>
-                <Trophy size={17} />
-                <strong>{summary.bosses}</strong>boss
-              </span>
-            </div>
-            <img
-              className="cemetery-result-chest"
-              src={`/art/chests/${summary.rarity}.webp`}
-              alt={chestName(summary.rarity)}
-            />
-            <p>
-              {chestName(summary.rarity)}
-              <br />
-              <small>
-                + {summary.gold} or ramassé
-              </small>
-            </p>
-            <button
-              type="button"
-              className="cemetery-primary"
-              disabled={busy || !session.settled || rewardOpened}
-              onClick={onOpen}
-            >
-              {!session.settled ? (
-                <>
-                  <LoaderCircle className="animate-spin" size={18} />
-                  Validation…
-                </>
-              ) : rewardOpened ? (
-                "Coffre ouvert"
-              ) : (
-                <>
-                  Ouvrir le coffre
-                  <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-            <div className="cemetery-result-actions">
-              <button
-                type="button"
-                disabled={!session.settled || busy}
-                onClick={onImprove}
-              >
-                <Sparkles size={16} />
-                Améliorer
-              </button>
-              <button
-                type="button"
-                disabled={!session.settled || busy}
-                onClick={onReplay}
-              >
-                <Play size={16} />
-                Rejouer
-              </button>
-            </div>
-            <button
-              type="button"
-              className="cemetery-text-button"
-              onClick={onMenu}
-            >
-              Retour au menu
-            </button>
-            {!session.settled && error && (
-              <button
-                type="button"
-                className="cemetery-text-button"
-                onClick={() => {
-                  onError(null);
-                  void session.flush().catch(() => {});
-                }}
-              >
-                Réessayer la sauvegarde
-              </button>
-            )}
-          </section>
+          <CemeteryResults
+            heroId={s.heroId}
+            summary={summary}
+            busy={busy}
+            settled={session.settled}
+            rewardOpened={rewardOpened}
+            saveError={!!error}
+            onOpen={onOpen}
+            onImprove={onImprove}
+            onReplay={onReplay}
+            onMenu={onMenu}
+            onRetrySave={() => {
+              onError(null);
+              void session.flush().catch(() => {});
+            }}
+          />
         </div>
       ) : s.choices.length ? (
         <div className="cemetery-modal-shade">

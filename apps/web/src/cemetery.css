@@ -488,13 +488,6 @@
   user-select: none;
   filter: drop-shadow(0 3px 4px #0005);
 }
-.cemetery-evolution-icon.is-evolved {
-  width: 96px;
-  height: 96px;
-  margin-top: 18px;
-  border-color: #c5a3ec66;
-  background: radial-gradient(circle, #ad8fdc21, transparent 75%);
-}
 .cemetery-upgrade-heading h2 {
   font:
     16px/1.3 Georgia,
@@ -589,10 +582,20 @@
   padding: 8px;
   color: #f3dfb8;
 }
+.cemetery-arsenal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.cemetery-arsenal-header h1 {
+  margin: 0 0 8px;
+}
 .cemetery-arsenal-switch {
   display: flex;
   gap: 10px;
-  margin: 25px 0 20px;
 }
 .cemetery-arsenal-switch button {
   display: inline-flex;
@@ -617,13 +620,14 @@
 }
 .cemetery-arsenal-layout {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 25px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: 18px;
 }
 .cemetery-weapon-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
+  gap: 8px;
   align-content: start;
 }
 .cemetery-weapon-list button {
@@ -631,7 +635,8 @@
   gap: 10px;
   align-items: center;
   text-align: left;
-  padding: 11px 9px;
+  min-height: 52px;
+  padding: 8px 10px;
   border: 1px solid #b2bfcc29;
   border-radius: 6px;
   background: #122131e6;
@@ -640,47 +645,69 @@
   border-color: #cfb78799;
   background: #253140;
 }
-.cemetery-weapon-list button > span:nth-child(2) {
+.cemetery-weapon-name {
   flex: 1;
   font-size: 12px;
   color: #d2d7df;
 }
 .cemetery-weapon-list .cemetery-item-icon {
-  width: 34px;
-  height: 34px;
-}
-.cemetery-weapon-list button > svg {
-  color: #7a8ca0;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: none;
 }
 .cemetery-evolution-card {
   position: relative;
   overflow: hidden;
-  padding: 22px;
+  padding: 18px;
   border: 1px solid #ccb68842;
   border-radius: 8px;
   background:
     radial-gradient(ellipse at 50% 30%, #8d78b31a, transparent 65%),
     linear-gradient(135deg, #1c2b3aee, #111e2bf0);
   text-align: center;
-  scroll-margin-top: 104px;
+}
+.cemetery-evolution-stages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.cemetery-weapon-stage {
+  min-width: 0;
+}
+.cemetery-stage-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  color: #acbccb;
+}
+.cemetery-weapon-stage.is-evolved {
+  border-left: 1px solid #baa0df30;
+  padding-left: 18px;
+}
+.cemetery-weapon-stage.is-evolved h3,
+.cemetery-weapon-stage.is-evolved .cemetery-stage-label {
+  color: #d5b9f2;
 }
 .cemetery-evolution-icon {
-  width: 110px;
-  height: 110px;
-  margin: 0 auto 16px;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 12px;
   display: grid;
   place-items: center;
   color: #d6c5a5;
   border: 1px solid #d2ba8440;
   border-radius: 50%;
-  box-shadow:
-    0 0 0 10px #d6ba8a04,
-    0 0 0 11px #d6ba8a0b;
   background: #d6ba8a09;
 }
-.cemetery-evolution-card h2 {
+.cemetery-weapon-stage.is-evolved .cemetery-evolution-icon {
+  border-color: #baa0df55;
+  background: #ba9be610;
+}
+.cemetery-weapon-stage h2,
+.cemetery-weapon-stage h3 {
   font:
-    25px/1.3 Georgia,
+    20px/1.25 Georgia,
     serif;
   color: #e6d3b4;
 }
@@ -688,7 +715,7 @@
   color: #a7b6c5;
   font-size: 12px;
   line-height: 1.6;
-  margin: 13px 0;
+  margin: 10px 0 0;
 }
 .cemetery-evolution-recipe {
   display: flex;
@@ -696,7 +723,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 18px 0;
+  margin: 18px 0 10px;
   font-size: 12px;
   color: #b8c1c9;
 }
@@ -709,21 +736,9 @@
   border-radius: 4px;
   background: #e6d5af08;
 }
-.cemetery-evolved-name {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  color: #c5acd9;
-}
-.cemetery-evolved-name h3 {
-  font:
-    22px Georgia,
-    serif;
-}
 .cemetery-evolution-card > small {
   display: block;
-  padding-top: 18px;
+  padding-top: 10px;
   border-top: 1px solid #b3c5d41c;
   color: #a4b6c7;
   font-size: 11px;
@@ -1128,19 +1143,72 @@
   top: 14px;
   color: #a8b6c6;
 }
-.cemetery-result-time {
-  font:
-    52px/1.1 Georgia,
-    serif;
-  margin: 10px 0 22px;
+.cemetery-modal.cemetery-results {
+  max-width: 760px;
+  padding: 26px;
+  background:
+    radial-gradient(ellipse at 80% 20%, #768e8b1a, transparent 65%),
+    linear-gradient(140deg, #1c2d3f, #101f2e);
+}
+.cemetery-result-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 22px;
+}
+.cemetery-result-heading h2 {
+  margin: 0;
+  font-size: 28px;
+  text-align: left;
+}
+.cemetery-result-duration {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: #e3c79b;
+}
+.cemetery-result-duration img {
+  width: 34px;
+  height: 40px;
+  object-fit: contain;
+}
+.cemetery-result-duration strong {
+  font: 40px/1 Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+.cemetery-result-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+.cemetery-result-overview {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: radial-gradient(ellipse at 50% 35%, #95c2b51c, transparent 70%);
+}
+.cemetery-result-guardian img {
+  display: block;
+  height: 190px;
+  width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px #0006);
+}
+.cemetery-result-guardian > span {
+  display: block;
+  margin: 10px 0 6px;
+  color: #dac9ab;
+  font: 17px/1.2 Georgia, serif;
 }
 .cemetery-result-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #bcbca529;
+  gap: 8px;
+  padding: 12px 0 0;
   width: 100%;
 }
 .cemetery-result-stats > span {
@@ -1148,51 +1216,96 @@
   align-items: center;
   flex-direction: column;
   gap: 5px;
-  font-size: 9px;
-  color: #849aad;
+  font-size: 11px;
+  color: #a5b7c8;
 }
-.cemetery-result-stats svg {
-  color: #c8b591;
+.cemetery-result-stats img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px #0005);
 }
 .cemetery-result-stats strong {
-  font-size: 17px;
+  font-size: 21px;
   color: #e4d8c3;
 }
+.cemetery-result-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #bba67c44;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 30%, #d3b47c1c, #0b192855 75%);
+}
 .cemetery-result-chest {
-  height: 105px;
-  width: 140px;
+  height: 150px;
+  width: 190px;
   object-fit: contain;
-  margin: 15px 0 5px;
   filter: drop-shadow(0 0 20px #d7b26d33);
 }
-.cemetery-results > p {
-  margin-bottom: 20px;
+.cemetery-result-reward h3 {
+  font: 22px/1.2 Georgia, serif;
   color: #ddc69d;
 }
-.cemetery-results > p small {
-  font-size: 9px;
-  color: #91a4b8;
+.cemetery-result-gold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #d5bd91;
+}
+.cemetery-result-gold img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.cemetery-result-reward .cemetery-primary {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  gap: 8px;
+}
+.cemetery-result-reward .cemetery-primary img {
+  width: 30px;
+  height: 28px;
+  object-fit: contain;
 }
 .cemetery-result-actions {
   display: flex;
   width: 100%;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin: 20px 0 4px;
 }
 .cemetery-result-actions > button {
   display: flex;
-  gap: 7px;
+  gap: 12px;
   justify-content: center;
   align-items: center;
   flex: 1;
-  padding: 11px;
-  border: 1px solid #bdc8d336;
-  border-radius: 4px;
-  color: #c6cbd2;
-  font-size: 11px;
+  min-height: 58px;
+  padding: 8px 14px;
+  border: 1px solid #bdc8d347;
+  border-radius: 6px;
+  background: #afc1c607;
+  color: #e0d8ca;
+  font-size: 13px;
+}
+.cemetery-result-actions img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 .cemetery-result-actions > button:hover:not(:disabled) {
   background: #a8c7d013;
+}
+.cemetery-result-menu img {
+  width: 34px;
+  height: 22px;
+  object-fit: contain;
 }
 .cemetery-level-up {
   width: min(1040px, 100%);
@@ -1309,10 +1422,20 @@
     grid-template-columns: 1fr;
   }
   .cemetery-weapon-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .cemetery-weapon-list button {
+    min-width: 0;
+    min-height: 50px;
+    padding: 4px;
+    justify-content: center;
+  }
+  .cemetery-weapon-name {
+    display: none;
   }
   .cemetery-evolution-card {
-    padding: 24px;
+    padding: 18px;
   }
   .cemetery-hero-layout {
     gap: 10px;
@@ -1498,22 +1621,51 @@
     grid-template-columns: 1fr;
     gap: 9px;
   }
-  .cemetery-weapon-list {
-    grid-template-columns: 1fr 1fr;
+  .cemetery-arsenal-header {
+    gap: 12px;
+    margin-bottom: 14px;
   }
-  .cemetery-weapon-list button {
-    gap: 7px;
-    padding: 9px 7px;
+  .cemetery-arsenal-header h1 {
+    font-size: 28px;
+    margin: 0 0 4px;
   }
-  .cemetery-weapon-list button > span:nth-child(2) {
+  .cemetery-arsenal-layout {
+    gap: 14px;
+  }
+  .cemetery-evolution-card {
+    padding: 14px;
+  }
+  .cemetery-evolution-stages {
+    gap: 12px;
+  }
+  .cemetery-weapon-stage.is-evolved {
+    padding-left: 12px;
+  }
+  .cemetery-evolution-icon {
+    width: 66px;
+    height: 66px;
+    margin-bottom: 10px;
+  }
+  .cemetery-weapon-stage h2,
+  .cemetery-weapon-stage h3 {
+    font-size: 17px;
+  }
+  .cemetery-evolution-card p {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+  .cemetery-evolution-recipe {
     font-size: 11px;
+    gap: 6px;
+    margin: 14px 0 8px;
   }
-  .cemetery-weapon-list .cemetery-item-icon {
-    width: 32px;
-    height: 36px;
+  .cemetery-evolution-recipe > span:not(:nth-child(2)) {
+    padding: 6px;
   }
-  .cemetery-weapon-list svg {
-    width: 18px;
+  .cemetery-evolution-card > small {
+    font-size: 10px;
+    padding-top: 8px;
   }
   .cemetery-arsenal-switch {
     gap: 6px;
@@ -1608,11 +1760,57 @@
   .cemetery-modal > p {
     font-size: 11px;
   }
-  .cemetery-result-time {
-    font-size: 42px;
+  .cemetery-modal.cemetery-results {
+    padding: 18px;
+  }
+  .cemetery-result-heading {
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .cemetery-result-heading h2 {
+    font-size: 24px;
+  }
+  .cemetery-result-duration {
+    gap: 6px;
+  }
+  .cemetery-result-duration img {
+    width: 27px;
+    height: 32px;
+  }
+  .cemetery-result-duration strong {
+    font-size: 32px;
+  }
+  .cemetery-result-body {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .cemetery-result-guardian {
+    display: none;
+  }
+  .cemetery-result-stats {
+    padding-top: 0;
+  }
+  .cemetery-result-reward {
+    padding: 14px;
+    gap: 8px;
   }
   .cemetery-result-chest {
-    height: 85px;
+    height: 120px;
+    width: 160px;
+  }
+  .cemetery-result-actions {
+    margin-top: 14px;
+    gap: 10px;
+  }
+  .cemetery-result-actions > button {
+    min-height: 52px;
+    gap: 8px;
+    font-size: 12px;
+    padding: 8px;
+  }
+  .cemetery-result-actions img {
+    width: 30px;
+    height: 30px;
   }
   .cemetery-choice-grid {
     display: grid;
@@ -1697,26 +1895,17 @@
     padding-top: 22px;
     padding-bottom: 22px;
   }
-  .cemetery-results {
-    max-width: 500px;
+  .cemetery-modal.cemetery-results {
+    padding: 20px;
   }
-  .cemetery-result-time {
-    font-size: 35px;
-    margin: 8px 0 12px;
+  .cemetery-result-heading {
+    margin-bottom: 16px;
   }
-  .cemetery-result-stats {
-    padding-bottom: 12px;
+  .cemetery-result-guardian img {
+    height: 150px;
   }
   .cemetery-result-chest {
-    height: 60px;
-    margin: 9px 0 0;
-  }
-  .cemetery-results > p {
-    margin-bottom: 12px;
-  }
-  .cemetery-results h2 {
-    font-size: 24px;
-    margin: 10px 0;
+    height: 120px;
   }
   .cemetery-choice-grid > button {
     min-height: 270px;
@@ -1725,6 +1914,26 @@
     margin: 15px 0;
     width: 65px;
     height: 65px;
+  }
+}
+@media (max-width: 360px) {
+  .cemetery-weapon-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-height: 740px) and (max-width: 600px) {
+  .cemetery-arsenal-panel .cemetery-panel-back {
+    margin-bottom: 4px;
+  }
+  .cemetery-arsenal-header {
+    margin-bottom: 12px;
+  }
+  .cemetery-weapon-list button {
+    min-height: 44px;
+  }
+  .cemetery-evolution-icon {
+    width: 56px;
+    height: 56px;
   }
 }
 @media (max-height: 800px) and (min-width: 851px) {
