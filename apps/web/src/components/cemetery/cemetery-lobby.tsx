@@ -248,7 +248,7 @@ export function CemeteryLobby(props: CemeteryLobbyProps) {
                 <h2>{hero.name}</h2>
                 <div>
                   <span>
-                    <Heart size={15} />{" "}
+                    <CemeteryGlyph name="heart" art="/art/ui/health-heart.webp" size={28} />
                     {Math.round(100 * 1.1 ** (props.upgrades.health ?? 0))} PV
                   </span>
                   <span>
